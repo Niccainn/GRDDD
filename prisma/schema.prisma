@@ -234,3 +234,4 @@ model IntelligenceLog {
   @@index([createdAt])
   @@index([success])
 }
+\
