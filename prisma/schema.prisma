@@ -1,6 +1,3 @@
-// GRID - 5-Object Architecture Data Model
-// Identity → Environment → System → Workflow → Intelligence
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,10 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
+// ===============================================
 // OBJECT 1: IDENTITY
 // Who or what exists in the system
-// ============================================
+// ===============================================
 
 model Identity {
   id        String   @id @default(cuid())
@@ -21,36 +18,31 @@ model Identity {
   updatedAt DateTime @updatedAt
 
   // Core Identity Properties
-  type      IdentityType
-  name      String
-  email     String?       @unique
-  avatar    String?
+  type  String // "PERSON" | "TEAM" | "AGENT" | "CLIENT"
+  name  String
+  email String? @unique
 
-  // Authentication (when user is a person)
-  passwordHash String?
-  emailVerified DateTime?
+  // Optional Properties
+  avatar      String?
+  description String?
+  metadata    String? // JSON string for flexible data
 
   // Relationships
-  ownedEnvironments Environment[] @relation("EnvironmentOwner")
-  memberships       EnvironmentMembership[]
-  createdWorkflows  Workflow[]    @relation("WorkflowCreator")
-  intelligenceActions IntelligenceLog[] @relation("ActionPerformedBy")
+  ownedEnvironments     Environment[]
+  environmentMemberships EnvironmentMembership[]
+  createdSystems        System[]         @relation("SystemCreator")
+  createdWorkflows      Workflow[]       @relation("WorkflowCreator")
+  createdIntelligence   Intelligence[]   @relation("IntelligenceCreator")
+  intelligenceLogs      IntelligenceLog[]
 
   @@index([email])
   @@index([type])
 }
 
-enum IdentityType {
-  PERSON
-  TEAM
-  AGENT
-  CLIENT
-}
-
-// ============================================
+// ===============================================
 // OBJECT 2: ENVIRONMENT
-// Where work happens - organizational containers
-// ============================================
+// Organizational containers
+// ===============================================
 
 model Environment {
   id        String   @id @default(cuid())
@@ -59,21 +51,25 @@ model Environment {
 
   // Core Environment Properties
   name        String
+  slug        String  @unique
   description String?
-  slug        String   @unique
-  settings    String?
+  settings    String? // JSON string for environment config
 
-  // Owner
-  ownerId   String
-  owner     Identity @relation("EnvironmentOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  // Visual Identity
+  color String?
+  icon  String?
 
   // Relationships
-  memberships EnvironmentMembership[]
-  systems     System[]
-  workflows   Workflow[]
+  ownerId String
+  owner   Identity @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  @@index([slug])
+  memberships  EnvironmentMembership[]
+  systems      System[]
+  workflows    Workflow[]
+  intelligence Intelligence[]
+
   @@index([ownerId])
+  @@index([slug])
 }
 
 model EnvironmentMembership {
@@ -81,7 +77,7 @@ model EnvironmentMembership {
   createdAt DateTime @default(now())
 
   // Membership Properties
-  role      MembershipRole
+  role String // "ADMIN" | "CONTRIBUTOR" | "VIEWER"
 
   // Relationships
   environmentId String
@@ -95,16 +91,10 @@ model EnvironmentMembership {
   @@index([identityId])
 }
 
-enum MembershipRole {
-  ADMIN
-  CONTRIBUTOR
-  VIEWER
-}
-
-// ============================================
+// ===============================================
 // OBJECT 3: SYSTEM
-// Structured functions of an organization
-// ============================================
+// Structured organizational functions
+// ===============================================
 
 model System {
   id        String   @id @default(cuid())
@@ -116,26 +106,31 @@ model System {
   description String?
   color       String?
   icon        String?
-  config      String?
+  config      String? // JSON for system configuration
 
   // Metrics & Health
-  metrics     String?
+  metrics     String? // JSON for system metrics
   healthScore Float?
 
   // Relationships
   environmentId String
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 
-  workflows     Workflow[]
-  intelligence  Intelligence[]
+  creatorId String
+  creator   Identity @relation("SystemCreator", fields: [creatorId], references: [id])
+
+  workflows        Workflow[]
+  intelligence     Intelligence[]
+  intelligenceLogs IntelligenceLog[]
 
   @@index([environmentId])
+  @@index([creatorId])
 }
 
-// ============================================
+// ===============================================
 // OBJECT 4: WORKFLOW
-// Movement within systems - where work happens
-// ============================================
+// Movement within systems
+// ===============================================
 
 model Workflow {
   id        String   @id @default(cuid())
@@ -145,23 +140,23 @@ model Workflow {
   // Core Workflow Properties
   name        String
   description String?
-  status      WorkflowStatus
+  status      String // "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED"
   config      String?
 
   // Workflow Structure (stored as JSON strings)
-  stages      String
-  nodes       String?
-  edges       String?
+  stages String // JSON array of workflow stages
+  nodes  String? // JSON for node-based workflow
+  edges  String? // JSON for node connections
 
   // Relationships
-  systemId      String
-  system        System @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  systemId String
+  system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
   environmentId String
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 
-  creatorId     String
-  creator       Identity @relation("WorkflowCreator", fields: [creatorId], references: [id])
+  creatorId String
+  creator   Identity @relation("WorkflowCreator", fields: [creatorId], references: [id])
 
   intelligenceLogs IntelligenceLog[]
 
@@ -170,18 +165,10 @@ model Workflow {
   @@index([status])
 }
 
-enum WorkflowStatus {
-  DRAFT
-  ACTIVE
-  PAUSED
-  COMPLETED
-  ARCHIVED
-}
-
-// ============================================
+// ===============================================
 // OBJECT 5: INTELLIGENCE
-// Adaptive layer - AI/automation/analytics
-// ============================================
+// Adaptive AI layer
+// ===============================================
 
 model Intelligence {
   id        String   @id @default(cuid())
@@ -189,54 +176,61 @@ model Intelligence {
   updatedAt DateTime @updatedAt
 
   // Core Intelligence Properties
-  type        IntelligenceType
+  type        String // "AI_AGENT" | "AUTOMATION" | "ANALYTICS" | "RECOMMENDATION"
   name        String
   description String?
-  config      String
+  config      String? // JSON for intelligence configuration
 
-  // Constraints & Permissions
-  permissions String
-  constraints String
+  // State & Control
+  isActive Boolean @default(true)
+  metadata String? // JSON for additional data
 
   // Relationships
   systemId String
   system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
-  logs     IntelligenceLog[]
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  creatorId String
+  creator   Identity @relation("IntelligenceCreator", fields: [creatorId], references: [id])
+
+  logs IntelligenceLog[]
 
   @@index([systemId])
+  @@index([environmentId])
   @@index([type])
+  @@index([isActive])
 }
 
-enum IntelligenceType {
-  AI_AGENT
-  AUTOMATION
-  ANALYTICS
-  RECOMMENDATION
-}
-
-// Intelligence Action Log (for transparency & audit)
 model IntelligenceLog {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  // Action Details
-  action      String
-  reasoning   String?
-  outcome     String?
-  cost        Float?
+  // Log Properties
+  action    String
+  input     String? // JSON
+  output    String? // JSON
+  reasoning String? // AI reasoning/explanation
+  tokens    Int?
+  cost      Float?
+  success   Boolean @default(true)
+  error     String?
 
   // Relationships
   intelligenceId String
   intelligence   Intelligence @relation(fields: [intelligenceId], references: [id], onDelete: Cascade)
 
+  systemId String?
+  system   System? @relation(fields: [systemId], references: [id], onDelete: SetNull)
+
   workflowId String?
   workflow   Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
 
-  performedById String
-  performedBy   Identity @relation("ActionPerformedBy", fields: [performedById], references: [id])
+  identityId String?
+  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: SetNull)
 
   @@index([intelligenceId])
-  @@index([workflowId])
   @@index([createdAt])
+  @@index([success])
 }
