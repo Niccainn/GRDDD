@@ -1,14 +1,10 @@
 'use client';
-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function Navigation() {
   const pathname = usePathname();
-  
-  const isActive = (path: string) => {
-    return pathname === path || pathname.startsWith(path + '/');
-  };
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
   
   return (
     <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-50 bg-[#121213]/95">
@@ -24,42 +20,12 @@ export default function Navigation() {
             </div>
             <span className="text-lg font-light tracking-wide">GRID</span>
           </Link>
-
           <nav className="flex items-center gap-8">
-            <Link 
-              href="/"
-              className={`text-sm font-light transition-colors ${
-                pathname === '/' 
-                  ? 'text-white' 
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Home
-            </Link>
-            
-            <Link 
-              href="/environments"
-              className={`text-sm font-light transition-colors ${
-                isActive('/environments')
-                  ? 'text-white' 
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Environments
-            </Link>
-            
-            <Link 
-              href="/systems"
-              className={`text-sm font-light transition-colors ${
-                isActive('/systems')
-                  ? 'text-white' 
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Systems
-            </Link>
+            <Link href="/" className={`text-sm font-light transition-colors ${pathname === '/' ? 'text-white' : 'text-white/60 hover:text-white'}`}>Home</Link>
+            <Link href="/dashboard" className={`text-sm font-light transition-colors ${isActive('/dashboard') ? 'text-white' : 'text-white/60 hover:text-white'}`}>Dashboard</Link>
+            <Link href="/environments" className={`text-sm font-light transition-colors ${isActive('/environments') ? 'text-white' : 'text-white/60 hover:text-white'}`}>Environments</Link>
+            <Link href="/systems" className={`text-sm font-light transition-colors ${isActive('/systems') ? 'text-white' : 'text-white/60 hover:text-white'}`}>Systems</Link>
           </nav>
-
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-[#15AD70] to-[#68D0CA] rounded-full flex items-center justify-center">
               <span className="text-xs font-medium">D</span>

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Navigation from '@/components/Navigation';
+import Link from 'next/link';
 
 const SYSTEM_TEMPLATES = [
   { name: 'Brand System', description: 'Visual identity, messaging, brand guidelines', color: '#15AD70', icon: '🎨' },
@@ -24,7 +25,7 @@ async function createSystem(formData: FormData) {
     });
   }
   await prisma.system.create({
-    data: { name, description, color, environmentId, creatorId: dummyIdentity.id }
+    data: { name, description, color, environmentId, creatorId: dummyIdentity.id, healthScore: Math.random() * 0.4 + 0.6 }
   });
   redirect('/systems');
 }
@@ -82,7 +83,12 @@ export default async function SystemsPage() {
                 <h2 className="text-2xl font-light mb-6">Your Systems</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {systems.map((system) => (
-                    <div key={system.id} className="group relative bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all" style={{ borderColor: system.color ? `${system.color}33` : undefined }}>
+                    <Link
+                      key={system.id}
+                      href={`/systems/${system.id}`}
+                      className="group relative bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all"
+                      style={{ borderColor: system.color ? `${system.color}33` : undefined }}
+                    >
                       <div className="flex items-start justify-between mb-4">
                         <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: system.color ? `${system.color}33` : '#ffffff11' }}>
                           {SYSTEM_TEMPLATES.find(t => t.name === system.name)?.icon || '⚙️'}
@@ -91,7 +97,7 @@ export default async function SystemsPage() {
                       </div>
                       <h3 className="text-xl font-light mb-2">{system.name}</h3>
                       {system.description && <p className="text-white/50 text-sm font-light">{system.description}</p>}
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
