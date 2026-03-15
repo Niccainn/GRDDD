@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
+import Navigation from '@/components/Navigation';
+import Link from 'next/link';
 
-// Server Action to create a new environment
 async function createEnvironment(formData: FormData) {
   'use server';
   
@@ -10,8 +11,6 @@ async function createEnvironment(formData: FormData) {
   
   if (!name) return;
   
-  // For now, we'll create a dummy identity to own the environment
-  // Later we'll replace this with real authentication
   let dummyIdentity = await prisma.identity.findFirst({
     where: { email: 'demo@grid.app' }
   });
@@ -26,7 +25,6 @@ async function createEnvironment(formData: FormData) {
     });
   }
   
-  // Create the environment
   await prisma.environment.create({
     data: {
       name,
@@ -39,7 +37,6 @@ async function createEnvironment(formData: FormData) {
   redirect('/environments');
 }
 
-// Fetch all environments
 async function getEnvironments() {
   return await prisma.environment.findMany({
     include: {
@@ -57,34 +54,14 @@ export default async function EnvironmentsPage() {
   
   return (
     <div className="min-h-screen bg-[#121213] text-white">
-      {/* Header */}
-      <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-10 bg-[#121213]/80">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 bg-white/10 rounded border border-white/20 flex items-center justify-center">
-                <div className="grid grid-cols-3 gap-[2px] w-4 h-4">
-                  <div className="bg-white/80 rounded-sm"></div>
-                  <div className="bg-white/60 rounded-sm"></div>
-                  <div className="bg-white/40 rounded-sm"></div>
-                </div>
-              </div>
-              <span className="text-lg font-light tracking-wide">GRID</span>
-            </a>
-            <span className="text-white/40">/</span>
-            <span className="text-white/60 font-light">Environments</span>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       <main className="max-w-7xl mx-auto px-6 py-12">
-        {/* Page Header */}
         <div className="mb-12">
           <h1 className="text-4xl font-extralight mb-3 tracking-tight">Environments</h1>
           <p className="text-white/50 font-light">Organizational containers where systems operate</p>
         </div>
 
-        {/* Create Environment Form */}
         <div className="mb-12 bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
           <h2 className="text-xl font-light mb-6">Create New Environment</h2>
           <form action={createEnvironment} className="space-y-4">
@@ -122,7 +99,6 @@ export default async function EnvironmentsPage() {
           </form>
         </div>
 
-        {/* Environments List */}
         {environments.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-16 h-16 bg-white/5 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -136,8 +112,9 @@ export default async function EnvironmentsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {environments.map((env) => (
-              <div
+              <Link
                 key={env.id}
+                href={`/environments/${env.slug}`}
                 className="group relative bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-2xl p-6 hover:border-[#68D0CA]/40 transition-all duration-300"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-[#68D0CA]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
@@ -160,7 +137,7 @@ export default async function EnvironmentsPage() {
                     <span className="font-light">/{env.slug}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
