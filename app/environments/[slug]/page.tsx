@@ -53,10 +53,10 @@ export default async function EnvironmentDetailPage({
             ) : (
               <div className="grid gap-4">
                 {environment.systems.map((system) => (
-                  <div key={system.id} className="bg-white/5 border border-white/10 rounded-xl p-6 hover:border-[#7193ED]/40 transition-all">
+                  <Link key={system.id} href={`/systems/${system.id}`} className="block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-[#7193ED]/40 transition-all">
                     <h3 className="text-xl font-light mb-2">{system.name}</h3>
                     {system.description && <p className="text-white/50 text-sm font-light">{system.description}</p>}
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

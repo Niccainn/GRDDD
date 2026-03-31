@@ -1,7 +1,38 @@
 import { prisma } from '@/lib/db';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import Link from 'next/link';
+
+async function createWorkflow(formData: FormData) {
+  'use server';
+  const systemId = formData.get('systemId') as string;
+  const environmentId = formData.get('environmentId') as string;
+
+  let dummyIdentity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
+  if (!dummyIdentity) {
+    dummyIdentity = await prisma.identity.create({
+      data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' }
+    });
+  }
+
+  const workflow = await prisma.workflow.create({
+    data: {
+      name: 'New Workflow',
+      status: 'DRAFT',
+      systemId,
+      environmentId,
+      creatorId: dummyIdentity.id,
+      stages: JSON.stringify([]),
+      nodes: JSON.stringify([
+        { id: '1', type: 'start', position: { x: 250, y: 50 }, data: { label: 'Start' } },
+        { id: '2', type: 'end', position: { x: 250, y: 300 }, data: { label: 'End' } }
+      ]),
+      edges: JSON.stringify([])
+    }
+  });
+
+  redirect(`/workflows/${workflow.id}/edit`);
+}
 
 async function getSystem(id: string) {
   return await prisma.system.findUnique({
@@ -21,6 +52,7 @@ export default async function SystemDetailPage({
 }) {
   const { id } = await params;
   const system = await getSystem(id);
+  const boundCreateWorkflow = createWorkflow.bind(null);
   
   if (!system) notFound();
   
@@ -82,20 +114,28 @@ export default async function SystemDetailPage({
                   </div>
                   <h3 className="text-xl font-light text-white/60 mb-2">No workflows yet</h3>
                   <p className="text-white/40 font-light mb-6">Create workflows to automate this system</p>
-                  <button className="bg-gradient-to-r from-[#BF9FF1] to-[#7193ED] text-white px-6 py-3 rounded-lg font-light hover:opacity-90 transition-opacity">
-                    Create Workflow
-                  </button>
+                  <form action={boundCreateWorkflow}>
+                    <input type="hidden" name="systemId" value={system.id} />
+                    <input type="hidden" name="environmentId" value={system.environmentId} />
+                    <button type="submit" className="bg-gradient-to-r from-[#BF9FF1] to-[#7193ED] text-white px-6 py-3 rounded-lg font-light hover:opacity-90 transition-opacity">
+                      Create Workflow
+                    </button>
+                  </form>
                 </div>
               ) : (
                 <div className="grid gap-4">
                   {system.workflows.map((workflow) => (
-                    <div key={workflow.id} className="bg-white/5 border border-white/10 rounded-xl p-6 hover:border-[#BF9FF1]/40 transition-all">
+                    <Link key={workflow.id} href={`/workflows/${workflow.id}/edit`} className="block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-[#BF9FF1]/40 transition-all">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="text-xl font-light">{workflow.name}</h3>
-                        <span className="text-xs px-3 py-1 rounded-full bg-white/10">{workflow.status}</span>
+                        <span className={`text-xs px-3 py-1 rounded-full ${
+                          workflow.status === 'ACTIVE' ? 'bg-[#15AD70]/20 text-[#15AD70]' :
+                          workflow.status === 'DRAFT' ? 'bg-white/10 text-white/60' :
+                          'bg-white/10 text-white/40'
+                        }`}>{workflow.status}</span>
                       </div>
                       {workflow.description && <p className="text-white/50 text-sm font-light">{workflow.description}</p>}
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

@@ -25,6 +25,7 @@ export default function Navigation() {
             <Link href="/dashboard" className={`text-sm font-light transition-colors ${isActive('/dashboard') ? 'text-white' : 'text-white/60 hover:text-white'}`}>Dashboard</Link>
             <Link href="/environments" className={`text-sm font-light transition-colors ${isActive('/environments') ? 'text-white' : 'text-white/60 hover:text-white'}`}>Environments</Link>
             <Link href="/systems" className={`text-sm font-light transition-colors ${isActive('/systems') ? 'text-white' : 'text-white/60 hover:text-white'}`}>Systems</Link>
+            <Link href="/workflows" className={`text-sm font-light transition-colors ${isActive('/workflows') ? 'text-white' : 'text-white/60 hover:text-white'}`}>Workflows</Link>
           </nav>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-[#15AD70] to-[#68D0CA] rounded-full flex items-center justify-center">
