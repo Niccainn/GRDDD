@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
-import Navigation from '@/components/Navigation';
+
 import Link from 'next/link';
 
 async function createEnvironment(formData: FormData) {
@@ -54,7 +54,7 @@ export default async function EnvironmentsPage() {
   
   return (
     <div className="min-h-screen bg-[#121213] text-white">
-      <Navigation />
+
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12">

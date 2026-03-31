@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
-import Navigation from '@/components/Navigation';
+
 import WorkflowEditor from '@/components/workflow/WorkflowEditor';
 
 async function getWorkflow(id: string) {
@@ -36,7 +36,7 @@ export default async function WorkflowEditPage({ params }: { params: Promise<{ i
   
   return (
     <div className="min-h-screen bg-[#121213] text-white">
-      <Navigation />
+
       <WorkflowEditor workflow={workflow} updateWorkflow={updateWorkflow} />
     </div>
   );
