@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
-import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 
 async function createEnvironment(formData: FormData) {
@@ -8,78 +7,81 @@ async function createEnvironment(formData: FormData) {
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
   if (!name) return;
-  let dummyIdentity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
-  if (!dummyIdentity) {
-    dummyIdentity = await prisma.identity.create({
-      data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' }
-    });
-  }
+  let identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
+  if (!identity) identity = await prisma.identity.create({ data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' } });
   await prisma.environment.create({
-    data: { name, description, slug: name.toLowerCase().replace(/\s+/g, '-'), ownerId: dummyIdentity.id }
+    data: { name, description, slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''), ownerId: identity.id }
   });
   redirect('/environments');
 }
 
 async function getEnvironments() {
-  return await prisma.environment.findMany({
-    include: { owner: true, systems: true },
-    orderBy: { createdAt: 'desc' }
-  });
+  return prisma.environment.findMany({ include: { owner: true, systems: true }, orderBy: { createdAt: 'desc' } });
 }
 
 export default async function EnvironmentsPage() {
   const environments = await getEnvironments();
+
   return (
-    <div className="min-h-screen bg-[#121213] text-white">
-      <Navigation />
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-extralight mb-3 tracking-tight">Environments</h1>
-          <p className="text-white/50 font-light">Organizational containers where systems operate</p>
+    <div className="px-10 py-10 min-h-screen">
+      <div className="flex items-start justify-between mb-10">
+        <div>
+          <h1 className="text-2xl font-extralight tracking-tight mb-1">Environments</h1>
+          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Organisational containers where systems operate</p>
         </div>
-        <div className="mb-12 bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
-          <h2 className="text-xl font-light mb-6">Create New Environment</h2>
-          <form action={createEnvironment} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm text-white/60 mb-2 font-light">Environment Name *</label>
-              <input type="text" id="name" name="name" required placeholder="e.g., GRID Studio, Marketing Lab" className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#15AD70] focus:ring-1 focus:ring-[#15AD70] transition-all" />
-            </div>
-            <div>
-              <label htmlFor="description" className="block text-sm text-white/60 mb-2 font-light">Description (optional)</label>
-              <textarea id="description" name="description" rows={3} placeholder="What will this environment be used for?" className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#15AD70] focus:ring-1 focus:ring-[#15AD70] transition-all resize-none" />
-            </div>
-            <button type="submit" className="bg-gradient-to-r from-[#15AD70] to-[#68D0CA] text-white px-6 py-3 rounded-lg font-light hover:opacity-90 transition-opacity">Create Environment</button>
-          </form>
+
+        {/* Inline create */}
+        <form action={createEnvironment} className="flex items-center gap-2">
+          <input
+            name="name"
+            required
+            placeholder="New environment name"
+            className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none transition-all"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white', width: '200px' }}
+          />
+          <button type="submit"
+            className="text-xs font-light px-3 py-2 rounded-lg transition-all"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
+            Create
+          </button>
+        </form>
+      </div>
+
+      {environments.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24"
+          style={{ border: '1px dashed var(--border)', borderRadius: '12px' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No environments</p>
+          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Create your first environment above</p>
         </div>
-        {environments.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 bg-white/5 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <svg className="w-8 h-8 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-            </div>
-            <h3 className="text-xl font-light text-white/60 mb-2">No environments yet</h3>
-            <p className="text-white/40 font-light">Create your first environment to get started</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {environments.map((env) => (
-              <Link key={env.id} href={`/environments/${env.slug}`} className="group relative bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-2xl p-6 hover:border-[#68D0CA]/40 transition-all duration-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#68D0CA]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
-                <div className="relative">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-[#68D0CA]/20 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-[#68D0CA]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                    </div>
-                    <div className="text-xs text-white/40 font-light">{env.systems.length} {env.systems.length === 1 ? 'system' : 'systems'}</div>
-                  </div>
-                  <h3 className="text-xl font-light mb-2">{env.name}</h3>
-                  {env.description && <p className="text-white/50 text-sm font-light mb-4">{env.description}</p>}
-                  <div className="flex items-center gap-2 text-xs text-white/40"><span className="font-light">/{env.slug}</span></div>
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          {environments.map((env) => (
+            <Link key={env.id} href={`/environments/${env.slug}`}
+              className="group flex flex-col justify-between p-5 rounded-xl transition-all"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <div>
+                <div className="flex items-start justify-between mb-4">
+                  <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    {env.name}
+                  </p>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'var(--text-tertiary)', marginTop: '3px', flexShrink: 0 }}>
+                    <path d="M3 1h8v8M1 11L11 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                  </svg>
                 </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </main>
+                {env.description && (
+                  <p className="text-xs font-light leading-relaxed mb-4" style={{ color: 'var(--text-tertiary)' }}>
+                    {env.description}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>/{env.slug}</span>
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{env.systems.length} system{env.systems.length !== 1 ? 's' : ''}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,186 +1,119 @@
 import { prisma } from '@/lib/db';
-import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 async function createWorkflow(formData: FormData) {
   'use server';
   const name = formData.get('name') as string;
-  const description = formData.get('description') as string;
   const systemId = formData.get('systemId') as string;
   const environmentId = formData.get('environmentId') as string;
-  
   if (!name || !systemId || !environmentId) return;
-  
-  let dummyIdentity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
-  if (!dummyIdentity) {
-    dummyIdentity = await prisma.identity.create({
-      data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' }
-    });
-  }
-  
+  let identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
+  if (!identity) identity = await prisma.identity.create({ data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' } });
   const workflow = await prisma.workflow.create({
     data: {
-      name,
-      description,
-      status: 'DRAFT',
-      systemId,
-      environmentId,
-      creatorId: dummyIdentity.id,
+      name, status: 'DRAFT', systemId, environmentId, creatorId: identity.id,
       stages: JSON.stringify([]),
       nodes: JSON.stringify([
         { id: '1', type: 'start', position: { x: 250, y: 50 }, data: { label: 'Start' } },
-        { id: '2', type: 'end', position: { x: 250, y: 300 }, data: { label: 'End' } }
+        { id: '2', type: 'end', position: { x: 250, y: 300 }, data: { label: 'End' } },
       ]),
-      edges: JSON.stringify([])
+      edges: JSON.stringify([]),
     }
   });
-  
   redirect(`/workflows/${workflow.id}/edit`);
 }
 
-async function getWorkflowData() {
-  const [workflows, systems, environments] = await Promise.all([
-    prisma.workflow.findMany({
-      include: { system: true, environment: true },
-      orderBy: { createdAt: 'desc' }
-    }),
-    prisma.system.findMany({
-      include: { environment: true },
-      orderBy: { name: 'asc' }
-    }),
-    prisma.environment.findMany({
-      orderBy: { name: 'asc' }
-    })
-  ]);
-  return { workflows, systems, environments };
-}
-
 export default async function WorkflowsPage() {
-  const { workflows, systems, environments } = await getWorkflowData();
-  
+  const [workflows, systems, environments] = await Promise.all([
+    prisma.workflow.findMany({ include: { system: true, environment: true }, orderBy: { createdAt: 'desc' } }),
+    prisma.system.findMany({ include: { environment: true }, orderBy: { name: 'asc' } }),
+    prisma.environment.findMany({ orderBy: { name: 'asc' } }),
+  ]);
+
+  const STATUS_COLOR: Record<string, string> = {
+    ACTIVE: '#15AD70',
+    DRAFT: 'rgba(255,255,255,0.3)',
+    PAUSED: '#F7C700',
+    COMPLETED: '#7193ED',
+    ARCHIVED: 'rgba(255,255,255,0.15)',
+  };
+
   return (
-    <div className="min-h-screen bg-[#121213] text-white">
-      <Navigation />
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-extralight mb-3 tracking-tight">Workflows</h1>
-          <p className="text-white/50 font-light">Visual node-based process automation</p>
+    <div className="px-10 py-10 min-h-screen">
+      <div className="flex items-start justify-between mb-10">
+        <div>
+          <h1 className="text-2xl font-extralight tracking-tight mb-1">Workflows</h1>
+          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Execution logic within systems</p>
         </div>
 
-        {systems.length === 0 ? (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-            <h3 className="text-xl font-light text-white/60 mb-2">Create a system first</h3>
-            <p className="text-white/40 font-light mb-6">Workflows operate within systems</p>
-            <Link href="/systems" className="inline-block bg-gradient-to-r from-[#7193ED] to-[#BF9FF1] text-white px-6 py-3 rounded-lg font-light hover:opacity-90 transition-opacity">
-              Go to Systems
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="mb-12 bg-white/5 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-xl font-light mb-6">Create New Workflow</h2>
-              <form action={createWorkflow} className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm text-white/60 mb-2 font-light">Workflow Name *</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    required
-                    placeholder="e.g., Client Onboarding, Content Approval, Campaign Launch"
-                    className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#BF9FF1] focus:ring-1 focus:ring-[#BF9FF1] transition-all"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="description" className="block text-sm text-white/60 mb-2 font-light">Description (optional)</label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    rows={2}
-                    placeholder="What does this workflow do?"
-                    className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#BF9FF1] focus:ring-1 focus:ring-[#BF9FF1] transition-all resize-none"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="systemId" className="block text-sm text-white/60 mb-2 font-light">System *</label>
-                    <select
-                      id="systemId"
-                      name="systemId"
-                      required
-                      className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#BF9FF1] focus:ring-1 focus:ring-[#BF9FF1] transition-all"
-                    >
-                      {systems.map((system) => (
-                        <option key={system.id} value={system.id}>{system.name} ({system.environment.name})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="environmentId" className="block text-sm text-white/60 mb-2 font-light">Environment *</label>
-                    <select
-                      id="environmentId"
-                      name="environmentId"
-                      required
-                      className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#BF9FF1] focus:ring-1 focus:ring-[#BF9FF1] transition-all"
-                    >
-                      {environments.map((env) => (
-                        <option key={env.id} value={env.id}>{env.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  className="bg-gradient-to-r from-[#BF9FF1] to-[#7193ED] text-white px-6 py-3 rounded-lg font-light hover:opacity-90 transition-opacity"
-                >
-                  Create Workflow →
-                </button>
-              </form>
-            </div>
-
-            {workflows.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-light mb-6">Your Workflows</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {workflows.map((workflow) => (
-                    <Link
-                      key={workflow.id}
-                      href={`/workflows/${workflow.id}/edit`}
-                      className="group relative bg-gradient-to-br from-[#BF9FF1]/10 to-transparent border border-[#BF9FF1]/20 rounded-2xl p-6 hover:border-[#BF9FF1]/40 transition-all duration-300"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#BF9FF1]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
-                      <div className="relative">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="w-12 h-12 bg-[#BF9FF1]/20 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-[#BF9FF1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                          </div>
-                          <span className={`text-xs px-3 py-1 rounded-full ${
-                            workflow.status === 'ACTIVE' ? 'bg-[#15AD70]/20 text-[#15AD70]' :
-                            workflow.status === 'DRAFT' ? 'bg-white/10 text-white/60' :
-                            'bg-white/10 text-white/40'
-                          }`}>
-                            {workflow.status}
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-light mb-2">{workflow.name}</h3>
-                        {workflow.description && <p className="text-white/50 text-sm font-light mb-4">{workflow.description}</p>}
-                        <div className="flex items-center gap-2 text-xs text-white/40">
-                          <span className="font-light">{workflow.system.name}</span>
-                          <span>·</span>
-                          <span className="font-light">{workflow.environment.name}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+        {systems.length > 0 && (
+          <form action={createWorkflow} className="flex items-center gap-2">
+            <input name="name" required placeholder="Workflow name"
+              className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white', width: '180px' }} />
+            <select name="systemId" required
+              className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.6)', width: '160px' }}>
+              {systems.map(s => (
+                <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>
+              ))}
+            </select>
+            <select name="environmentId" required
+              className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.6)', width: '140px' }}>
+              {environments.map(e => (
+                <option key={e.id} value={e.id} style={{ background: '#111' }}>{e.name}</option>
+              ))}
+            </select>
+            <button type="submit" className="text-xs font-light px-3 py-2 rounded-lg transition-all"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
+              Create
+            </button>
+          </form>
         )}
-      </main>
+      </div>
+
+      {systems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No systems yet</p>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Workflows operate within systems</p>
+          <Link href="/systems" className="text-xs font-light px-4 py-2 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+            Create system →
+          </Link>
+        </div>
+      ) : workflows.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No workflows yet</p>
+          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Create one above to get started</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          {workflows.map(w => (
+            <Link key={w.id} href={`/workflows/${w.id}/edit`}
+              className="group flex flex-col justify-between p-5 rounded-xl transition-all"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <div>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: STATUS_COLOR[w.status] ?? 'rgba(255,255,255,0.2)' }} />
+                  <span className="text-xs font-light" style={{ color: STATUS_COLOR[w.status] ?? 'rgba(255,255,255,0.3)' }}>
+                    {w.status.toLowerCase()}
+                  </span>
+                </div>
+                <p className="text-sm font-light mb-1 group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  {w.name}
+                </p>
+                {w.description && <p className="text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{w.description}</p>}
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{w.system.name}</p>
+                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{w.environment.name}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,72 +1,45 @@
-import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#121213] text-white">
-      <Navigation />
-
-      <main className="max-w-7xl mx-auto px-6 py-20">
-        <div className="text-center mb-20">
-          <h1 className="text-6xl font-extralight mb-6 tracking-tight">
-            Adaptive Organizational
-            <br />
-            <span className="bg-gradient-to-r from-[#15AD70] via-[#68D0CA] to-[#7193ED] bg-clip-text text-transparent">
-              Infrastructure
-            </span>
-          </h1>
-          <p className="text-xl text-white/60 font-light max-w-2xl mx-auto mb-8">
-            The operating system for AI-augmented teams. Structure how identity, operations, and intelligence interact in a single adaptive environment.
-          </p>
-          <Link 
-            href="/environments"
-            className="inline-block bg-gradient-to-r from-[#15AD70] to-[#68D0CA] text-white px-8 py-3 rounded-lg font-light hover:opacity-90 transition-opacity"
+    <div className="min-h-screen flex flex-col justify-center px-12 py-16">
+      <div className="max-w-lg">
+        <p className="text-xs tracking-[0.2em] mb-8" style={{ color: 'var(--text-tertiary)' }}>
+          ADAPTIVE ORGANIZATIONAL INFRASTRUCTURE
+        </p>
+        <h1 className="text-5xl font-extralight tracking-tight mb-6 leading-tight">
+          The operating system<br />for AI-augmented teams.
+        </h1>
+        <p className="text-sm mb-10 leading-relaxed" style={{ color: 'var(--text-secondary)', fontWeight: 300 }}>
+          Structure how identity, operations, and intelligence interact in a single adaptive environment.
+        </p>
+        <div className="flex items-center gap-6">
+          <Link
+            href="/dashboard"
+            className="px-5 py-2.5 text-sm font-light tracking-wide transition-all rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
           >
-            Get Started
+            Open Dashboard
+          </Link>
+          <Link href="/environments" className="text-sm font-light transition-colors" style={{ color: 'var(--text-secondary)' }}>
+            View Environments →
           </Link>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Link href="/environments" className="group relative bg-gradient-to-br from-[#68D0CA]/10 to-transparent border border-[#68D0CA]/20 rounded-2xl p-8 hover:border-[#68D0CA]/40 transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#68D0CA]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
-            <div className="relative">
-              <div className="w-12 h-12 bg-[#68D0CA]/20 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-[#68D0CA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-light mb-2">Environment</h3>
-              <p className="text-white/50 text-sm font-light">Organizational containers. Workspaces where systems operate.</p>
-            </div>
+      <div className="grid grid-cols-3 mt-20 max-w-lg" style={{ border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
+        {[
+          { label: 'Environment', desc: 'Organizational containers', href: '/environments' },
+          { label: 'System', desc: 'Structured functions', href: '/systems' },
+          { label: 'Workflow', desc: 'Executable processes', href: '/workflows' },
+        ].map((item, i) => (
+          <Link key={i} href={item.href} className="px-5 py-4 transition-colors group"
+            style={{ background: 'var(--surface)', borderRight: i < 2 ? '1px solid var(--border)' : 'none' }}>
+            <p className="text-sm font-light mb-0.5 group-hover:text-white/90 transition-colors">{item.label}</p>
+            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{item.desc}</p>
           </Link>
-
-          <Link href="/systems" className="group relative bg-gradient-to-br from-[#7193ED]/10 to-transparent border border-[#7193ED]/20 rounded-2xl p-8 hover:border-[#7193ED]/40 transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#7193ED]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
-            <div className="relative">
-              <div className="w-12 h-12 bg-[#7193ED]/20 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-[#7193ED]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-light mb-2">System</h3>
-              <p className="text-white/50 text-sm font-light">Structured organizational functions. Brand, marketing, product, operations.</p>
-            </div>
-          </Link>
-
-          <div className="group relative bg-gradient-to-br from-[#BF9FF1]/10 to-transparent border border-[#BF9FF1]/20 rounded-2xl p-8 hover:border-[#BF9FF1]/40 transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#BF9FF1]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
-            <div className="relative">
-              <div className="w-12 h-12 bg-[#BF9FF1]/20 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-[#BF9FF1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-light mb-2">Workflow</h3>
-              <p className="text-white/50 text-sm font-light">Movement within systems. Visual node-based execution paths.</p>
-            </div>
-          </div>
-        </div>
-      </main>
+        ))}
+      </div>
     </div>
   );
 }
