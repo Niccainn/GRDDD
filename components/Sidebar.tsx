@@ -60,11 +60,17 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-5" style={{ borderBottom: '1px solid var(--border)' }}>
         <Link href="/" className="flex items-center gap-3 group">
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" className="flex-shrink-0">
-            <rect x="1" y="1" width="24" height="24" rx="4" stroke="white" strokeWidth="0.75" strokeOpacity="0.9"/>
-            <line x1="9" y1="1" x2="9" y2="25" stroke="white" strokeWidth="0.75" strokeOpacity="0.9"/>
-            <line x1="17" y1="1" x2="17" y2="25" stroke="white" strokeWidth="0.75" strokeOpacity="0.9"/>
-            <path d="M17 5.5C17 5.5 21 5.5 21 13C21 20.5 17 20.5 17 20.5" stroke="white" strokeWidth="0.75" strokeOpacity="0.9" fill="none"/>
+          {/*
+            Logo geometry:
+            - Portrait rounded rectangle (viewBox 0 0 79 100)
+            - Two vertical dividers at x=27 and x=52
+            - Each divider curves RIGHT at the bottom (quarter-circle r=8)
+              connecting to the outer rect's bottom edge
+          */}
+          <svg width="22" height="28" viewBox="0 0 79 100" fill="none" className="flex-shrink-0">
+            <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2" strokeOpacity="0.9"/>
+            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2" strokeOpacity="0.9"/>
+            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2" strokeOpacity="0.9"/>
           </svg>
           <span className="text-sm font-light tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.85)' }}>
             GRID

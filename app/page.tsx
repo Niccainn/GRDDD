@@ -4,6 +4,11 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col justify-center px-12 py-16">
       <div className="max-w-lg">
+        <svg width="36" height="46" viewBox="0 0 79 100" fill="none" className="mb-8">
+          <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2" strokeOpacity="0.7"/>
+          <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2" strokeOpacity="0.7"/>
+          <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2" strokeOpacity="0.7"/>
+        </svg>
         <p className="text-xs tracking-[0.2em] mb-8" style={{ color: 'var(--text-tertiary)' }}>
           ADAPTIVE ORGANIZATIONAL INFRASTRUCTURE
         </p>
