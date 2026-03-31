@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import Link from 'next/link';
+import NovaBar from '@/components/NovaBar';
 
 async function createWorkflow(formData: FormData) {
   'use server';
@@ -45,15 +46,34 @@ async function getSystem(id: string) {
   });
 }
 
+async function getNovaLogs(systemId: string) {
+  const logs = await prisma.intelligenceLog.findMany({
+    where: {
+      action: 'nova_query',
+      intelligence: { systemId },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+  });
+
+  return logs.map((log) => ({
+    id: log.id,
+    input: log.input ? JSON.parse(log.input).query ?? '' : '',
+    output: log.output ? JSON.parse(log.output).response ?? '' : '',
+    createdAt: log.createdAt.toISOString(),
+    tokens: log.tokens,
+  }));
+}
+
 export default async function SystemDetailPage({
   params
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params;
-  const system = await getSystem(id);
+  const [system, novaLogs] = await Promise.all([getSystem(id), getNovaLogs(id)]);
   const boundCreateWorkflow = createWorkflow.bind(null);
-  
+
   if (!system) notFound();
   
   const healthColor = system.healthScore 
@@ -99,6 +119,11 @@ export default async function SystemDetailPage({
               </p>
             </div>
           )}
+        </div>
+
+        {/* Nova Command Bar */}
+        <div className="mb-10 bg-gradient-to-br from-[#BF9FF1]/10 to-[#7193ED]/5 border border-[#BF9FF1]/20 rounded-2xl p-6">
+          <NovaBar systemId={system.id} systemName={system.name} recentLogs={novaLogs} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

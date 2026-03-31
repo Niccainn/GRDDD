@@ -122,9 +122,55 @@ model System {
   workflows        Workflow[]
   intelligence     Intelligence[]
   intelligenceLogs IntelligenceLog[]
+  executions       Execution[]
+  systemState      SystemState?
 
   @@index([environmentId])
   @@index([creatorId])
+}
+
+model Execution {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  status String // "RUNNING" | "COMPLETED" | "FAILED"
+  input  String
+  output String?
+
+  systemId   String
+  system     System    @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  workflowId String?
+  workflow   Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+
+  validationResult ValidationResult?
+
+  @@index([systemId])
+  @@index([status])
+}
+
+model ValidationResult {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  score           Float   // 0-1 alignment score
+  issues          String? // JSON array of issue strings
+  correctedOutput String?
+
+  executionId String    @unique
+  execution   Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+}
+
+model SystemState {
+  id            String   @id @default(cuid())
+  updatedAt     DateTime @updatedAt
+
+  healthScore     Float?
+  activeWorkflows Int      @default(0)
+  lastActivity    DateTime?
+
+  systemId String @unique
+  system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
 }
 
 // ===============================================
@@ -159,6 +205,7 @@ model Workflow {
   creator   Identity @relation("WorkflowCreator", fields: [creatorId], references: [id])
 
   intelligenceLogs IntelligenceLog[]
+  executions       Execution[]
 
   @@index([systemId])
   @@index([environmentId])
@@ -234,4 +281,3 @@ model IntelligenceLog {
   @@index([createdAt])
   @@index([success])
 }
-\
