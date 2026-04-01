@@ -4,6 +4,7 @@ import Link from 'next/link';
 import NovaBar from '@/components/NovaBar';
 import InlineEdit from '@/components/InlineEdit';
 import DeleteButton from '@/components/DeleteButton';
+import SystemExecutionChart from '@/components/SystemExecutionChart';
 
 async function createWorkflow(formData: FormData) {
   'use server';
@@ -156,15 +157,14 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
           )}
         </div>
 
-        {/* Meta */}
-        <div className="space-y-4">
+        {/* Meta + Execution chart */}
+        <div className="space-y-6">
           <div>
             <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>DETAILS</p>
             <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               {[
                 { label: 'Workflows', value: system.workflows.length },
                 { label: 'Active', value: system.workflows.filter(w => w.status === 'ACTIVE').length },
-                { label: 'Executions', value: system._count.executions },
                 { label: 'Created by', value: system.creator.name },
                 { label: 'Created', value: new Date(system.createdAt).toLocaleDateString() },
               ].map(({ label, value }) => (
@@ -186,6 +186,9 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
               )}
             </div>
           </div>
+
+          {/* Execution analytics */}
+          <SystemExecutionChart systemId={system.id} />
         </div>
       </div>
     </div>

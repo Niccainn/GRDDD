@@ -46,6 +46,15 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    href: '/nova',
+    label: 'Nova',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {
@@ -82,36 +91,51 @@ export default function Sidebar() {
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const active = isActive(item.href);
+          const isNova = item.href === '/nova';
           return (
             <Link
               key={item.href}
               href={item.href}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-100"
               style={{
-                color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)',
-                background: active ? 'rgba(255,255,255,0.05)' : 'transparent',
+                color: active
+                  ? isNova ? '#BF9FF1' : 'rgba(255,255,255,0.9)'
+                  : isNova ? 'rgba(191,159,241,0.45)' : 'rgba(255,255,255,0.35)',
+                background: active
+                  ? isNova ? 'rgba(191,159,241,0.08)' : 'rgba(255,255,255,0.05)'
+                  : 'transparent',
               }}
             >
-              <span style={{ opacity: active ? 0.9 : 0.5 }}>{item.icon}</span>
+              <span style={{ opacity: active ? 1 : 0.6 }}>{item.icon}</span>
               <span className="font-light tracking-wide text-sm">{item.label}</span>
-              {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.3)' }} />}
+              {active && (
+                <div className="ml-auto w-1 h-1 rounded-full"
+                  style={{ background: isNova ? 'rgba(191,159,241,0.5)' : 'rgba(255,255,255,0.3)' }} />
+              )}
             </Link>
           );
         })}
       </nav>
 
-      {/* User */}
+      {/* User + Settings */}
       <div className="px-4 py-4" style={{ borderTop: '1px solid var(--border)' }}>
-        <div className="flex items-center gap-3">
+        <Link href="/settings"
+          className="flex items-center gap-3 group w-full"
+          style={{ textDecoration: 'none' }}>
           <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-light flex-shrink-0"
             style={{ background: 'rgba(21,173,112,0.12)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.18)' }}>
             D
           </div>
-          <div className="min-w-0">
-            <p className="text-xs font-light truncate" style={{ color: 'rgba(255,255,255,0.55)' }}>Demo User</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-light truncate group-hover:text-white/70 transition-colors" style={{ color: 'rgba(255,255,255,0.55)' }}>Demo User</p>
             <p className="text-xs truncate" style={{ color: 'var(--text-tertiary)' }}>demo@grid.app</p>
           </div>
-        </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+            className="flex-shrink-0 opacity-0 group-hover:opacity-40 transition-opacity">
+            <circle cx="12" cy="12" r="3"/>
+            <path strokeLinecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+        </Link>
       </div>
     </aside>
   );
