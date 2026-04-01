@@ -2,6 +2,8 @@ import { prisma } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import NovaBar from '@/components/NovaBar';
+import InlineEdit from '@/components/InlineEdit';
+import DeleteButton from '@/components/DeleteButton';
 
 async function createWorkflow(formData: FormData) {
   'use server';
@@ -13,33 +15,33 @@ async function createWorkflow(formData: FormData) {
     data: {
       name: 'New Workflow', status: 'DRAFT', systemId, environmentId, creatorId: identity.id,
       stages: JSON.stringify([]),
-      nodes: JSON.stringify([
-        { id: '1', type: 'start', position: { x: 250, y: 50 }, data: { label: 'Start' } },
-        { id: '2', type: 'end', position: { x: 250, y: 300 }, data: { label: 'End' } },
-      ]),
-      edges: JSON.stringify([]),
     }
   });
-  redirect(`/workflows/${workflow.id}/edit`);
+  redirect(`/workflows/${workflow.id}`);
 }
 
 async function getSystem(id: string) {
   return prisma.system.findUnique({
     where: { id },
-    include: { environment: true, creator: true, workflows: { orderBy: { createdAt: 'desc' } } }
+    include: {
+      environment: true,
+      creator: true,
+      workflows: { orderBy: { updatedAt: 'desc' } },
+      _count: { select: { executions: true } },
+    },
   });
 }
 
 async function getNovaLogs(systemId: string) {
   const logs = await prisma.intelligenceLog.findMany({
-    where: { action: 'nova_query', intelligence: { systemId } },
+    where: { systemId, action: 'nova_query' },
     orderBy: { createdAt: 'desc' },
     take: 10,
   });
   return logs.map(log => ({
     id: log.id,
-    input: log.input ? JSON.parse(log.input).query ?? '' : '',
-    output: log.output ? JSON.parse(log.output).response ?? '' : '',
+    input: log.input ? (() => { try { return JSON.parse(log.input!).query ?? ''; } catch { return log.input ?? ''; } })() : '',
+    output: log.output ? (() => { try { return JSON.parse(log.output!).response ?? ''; } catch { return log.output ?? ''; } })() : '',
     createdAt: log.createdAt.toISOString(),
     tokens: log.tokens,
   }));
@@ -53,7 +55,6 @@ const STATUS_COLOR: Record<string, string> = {
 export default async function SystemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [system, novaLogs] = await Promise.all([getSystem(id), getNovaLogs(id)]);
-  const boundCreateWorkflow = createWorkflow.bind(null);
   if (!system) notFound();
 
   const healthColor = system.healthScore
@@ -73,9 +74,9 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
 
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 flex-1 min-w-0">
           {system.color && <div className="w-2 h-2 rounded-full mt-2.5 flex-shrink-0" style={{ backgroundColor: system.color }} />}
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-extralight tracking-tight mb-1">{system.name}</h1>
             {system.description && (
               <p className="text-sm font-light" style={{ color: 'var(--text-secondary)' }}>{system.description}</p>
@@ -87,6 +88,15 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
                 {system.environment.name}
               </Link>
             </p>
+            <div className="flex items-center gap-4 mt-4">
+              <InlineEdit
+                id={system.id}
+                type="systems"
+                initialName={system.name}
+                initialDescription={system.description}
+              />
+              <DeleteButton id={system.id} type="systems" redirectTo="/systems" />
+            </div>
           </div>
         </div>
         {system.healthScore !== null && (
@@ -108,8 +118,10 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
         {/* Workflows */}
         <div className="col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>WORKFLOWS</p>
-            <form action={boundCreateWorkflow}>
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>
+              WORKFLOWS <span style={{ color: 'var(--text-tertiary)', fontWeight: 300 }}>({system.workflows.length})</span>
+            </p>
+            <form action={createWorkflow}>
               <input type="hidden" name="systemId" value={system.id} />
               <input type="hidden" name="environmentId" value={system.environmentId} />
               <button type="submit" className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
@@ -126,7 +138,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
           ) : (
             <div className="space-y-2">
               {system.workflows.map(w => (
-                <Link key={w.id} href={`/workflows/${w.id}/edit`}
+                <Link key={w.id} href={`/workflows/${w.id}`}
                   className="flex items-center justify-between px-4 py-3 rounded-lg group transition-all"
                   style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center gap-3">
@@ -152,6 +164,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
               {[
                 { label: 'Workflows', value: system.workflows.length },
                 { label: 'Active', value: system.workflows.filter(w => w.status === 'ACTIVE').length },
+                { label: 'Executions', value: system._count.executions },
                 { label: 'Created by', value: system.creator.name },
                 { label: 'Created', value: new Date(system.createdAt).toLocaleDateString() },
               ].map(({ label, value }) => (

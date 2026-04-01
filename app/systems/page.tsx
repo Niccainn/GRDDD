@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import DeleteButton from '@/components/DeleteButton';
 
 const TEMPLATES = [
   { name: 'Brand System', description: 'Visual identity, messaging, brand guidelines', color: '#15AD70' },
@@ -19,16 +20,16 @@ async function createSystem(formData: FormData) {
   if (!name || !environmentId) return;
   let identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   if (!identity) identity = await prisma.identity.create({ data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' } });
-  await prisma.system.create({
+  const system = await prisma.system.create({
     data: { name, description, color, environmentId, creatorId: identity.id, healthScore: Math.random() * 0.3 + 0.7 }
   });
-  redirect('/systems');
+  redirect(`/systems/${system.id}`);
 }
 
 export default async function SystemsPage() {
   const [environments, systems] = await Promise.all([
     prisma.environment.findMany({ orderBy: { createdAt: 'desc' } }),
-    prisma.system.findMany({ include: { environment: true }, orderBy: { createdAt: 'desc' } }),
+    prisma.system.findMany({ include: { environment: true, _count: { select: { workflows: true } } }, orderBy: { createdAt: 'desc' } }),
   ]);
 
   return (
@@ -78,10 +79,9 @@ export default async function SystemsPage() {
               <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>YOUR SYSTEMS</p>
               <div className="grid grid-cols-3 gap-3">
                 {systems.map(s => (
-                  <Link key={s.id} href={`/systems/${s.id}`}
-                    className="group flex flex-col justify-between p-5 rounded-xl transition-all"
+                  <div key={s.id} className="group flex flex-col rounded-xl transition-all"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <div>
+                    <Link href={`/systems/${s.id}`} className="flex flex-col p-5 flex-1">
                       <div className="flex items-start justify-between mb-3">
                         {s.color && <div className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: s.color }} />}
                         {s.healthScore !== null && (
@@ -94,9 +94,15 @@ export default async function SystemsPage() {
                         {s.name}
                       </p>
                       {s.description && <p className="text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{s.description}</p>}
+                    </Link>
+                    <div className="flex items-center justify-between px-5 pb-4">
+                      <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{s.environment.name}</p>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{s._count.workflows} workflows</span>
+                        <DeleteButton id={s.id} type="systems" />
+                      </div>
                     </div>
-                    <p className="text-xs mt-4" style={{ color: 'var(--text-tertiary)' }}>{s.environment.name}</p>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>

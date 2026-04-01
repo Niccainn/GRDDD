@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import DeleteButton from '@/components/DeleteButton';
 
 async function createEnvironment(formData: FormData) {
   'use server';
@@ -30,7 +31,6 @@ export default async function EnvironmentsPage() {
           <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Organisational containers where systems operate</p>
         </div>
 
-        {/* Inline create */}
         <form action={createEnvironment} className="flex items-center gap-2">
           <input
             name="name"
@@ -56,10 +56,9 @@ export default async function EnvironmentsPage() {
       ) : (
         <div className="grid grid-cols-3 gap-3">
           {environments.map((env) => (
-            <Link key={env.id} href={`/environments/${env.slug}`}
-              className="group flex flex-col justify-between p-5 rounded-xl transition-all"
+            <div key={env.id} className="group flex flex-col rounded-xl transition-all"
               style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <div>
+              <Link href={`/environments/${env.slug}`} className="flex flex-col p-5 flex-1">
                 <div className="flex items-start justify-between mb-4">
                   <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
                     {env.name}
@@ -69,16 +68,19 @@ export default async function EnvironmentsPage() {
                   </svg>
                 </div>
                 {env.description && (
-                  <p className="text-xs font-light leading-relaxed mb-4" style={{ color: 'var(--text-tertiary)' }}>
+                  <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
                     {env.description}
                   </p>
                 )}
-              </div>
-              <div className="flex items-center justify-between">
+              </Link>
+              <div className="flex items-center justify-between px-5 pb-4">
                 <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>/{env.slug}</span>
-                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{env.systems.length} system{env.systems.length !== 1 ? 's' : ''}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{env.systems.length} system{env.systems.length !== 1 ? 's' : ''}</span>
+                  <DeleteButton id={env.id} type="environments" />
+                </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}
