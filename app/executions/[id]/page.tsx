@@ -1,0 +1,338 @@
+'use client';
+
+import { useEffect, useState, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+type StageOutput = { stage: string; output: string };
+
+type ExecutionData = {
+  id: string;
+  status: string;
+  input: string;
+  output: string | null;
+  currentStage: number | null;
+  createdAt: string;
+  completedAt: string | null;
+  system: { id: string; name: string; environmentName: string };
+  workflow: { id: string; name: string; stages: string[] } | null;
+};
+
+function MD({ text }: { text: string }) {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith('## ')) {
+      elements.push(<p key={i} className="text-xs font-medium mt-4 mb-1.5" style={{ color: 'rgba(255,255,255,0.65)' }}>{line.slice(3)}</p>);
+    } else if (line.startsWith('# ')) {
+      elements.push(<p key={i} className="text-sm font-light mt-4 mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>{line.slice(2)}</p>);
+    } else if (line.startsWith('- ') || line.startsWith('• ')) {
+      elements.push(
+        <div key={i} className="flex gap-2 my-0.5 ml-1">
+          <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
+          <span>{renderInline(line.slice(2))}</span>
+        </div>
+      );
+    } else if (line.trim() === '') {
+      elements.push(<div key={i} className="h-2" />);
+    } else {
+      elements.push(<p key={i} className="my-0.5 leading-relaxed">{renderInline(line)}</p>);
+    }
+    i++;
+  }
+  return <div className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.7)' }}>{elements}</div>;
+}
+
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**'))
+      return <strong key={i} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith('`') && part.endsWith('`'))
+      return <code key={i} className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.08)', color: '#68D0CA', fontFamily: 'monospace' }}>{part.slice(1, -1)}</code>;
+    return part;
+  });
+}
+
+export default function ExecutionDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const [execution, setExecution] = useState<ExecutionData | null>(null);
+  const [stageOutputs, setStageOutputs] = useState<StageOutput[]>([]);
+  const [streamingStage, setStreamingStage] = useState<{ index: number; stage: string; text: string } | null>(null);
+  const [running, setRunning] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [tokens, setTokens] = useState<number | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch(`/api/executions/${id}`)
+      .then(r => r.json())
+      .then(data => {
+        setExecution(data);
+        // Parse existing output if completed
+        if (data.output) {
+          try {
+            const parsed = JSON.parse(data.output);
+            if (Array.isArray(parsed)) setStageOutputs(parsed);
+          } catch { /* plain text output */ }
+        }
+        setLoaded(true);
+      });
+  }, [id]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [stageOutputs, streamingStage]);
+
+  async function runWithNova() {
+    if (!execution || running) return;
+    setRunning(true);
+    setStageOutputs([]);
+    setStreamingStage(null);
+
+    const res = await fetch('/api/nova/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        executionId: execution.id,
+        workflowId: execution.workflow?.id ?? null,
+        systemId: execution.system.id,
+        input: execution.input,
+        stages: execution.workflow?.stages ?? [],
+      }),
+    });
+
+    if (!res.ok) { setRunning(false); return; }
+
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const event = JSON.parse(line.slice(6));
+          if (event.type === 'stage_start') {
+            setStreamingStage({ index: event.index, stage: event.stage, text: '' });
+          } else if (event.type === 'stage_text') {
+            setStreamingStage(prev => prev ? { ...prev, text: prev.text + event.text } : null);
+          } else if (event.type === 'stage_done') {
+            setStageOutputs(prev => [...prev, { stage: event.stage ?? streamingStage?.stage ?? '', output: event.output }]);
+            setStreamingStage(null);
+          } else if (event.type === 'done') {
+            setTokens(event.tokens);
+            setExecution(prev => prev ? { ...prev, status: 'COMPLETED' } : null);
+          } else if (event.type === 'error') {
+            console.error(event.message);
+          }
+        } catch { /* skip */ }
+      }
+    }
+
+    setRunning(false);
+  }
+
+  function timeAgo(iso: string) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  }
+
+  const stages = execution?.workflow?.stages ?? [];
+  const hasNovaOutput = stageOutputs.length > 0;
+  const canRunNova = loaded && execution && !running && !!process.env.NEXT_PUBLIC_HAS_API_KEY !== false;
+
+  return (
+    <div className="px-10 py-10 min-h-screen max-w-4xl">
+      {/* Back */}
+      <div className="flex items-center gap-2 mb-8">
+        <button onClick={() => router.back()}
+          className="text-xs font-light inline-flex items-center gap-1.5 transition-colors"
+          style={{ color: 'var(--text-tertiary)' }}>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back
+        </button>
+        {execution?.workflow && (
+          <>
+            <span style={{ color: 'var(--text-tertiary)' }}>·</span>
+            <Link href={`/workflows/${execution.workflow.id}`}
+              className="text-xs font-light transition-colors"
+              style={{ color: 'var(--text-tertiary)' }}>
+              {execution.workflow.name}
+            </Link>
+          </>
+        )}
+      </div>
+
+      {!loaded ? (
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+          ))}
+        </div>
+      ) : !execution ? (
+        <div className="flex flex-col items-center py-24"><p style={{ color: 'var(--text-tertiary)' }}>Execution not found</p></div>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: execution.status === 'COMPLETED' ? '#15AD70' : execution.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
+                <span className="text-xs font-light" style={{ color: execution.status === 'COMPLETED' ? '#15AD70' : execution.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }}>
+                  {execution.status.toLowerCase()}
+                </span>
+                <span style={{ color: 'var(--text-tertiary)' }}>·</span>
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{timeAgo(execution.createdAt)}</span>
+                {tokens && <span className="text-xs" style={{ color: 'rgba(255,255,255,0.15)' }}>{tokens.toLocaleString()} tokens</span>}
+              </div>
+              <Link href={`/systems/${execution.system.id}`}
+                className="text-xs font-light transition-colors"
+                style={{ color: 'var(--text-tertiary)' }}>
+                {execution.system.name} · {execution.system.environmentName}
+              </Link>
+            </div>
+            {!hasNovaOutput && !running && (
+              <button onClick={runWithNova}
+                className="flex items-center gap-2 text-xs font-light px-4 py-2 rounded-lg transition-all"
+                style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.25)', color: '#BF9FF1' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Process with Nova
+              </button>
+            )}
+          </div>
+
+          {/* Input */}
+          <div className="mb-6 p-5 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-tertiary)' }}>INPUT</p>
+            <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{execution.input}</p>
+          </div>
+
+          {/* Stage pipeline (if workflow has stages) */}
+          {stages.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center gap-0 overflow-x-auto pb-2">
+                {stages.map((stage, idx) => {
+                  const isDone = stageOutputs.some(s => s.stage === stage) || (execution.status === 'COMPLETED' && (execution.currentStage ?? 0) > idx);
+                  const isActive = streamingStage?.stage === stage;
+                  const stageColor = isDone ? '#15AD70' : isActive ? '#BF9FF1' : 'rgba(255,255,255,0.2)';
+                  return (
+                    <div key={idx} className="flex items-center">
+                      <div className="flex flex-col items-center px-3 py-2.5 rounded-lg min-w-[90px] text-center transition-all"
+                        style={{
+                          background: isActive ? 'rgba(191,159,241,0.06)' : isDone ? 'rgba(21,173,112,0.06)' : 'var(--surface)',
+                          border: `1px solid ${isActive ? 'rgba(191,159,241,0.25)' : isDone ? 'rgba(21,173,112,0.2)' : 'var(--border)'}`,
+                        }}>
+                        <span className="text-xs mb-1 tabular-nums" style={{ color: stageColor }}>
+                          {isDone ? '✓' : isActive ? '···' : String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-xs font-light leading-tight" style={{ color: isActive ? '#BF9FF1' : isDone ? '#15AD70' : 'rgba(255,255,255,0.6)' }}>
+                          {stage}
+                        </span>
+                      </div>
+                      {idx < stages.length - 1 && (
+                        <div className="w-5 h-px flex-shrink-0"
+                          style={{ background: isDone ? 'rgba(21,173,112,0.35)' : 'rgba(255,255,255,0.08)' }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Nova output */}
+          {(hasNovaOutput || streamingStage) && (
+            <div className="space-y-4">
+              <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>
+                NOVA OUTPUT {running && <span className="ml-2 animate-pulse">processing···</span>}
+              </p>
+
+              {stageOutputs.map((s, i) => (
+                <div key={i} className="rounded-xl overflow-hidden"
+                  style={{ border: '1px solid rgba(21,173,112,0.15)' }}>
+                  <div className="flex items-center gap-2 px-4 py-2.5"
+                    style={{ background: 'rgba(21,173,112,0.05)', borderBottom: '1px solid rgba(21,173,112,0.1)' }}>
+                    <span style={{ color: '#15AD70', fontSize: '11px' }}>✓</span>
+                    <span className="text-xs font-light" style={{ color: '#15AD70' }}>{s.stage}</span>
+                  </div>
+                  <div className="px-5 py-4" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                    <MD text={s.output} />
+                  </div>
+                </div>
+              ))}
+
+              {streamingStage && (
+                <div className="rounded-xl overflow-hidden"
+                  style={{ border: '1px solid rgba(191,159,241,0.2)' }}>
+                  <div className="flex items-center gap-2 px-4 py-2.5"
+                    style={{ background: 'rgba(191,159,241,0.06)', borderBottom: '1px solid rgba(191,159,241,0.1)' }}>
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#BF9FF1' }} />
+                    <span className="text-xs font-light" style={{ color: '#BF9FF1' }}>{streamingStage.stage}</span>
+                  </div>
+                  <div className="px-5 py-4" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                    <MD text={streamingStage.text} />
+                    <span className="inline-block w-1.5 h-3.5 ml-0.5 animate-pulse rounded-sm"
+                      style={{ background: '#BF9FF1', verticalAlign: 'middle' }} />
+                  </div>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+          )}
+
+          {/* Plain output (non-Nova, non-structured) */}
+          {!hasNovaOutput && !streamingStage && execution.output && (
+            <div className="p-5 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-tertiary)' }}>OUTPUT</p>
+              <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{execution.output}</p>
+            </div>
+          )}
+
+          {/* Empty — prompt to run */}
+          {!hasNovaOutput && !streamingStage && !execution.output && !running && (
+            <div className="flex flex-col items-center py-16 rounded-xl"
+              style={{ border: '1px dashed rgba(191,159,241,0.2)' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                style={{ background: 'rgba(191,159,241,0.08)', border: '1px solid rgba(191,159,241,0.15)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BF9FF1" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>No output yet</p>
+              <p className="text-xs mb-5" style={{ color: 'var(--text-tertiary)' }}>
+                Let Nova process this {stages.length > 0 ? `${stages.length}-stage workflow` : 'request'}
+              </p>
+              <button onClick={runWithNova}
+                className="flex items-center gap-2 text-xs font-light px-5 py-2.5 rounded-lg transition-all"
+                style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.25)', color: '#BF9FF1' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Process with Nova
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
