@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -62,6 +62,14 @@ export default function WorkflowDetailClient({
   const [runInput, setRunInput] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [versions, setVersions] = useState<{ id: string; version: number; description: string | null; createdAt: string }[]>([]);
+  const [showVersions, setShowVersions] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/workflows/${initial.id}/versions`)
+      .then(r => r.json())
+      .then(v => setVersions(Array.isArray(v) ? v : []));
+  }, [initial.id]);
 
   async function handleStatusChange(status: string) {
     await fetch(`/api/workflows/${workflow.id}`, {
@@ -464,7 +472,7 @@ export default function WorkflowDetailClient({
               </div>
             ))}
           </div>
-          <div className="mt-4">
+          <div className="mt-4 space-y-2">
             <Link href={`/workflows/${workflow.id}/edit`}
               className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-xs font-light transition-all group"
               style={{ background: 'rgba(113,147,237,0.06)', border: '1px solid rgba(113,147,237,0.18)', color: 'rgba(113,147,237,0.7)' }}>
@@ -480,6 +488,41 @@ export default function WorkflowDetailClient({
               </span>
               <span className="opacity-50 group-hover:opacity-100 transition-opacity">→</span>
             </Link>
+
+            {versions.length > 0 && (
+              <button onClick={() => setShowVersions(v => !v)}
+                className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-xs font-light transition-all"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.35)' }}>
+                <span className="flex items-center gap-2">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.1"/>
+                    <path d="M6 3v3l2 2" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+                  </svg>
+                  {versions.length} version{versions.length !== 1 ? 's' : ''}
+                </span>
+                <span style={{ opacity: 0.5 }}>{showVersions ? '▲' : '▼'}</span>
+              </button>
+            )}
+
+            {showVersions && versions.length > 0 && (
+              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+                {versions.slice(0, 8).map((v, i) => (
+                  <div key={v.id}
+                    className="flex items-center justify-between px-3.5 py-2.5 text-xs"
+                    style={{ borderTop: i > 0 ? '1px solid var(--border)' : 'none', background: 'var(--surface)' }}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono" style={{ color: 'rgba(113,147,237,0.7)' }}>v{v.version}</span>
+                      <span className="font-light" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        {v.description ?? 'Saved'}
+                      </span>
+                    </div>
+                    <span style={{ color: 'rgba(255,255,255,0.2)' }}>
+                      {new Date(v.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

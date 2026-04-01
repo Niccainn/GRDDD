@@ -102,14 +102,35 @@ export default function NovaBar({
   const [error, setError] = useState('');
   const [memory, setMemory] = useState<string | null>(null);
   const [showMemory, setShowMemory] = useState(false);
+  const [novaModel, setNovaModel] = useState('claude-opus-4-6');
+  const [showModelPicker, setShowModelPicker] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const MODELS = [
+    { id: 'claude-opus-4-6',   label: 'Opus',   desc: 'Most capable',  color: '#BF9FF1' },
+    { id: 'claude-sonnet-4-5', label: 'Sonnet', desc: 'Balanced',       color: '#7193ED' },
+    { id: 'claude-haiku-4-5',  label: 'Haiku',  desc: 'Fast & light',   color: '#15AD70' },
+  ];
 
   useEffect(() => {
     fetch(`/api/nova/memory?systemId=${systemId}`)
       .then(r => r.json())
       .then(d => setMemory(d.memory));
+    fetch(`/api/systems/${systemId}/nova-config`)
+      .then(r => r.json())
+      .then(d => { if (d.model) setNovaModel(d.model); });
   }, [systemId]);
+
+  async function handleModelChange(model: string) {
+    setNovaModel(model);
+    setShowModelPicker(false);
+    await fetch(`/api/systems/${systemId}/nova-config`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model }),
+    });
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -280,6 +301,33 @@ export default function NovaBar({
               <span style={{ fontSize: '10px' }}>◈</span> memory
             </button>
           )}
+          {/* Model picker */}
+          <div className="relative">
+            <button onClick={() => setShowModelPicker(v => !v)}
+              className="text-xs font-light px-2 py-1 rounded-md transition-all flex items-center gap-1.5"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)' }}>
+              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                style={{ background: MODELS.find(m => m.id === novaModel)?.color ?? '#BF9FF1' }} />
+              {MODELS.find(m => m.id === novaModel)?.label ?? 'Opus'}
+              <span style={{ opacity: 0.5 }}>▾</span>
+            </button>
+            {showModelPicker && (
+              <div className="absolute top-full right-0 mt-1 rounded-xl overflow-hidden z-20"
+                style={{ background: '#1a1a1c', border: '1px solid rgba(255,255,255,0.1)', minWidth: 160 }}>
+                {MODELS.map(m => (
+                  <button key={m.id} onClick={() => handleModelChange(m.id)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-xs font-light transition-colors hover:bg-white/5"
+                    style={{ color: novaModel === m.id ? m.color : 'rgba(255,255,255,0.6)' }}>
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: m.color }} />
+                    <span className="flex-1">{m.label}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.25)' }}>{m.desc}</span>
+                    {novaModel === m.id && <span style={{ color: m.color }}>✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {streaming && <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#BF9FF1' }} />}
           <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
             {streaming ? 'thinking···' : 'ready'}
