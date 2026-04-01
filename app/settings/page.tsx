@@ -189,6 +189,24 @@ export default function SettingsPage() {
           </a>
         </section>
 
+        {/* Notifications */}
+        <section>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>NOTIFICATIONS</p>
+          <a href="/settings/webhooks"
+            className="flex items-center justify-between px-5 py-4 rounded-xl transition-all group"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <div>
+              <p className="text-sm font-light mb-0.5 group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Webhooks
+              </p>
+              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                Receive HTTP callbacks for executions, alerts, and automations
+              </p>
+            </div>
+            <span className="text-xs ml-4" style={{ color: 'rgba(255,255,255,0.2)' }}>→</span>
+          </a>
+        </section>
+
         {/* About */}
         <section>
           <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>ABOUT</p>
