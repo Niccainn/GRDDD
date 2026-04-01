@@ -77,6 +77,17 @@ const NOVA_TOOLS: Anthropic.Tool[] = [
       required: ['score'],
     },
   },
+  {
+    name: 'update_memory',
+    description: 'Save important context, decisions, or patterns to persistent memory for this system. Call this when you learn something worth remembering across sessions.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        memory: { type: 'string', description: 'Concise summary of what to remember — key decisions, patterns, priorities, context.' },
+      },
+      required: ['memory'],
+    },
+  },
 ];
 
 // ─── Tool labels for UI display ───────────────────────────────────────────────
@@ -87,6 +98,7 @@ const TOOL_LABELS: Record<string, string> = {
   create_workflow: 'Creating workflow',
   update_workflow: 'Updating workflow',
   set_health_score: 'Updating health score',
+  update_memory: 'Saving to memory',
 };
 
 // ─── Tool executor ────────────────────────────────────────────────────────────
@@ -205,6 +217,26 @@ async function executeTool(
       return { result: { score, updated: true }, summary: `Health set to ${score}%` };
     }
 
+    case 'update_memory': {
+      const memory = input.memory as string;
+      const intelligence = await prisma.intelligence.findFirst({ where: { systemId: ctx.systemId, name: 'Nova' } });
+      if (intelligence) {
+        await prisma.intelligenceLog.create({
+          data: {
+            action: 'memory_update',
+            reasoning: memory,
+            input: JSON.stringify({ updated: new Date().toISOString() }),
+            output: JSON.stringify({ chars: memory.length }),
+            success: true,
+            intelligenceId: intelligence.id,
+            systemId: ctx.systemId,
+            identityId: ctx.identityId,
+          },
+        });
+      }
+      return { result: { saved: true }, summary: 'Memory updated' };
+    }
+
     default:
       return { result: { error: `Unknown tool: ${name}` }, summary: 'Tool failed' };
   }
@@ -236,10 +268,15 @@ function buildPrompt(ctx: {
   environmentName: string;
   identityName: string;
   workflows: { name: string; status: string }[];
+  memory?: string | null;
 }) {
   const wfList = ctx.workflows.length
     ? ctx.workflows.map(w => `  • ${w.name} [${w.status.toLowerCase()}]`).join('\n')
     : '  None configured';
+
+  const memoryBlock = ctx.memory
+    ? `\n**Persistent memory (what you know about this system):**\n${ctx.memory}\n`
+    : '';
 
   return `You are Nova — the intelligence execution engine inside GRID, an adaptive organizational operating system.
 
@@ -249,9 +286,11 @@ You are operating inside the **${ctx.systemName}** system (${ctx.environmentName
 
 **Current workflows:**
 ${wfList}
-
+${memoryBlock}
 **Your capabilities:**
 You have tools to read and write GRID data. When a user asks you to do something actionable — create a workflow, update a status, analyse health — **use your tools and do it**. Don't just describe what you could do.
+
+Use \`update_memory\` whenever you learn something worth persisting: decisions made, patterns observed, preferences, key context. Memory carries forward across all future conversations.
 
 **Response style:**
 - Be direct and operational. No filler.
@@ -307,12 +346,19 @@ export async function runNovaAgent({
     identityId: identity.id,
   };
 
+  // Load most recent memory for this system
+  const memoryLog = await prisma.intelligenceLog.findFirst({
+    where: { systemId: system.id, action: 'memory_update' },
+    orderBy: { createdAt: 'desc' },
+  });
+
   const systemPrompt = buildPrompt({
     systemName: system.name,
     systemDescription: system.description,
     environmentName: system.environment.name,
     identityName: identity.name,
     workflows: system.workflows,
+    memory: memoryLog?.reasoning ?? null,
   });
 
   const history = await loadHistory(systemId);

@@ -8,6 +8,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     include: {
       system: { include: { environment: true } },
       workflow: true,
+      validationResult: true,
     },
   });
   if (!execution) return Response.json({ error: 'Not found' }, { status: 404 });
@@ -21,6 +22,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     completedAt: execution.completedAt?.toISOString() ?? null,
     system: { id: execution.system.id, name: execution.system.name, environmentName: execution.system.environment.name },
     workflow: execution.workflow ? { id: execution.workflow.id, name: execution.workflow.name, stages: JSON.parse(execution.workflow.stages ?? '[]') } : null,
+    validation: execution.validationResult ? {
+      score: execution.validationResult.score,
+      issues: JSON.parse(execution.validationResult.issues ?? '[]'),
+      summary: execution.validationResult.correctedOutput,
+    } : null,
   });
 }
 

@@ -127,12 +127,47 @@ Process the **${stage}** stage now. Produce the actual output/deliverable for th
         const fullOutput = JSON.stringify(stageOutputs);
         await prisma.execution.update({
           where: { id: executionId },
-          data: {
-            status: 'COMPLETED',
-            output: fullOutput,
-            completedAt: new Date(),
-          },
+          data: { status: 'COMPLETED', output: fullOutput, completedAt: new Date() },
         });
+
+        // Validation scoring
+        try {
+          const validationPrompt = `You are a quality evaluator. Score this workflow execution output.
+
+Input request: ${input}
+Stages completed: ${stageOutputs.map(s => s.stage).join(', ')}
+
+Output produced:
+${stageOutputs.map(s => `**${s.stage}:**\n${s.output}`).join('\n\n')}
+
+Return JSON only (no markdown):
+{
+  "score": <0.0-1.0 float>,
+  "issues": ["<issue1>", "<issue2>"],
+  "summary": "<one sentence assessment>"
+}
+
+Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusable.`;
+
+          const validationRes = await anthropic.messages.create({
+            model: 'claude-haiku-4-5',
+            max_tokens: 512,
+            messages: [{ role: 'user', content: validationPrompt }],
+          });
+
+          const rawText = validationRes.content.find(b => b.type === 'text')?.text ?? '{}';
+          const cleaned = rawText.replace(/```json\n?|\n?```/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+
+          await prisma.validationResult.create({
+            data: {
+              executionId,
+              score: Math.max(0, Math.min(1, parsed.score ?? 0.5)),
+              issues: JSON.stringify(parsed.issues ?? []),
+              correctedOutput: parsed.summary ?? null,
+            },
+          });
+        } catch { /* validation is best-effort */ }
 
         // Log to intelligence
         const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });

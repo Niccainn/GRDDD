@@ -55,6 +55,16 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    href: '/automations',
+    label: 'Automations',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+        <circle cx="12" cy="12" r="9"/>
+        <path strokeLinecap="round" d="M12 7v5l3 3"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {
