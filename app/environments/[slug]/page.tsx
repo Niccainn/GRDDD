@@ -10,7 +10,11 @@ async function getEnvironment(slug: string) {
     include: {
       owner: true,
       systems: {
-        include: { _count: { select: { workflows: true } } },
+        include: {
+          _count: { select: { workflows: true, executions: true } },
+          systemState: true,
+          workflows: { where: { status: 'ACTIVE' } },
+        },
         orderBy: { createdAt: 'desc' },
       },
     },
@@ -103,9 +107,17 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
                       <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{system.description}</p>
                     )}
                   </div>
-                  <p className="text-xs mt-3" style={{ color: 'var(--text-tertiary)' }}>
-                    {system._count.workflows} workflow{system._count.workflows !== 1 ? 's' : ''}
-                  </p>
+                  <div className="flex items-center gap-3 mt-3">
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {system._count.workflows} workflow{system._count.workflows !== 1 ? 's' : ''}
+                    </span>
+                    {system.workflows.length > 0 && (
+                      <span className="text-xs" style={{ color: '#15AD70' }}>{system.workflows.length} active</span>
+                    )}
+                    {system._count.executions > 0 && (
+                      <span className="text-xs ml-auto" style={{ color: 'rgba(255,255,255,0.2)' }}>{system._count.executions} runs</span>
+                    )}
+                  </div>
                 </Link>
               ))}
             </div>
@@ -113,21 +125,47 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
         </div>
 
         {/* Meta */}
-        <div>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>OVERVIEW</p>
-          <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            {[
-              { label: 'Systems', value: environment.systems.length },
-              { label: 'Workflows', value: environment.systems.reduce((sum, s) => sum + s._count.workflows, 0) },
-              { label: 'Owner', value: environment.owner.name },
-              { label: 'Created', value: new Date(environment.createdAt).toLocaleDateString() },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex items-center justify-between">
-                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
-                <span className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.6)' }}>{value}</span>
-              </div>
-            ))}
-          </div>
+        <div className="space-y-4">
+          {/* Health rollup */}
+          {(() => {
+            const scoredSystems = environment.systems.filter(s => s.systemState?.healthScore != null || s.healthScore != null);
+            const avgHealth = scoredSystems.length > 0
+              ? Math.round(scoredSystems.reduce((sum, s) => sum + (s.systemState?.healthScore ?? (s.healthScore ?? 0) * 100), 0) / scoredSystems.length)
+              : null;
+            const healthColor = avgHealth === null ? 'rgba(255,255,255,0.3)' : avgHealth >= 80 ? '#15AD70' : avgHealth >= 60 ? '#F7C700' : '#FF6B6B';
+            const totalExecutions = environment.systems.reduce((sum, s) => sum + s._count.executions, 0);
+            const activeWf = environment.systems.reduce((sum, s) => sum + s.workflows.length, 0);
+            return (
+              <>
+                {avgHealth !== null && (
+                  <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Avg Health</span>
+                      <span className="text-sm font-light" style={{ color: healthColor }}>{avgHealth}%</span>
+                    </div>
+                    <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-full rounded-full transition-all" style={{ width: `${avgHealth}%`, backgroundColor: healthColor }} />
+                    </div>
+                  </div>
+                )}
+                <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  {[
+                    { label: 'Systems', value: environment.systems.length },
+                    { label: 'Total workflows', value: environment.systems.reduce((sum, s) => sum + s._count.workflows, 0) },
+                    { label: 'Active workflows', value: activeWf, color: activeWf > 0 ? '#15AD70' : undefined },
+                    { label: 'Total executions', value: totalExecutions },
+                    { label: 'Owner', value: environment.owner.name },
+                    { label: 'Created', value: new Date(environment.createdAt).toLocaleDateString() },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
+                      <span className="text-xs font-light" style={{ color: color ?? 'rgba(255,255,255,0.6)' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>
