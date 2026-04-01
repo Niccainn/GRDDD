@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import DeleteButton from '@/components/DeleteButton';
 
 async function createWorkflow(formData: FormData) {
   'use server';
@@ -14,19 +15,14 @@ async function createWorkflow(formData: FormData) {
     data: {
       name, status: 'DRAFT', systemId, environmentId, creatorId: identity.id,
       stages: JSON.stringify([]),
-      nodes: JSON.stringify([
-        { id: '1', type: 'start', position: { x: 250, y: 50 }, data: { label: 'Start' } },
-        { id: '2', type: 'end', position: { x: 250, y: 300 }, data: { label: 'End' } },
-      ]),
-      edges: JSON.stringify([]),
     }
   });
-  redirect(`/workflows/${workflow.id}/edit`);
+  redirect(`/workflows/${workflow.id}`);
 }
 
 export default async function WorkflowsPage() {
   const [workflows, systems, environments] = await Promise.all([
-    prisma.workflow.findMany({ include: { system: true, environment: true }, orderBy: { createdAt: 'desc' } }),
+    prisma.workflow.findMany({ include: { system: true, environment: true, _count: { select: { executions: true } } }, orderBy: { createdAt: 'desc' } }),
     prisma.system.findMany({ include: { environment: true }, orderBy: { name: 'asc' } }),
     prisma.environment.findMany({ orderBy: { name: 'asc' } }),
   ]);
@@ -91,10 +87,9 @@ export default async function WorkflowsPage() {
       ) : (
         <div className="grid grid-cols-3 gap-3">
           {workflows.map(w => (
-            <Link key={w.id} href={`/workflows/${w.id}/edit`}
-              className="group flex flex-col justify-between p-5 rounded-xl transition-all"
+            <div key={w.id} className="group flex flex-col justify-between rounded-xl transition-all"
               style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <div>
+              <Link href={`/workflows/${w.id}`} className="flex flex-col p-5 flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: STATUS_COLOR[w.status] ?? 'rgba(255,255,255,0.2)' }} />
                   <span className="text-xs font-light" style={{ color: STATUS_COLOR[w.status] ?? 'rgba(255,255,255,0.3)' }}>
@@ -105,12 +100,15 @@ export default async function WorkflowsPage() {
                   {w.name}
                 </p>
                 {w.description && <p className="text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{w.description}</p>}
-              </div>
-              <div className="flex items-center justify-between mt-4">
+              </Link>
+              <div className="flex items-center justify-between px-5 pb-4">
                 <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{w.system.name}</p>
-                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{w.environment.name}</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{w._count.executions} runs</span>
+                  <DeleteButton id={w.id} type="workflows" />
+                </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

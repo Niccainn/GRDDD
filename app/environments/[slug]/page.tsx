@@ -1,11 +1,19 @@
 import { prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import InlineEdit from '@/components/InlineEdit';
+import DeleteButton from '@/components/DeleteButton';
 
 async function getEnvironment(slug: string) {
   return prisma.environment.findUnique({
     where: { slug },
-    include: { owner: true, systems: { orderBy: { createdAt: 'desc' } } }
+    include: {
+      owner: true,
+      systems: {
+        include: { _count: { select: { workflows: true } } },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
   });
 }
 
@@ -33,6 +41,17 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
             <p className="text-sm font-light" style={{ color: 'var(--text-secondary)' }}>{environment.description}</p>
           )}
           <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>/{environment.slug}</p>
+
+          {/* Edit / Delete inline */}
+          <div className="flex items-center gap-4 mt-4">
+            <InlineEdit
+              id={environment.id}
+              type="environments"
+              initialName={environment.name}
+              initialDescription={environment.description}
+            />
+            <DeleteButton id={environment.id} type="environments" redirectTo="/environments" />
+          </div>
         </div>
         <div className="text-right">
           <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{environment.owner.name}</p>
@@ -44,7 +63,14 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
 
       <div className="grid grid-cols-3 gap-8">
         <div className="col-span-2">
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>SYSTEMS</p>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>SYSTEMS</p>
+            <Link href="/systems" className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
+              + Add system
+            </Link>
+          </div>
+
           {environment.systems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
               <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No systems yet</p>
@@ -70,13 +96,16 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
                         </span>
                       )}
                     </div>
-                    <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    <p className="text-sm font-light group-hover:text-white transition-colors mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
                       {system.name}
                     </p>
                     {system.description && (
                       <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{system.description}</p>
                     )}
                   </div>
+                  <p className="text-xs mt-3" style={{ color: 'var(--text-tertiary)' }}>
+                    {system._count.workflows} workflow{system._count.workflows !== 1 ? 's' : ''}
+                  </p>
                 </Link>
               ))}
             </div>
@@ -89,6 +118,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
           <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             {[
               { label: 'Systems', value: environment.systems.length },
+              { label: 'Workflows', value: environment.systems.reduce((sum, s) => sum + s._count.workflows, 0) },
               { label: 'Owner', value: environment.owner.name },
               { label: 'Created', value: new Date(environment.createdAt).toLocaleDateString() },
             ].map(({ label, value }) => (
