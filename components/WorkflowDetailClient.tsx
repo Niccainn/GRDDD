@@ -466,9 +466,19 @@ export default function WorkflowDetailClient({
           </div>
           <div className="mt-4">
             <Link href={`/workflows/${workflow.id}/edit`}
-              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-xs font-light transition-all"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
-              Open node editor →
+              className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-xs font-light transition-all group"
+              style={{ background: 'rgba(113,147,237,0.06)', border: '1px solid rgba(113,147,237,0.18)', color: 'rgba(113,147,237,0.7)' }}>
+              <span className="flex items-center gap-2">
+                <svg width="11" height="11" viewBox="0 0 15 15" fill="none">
+                  <circle cx="3" cy="3" r="1.75" stroke="currentColor" strokeWidth="1.2"/>
+                  <circle cx="12" cy="7.5" r="1.75" stroke="currentColor" strokeWidth="1.2"/>
+                  <circle cx="3" cy="12" r="1.75" stroke="currentColor" strokeWidth="1.2"/>
+                  <path d="M4.75 3H8C9.1 3 10 3.9 10 5v1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                  <path d="M4.75 12H8C9.1 12 10 11.1 10 10V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+                Visual builder
+              </span>
+              <span className="opacity-50 group-hover:opacity-100 transition-opacity">→</span>
             </Link>
           </div>
         </div>
