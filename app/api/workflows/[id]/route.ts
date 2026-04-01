@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
+import { audit } from '@/lib/audit';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -28,6 +29,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
+  const existing = await prisma.workflow.findUnique({ where: { id }, select: { name: true, status: true, environmentId: true } });
   const updated = await prisma.workflow.update({
     where: { id },
     data: {
@@ -39,6 +41,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(body.edges       !== undefined && { edges:       body.edges       }),
     },
   });
+  // Audit status change
+  if (body.status && existing && body.status !== existing.status) {
+    audit({
+      action: 'workflow.status_changed',
+      entity: 'Workflow',
+      entityId: id,
+      entityName: existing.name,
+      before: { status: existing.status },
+      after:  { status: body.status },
+      environmentId: existing.environmentId,
+    });
+  } else if (body.name || body.description || body.stages) {
+    audit({
+      action: 'workflow.updated',
+      entity: 'Workflow',
+      entityId: id,
+      entityName: body.name ?? existing?.name,
+      environmentId: existing?.environmentId,
+    });
+  }
   return Response.json(updated);
 }
 

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
+import { audit } from '@/lib/audit';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -192,6 +193,16 @@ Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusa
             },
           });
         }
+
+        // Audit completion
+        audit({
+          action: 'execution.completed',
+          entity: 'Execution',
+          entityId: executionId,
+          entityName: workflowId ? 'Workflow Execution' : 'Execution',
+          metadata: { tokens: totalTokens, stages: workflowStages },
+          environmentId: system.environmentId,
+        });
 
         // Fire webhook for completed execution
         fireWebhooks('execution.completed', {

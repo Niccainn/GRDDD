@@ -328,3 +328,39 @@ model WebhookDelivery {
   @@index([webhookId])
   @@index([createdAt])
 }
+
+// ===============================================
+// OBJECT 9: AUDIT LOG
+// Immutable activity history
+// ===============================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // What happened
+  action    String   // e.g. "workflow.created", "execution.run", "system.updated", "member.added"
+  entity    String   // e.g. "Workflow", "System", "Identity"
+  entityId  String?  // ID of the affected record
+  entityName String? // Human-readable name at time of action
+
+  // Change details
+  before    String?  // JSON snapshot before
+  after     String?  // JSON snapshot after
+  metadata  String?  // Additional context JSON
+
+  // Who
+  actorId   String?
+  actorName String?
+  actorType String?  // "PERSON" | "AGENT" | "SYSTEM"
+
+  // Where
+  environmentId   String?
+  environmentName String?
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([entityId])
+  @@index([actorId])
+  @@index([environmentId])
+}
