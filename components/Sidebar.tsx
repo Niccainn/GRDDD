@@ -75,6 +75,16 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    href: '/audit',
+    label: 'Audit Log',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <rect x="2" y="2" width="11" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.1"/>
+        <path d="M4.5 5.5h6M4.5 8h4M4.5 10.5h5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {
