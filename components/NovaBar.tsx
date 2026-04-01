@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 type LogEntry = {
   id: string;
@@ -100,8 +100,16 @@ export default function NovaBar({
   );
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState('');
+  const [memory, setMemory] = useState<string | null>(null);
+  const [showMemory, setShowMemory] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    fetch(`/api/nova/memory?systemId=${systemId}`)
+      .then(r => r.json())
+      .then(d => setMemory(d.memory));
+  }, [systemId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -212,6 +220,10 @@ export default function NovaBar({
           ];
 
         case 'done':
+          // Refresh memory in background — Nova may have updated it
+          fetch(`/api/nova/memory?systemId=${systemId}`)
+            .then(r => r.json())
+            .then(d => { if (d.memory) setMemory(d.memory); });
           return [
             ...updated.slice(0, -1),
             { ...last, streaming: false, tokens: event.tokens as number },
@@ -256,13 +268,33 @@ export default function NovaBar({
           <span className="text-sm font-light">Nova</span>
           <span className="text-xs ml-2" style={{ color: 'var(--text-tertiary)' }}>{systemName}</span>
         </div>
-        <div className="ml-auto flex items-center gap-1.5">
+        <div className="ml-auto flex items-center gap-2">
+          {memory && (
+            <button onClick={() => setShowMemory(v => !v)}
+              className="text-xs font-light px-2 py-1 rounded-md transition-all flex items-center gap-1"
+              style={{
+                background: showMemory ? 'rgba(191,159,241,0.1)' : 'transparent',
+                color: showMemory ? '#BF9FF1' : 'rgba(255,255,255,0.2)',
+              }}
+              title="Nova's persistent memory for this system">
+              <span style={{ fontSize: '10px' }}>◈</span> memory
+            </button>
+          )}
           {streaming && <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#BF9FF1' }} />}
           <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
             {streaming ? 'thinking···' : 'ready'}
           </span>
         </div>
       </div>
+
+      {/* Memory panel */}
+      {showMemory && memory && (
+        <div className="mb-4 px-4 py-3 rounded-xl text-xs font-light leading-relaxed"
+          style={{ background: 'rgba(191,159,241,0.06)', border: '1px solid rgba(191,159,241,0.15)', color: 'rgba(255,255,255,0.55)' }}>
+          <p className="text-xs tracking-[0.1em] mb-2" style={{ color: 'rgba(191,159,241,0.6)' }}>NOVA MEMORY</p>
+          {memory}
+        </div>
+      )}
 
       {/* Messages */}
       {messages.length > 0 && (

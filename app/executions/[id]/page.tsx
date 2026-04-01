@@ -6,6 +6,12 @@ import Link from 'next/link';
 
 type StageOutput = { stage: string; output: string };
 
+type ValidationData = {
+  score: number;
+  issues: string[];
+  summary: string | null;
+};
+
 type ExecutionData = {
   id: string;
   status: string;
@@ -16,6 +22,7 @@ type ExecutionData = {
   completedAt: string | null;
   system: { id: string; name: string; environmentName: string };
   workflow: { id: string; name: string; stages: string[] } | null;
+  validation: ValidationData | null;
 };
 
 function MD({ text }: { text: string }) {
@@ -65,7 +72,40 @@ export default function ExecutionDetailPage() {
   const [running, setRunning] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [tokens, setTokens] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  function exportMarkdown(outputs: StageOutput[], input: string, wfName?: string) {
+    const lines: string[] = [];
+    if (wfName) lines.push(`# ${wfName}\n`);
+    lines.push(`**Input:** ${input}\n`);
+    lines.push(`**Date:** ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}\n`);
+    lines.push('---\n');
+    for (const s of outputs) {
+      lines.push(`## ${s.stage}\n`);
+      lines.push(s.output);
+      lines.push('\n---\n');
+    }
+    return lines.join('\n');
+  }
+
+  async function copyToClipboard() {
+    const text = exportMarkdown(stageOutputs, execution?.input ?? '', execution?.workflow?.name);
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function downloadMarkdown() {
+    const text = exportMarkdown(stageOutputs, execution?.input ?? '', execution?.workflow?.name);
+    const blob = new Blob([text], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${execution?.workflow?.name ?? 'execution'}-${execution?.id?.slice(0, 8)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   useEffect(() => {
     fetch(`/api/executions/${id}`)
@@ -208,16 +248,32 @@ export default function ExecutionDetailPage() {
                 {execution.system.name} · {execution.system.environmentName}
               </Link>
             </div>
-            {!hasNovaOutput && !running && (
-              <button onClick={runWithNova}
-                className="flex items-center gap-2 text-xs font-light px-4 py-2 rounded-lg transition-all"
-                style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.25)', color: '#BF9FF1' }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-                Process with Nova
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {hasNovaOutput && (
+                <>
+                  <button onClick={copyToClipboard}
+                    className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: copied ? '#15AD70' : 'rgba(255,255,255,0.4)' }}>
+                    {copied ? '✓ Copied' : 'Copy markdown'}
+                  </button>
+                  <button onClick={downloadMarkdown}
+                    className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+                    ↓ Download
+                  </button>
+                </>
+              )}
+              {!hasNovaOutput && !running && (
+                <button onClick={runWithNova}
+                  className="flex items-center gap-2 text-xs font-light px-4 py-2 rounded-lg transition-all"
+                  style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.25)', color: '#BF9FF1' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                  Process with Nova
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Input */}
@@ -296,6 +352,48 @@ export default function ExecutionDetailPage() {
                 </div>
               )}
               <div ref={bottomRef} />
+            </div>
+          )}
+
+          {/* Validation score */}
+          {execution.validation && !running && (
+            <div className="mt-4 p-4 rounded-xl flex items-start gap-4"
+              style={{
+                background: execution.validation.score >= 0.8
+                  ? 'rgba(21,173,112,0.05)'
+                  : execution.validation.score >= 0.6
+                    ? 'rgba(247,199,0,0.05)'
+                    : 'rgba(255,107,107,0.05)',
+                border: `1px solid ${execution.validation.score >= 0.8
+                  ? 'rgba(21,173,112,0.15)'
+                  : execution.validation.score >= 0.6
+                    ? 'rgba(247,199,0,0.15)'
+                    : 'rgba(255,107,107,0.15)'}`,
+              }}>
+              <div className="flex-shrink-0">
+                <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Quality score</p>
+                <p className="text-2xl font-extralight tabular-nums"
+                  style={{ color: execution.validation.score >= 0.8 ? '#15AD70' : execution.validation.score >= 0.6 ? '#F7C700' : '#FF6B6B' }}>
+                  {Math.round(execution.validation.score * 100)}%
+                </p>
+              </div>
+              <div className="flex-1 min-w-0">
+                {execution.validation.summary && (
+                  <p className="text-xs font-light mb-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    {execution.validation.summary}
+                  </p>
+                )}
+                {execution.validation.issues.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {execution.validation.issues.map((issue, i) => (
+                      <span key={i} className="text-xs px-2 py-0.5 rounded-full"
+                        style={{ background: 'rgba(255,107,107,0.08)', color: '#FF9090', border: '1px solid rgba(255,107,107,0.15)' }}>
+                        {issue}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
