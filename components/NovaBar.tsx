@@ -10,6 +10,78 @@ type LogEntry = {
   tokens: number | null;
 };
 
+type ToolCall = {
+  name: string;
+  label: string;
+  status: 'running' | 'done';
+  summary?: string;
+};
+
+type Message =
+  | { role: 'user'; content: string }
+  | { role: 'nova'; content: string; toolCalls?: ToolCall[]; streaming?: boolean; tokens?: number };
+
+// Minimal markdown renderer
+function MD({ text }: { text: string }) {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.startsWith('## ')) {
+      elements.push(<p key={i} className="text-xs font-medium mt-3 mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>{line.slice(3)}</p>);
+    } else if (line.startsWith('# ')) {
+      elements.push(<p key={i} className="text-sm font-light mt-3 mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{line.slice(2)}</p>);
+    } else if (line.startsWith('- ') || line.startsWith('• ')) {
+      elements.push(
+        <div key={i} className="flex gap-2 my-0.5">
+          <span style={{ color: 'rgba(255,255,255,0.25)' }}>·</span>
+          <span>{renderInline(line.slice(2))}</span>
+        </div>
+      );
+    } else if (line.trim() === '') {
+      elements.push(<div key={i} className="h-2" />);
+    } else {
+      elements.push(<p key={i} className="my-0.5 leading-relaxed">{renderInline(line)}</p>);
+    }
+    i++;
+  }
+  return <div className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.75)' }}>{elements}</div>;
+}
+
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code key={i} className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.08)', color: '#68D0CA', fontFamily: 'monospace' }}>{part.slice(1, -1)}</code>;
+    }
+    return part;
+  });
+}
+
+function ToolPill({ tool }: { tool: ToolCall }) {
+  return (
+    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-light my-1"
+      style={{
+        background: tool.status === 'done' ? 'rgba(21,173,112,0.08)' : 'rgba(255,255,255,0.05)',
+        border: `1px solid ${tool.status === 'done' ? 'rgba(21,173,112,0.2)' : 'rgba(255,255,255,0.1)'}`,
+        color: tool.status === 'done' ? '#15AD70' : 'rgba(255,255,255,0.4)',
+      }}>
+      {tool.status === 'running' ? (
+        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.4)' }} />
+      ) : (
+        <span style={{ color: '#15AD70' }}>✓</span>
+      )}
+      <span>{tool.status === 'done' ? tool.summary : tool.label + '···'}</span>
+    </div>
+  );
+}
+
 export default function NovaBar({
   systemId,
   systemName,
@@ -20,18 +92,20 @@ export default function NovaBar({
   recentLogs: LogEntry[];
 }) {
   const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>(() =>
+    recentLogs.slice(0, 3).reverse().flatMap(log => [
+      { role: 'user' as const, content: log.input },
+      { role: 'nova' as const, content: log.output, tokens: log.tokens ?? undefined },
+    ])
+  );
   const [streaming, setStreaming] = useState(false);
-  const [currentOutput, setCurrentOutput] = useState('');
-  const [logs, setLogs] = useState<LogEntry[]>(recentLogs);
   const [error, setError] = useState('');
-  const outputRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (outputRef.current) {
-      outputRef.current.scrollTop = outputRef.current.scrollHeight;
-    }
-  }, [currentOutput]);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,9 +113,15 @@ export default function NovaBar({
 
     const query = input.trim();
     setInput('');
-    setCurrentOutput('');
     setError('');
     setStreaming(true);
+
+    // Add user message
+    setMessages(prev => [...prev, { role: 'user', content: query }]);
+
+    // Add empty nova message to stream into
+    const novaIdx = messages.length + 1;
+    setMessages(prev => [...prev, { role: 'nova', content: '', toolCalls: [], streaming: true }]);
 
     try {
       const res = await fetch('/api/nova', {
@@ -52,55 +132,99 @@ export default function NovaBar({
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? 'Nova failed to respond');
+        setError(data.error ?? 'Nova failed');
         setStreaming(false);
         return;
       }
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
-      let output = '';
+      let buffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-          const data = JSON.parse(line.slice(6));
-
-          if (data.text) {
-            output += data.text;
-            setCurrentOutput(output);
-          }
-
-          if (data.error) {
-            setError(data.error);
-          }
-
-          if (data.done) {
-            setLogs((prev) => [
-              {
-                id: data.executionId,
-                input: query,
-                output,
-                createdAt: new Date().toISOString(),
-                tokens: null,
-              },
-              ...prev.slice(0, 9),
-            ]);
-            setCurrentOutput('');
-          }
+          try {
+            const event = JSON.parse(line.slice(6));
+            handleEvent(event);
+          } catch { /* ignore malformed */ }
         }
       }
-    } catch (err) {
-      setError('Connection error — check your API key and try again');
+    } catch {
+      setError('Connection error — check your API key');
     } finally {
       setStreaming(false);
+      // Mark last nova message as done streaming
+      setMessages(prev => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last.role === 'nova') {
+          updated[updated.length - 1] = { ...last, streaming: false };
+        }
+        return updated;
+      });
     }
+  }
+
+  function handleEvent(event: { type: string; [key: string]: unknown }) {
+    setMessages(prev => {
+      const updated = [...prev];
+      const last = updated[updated.length - 1];
+      if (last.role !== 'nova') return prev;
+
+      switch (event.type) {
+        case 'tool_start':
+          return [
+            ...updated.slice(0, -1),
+            {
+              ...last,
+              toolCalls: [
+                ...(last.toolCalls ?? []),
+                { name: event.name as string, label: event.label as string, status: 'running' as const },
+              ],
+            },
+          ];
+
+        case 'tool_done':
+          return [
+            ...updated.slice(0, -1),
+            {
+              ...last,
+              toolCalls: (last.toolCalls ?? []).map(tc =>
+                tc.name === (event.name as string) && tc.status === 'running'
+                  ? { ...tc, status: 'done' as const, summary: event.summary as string }
+                  : tc
+              ),
+            },
+          ];
+
+        case 'text':
+          return [
+            ...updated.slice(0, -1),
+            { ...last, content: last.content + (event.text as string) },
+          ];
+
+        case 'done':
+          return [
+            ...updated.slice(0, -1),
+            { ...last, streaming: false, tokens: event.tokens as number },
+          ];
+
+        case 'error':
+          setError(event.message as string);
+          return updated;
+
+        default:
+          return prev;
+      }
+    });
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -110,102 +234,129 @@ export default function NovaBar({
     }
   }
 
+  const SUGGESTIONS = [
+    'Summarise this system',
+    'What workflows should I build?',
+    'Analyse alignment',
+    'Create a content pipeline',
+    'What needs attention?',
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Nova Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-gradient-to-br from-[#BF9FF1] to-[#7193ED] rounded-lg flex items-center justify-center">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+    <div className="flex flex-col" style={{ minHeight: '200px', maxHeight: '70vh' }}>
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4 flex-shrink-0">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+          style={{ background: 'linear-gradient(135deg, #BF9FF1, #7193ED)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
         </div>
         <div>
-          <h2 className="text-lg font-light">Nova</h2>
-          <p className="text-xs text-white/40">Intelligence engine for {systemName}</p>
+          <span className="text-sm font-light">Nova</span>
+          <span className="text-xs ml-2" style={{ color: 'var(--text-tertiary)' }}>{systemName}</span>
         </div>
-        <div className={`ml-auto w-2 h-2 rounded-full ${streaming ? 'bg-[#BF9FF1] animate-pulse' : 'bg-white/20'}`} />
+        <div className="ml-auto flex items-center gap-1.5">
+          {streaming && <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#BF9FF1' }} />}
+          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+            {streaming ? 'thinking···' : 'ready'}
+          </span>
+        </div>
       </div>
 
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="relative">
-        <textarea
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={`Ask Nova anything about ${systemName}... (Enter to send, Shift+Enter for new line)`}
-          rows={3}
-          disabled={streaming}
-          className="w-full bg-white/5 border border-[#BF9FF1]/30 rounded-xl px-4 py-3 pr-16 text-white placeholder:text-white/30 text-sm font-light focus:outline-none focus:border-[#BF9FF1]/60 focus:ring-1 focus:ring-[#BF9FF1]/30 transition-all resize-none disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={!input.trim() || streaming}
-          className="absolute bottom-3 right-3 w-8 h-8 bg-gradient-to-br from-[#BF9FF1] to-[#7193ED] rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-30"
-        >
-          {streaming ? (
-            <svg className="w-4 h-4 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-7-7l7 7-7 7" />
-            </svg>
-          )}
-        </button>
-      </form>
+      {/* Messages */}
+      {messages.length > 0 && (
+        <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-1" style={{ maxHeight: '400px' }}>
+          {messages.map((msg, idx) => (
+            <div key={idx}>
+              {msg.role === 'user' ? (
+                <div className="flex justify-end">
+                  <div className="text-sm font-light px-3 py-2 rounded-xl max-w-[80%]"
+                    style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)' }}>
+                    {msg.content}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {/* Tool calls */}
+                  {msg.toolCalls && msg.toolCalls.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {msg.toolCalls.map((tc, ti) => <ToolPill key={ti} tool={tc} />)}
+                    </div>
+                  )}
+                  {/* Text content */}
+                  {msg.content ? (
+                    <div className="rounded-xl px-4 py-3"
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <MD text={msg.content} />
+                      {msg.streaming && (
+                        <span className="inline-block w-1.5 h-3.5 ml-0.5 animate-pulse rounded-sm"
+                          style={{ background: '#BF9FF1', verticalAlign: 'middle' }} />
+                      )}
+                      {!msg.streaming && msg.tokens && (
+                        <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.15)' }}>
+                          {msg.tokens.toLocaleString()} tokens
+                        </p>
+                      )}
+                    </div>
+                  ) : msg.streaming && (!msg.toolCalls || msg.toolCalls.every(tc => tc.status === 'done')) ? (
+                    <div className="px-4 py-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <span className="inline-block w-1.5 h-3.5 animate-pulse rounded-sm" style={{ background: '#BF9FF1' }} />
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
+      )}
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400 font-light">
+        <div className="text-xs px-3 py-2 rounded-lg mb-3 flex-shrink-0"
+          style={{ background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', color: '#FF7070' }}>
           {error}
         </div>
       )}
 
-      {/* Streaming output */}
-      {streaming && currentOutput && (
-        <div
-          ref={outputRef}
-          className="bg-white/5 border border-[#BF9FF1]/20 rounded-xl p-4 max-h-64 overflow-y-auto"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1.5 h-1.5 bg-[#BF9FF1] rounded-full animate-pulse" />
-            <span className="text-xs text-[#BF9FF1] font-light">Nova responding...</span>
-          </div>
-          <p className="text-sm text-white/80 font-light whitespace-pre-wrap leading-relaxed">{currentOutput}</p>
+      {/* Suggestions (only when no messages) */}
+      {messages.length === 0 && (
+        <div className="flex flex-wrap gap-2 mb-4 flex-shrink-0">
+          {SUGGESTIONS.map(s => (
+            <button key={s} onClick={() => setInput(s)}
+              className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+              {s}
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Log history */}
-      {logs.length > 0 && (
-        <div>
-          <h3 className="text-sm text-white/40 font-light mb-3">Recent activity</h3>
-          <div className="space-y-3">
-            {logs.map((log) => (
-              <div key={log.id} className="bg-white/3 border border-white/8 rounded-xl p-4">
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <p className="text-xs text-white/50 font-light italic">"{log.input}"</p>
-                  <span className="text-xs text-white/30 whitespace-nowrap font-light flex-shrink-0">
-                    {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-                <p className="text-sm text-white/70 font-light whitespace-pre-wrap leading-relaxed line-clamp-4">
-                  {log.output}
-                </p>
-                {log.tokens && (
-                  <p className="text-xs text-white/20 mt-2">{log.tokens} tokens</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {logs.length === 0 && !streaming && (
-        <div className="text-center py-6">
-          <p className="text-xs text-white/30 font-light">No activity yet. Ask Nova something to get started.</p>
-        </div>
-      )}
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="relative flex-shrink-0">
+        <textarea
+          ref={inputRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask Nova anything about this system···"
+          rows={2}
+          disabled={streaming}
+          className="w-full text-sm font-light px-4 py-3 pr-12 rounded-xl focus:outline-none resize-none transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: 'white',
+          }}
+        />
+        <button type="submit" disabled={!input.trim() || streaming}
+          className="absolute bottom-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center transition-all disabled:opacity-30"
+          style={{ background: 'linear-gradient(135deg, #BF9FF1, #7193ED)' }}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 6h10M6 1l5 5-5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </form>
     </div>
   );
 }
