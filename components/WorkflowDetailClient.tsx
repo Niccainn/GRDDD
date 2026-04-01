@@ -18,6 +18,7 @@ type Execution = {
   status: string;
   input: string;
   output: string | null;
+  currentStage: number | null;
   createdAt: string;
 };
 
@@ -46,10 +47,13 @@ export default function WorkflowDetailClient({
   const router = useRouter();
   const [workflow, setWorkflow] = useState(initial);
   const [executions, setExecutions] = useState(initialExecutions);
+  const [activeRun, setActiveRun] = useState<Execution | null>(
+    initialExecutions.find(e => e.status === 'RUNNING') ?? null
+  );
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(initial.name);
   const [editDescription, setEditDescription] = useState(initial.description ?? '');
-  const [editStages, setEditStages] = useState<string[]>(initial.stages.length > 0 ? initial.stages : []);
+  const [editStages, setEditStages] = useState<string[]>(initial.stages);
   const [newStage, setNewStage] = useState('');
   const [saving, setSaving] = useState(false);
   const [running, setRunning] = useState(false);
@@ -71,35 +75,64 @@ export default function WorkflowDetailClient({
     const res = await fetch(`/api/workflows/${workflow.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: editName.trim(),
-        description: editDescription.trim() || null,
-        stages: editStages,
-      }),
+      body: JSON.stringify({ name: editName.trim(), description: editDescription.trim() || null, stages: editStages }),
     });
     const updated = await res.json();
-    setWorkflow(w => ({
-      ...w,
-      name: updated.name,
-      description: updated.description,
-      stages: JSON.parse(updated.stages ?? '[]'),
-    }));
+    setWorkflow(w => ({ ...w, name: updated.name, description: updated.description, stages: JSON.parse(updated.stages ?? '[]') }));
     setSaving(false);
     setEditing(false);
   }
 
   async function handleRun() {
+    if (activeRun) return;
     setRunning(true);
+    const withStages = workflow.stages.length > 0;
     const res = await fetch('/api/executions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ workflowId: workflow.id, systemId: workflow.systemId, input: `Manual run of ${workflow.name}` }),
+      body: JSON.stringify({
+        workflowId: workflow.id,
+        systemId: workflow.systemId,
+        input: `Run: ${workflow.name}`,
+        withStages,
+      }),
     });
     const exec = await res.json();
-    if (exec.id) {
-      setExecutions(prev => [{ id: exec.id, status: exec.status, input: exec.input, output: exec.output, createdAt: exec.createdAt }, ...prev]);
-    }
+    const newExec: Execution = {
+      id: exec.id, status: exec.status, input: exec.input,
+      output: exec.output, currentStage: exec.currentStage ?? null,
+      createdAt: exec.createdAt,
+    };
+    setExecutions(prev => [newExec, ...prev]);
+    if (withStages && exec.status === 'RUNNING') setActiveRun(newExec);
     setRunning(false);
+  }
+
+  async function advanceStage(execId: string, nextStage: number) {
+    const isComplete = nextStage >= workflow.stages.length;
+    const res = await fetch(`/api/executions/${execId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        currentStage: isComplete ? workflow.stages.length : nextStage,
+        status: isComplete ? 'COMPLETED' : 'RUNNING',
+        output: isComplete ? `Completed all ${workflow.stages.length} stages` : null,
+      }),
+    });
+    const updated = await res.json();
+    const updatedExec: Execution = {
+      ...activeRun!,
+      currentStage: updated.currentStage,
+      status: updated.status,
+      output: updated.output,
+    };
+    setExecutions(prev => prev.map(e => e.id === execId ? updatedExec : e));
+    if (isComplete) {
+      setActiveRun(null);
+      setWorkflow(w => ({ ...w, totalRuns: w.totalRuns }));
+    } else {
+      setActiveRun(updatedExec);
+    }
   }
 
   async function handleDelete() {
@@ -114,20 +147,13 @@ export default function WorkflowDetailClient({
     setNewStage('');
   }
 
-  function removeStage(idx: number) {
-    setEditStages(prev => prev.filter((_, i) => i !== idx));
-  }
-
   const statusColor = STATUS_COLOR[workflow.status] ?? 'rgba(255,255,255,0.3)';
+  const currentStageIdx = activeRun?.currentStage ?? null;
 
   return (
     <div className="px-10 py-10 min-h-screen">
-      {/* Breadcrumb */}
-      <Link
-        href="/workflows"
-        className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
-        style={{ color: 'var(--text-tertiary)' }}
-      >
+      <Link href="/workflows" className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
+        style={{ color: 'var(--text-tertiary)' }}>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -138,64 +164,40 @@ export default function WorkflowDetailClient({
       <div className="flex items-start justify-between mb-8">
         <div className="flex-1 min-w-0">
           {editing ? (
-            <input
-              value={editName}
-              onChange={e => setEditName(e.target.value)}
+            <input value={editName} onChange={e => setEditName(e.target.value)}
               className="text-2xl font-extralight tracking-tight bg-transparent border-b focus:outline-none w-full mb-2"
               style={{ borderColor: 'rgba(255,255,255,0.15)', color: 'white' }}
-              onKeyDown={e => e.key === 'Enter' && handleSaveEdit()}
-            />
+              onKeyDown={e => e.key === 'Enter' && handleSaveEdit()} />
           ) : (
             <h1 className="text-2xl font-extralight tracking-tight mb-1">{workflow.name}</h1>
           )}
           <div className="flex items-center gap-3 mt-2">
-            <Link
-              href={`/systems/${workflow.systemId}`}
-              className="text-xs font-light transition-colors hover:text-white/60"
-              style={{ color: 'var(--text-tertiary)' }}
-            >
-              {workflow.systemName}
-            </Link>
+            <Link href={`/systems/${workflow.systemId}`} className="text-xs font-light transition-colors hover:text-white/60"
+              style={{ color: 'var(--text-tertiary)' }}>{workflow.systemName}</Link>
             <span style={{ color: 'var(--text-tertiary)' }}>·</span>
-            <Link
-              href={`/environments/${workflow.environmentSlug}`}
-              className="text-xs font-light transition-colors hover:text-white/60"
-              style={{ color: 'var(--text-tertiary)' }}
-            >
-              {workflow.environmentName}
-            </Link>
+            <Link href={`/environments/${workflow.environmentSlug}`} className="text-xs font-light transition-colors hover:text-white/60"
+              style={{ color: 'var(--text-tertiary)' }}>{workflow.environmentName}</Link>
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-3 flex-shrink-0 ml-6">
-          {/* Status selector */}
+          {/* Status */}
           <div className="relative group">
-            <button
-              className="flex items-center gap-2 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: `1px solid ${statusColor}30`,
-                color: statusColor,
-              }}
-            >
+            <button className="flex items-center gap-2 text-xs font-light px-3 py-1.5 rounded-lg"
+              style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${statusColor}30`, color: statusColor }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
               {workflow.status.toLowerCase()}
               <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                 <path d="M1 2.5l3 3 3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </button>
-            <div
-              className="absolute right-0 top-full mt-1 z-10 hidden group-focus-within:block group-hover:block rounded-lg overflow-hidden py-1"
-              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', minWidth: '130px' }}
-            >
+            <div className="absolute right-0 top-full mt-1 z-10 hidden group-focus-within:block group-hover:block rounded-lg overflow-hidden py-1"
+              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', minWidth: '130px' }}>
               {STATUS_OPTIONS.map(s => (
-                <button
-                  key={s}
-                  onClick={() => handleStatusChange(s)}
+                <button key={s} onClick={() => handleStatusChange(s)}
                   className="w-full text-left px-3 py-1.5 text-xs font-light transition-colors hover:bg-white/5 flex items-center gap-2"
-                  style={{ color: STATUS_COLOR[s] ?? 'rgba(255,255,255,0.5)' }}
-                >
+                  style={{ color: STATUS_COLOR[s] ?? 'rgba(255,255,255,0.5)' }}>
                   <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STATUS_COLOR[s] }} />
                   {s.toLowerCase()}
                 </button>
@@ -204,207 +206,181 @@ export default function WorkflowDetailClient({
           </div>
 
           {/* Run */}
-          <button
-            onClick={handleRun}
-            disabled={running}
-            className="text-xs font-light px-4 py-1.5 rounded-lg transition-all"
-            style={{
-              background: 'rgba(21,173,112,0.1)',
-              border: '1px solid rgba(21,173,112,0.3)',
-              color: '#15AD70',
-            }}
-          >
-            {running ? 'Running···' : '▶ Run'}
+          <button onClick={handleRun} disabled={running || !!activeRun}
+            className="text-xs font-light px-4 py-1.5 rounded-lg transition-all disabled:opacity-40"
+            style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}>
+            {running ? 'Starting···' : activeRun ? 'In progress' : '▶ Run'}
           </button>
 
-          {/* Edit / Save */}
           {editing ? (
             <>
-              <button
-                onClick={handleSaveEdit}
-                disabled={saving}
-                className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}
-              >
+              <button onClick={handleSaveEdit} disabled={saving}
+                className="text-xs font-light px-3 py-1.5 rounded-lg"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}>
                 {saving ? 'Saving···' : 'Save'}
               </button>
-              <button onClick={() => setEditing(false)} className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                Cancel
-              </button>
+              <button onClick={() => setEditing(false)} className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.3)' }}>Cancel</button>
             </>
           ) : (
-            <button onClick={() => setEditing(true)} className="text-xs font-light transition-colors" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Edit
-            </button>
+            <button onClick={() => setEditing(true)} className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.3)' }}>Edit</button>
           )}
 
-          {/* Delete */}
           {confirmDelete ? (
             <span className="flex items-center gap-1.5">
               <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Delete?</span>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
+              <button onClick={handleDelete} disabled={deleting}
                 className="text-xs px-2 py-0.5 rounded"
-                style={{ background: 'rgba(255,60,60,0.12)', color: '#FF7070', border: '1px solid rgba(255,60,60,0.2)' }}
-              >
+                style={{ background: 'rgba(255,60,60,0.12)', color: '#FF7070', border: '1px solid rgba(255,60,60,0.2)' }}>
                 {deleting ? '···' : 'Yes'}
               </button>
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className="text-xs px-2 py-0.5 rounded"
-                style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }}
-              >
-                No
-              </button>
+              <button onClick={() => setConfirmDelete(false)} className="text-xs px-2 py-0.5 rounded"
+                style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }}>No</button>
             </span>
           ) : (
-            <button onClick={() => setConfirmDelete(true)} className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              Delete
-            </button>
+            <button onClick={() => setConfirmDelete(true)} className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.2)' }}>Delete</button>
           )}
         </div>
       </div>
 
-      {/* Description */}
       {editing ? (
-        <textarea
-          value={editDescription}
-          onChange={e => setEditDescription(e.target.value)}
-          placeholder="Describe what this workflow does..."
-          rows={2}
+        <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
+          placeholder="What does this workflow accomplish?" rows={2}
           className="w-full text-sm font-light px-0 py-2 bg-transparent border-b focus:outline-none resize-none mb-8"
-          style={{ borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}
-        />
-      ) : (
-        workflow.description && (
-          <p className="text-sm font-light mb-8 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
-            {workflow.description}
-          </p>
-        )
+          style={{ borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }} />
+      ) : workflow.description && (
+        <p className="text-sm font-light mb-8 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>{workflow.description}</p>
+      )}
+
+      {/* Active run banner */}
+      {activeRun && currentStageIdx !== null && (
+        <div className="mb-8 px-5 py-4 rounded-xl flex items-center justify-between"
+          style={{ background: 'rgba(21,173,112,0.06)', border: '1px solid rgba(21,173,112,0.2)' }}>
+          <div className="flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#15AD70' }} />
+            <div>
+              <p className="text-sm font-light" style={{ color: '#15AD70' }}>
+                Run in progress — Stage {Math.min(currentStageIdx + 1, workflow.stages.length)} of {workflow.stages.length}
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                {workflow.stages[currentStageIdx] ?? 'Finalising'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => advanceStage(activeRun.id, currentStageIdx + 1)}
+              className="text-xs font-light px-4 py-2 rounded-lg transition-all"
+              style={{ background: 'rgba(21,173,112,0.15)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}>
+              {currentStageIdx + 1 >= workflow.stages.length ? 'Complete run ✓' : `Next: ${workflow.stages[currentStageIdx + 1] ?? '—'} →`}
+            </button>
+            <button onClick={async () => {
+              await fetch(`/api/executions/${activeRun.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'FAILED' }),
+              });
+              setExecutions(prev => prev.map(e => e.id === activeRun.id ? { ...e, status: 'FAILED' } : e));
+              setActiveRun(null);
+            }} className="text-xs font-light px-3 py-2 rounded-lg"
+              style={{ background: 'rgba(255,60,60,0.08)', border: '1px solid rgba(255,60,60,0.15)', color: 'rgba(255,100,100,0.7)' }}>
+              Abandon
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="grid grid-cols-3 gap-8">
-        {/* Left: Stages + Runs */}
         <div className="col-span-2 space-y-8">
-
-          {/* Stage Pipeline */}
+          {/* Stage pipeline */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>STAGES</p>
-            </div>
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>STAGES</p>
 
             {(editing ? editStages : workflow.stages).length === 0 ? (
-              <div
-                className="flex flex-col items-center justify-center py-10 rounded-xl"
-                style={{ border: '1px dashed var(--border)' }}
-              >
+              <div className="flex flex-col items-center justify-center py-10 rounded-xl"
+                style={{ border: '1px dashed var(--border)' }}>
                 <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No stages defined</p>
-                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                  {editing ? 'Add stages below' : 'Click Edit to add stages'}
-                </p>
+                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{editing ? 'Add stages below' : 'Click Edit to add stages'}</p>
               </div>
             ) : (
               <div className="flex items-start gap-0 overflow-x-auto pb-2">
-                {(editing ? editStages : workflow.stages).map((stage, idx) => (
-                  <div key={idx} className="flex items-center min-w-0">
-                    <div
-                      className="flex flex-col items-center px-4 py-3 rounded-xl min-w-[110px] relative"
-                      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                    >
-                      <span
-                        className="text-xs font-light mb-1.5 tabular-nums"
-                        style={{ color: 'var(--text-tertiary)' }}
-                      >
-                        {String(idx + 1).padStart(2, '0')}
-                      </span>
-                      <span className="text-xs font-light text-center leading-tight" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                        {stage}
-                      </span>
-                      {editing && (
-                        <button
-                          onClick={() => removeStage(idx)}
-                          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
-                          style={{ background: 'rgba(255,60,60,0.2)', color: '#FF7070' }}
-                        >
-                          ×
-                        </button>
+                {(editing ? editStages : workflow.stages).map((stage, idx) => {
+                  const isDone = currentStageIdx !== null && idx < currentStageIdx;
+                  const isActive = currentStageIdx === idx && activeRun;
+                  const stageColor = isDone ? '#15AD70' : isActive ? '#F7C700' : 'rgba(255,255,255,0.2)';
+
+                  return (
+                    <div key={idx} className="flex items-center">
+                      <div className="flex flex-col items-center px-4 py-3 rounded-xl min-w-[110px] relative transition-all"
+                        style={{
+                          background: isActive ? 'rgba(247,199,0,0.06)' : isDone ? 'rgba(21,173,112,0.06)' : 'var(--surface)',
+                          border: `1px solid ${isActive ? 'rgba(247,199,0,0.2)' : isDone ? 'rgba(21,173,112,0.2)' : 'var(--border)'}`,
+                        }}>
+                        <span className="text-xs font-light mb-1.5 tabular-nums" style={{ color: stageColor }}>
+                          {isDone ? '✓' : String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-xs font-light text-center leading-tight" style={{ color: isActive ? '#F7C700' : isDone ? '#15AD70' : 'rgba(255,255,255,0.7)' }}>
+                          {stage}
+                        </span>
+                        {editing && (
+                          <button onClick={() => setEditStages(prev => prev.filter((_, i) => i !== idx))}
+                            className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
+                            style={{ background: 'rgba(255,60,60,0.2)', color: '#FF7070' }}>×</button>
+                        )}
+                      </div>
+                      {idx < (editing ? editStages : workflow.stages).length - 1 && (
+                        <div className="w-6 h-px flex-shrink-0 transition-all"
+                          style={{ background: idx < (currentStageIdx ?? -1) ? 'rgba(21,173,112,0.4)' : 'rgba(255,255,255,0.1)' }} />
                       )}
                     </div>
-                    {idx < (editing ? editStages : workflow.stages).length - 1 && (
-                      <div className="w-6 h-px flex-shrink-0" style={{ background: 'rgba(255,255,255,0.1)' }} />
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
-            {/* Add stage input (edit mode) */}
             {editing && (
               <div className="flex items-center gap-2 mt-3">
-                <input
-                  value={newStage}
-                  onChange={e => setNewStage(e.target.value)}
+                <input value={newStage} onChange={e => setNewStage(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addStage()}
-                  placeholder="Add stage name..."
+                  placeholder="Add stage name···"
                   className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none flex-1"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white' }}
-                />
-                <button
-                  onClick={addStage}
-                  disabled={!newStage.trim()}
-                  className="text-xs font-light px-3 py-2 rounded-lg transition-all"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}
-                >
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white' }} />
+                <button onClick={addStage} disabled={!newStage.trim()}
+                  className="text-xs font-light px-3 py-2 rounded-lg disabled:opacity-30"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
                   + Add
                 </button>
               </div>
             )}
           </div>
 
-          {/* Execution History */}
+          {/* Run history */}
           <div>
             <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>
-              RUNS <span style={{ color: 'var(--text-tertiary)' }}>({workflow.totalRuns})</span>
+              RUNS ({executions.length})
             </p>
-
             {executions.length === 0 ? (
-              <div
-                className="flex flex-col items-center justify-center py-10 rounded-xl"
-                style={{ border: '1px dashed var(--border)' }}
-              >
+              <div className="flex flex-col items-center py-10 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
                 <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No runs yet</p>
                 <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Click ▶ Run to start the first execution</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {executions.map(exec => (
-                  <div
-                    key={exec.id}
-                    className="flex items-start gap-4 px-4 py-3 rounded-lg"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                  >
+                  <div key={exec.id} className="flex items-start gap-4 px-4 py-3 rounded-lg"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                     <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
-                      <span
-                        className="w-1.5 h-1.5 rounded-full"
-                        style={{
-                          backgroundColor:
-                            exec.status === 'COMPLETED' ? '#15AD70' :
-                            exec.status === 'RUNNING' ? '#F7C700' : '#FF7070',
-                        }}
-                      />
-                      <span className="text-xs font-light" style={{ color: 'var(--text-tertiary)' }}>
-                        {exec.status.toLowerCase()}
-                      </span>
+                      <span className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: exec.status === 'COMPLETED' ? '#15AD70' : exec.status === 'RUNNING' ? '#F7C700' : '#FF7070' }} />
+                      <span className="text-xs font-light" style={{ color: 'var(--text-tertiary)' }}>{exec.status.toLowerCase()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-light truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                        {exec.input}
-                      </p>
-                      {exec.output && (
-                        <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-tertiary)' }}>
-                          {exec.output.slice(0, 200)}
+                      <p className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.6)' }}>{exec.input}</p>
+                      {exec.status === 'RUNNING' && exec.currentStage !== null && (
+                        <p className="text-xs mt-1" style={{ color: '#F7C700' }}>
+                          Stage {exec.currentStage + 1}/{workflow.stages.length}: {workflow.stages[exec.currentStage]}
                         </p>
+                      )}
+                      {exec.output && exec.status === 'COMPLETED' && (
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{exec.output}</p>
                       )}
                     </div>
                     <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
@@ -417,19 +393,16 @@ export default function WorkflowDetailClient({
           </div>
         </div>
 
-        {/* Right: Meta */}
+        {/* Meta */}
         <div>
           <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>DETAILS</p>
-          <div
-            className="rounded-xl p-5 space-y-3"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-          >
+          <div className="rounded-xl p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             {[
               { label: 'Status', value: workflow.status.toLowerCase() },
               { label: 'System', value: workflow.systemName },
               { label: 'Environment', value: workflow.environmentName },
               { label: 'Stages', value: workflow.stages.length },
-              { label: 'Total runs', value: workflow.totalRuns },
+              { label: 'Total runs', value: executions.length },
               { label: 'Updated', value: new Date(workflow.updatedAt).toLocaleDateString() },
             ].map(({ label, value }) => (
               <div key={label} className="flex items-center justify-between">
@@ -438,13 +411,10 @@ export default function WorkflowDetailClient({
               </div>
             ))}
           </div>
-
           <div className="mt-4">
-            <Link
-              href={`/workflows/${workflow.id}/edit`}
+            <Link href={`/workflows/${workflow.id}/edit`}
               className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-xs font-light transition-all"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}
-            >
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
               Open node editor →
             </Link>
           </div>

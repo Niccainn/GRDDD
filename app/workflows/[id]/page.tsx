@@ -26,6 +26,7 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
     status: e.status,
     input: e.input,
     output: e.output ?? null,
+    currentStage: e.currentStage ?? null,
     createdAt: e.createdAt.toISOString(),
   }));
 

@@ -133,9 +133,11 @@ model Execution {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  status String // "RUNNING" | "COMPLETED" | "FAILED"
-  input  String
-  output String?
+  status       String  // "RUNNING" | "COMPLETED" | "FAILED"
+  input        String
+  output       String?
+  currentStage Int?    // index of the active stage (0-based)
+  completedAt  DateTime?
 
   systemId   String
   system     System    @relation(fields: [systemId], references: [id], onDelete: Cascade)

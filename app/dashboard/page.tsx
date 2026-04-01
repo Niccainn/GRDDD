@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import GlobalNovaBar from '@/components/GlobalNovaBar';
 
 type SystemData = {
   id: string;
@@ -100,6 +101,9 @@ export default function OperatePage() {
           </div>
         )}
       </div>
+
+      {/* Global Nova command bar */}
+      <GlobalNovaBar />
 
       {/* Stat bar */}
       {loaded && (
