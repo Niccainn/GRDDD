@@ -116,13 +116,16 @@ export default function WorkflowBuilder({
         edges: [{ id: uid(), source: s1, sourcePort: 'out', target: s2 }],
       };
     }
+    // Vertical layout so tall canvas is used instead of narrow width
+    const STEP_Y = 90; // NODE_H(52) + 38px gap
+    const CX = 60;     // horizontal centre
     const nodeList: WFNode[] = [
-      { id: uid(), type: 'start', x: 80, y: 220, label: 'Start' },
+      { id: uid(), type: 'start', x: CX, y: 20, label: 'Start' },
     ];
     stages.forEach((s, i) => {
-      nodeList.push({ id: uid(), type: 'task', x: 80 + (i + 1) * 210, y: 220, label: s });
+      nodeList.push({ id: uid(), type: 'task', x: CX, y: 20 + (i + 1) * STEP_Y, label: s });
     });
-    nodeList.push({ id: uid(), type: 'end', x: 80 + (stages.length + 1) * 210, y: 220, label: 'End' });
+    nodeList.push({ id: uid(), type: 'end', x: CX, y: 20 + (stages.length + 1) * STEP_Y, label: 'End' });
     const edgeList: WFEdge[] = nodeList.slice(0, -1).map((n, i) => ({
       id: uid(), source: n.id, sourcePort: 'out' as const, target: nodeList[i + 1].id,
     }));
@@ -136,7 +139,7 @@ export default function WorkflowBuilder({
   const [saved, setSaved] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
-  const [pan, setPan] = useState({ x: 40, y: 0 });
+  const [pan, setPan] = useState({ x: 60, y: 60 });
   const [zoom, setZoom] = useState(1);
   const [connectLine, setConnectLine] = useState<{ from: { x: number; y: number }; to: { x: number; y: number } } | null>(null);
 
@@ -151,6 +154,34 @@ export default function WorkflowBuilder({
   panRef2.current = pan;
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
+
+  // ─── Fit view on mount ────────────────────────────────────────────────────
+
+  function fitView(nodeList?: WFNode[]) {
+    const ns = nodeList ?? nodesRef.current;
+    if (!ns.length || !canvasRef.current) return;
+    const PADDING = 60;
+    const canvasW = canvasRef.current.offsetWidth || 600;
+    const canvasH = canvasRef.current.offsetHeight || 400;
+    const minX = Math.min(...ns.map(n => n.x));
+    const minY = Math.min(...ns.map(n => n.y));
+    const maxX = Math.max(...ns.map(n => n.x + NODE_W));
+    const maxY = Math.max(...ns.map(n => n.y + NODE_H));
+    const contentW = maxX - minX + PADDING * 2;
+    const contentH = maxY - minY + PADDING * 2;
+    const newZoom = Math.min(1, Math.min(canvasW / contentW, canvasH / contentH));
+    const newPanX = (canvasW - contentW * newZoom) / 2 + PADDING * newZoom - minX * newZoom;
+    const newPanY = (canvasH - contentH * newZoom) / 2 + PADDING * newZoom - minY * newZoom;
+    setZoom(newZoom);
+    setPan({ x: newPanX, y: newPanY });
+  }
+
+  useEffect(() => {
+    // Slight delay to let canvas measure itself
+    const t = setTimeout(() => fitView(), 80);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ─── Global mouse/key events ───────────────────────────────────────────────
 
@@ -302,7 +333,7 @@ export default function WorkflowBuilder({
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col" style={{ height: '100vh', background: '#09090b', color: 'white', overflow: 'hidden' }}>
+    <div className="flex flex-col" style={{ height: '100%', background: '#09090b', color: 'white', overflow: 'hidden' }}>
 
       {/* ── Header ── */}
       <div className="flex items-center gap-3 px-5 flex-shrink-0"
@@ -331,7 +362,7 @@ export default function WorkflowBuilder({
           <span className="text-xs font-light tabular-nums" style={{ color: 'rgba(255,255,255,0.2)' }}>
             {nodes.length} nodes · {edges.length} edges
           </span>
-          <button onClick={() => { setZoom(1); setPan({ x: 40, y: 0 }); }}
+          <button onClick={() => fitView()}
             className="text-xs font-light px-2 py-1 rounded transition-colors"
             style={{ color: 'rgba(255,255,255,0.25)' }}>
             {Math.round(zoom * 100)}%
@@ -352,8 +383,8 @@ export default function WorkflowBuilder({
       <div className="flex flex-1 overflow-hidden">
 
         {/* ── Left palette ── */}
-        <div className="flex flex-col gap-1 p-3 flex-shrink-0"
-          style={{ width: 162, borderRight: '1px solid rgba(255,255,255,0.06)', background: '#0b0b0d' }}>
+        <div className="flex flex-col gap-1 p-2.5 flex-shrink-0"
+          style={{ width: 140, borderRight: '1px solid rgba(255,255,255,0.06)', background: '#0b0b0d' }}>
           <p className="text-xs px-2 py-1 mb-1 tracking-[0.1em]" style={{ color: 'rgba(255,255,255,0.2)' }}>NODES</p>
           {PALETTE.map(p => {
             const meta = NODE_META[p.type];
@@ -583,7 +614,7 @@ export default function WorkflowBuilder({
         {/* ── Properties panel ── */}
         {(selectedNode || selectedEdge) && (
           <div className="flex-shrink-0 overflow-y-auto"
-            style={{ width: 200, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#0b0b0d', padding: 16 }}>
+            style={{ width: 170, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#0b0b0d', padding: 14 }}>
 
             {selectedNode && (() => {
               const meta = NODE_META[selectedNode.type];
