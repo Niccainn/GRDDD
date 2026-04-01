@@ -67,6 +67,7 @@ model Environment {
   systems      System[]
   workflows    Workflow[]
   intelligence Intelligence[]
+  webhooks     Webhook[]
 
   @@index([ownerId])
   @@index([slug])
@@ -282,4 +283,48 @@ model IntelligenceLog {
   @@index([intelligenceId])
   @@index([createdAt])
   @@index([success])
+}
+
+// ===============================================
+// OBJECT 8: WEBHOOK
+// Outbound notification delivery
+// ===============================================
+
+model Webhook {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name     String
+  url      String
+  events   String  // JSON array: ["alert.critical","alert.warning","execution.failed","execution.completed","automation.run"]
+  isActive Boolean @default(true)
+  secret   String? // Optional HMAC-SHA256 signing secret
+
+  // Optional environment scope (null = workspace-wide)
+  environmentId String?
+  environment   Environment? @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+
+  deliveries WebhookDelivery[]
+
+  @@index([environmentId])
+  @@index([isActive])
+}
+
+model WebhookDelivery {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  event     String   // the event type that triggered this
+  payload   String   // JSON payload sent
+  status    Int?     // HTTP response status
+  success   Boolean  @default(false)
+  error     String?  // error message if failed
+  duration  Int?     // ms
+
+  webhookId String
+  webhook   Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([createdAt])
 }

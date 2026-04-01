@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
+import { fireWebhooks } from '@/lib/webhooks';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -192,8 +193,25 @@ Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusa
           });
         }
 
+        // Fire webhook for completed execution
+        fireWebhooks('execution.completed', {
+          executionId,
+          systemId,
+          workflowId: workflowId ?? null,
+          input,
+          stages: stageOutputs.map(s => s.stage),
+          tokens: totalTokens,
+        }, system.environmentId).catch(() => {});
+
         send({ type: 'done', executionId, tokens: totalTokens });
       } catch (err) {
+        // Fire webhook for failed execution
+        fireWebhooks('execution.failed', {
+          executionId,
+          systemId,
+          workflowId: workflowId ?? null,
+          error: err instanceof Error ? err.message : 'Unknown error',
+        }).catch(() => {});
         send({ type: 'error', message: err instanceof Error ? err.message : 'Execution failed' });
       } finally {
         controller.close();
