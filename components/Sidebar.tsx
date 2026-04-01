@@ -87,6 +87,24 @@ export default function Sidebar() {
         </Link>
       </div>
 
+      {/* Search trigger */}
+      <div className="px-3 py-2" style={{ borderBottom: '1px solid var(--border)' }}>
+        <button
+          onClick={() => {
+            const e = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
+            window.dispatchEvent(e);
+          }}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>
+            <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.2"/>
+            <path d="M8 8l2.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+          <span className="flex-1 text-left font-light text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>Search···</span>
+          <kbd className="text-xs" style={{ color: 'rgba(255,255,255,0.15)', fontFamily: 'inherit' }}>⌘K</kbd>
+        </button>
+      </div>
+
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {

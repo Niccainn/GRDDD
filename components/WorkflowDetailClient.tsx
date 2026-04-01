@@ -57,6 +57,8 @@ export default function WorkflowDetailClient({
   const [newStage, setNewStage] = useState('');
   const [saving, setSaving] = useState(false);
   const [running, setRunning] = useState(false);
+  const [showRunModal, setShowRunModal] = useState(false);
+  const [runInput, setRunInput] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -83,9 +85,10 @@ export default function WorkflowDetailClient({
     setEditing(false);
   }
 
-  async function handleRun() {
+  async function handleRun(inputText?: string) {
     if (activeRun) return;
     setRunning(true);
+    setShowRunModal(false);
     const withStages = workflow.stages.length > 0;
     const res = await fetch('/api/executions', {
       method: 'POST',
@@ -93,7 +96,7 @@ export default function WorkflowDetailClient({
       body: JSON.stringify({
         workflowId: workflow.id,
         systemId: workflow.systemId,
-        input: `Run: ${workflow.name}`,
+        input: inputText?.trim() || `Run: ${workflow.name}`,
         withStages,
       }),
     });
@@ -206,7 +209,8 @@ export default function WorkflowDetailClient({
           </div>
 
           {/* Run */}
-          <button onClick={handleRun} disabled={running || !!activeRun}
+          <button onClick={() => { if (!activeRun && !running) setShowRunModal(true); }}
+            disabled={running || !!activeRun}
             className="text-xs font-light px-4 py-1.5 rounded-lg transition-all disabled:opacity-40"
             style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}>
             {running ? 'Starting···' : activeRun ? 'In progress' : '▶ Run'}
@@ -249,6 +253,53 @@ export default function WorkflowDetailClient({
           style={{ borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }} />
       ) : workflow.description && (
         <p className="text-sm font-light mb-8 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>{workflow.description}</p>
+      )}
+
+      {/* Run input modal */}
+      {showRunModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setShowRunModal(false)}>
+          <div className="w-full max-w-md rounded-2xl p-6"
+            style={{ background: 'var(--surface-2, #1a1a1a)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
+              Run · {workflow.name}
+            </h3>
+            <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
+              {workflow.stages.length > 0 ? `${workflow.stages.length} stages` : 'No stages'} · {workflow.systemName}
+            </p>
+            <textarea
+              value={runInput}
+              onChange={e => setRunInput(e.target.value)}
+              placeholder="Describe what this run should accomplish, include any relevant context or data···"
+              rows={4}
+              autoFocus
+              onKeyDown={e => { if (e.key === 'Enter' && e.metaKey) handleRun(runInput); if (e.key === 'Escape') setShowRunModal(false); }}
+              className="w-full text-sm font-light px-4 py-3 rounded-xl focus:outline-none resize-none mb-4"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: 'rgba(255,255,255,0.8)',
+              }}
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>⌘↵ to start</span>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowRunModal(false)}
+                  className="text-xs font-light px-3 py-2 rounded-lg"
+                  style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  Cancel
+                </button>
+                <button onClick={() => handleRun(runInput)}
+                  className="text-xs font-light px-4 py-2 rounded-lg transition-all"
+                  style={{ background: 'rgba(21,173,112,0.12)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}>
+                  ▶ Start run
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Active run banner */}
