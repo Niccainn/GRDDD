@@ -34,6 +34,7 @@ model Identity {
   createdWorkflows      Workflow[]       @relation("WorkflowCreator")
   createdIntelligence   Intelligence[]   @relation("IntelligenceCreator")
   intelligenceLogs      IntelligenceLog[]
+  apiKeys               ApiKey[]
 
   @@index([email])
   @@index([type])
@@ -68,6 +69,7 @@ model Environment {
   workflows    Workflow[]
   intelligence Intelligence[]
   webhooks     Webhook[]
+  apiKeys      ApiKey[]
 
   @@index([ownerId])
   @@index([slug])
@@ -209,6 +211,7 @@ model Workflow {
 
   intelligenceLogs IntelligenceLog[]
   executions       Execution[]
+  versions         WorkflowVersion[]
 
   @@index([systemId])
   @@index([environmentId])
@@ -330,7 +333,57 @@ model WebhookDelivery {
 }
 
 // ===============================================
-// OBJECT 9: AUDIT LOG
+// OBJECT 9: WORKFLOW VERSION
+// Immutable snapshots of workflow structure
+// ===============================================
+
+model WorkflowVersion {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  version     Int     // incrementing version number
+  description String? // optional change note
+  stages      String  // JSON snapshot of stages
+  nodes       String? // JSON snapshot of nodes
+  edges       String? // JSON snapshot of edges
+
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([createdAt])
+}
+
+// ===============================================
+// OBJECT 10: API KEY
+// External access tokens for the public API
+// ===============================================
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name      String
+  keyHash   String   @unique // SHA-256 hash of the key
+  keyPrefix String            // first 8 chars for display (e.g. "grd_abc1")
+  isActive  Boolean  @default(true)
+  lastUsed  DateTime?
+  expiresAt DateTime?
+
+  // Scope
+  environmentId String?
+  environment   Environment? @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+
+  identityId String?
+  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: SetNull)
+
+  @@index([keyHash])
+  @@index([isActive])
+}
+
+// ===============================================
+// OBJECT 11: AUDIT LOG
 // Immutable activity history
 // ===============================================
 

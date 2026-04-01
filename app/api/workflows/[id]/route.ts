@@ -41,6 +41,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(body.edges       !== undefined && { edges:       body.edges       }),
     },
   });
+  // Auto-snapshot on structural changes
+  if ((body.nodes !== undefined || body.edges !== undefined || body.stages !== undefined) && existing) {
+    const latest = await prisma.workflowVersion.findFirst({
+      where: { workflowId: id },
+      orderBy: { version: 'desc' },
+      select: { version: true },
+    });
+    await prisma.workflowVersion.create({
+      data: {
+        workflowId: id,
+        version: (latest?.version ?? 0) + 1,
+        stages: updated.stages,
+        nodes: updated.nodes ?? null,
+        edges: updated.edges ?? null,
+        description: body.nodes !== undefined ? 'Visual builder save' : 'Stage edit',
+      },
+    });
+  }
+
   // Audit status change
   if (body.status && existing && body.status !== existing.status) {
     audit({
@@ -52,7 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       after:  { status: body.status },
       environmentId: existing.environmentId,
     });
-  } else if (body.name || body.description || body.stages) {
+  } else if (body.name || body.description || body.stages || body.nodes) {
     audit({
       action: 'workflow.updated',
       entity: 'Workflow',

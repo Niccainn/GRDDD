@@ -338,6 +338,10 @@ export async function runNovaAgent({
   if (!identity) throw new Error('No identity found');
 
   const intelligence = await getOrCreateNovaIntelligence(system.id, system.environmentId, identity.id);
+
+  // Resolve model — check Intelligence config, fall back to Opus
+  const intelConfig = intelligence.config ? (() => { try { return JSON.parse(intelligence.config!); } catch { return {}; } })() : {};
+  const novaModel: string = intelConfig.model ?? 'claude-opus-4-6';
   const execution = await prisma.execution.create({ data: { status: 'RUNNING', input, systemId } });
 
   const toolCtx: ToolCtx = {
@@ -373,7 +377,7 @@ export async function runNovaAgent({
   for (let round = 0; round < 6; round++) {
     // Non-streaming call to detect tool use
     const response = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+      model: novaModel,
       max_tokens: 2048,
       system: systemPrompt,
       tools: NOVA_TOOLS,
@@ -411,7 +415,7 @@ export async function runNovaAgent({
 
     // ── Final text response — stream it ────────────────────────────────────
     const stream = anthropic.messages.stream({
-      model: 'claude-opus-4-6',
+      model: novaModel,
       max_tokens: 2048,
       system: systemPrompt,
       messages,
