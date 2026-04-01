@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+
 const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED'];
 const STATUS_COLOR: Record<string, string> = {
   ACTIVE: '#15AD70',
@@ -416,28 +417,29 @@ export default function WorkflowDetailClient({
             ) : (
               <div className="space-y-2">
                 {executions.map(exec => (
-                  <div key={exec.id} className="flex items-start gap-4 px-4 py-3 rounded-lg"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <Link key={exec.id} href={`/executions/${exec.id}`}
+                    className="flex items-start gap-4 px-4 py-3 rounded-lg group transition-all"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex' }}>
                     <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full"
                         style={{ backgroundColor: exec.status === 'COMPLETED' ? '#15AD70' : exec.status === 'RUNNING' ? '#F7C700' : '#FF7070' }} />
                       <span className="text-xs font-light" style={{ color: 'var(--text-tertiary)' }}>{exec.status.toLowerCase()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.6)' }}>{exec.input}</p>
+                      <p className="text-xs font-light group-hover:text-white/80 transition-colors" style={{ color: 'rgba(255,255,255,0.6)' }}>{exec.input}</p>
                       {exec.status === 'RUNNING' && exec.currentStage !== null && (
                         <p className="text-xs mt-1" style={{ color: '#F7C700' }}>
                           Stage {exec.currentStage + 1}/{workflow.stages.length}: {workflow.stages[exec.currentStage]}
                         </p>
                       )}
-                      {exec.output && exec.status === 'COMPLETED' && (
-                        <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>{exec.output}</p>
+                      {exec.status === 'COMPLETED' && (
+                        <p className="text-xs mt-1" style={{ color: 'rgba(191,159,241,0.5)' }}>View Nova output →</p>
                       )}
                     </div>
                     <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
                       {new Date(exec.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
