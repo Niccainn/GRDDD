@@ -65,6 +65,16 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    href: '/analytics',
+    label: 'Analytics',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <path d="M2 12L5.5 8L8.5 10L13 4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M2 13.5H13" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {
