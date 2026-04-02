@@ -5,6 +5,8 @@ import NovaBar from '@/components/NovaBar';
 import InlineEdit from '@/components/InlineEdit';
 import DeleteButton from '@/components/DeleteButton';
 import SystemExecutionChart from '@/components/SystemExecutionChart';
+import NovaMemoryPanel from '@/components/NovaMemoryPanel';
+import SystemContextDocs from '@/components/SystemContextDocs';
 
 async function createWorkflow(formData: FormData) {
   'use server';
@@ -188,6 +190,12 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
               )}
             </div>
           </div>
+
+          {/* Nova memory */}
+          <NovaMemoryPanel systemId={system.id} />
+
+          {/* Context docs */}
+          <SystemContextDocs systemId={system.id} />
 
           {/* Execution analytics */}
           <SystemExecutionChart systemId={system.id} />
