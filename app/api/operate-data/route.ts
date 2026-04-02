@@ -28,7 +28,8 @@ export async function GET() {
     name: s.name,
     color: s.color,
     environmentName: s.environment.name,
-    healthScore: s.systemState?.healthScore ?? (s.healthScore ? s.healthScore * 100 : null),
+    // healthScore stored as 0–100; systemState.healthScore also 0–100
+    healthScore: s.systemState?.healthScore ?? s.healthScore ?? null,
     activeWorkflows: s.workflows.length,
     totalWorkflows: s._count.workflows,
     totalExecutions: s._count.executions,

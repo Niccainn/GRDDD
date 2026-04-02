@@ -95,12 +95,16 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       {system.color && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: system.color }} />}
-                      {system.healthScore !== null && (
-                        <span className="text-xs font-light ml-auto"
-                          style={{ color: system.healthScore > 0.8 ? '#15AD70' : system.healthScore > 0.5 ? '#F7C700' : '#FF4D4D' }}>
-                          {Math.round(system.healthScore * 100)}%
-                        </span>
-                      )}
+                      {system.healthScore !== null && (() => {
+                        // healthScore may be 0–1 float or 0–100 integer
+                        const pct = system.healthScore > 1 ? Math.round(system.healthScore) : Math.round(system.healthScore * 100);
+                        const color = pct >= 80 ? '#15AD70' : pct >= 50 ? '#F7C700' : '#FF4D4D';
+                        return (
+                          <span className="text-xs font-light ml-auto" style={{ color }}>
+                            {pct}%
+                          </span>
+                        );
+                      })()}
                     </div>
                     <p className="text-sm font-light group-hover:text-white transition-colors mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
                       {system.name}
@@ -131,8 +135,12 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
           {/* Health rollup */}
           {(() => {
             const scoredSystems = environment.systems.filter(s => s.systemState?.healthScore != null || s.healthScore != null);
+            const toPercent = (v: number | null) => {
+              if (v === null) return 0;
+              return v > 1 ? Math.round(v) : Math.round(v * 100);
+            };
             const avgHealth = scoredSystems.length > 0
-              ? Math.round(scoredSystems.reduce((sum, s) => sum + (s.systemState?.healthScore ?? (s.healthScore ?? 0) * 100), 0) / scoredSystems.length)
+              ? Math.round(scoredSystems.reduce((sum, s) => sum + toPercent(s.systemState?.healthScore ?? s.healthScore), 0) / scoredSystems.length)
               : null;
             const healthColor = avgHealth === null ? 'rgba(255,255,255,0.3)' : avgHealth >= 80 ? '#15AD70' : avgHealth >= 60 ? '#F7C700' : '#FF6B6B';
             const totalExecutions = environment.systems.reduce((sum, s) => sum + s._count.executions, 0);

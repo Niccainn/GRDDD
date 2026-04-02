@@ -85,8 +85,8 @@ export default async function SystemsPage() {
                       <div className="flex items-start justify-between mb-3">
                         {s.color && <div className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: s.color }} />}
                         {s.healthScore !== null && (
-                          <span className="text-xs font-light ml-auto" style={{ color: s.healthScore > 0.8 ? '#15AD70' : '#F7C700' }}>
-                            {Math.round(s.healthScore * 100)}%
+                          <span className="text-xs font-light ml-auto" style={{ color: s.healthScore >= 80 ? '#15AD70' : s.healthScore >= 50 ? '#F7C700' : '#FF4D4D' }}>
+                            {Math.round(s.healthScore)}%
                           </span>
                         )}
                       </div>
