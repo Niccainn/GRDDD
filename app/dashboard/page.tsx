@@ -229,10 +229,10 @@ export default function OperatePage() {
             <div className="mt-6 space-y-1.5">
               <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-tertiary)' }}>QUICK ACCESS</p>
               {[
-                { label: 'New workflow', href: '/workflows', icon: '↗' },
-                { label: 'Browse templates', href: '/workflows', icon: '⊞' },
-                { label: 'View audit log', href: '/audit', icon: '☰' },
+                { label: 'Inbox', href: '/inbox', icon: '✉' },
+                { label: 'Reports', href: '/reports', icon: '⊡' },
                 { label: 'Analytics', href: '/analytics', icon: '∿' },
+                { label: 'Audit log', href: '/audit', icon: '☰' },
               ].map(link => (
                 <Link key={link.href + link.label} href={link.href}
                   className="flex items-center gap-3 px-4 py-2.5 rounded-lg group transition-all"
