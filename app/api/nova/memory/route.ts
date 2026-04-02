@@ -43,3 +43,15 @@ export async function POST(req: NextRequest) {
 
   return Response.json({ id: log.id, memory, updatedAt: log.createdAt });
 }
+
+export async function DELETE(req: NextRequest) {
+  const { systemId } = await req.json();
+  if (!systemId) return Response.json({ error: 'Missing systemId' }, { status: 400 });
+
+  // Delete all memory logs for this system
+  await prisma.intelligenceLog.deleteMany({
+    where: { systemId, action: 'memory_update' },
+  });
+
+  return Response.json({ cleared: true });
+}

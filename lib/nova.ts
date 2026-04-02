@@ -269,6 +269,7 @@ function buildPrompt(ctx: {
   identityName: string;
   workflows: { name: string; status: string }[];
   memory?: string | null;
+  contextDocs?: { title: string; body: string }[];
 }) {
   const wfList = ctx.workflows.length
     ? ctx.workflows.map(w => `  • ${w.name} [${w.status.toLowerCase()}]`).join('\n')
@@ -276,6 +277,10 @@ function buildPrompt(ctx: {
 
   const memoryBlock = ctx.memory
     ? `\n**Persistent memory (what you know about this system):**\n${ctx.memory}\n`
+    : '';
+
+  const contextBlock = ctx.contextDocs?.length
+    ? `\n**System knowledge documents:**\n${ctx.contextDocs.map(d => `### ${d.title}\n${d.body}`).join('\n\n')}\n`
     : '';
 
   return `You are Nova — the intelligence execution engine inside GRID, an adaptive organizational operating system.
@@ -286,7 +291,7 @@ You are operating inside the **${ctx.systemName}** system (${ctx.environmentName
 
 **Current workflows:**
 ${wfList}
-${memoryBlock}
+${memoryBlock}${contextBlock}
 **Your capabilities:**
 You have tools to read and write GRID data. When a user asks you to do something actionable — create a workflow, update a status, analyse health — **use your tools and do it**. Don't just describe what you could do.
 
@@ -350,11 +355,17 @@ export async function runNovaAgent({
     identityId: identity.id,
   };
 
-  // Load most recent memory for this system
-  const memoryLog = await prisma.intelligenceLog.findFirst({
-    where: { systemId: system.id, action: 'memory_update' },
-    orderBy: { createdAt: 'desc' },
-  });
+  // Load most recent memory and context docs for this system
+  const [memoryLog, contextDocs] = await Promise.all([
+    prisma.intelligenceLog.findFirst({
+      where: { systemId: system.id, action: 'memory_update' },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.intelligence.findMany({
+      where: { systemId: system.id, type: 'CONTEXT_DOC', isActive: true },
+      orderBy: { updatedAt: 'desc' },
+    }),
+  ]);
 
   const systemPrompt = buildPrompt({
     systemName: system.name,
@@ -363,6 +374,10 @@ export async function runNovaAgent({
     identityName: identity.name,
     workflows: system.workflows,
     memory: memoryLog?.reasoning ?? null,
+    contextDocs: contextDocs.map(d => ({
+      title: d.name,
+      body: (() => { try { return JSON.parse(d.metadata ?? '{}').body ?? ''; } catch { return ''; } })(),
+    })).filter(d => d.body),
   });
 
   const history = await loadHistory(systemId);
