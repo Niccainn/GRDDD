@@ -88,6 +88,25 @@ const NOVA_TOOLS: Anthropic.Tool[] = [
       required: ['memory'],
     },
   },
+  {
+    name: 'list_goals',
+    description: 'Read the current goals for this system — OKR-style objectives with status, metric, target, and progress.',
+    input_schema: { type: 'object' as const, properties: {} },
+  },
+  {
+    name: 'update_goal',
+    description: 'Update the status or current value for a goal in this system.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        goalId:  { type: 'string', description: 'The ID of the goal to update' },
+        status:  { type: 'string', enum: ['ON_TRACK', 'AT_RISK', 'BEHIND', 'ACHIEVED', 'CANCELLED'] },
+        current: { type: 'string', description: 'Current value of the metric' },
+        progress:{ type: 'number', description: 'Progress percentage 0-100' },
+      },
+      required: ['goalId'],
+    },
+  },
 ];
 
 // ─── Tool labels for UI display ───────────────────────────────────────────────
@@ -99,6 +118,8 @@ const TOOL_LABELS: Record<string, string> = {
   update_workflow: 'Updating workflow',
   set_health_score: 'Updating health score',
   update_memory: 'Saving to memory',
+  list_goals: 'Reading goals',
+  update_goal: 'Updating goal',
 };
 
 // ─── Tool executor ────────────────────────────────────────────────────────────
@@ -212,7 +233,7 @@ async function executeTool(
       });
       await prisma.system.update({
         where: { id: ctx.systemId },
-        data: { healthScore: score / 100 },
+        data: { healthScore: score },
       });
       return { result: { score, updated: true }, summary: `Health set to ${score}%` };
     }
@@ -235,6 +256,39 @@ async function executeTool(
         });
       }
       return { result: { saved: true }, summary: 'Memory updated' };
+    }
+
+    case 'list_goals': {
+      const goals = await prisma.goal.findMany({
+        where: { systemId: ctx.systemId },
+        orderBy: { createdAt: 'desc' },
+      });
+      return {
+        result: goals.map(g => ({
+          id: g.id,
+          title: g.title,
+          metric: g.metric,
+          target: g.target,
+          current: g.current,
+          status: g.status,
+          progress: g.progress,
+          dueDate: g.dueDate?.toISOString().slice(0, 10) ?? null,
+        })),
+        summary: `${goals.length} goal${goals.length !== 1 ? 's' : ''} found`,
+      };
+    }
+
+    case 'update_goal': {
+      const goalId  = input.goalId as string;
+      const updates: Record<string, unknown> = {};
+      if (input.status   !== undefined) updates.status   = input.status;
+      if (input.current  !== undefined) updates.current  = input.current;
+      if (input.progress !== undefined) updates.progress = input.progress;
+      const updated = await prisma.goal.update({ where: { id: goalId }, data: updates });
+      return {
+        result: { id: updated.id, status: updated.status, current: updated.current },
+        summary: `Goal "${updated.title}" updated → ${updated.status}`,
+      };
     }
 
     default:

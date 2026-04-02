@@ -7,6 +7,7 @@ import DeleteButton from '@/components/DeleteButton';
 import SystemExecutionChart from '@/components/SystemExecutionChart';
 import NovaMemoryPanel from '@/components/NovaMemoryPanel';
 import SystemContextDocs from '@/components/SystemContextDocs';
+import SystemGoals from '@/components/SystemGoals';
 
 async function createWorkflow(formData: FormData) {
   'use server';
@@ -190,6 +191,9 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
               )}
             </div>
           </div>
+
+          {/* Goals */}
+          <SystemGoals systemId={system.id} environmentId={system.environmentId} />
 
           {/* Nova memory */}
           <NovaMemoryPanel systemId={system.id} />

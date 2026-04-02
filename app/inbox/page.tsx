@@ -1,0 +1,427 @@
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
+
+type Signal = {
+  id: string;
+  title: string;
+  body: string | null;
+  source: string;
+  priority: string;
+  status: string;
+  systemId: string | null;
+  system: { id: string; name: string; color: string | null } | null;
+  workflowId: string | null;
+  workflow: { id: string; name: string } | null;
+  novaTriaged: boolean;
+  novaRouting: { reasoning: string; confidence: number } | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type System = { id: string; name: string; color: string | null };
+
+const PRIORITY_COLOR: Record<string, string> = {
+  URGENT: '#FF4D4D',
+  HIGH:   '#F7C700',
+  NORMAL: 'rgba(255,255,255,0.3)',
+  LOW:    'rgba(255,255,255,0.15)',
+};
+
+const PRIORITY_BG: Record<string, string> = {
+  URGENT: 'rgba(255,77,77,0.1)',
+  HIGH:   'rgba(247,199,0,0.08)',
+  NORMAL: 'rgba(255,255,255,0.04)',
+  LOW:    'rgba(255,255,255,0.02)',
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  UNREAD:    '#BF9FF1',
+  READ:      'rgba(255,255,255,0.3)',
+  TRIAGED:   '#15AD70',
+  DISMISSED: 'rgba(255,255,255,0.15)',
+};
+
+const SOURCE_ICON: Record<string, string> = {
+  manual: '✎', api: '⌁', email: '✉', webhook: '⇀', nova: '⚡',
+};
+
+function timeAgo(iso: string) {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+export default function InboxPage() {
+  const [signals, setSignals] = useState<Signal[]>([]);
+  const [systems, setSystems] = useState<System[]>([]);
+  const [environments, setEnvironments] = useState<{ id: string; name: string }[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [triaging, setTriaging] = useState<string | null>(null);
+
+  // Create form
+  const [form, setForm] = useState({ title: '', body: '', priority: 'NORMAL', environmentId: '', systemId: '' });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(() => {
+    const params = new URLSearchParams({
+      ...(statusFilter ? { status: statusFilter } : {}),
+      ...(priorityFilter ? { priority: priorityFilter } : {}),
+    });
+    fetch(`/api/signals?${params}`)
+      .then(r => r.json())
+      .then(d => { setSignals(d.signals); setUnreadCount(d.unreadCount); setLoaded(true); });
+  }, [statusFilter, priorityFilter]);
+
+  useEffect(() => {
+    load();
+    Promise.all([
+      fetch('/api/systems').then(r => r.json()).catch(() => []),
+      fetch('/api/environments').then(r => r.json()).catch(() => []),
+    ]).then(([sys, envs]) => {
+      setSystems(sys);
+      setEnvironments(envs);
+      if (envs.length > 0) setForm(f => ({ ...f, environmentId: envs[0].id }));
+    });
+  }, [load]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.title || !form.environmentId) return;
+    setSaving(true);
+    const res = await fetch('/api/signals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    if (res.ok) {
+      setShowCreate(false);
+      setForm(f => ({ ...f, title: '', body: '', systemId: '' }));
+      load();
+    }
+    setSaving(false);
+  }
+
+  async function updateStatus(id: string, status: string) {
+    await fetch(`/api/signals/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    setSignals(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+    if (status === 'DISMISSED') setSignals(prev => prev.filter(s => s.id !== id));
+  }
+
+  async function assignSystem(id: string, systemId: string) {
+    await fetch(`/api/signals/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ systemId: systemId || null }),
+    });
+    const sys = systems.find(s => s.id === systemId) ?? null;
+    setSignals(prev => prev.map(s => s.id === id ? { ...s, systemId, system: sys } : s));
+  }
+
+  async function triageWithNova(id: string) {
+    setTriaging(id);
+    const res = await fetch('/api/signals/triage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signalId: id }),
+    });
+    const data = await res.json();
+    if (data.signal) {
+      setSignals(prev => prev.map(s =>
+        s.id === id
+          ? { ...s, status: data.signal.status, system: data.signal.system, systemId: data.signal.system?.id ?? s.systemId, novaTriaged: true, novaRouting: data.routing }
+          : s
+      ));
+    }
+    setTriaging(null);
+  }
+
+  async function markRead(id: string) {
+    const sig = signals.find(s => s.id === id);
+    if (sig?.status === 'UNREAD') updateStatus(id, 'READ');
+  }
+
+  const filtered = signals.filter(s =>
+    (!statusFilter || s.status === statusFilter) &&
+    (!priorityFilter || s.priority === priorityFilter)
+  );
+
+  return (
+    <div className="px-10 py-10 min-h-screen">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-extralight tracking-tight mb-1">Inbox</h1>
+          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+            Signals and incoming work · {unreadCount > 0 ? `${unreadCount} unread` : 'all clear'}
+          </p>
+        </div>
+        <button onClick={() => setShowCreate(v => !v)}
+          className="text-xs font-light px-3 py-2 rounded-lg transition-all"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
+          + New signal
+        </button>
+      </div>
+
+      {/* Create form */}
+      {showCreate && (
+        <form onSubmit={handleCreate} className="mb-8 p-5 rounded-xl space-y-4"
+          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>NEW SIGNAL</p>
+          <input
+            value={form.title}
+            onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+            placeholder="Signal title or task description"
+            className="w-full text-sm font-light px-3 py-2.5 rounded-lg focus:outline-none"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }}
+            autoFocus
+          />
+          <textarea
+            value={form.body}
+            onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
+            placeholder="Additional context (optional)"
+            rows={3}
+            className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none resize-none"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.65)' }}
+          />
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs mb-1 block" style={{ color: 'var(--text-tertiary)' }}>Priority</label>
+              <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
+                className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.65)' }}>
+                {['LOW', 'NORMAL', 'HIGH', 'URGENT'].map(p => (
+                  <option key={p} value={p} style={{ background: '#111' }}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs mb-1 block" style={{ color: 'var(--text-tertiary)' }}>Environment</label>
+              <select value={form.environmentId} onChange={e => setForm(f => ({ ...f, environmentId: e.target.value }))}
+                className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.65)' }}>
+                {environments.map(e => (
+                  <option key={e.id} value={e.id} style={{ background: '#111' }}>{e.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs mb-1 block" style={{ color: 'var(--text-tertiary)' }}>Assign to system</label>
+              <select value={form.systemId} onChange={e => setForm(f => ({ ...f, systemId: e.target.value }))}
+                className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.65)' }}>
+                <option value="" style={{ background: '#111' }}>— Unassigned —</option>
+                {systems.map(s => (
+                  <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button type="submit" disabled={!form.title || !form.environmentId || saving}
+              className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.8)' }}>
+              {saving ? '···' : 'Add signal'}
+            </button>
+            <button type="button" onClick={() => setShowCreate(false)}
+              className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.25)' }}>Cancel</button>
+          </div>
+        </form>
+      )}
+
+      {/* Filters */}
+      <div className="flex items-center gap-2 mb-6">
+        {['', 'UNREAD', 'TRIAGED', 'READ'].map(s => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
+            style={{
+              background: statusFilter === s ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${statusFilter === s ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
+              color: statusFilter === s ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.35)',
+            }}>
+            {s || 'All'}
+          </button>
+        ))}
+        <span style={{ color: 'rgba(255,255,255,0.1)' }}>·</span>
+        {['', 'URGENT', 'HIGH'].map(p => (
+          <button key={p} onClick={() => setPriorityFilter(p)}
+            className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
+            style={{
+              background: priorityFilter === p ? (p ? `${PRIORITY_COLOR[p]}15` : 'rgba(255,255,255,0.1)') : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${priorityFilter === p ? (p ? `${PRIORITY_COLOR[p]}40` : 'rgba(255,255,255,0.2)') : 'rgba(255,255,255,0.07)'}`,
+              color: priorityFilter === p ? (p ? PRIORITY_COLOR[p] : 'rgba(255,255,255,0.8)') : 'rgba(255,255,255,0.35)',
+            }}>
+            {p || 'All priorities'}
+          </button>
+        ))}
+      </div>
+
+      {/* Signal list */}
+      {!loaded ? (
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center py-24 rounded-xl"
+          style={{ border: '1px dashed var(--border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No signals</p>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
+            Signals arrive here from API, webhooks, email, or manual entry
+          </p>
+          <button onClick={() => setShowCreate(true)}
+            className="text-xs font-light px-4 py-2 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+            + Add the first signal
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map(signal => (
+            <div key={signal.id}
+              className="rounded-xl overflow-hidden transition-all"
+              style={{
+                background: signal.status === 'UNREAD' ? PRIORITY_BG[signal.priority] : 'var(--surface)',
+                border: `1px solid ${signal.status === 'UNREAD' && signal.priority !== 'NORMAL' ? PRIORITY_COLOR[signal.priority] + '30' : 'var(--border)'}`,
+              }}>
+              {/* Main row */}
+              <div
+                className="flex items-start gap-4 px-5 py-3.5 cursor-pointer"
+                onClick={() => { setExpanded(expanded === signal.id ? null : signal.id); markRead(signal.id); }}
+              >
+                {/* Priority dot */}
+                <div className="flex items-center gap-2 mt-0.5 flex-shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: PRIORITY_COLOR[signal.priority] }} />
+                  <span className="text-xs w-4" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                    {SOURCE_ICON[signal.source] ?? '·'}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-sm font-light truncate"
+                      style={{ color: signal.status === 'UNREAD' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.6)' }}>
+                      {signal.title}
+                    </p>
+                    {signal.status === 'UNREAD' && (
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        style={{ background: '#BF9FF1' }} />
+                    )}
+                  </div>
+                  {signal.system && (
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                      <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5"
+                        style={{ backgroundColor: signal.system.color ?? 'rgba(255,255,255,0.3)' }} />
+                      {signal.system.name}
+                      {signal.workflow && ` · ${signal.workflow.name}`}
+                    </p>
+                  )}
+                </div>
+
+                {/* Meta */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {signal.novaTriaged && (
+                    <span className="text-xs px-1.5 py-0.5 rounded"
+                      style={{ background: 'rgba(21,173,112,0.08)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>
+                      ✓ triaged
+                    </span>
+                  )}
+                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{timeAgo(signal.createdAt)}</span>
+                  <span className="text-xs font-light"
+                    style={{ color: STATUS_COLOR[signal.status] ?? 'rgba(255,255,255,0.3)' }}>
+                    {signal.status.toLowerCase()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Expanded panel */}
+              {expanded === signal.id && (
+                <div className="px-5 pb-4 pt-2 space-y-3" style={{ borderTop: '1px solid var(--border)' }}>
+                  {signal.body && (
+                    <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                      {signal.body}
+                    </p>
+                  )}
+
+                  {/* Nova routing info */}
+                  {signal.novaRouting && (
+                    <div className="px-3 py-2 rounded-lg text-xs"
+                      style={{ background: 'rgba(21,173,112,0.05)', border: '1px solid rgba(21,173,112,0.15)' }}>
+                      <span style={{ color: '#15AD70' }}>Nova: </span>
+                      <span style={{ color: 'rgba(255,255,255,0.5)' }}>{signal.novaRouting.reasoning}</span>
+                      <span className="ml-2 text-xs" style={{ color: 'rgba(21,173,112,0.5)' }}>
+                        {Math.round((signal.novaRouting.confidence ?? 0) * 100)}% confidence
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Route to system */}
+                    <select
+                      value={signal.systemId ?? ''}
+                      onChange={e => assignSystem(signal.id, e.target.value)}
+                      className="text-xs font-light px-2.5 py-1.5 rounded-lg focus:outline-none appearance-none"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+                      <option value="" style={{ background: '#111' }}>— Route to system —</option>
+                      {systems.map(s => (
+                        <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>
+                      ))}
+                    </select>
+
+                    {/* Nova triage */}
+                    {!signal.novaTriaged && process.env.NODE_ENV !== 'test' && (
+                      <button onClick={() => triageWithNova(signal.id)} disabled={triaging === signal.id}
+                        className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
+                        style={{ background: 'rgba(191,159,241,0.08)', border: '1px solid rgba(191,159,241,0.2)', color: '#BF9FF1' }}>
+                        {triaging === signal.id ? '···' : '⚡ Ask Nova to triage'}
+                      </button>
+                    )}
+
+                    {/* Convert to workflow run */}
+                    {signal.system && (
+                      <Link href={`/systems/${signal.system.id}`}
+                        className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+                        Open system →
+                      </Link>
+                    )}
+
+                    <div className="ml-auto flex items-center gap-2">
+                      {signal.status !== 'READ' && (
+                        <button onClick={() => updateStatus(signal.id, 'READ')}
+                          className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                          Mark read
+                        </button>
+                      )}
+                      <button onClick={() => updateStatus(signal.id, 'DISMISSED')}
+                        className="text-xs font-light" style={{ color: 'rgba(255,107,107,0.35)' }}>
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
