@@ -58,9 +58,11 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
   const [system, novaLogs] = await Promise.all([getSystem(id), getNovaLogs(id)]);
   if (!system) notFound();
 
-  const healthColor = system.healthScore
-    ? system.healthScore > 0.8 ? '#15AD70' : system.healthScore > 0.5 ? '#F7C700' : '#FF4D4D'
-    : 'rgba(255,255,255,0.3)';
+  // healthScore is stored as 0–100 integer
+  const healthPct = system.healthScore ?? null;
+  const healthColor = healthPct === null
+    ? 'rgba(255,255,255,0.3)'
+    : healthPct >= 80 ? '#15AD70' : healthPct >= 50 ? '#F7C700' : '#FF4D4D';
 
   return (
     <div className="px-10 py-10 min-h-screen">
@@ -104,7 +106,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
           <div className="text-right flex-shrink-0">
             <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Health</p>
             <p className="text-2xl font-extralight" style={{ color: healthColor }}>
-              {Math.round((system.healthScore || 0) * 100)}%
+              {Math.round(system.healthScore || 0)}%
             </p>
           </div>
         )}
@@ -177,10 +179,10 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
                 <div className="pt-2" style={{ borderTop: '1px solid var(--border)' }}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Health</span>
-                    <span className="text-xs font-light" style={{ color: healthColor }}>{Math.round((system.healthScore || 0) * 100)}%</span>
+                    <span className="text-xs font-light" style={{ color: healthColor }}>{Math.round(system.healthScore || 0)}%</span>
                   </div>
                   <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <div className="h-full rounded-full transition-all" style={{ width: `${(system.healthScore || 0) * 100}%`, backgroundColor: healthColor }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, system.healthScore || 0)}%`, backgroundColor: healthColor }} />
                   </div>
                 </div>
               )}

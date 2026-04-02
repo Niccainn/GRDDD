@@ -31,7 +31,7 @@ export async function POST() {
 
   // Health drift alerts
   for (const s of systems) {
-    const score = s.systemState?.healthScore ?? (s.healthScore ? s.healthScore * 100 : null);
+    const score = s.systemState?.healthScore ?? s.healthScore ?? null;
     if (score === null) continue;
 
     if (score < 50) {
