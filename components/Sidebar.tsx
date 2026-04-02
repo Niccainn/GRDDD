@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   {
@@ -85,11 +86,40 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    href: '/executions',
+    label: 'Executions',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <path d="M3 2.5L12 7.5L3 12.5V2.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+
+  const [alertCount, setAlertCount] = useState<{ critical: number; warning: number } | null>(null);
+
+  useEffect(() => {
+    const check = () => {
+      fetch('/api/alerts')
+        .then(r => r.json())
+        .then(d => {
+          const alerts: { severity: string }[] = d.alerts ?? [];
+          setAlertCount({
+            critical: alerts.filter(a => a.severity === 'critical').length,
+            warning: alerts.filter(a => a.severity === 'warning').length,
+          });
+        })
+        .catch(() => {});
+    };
+    check();
+    const id = setInterval(check, 30000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <aside
@@ -140,6 +170,13 @@ export default function Sidebar() {
         {navItems.map((item) => {
           const active = isActive(item.href);
           const isNova = item.href === '/nova';
+          const isDashboard = item.href === '/dashboard';
+
+          // Alert badge on Operate/Dashboard
+          const showAlertBadge = isDashboard && alertCount && (alertCount.critical + alertCount.warning) > 0;
+          const badgeCount = alertCount ? alertCount.critical + alertCount.warning : 0;
+          const badgeIsCritical = alertCount ? alertCount.critical > 0 : false;
+
           return (
             <Link
               key={item.href}
@@ -156,10 +193,19 @@ export default function Sidebar() {
             >
               <span style={{ opacity: active ? 1 : 0.6 }}>{item.icon}</span>
               <span className="font-light tracking-wide text-sm">{item.label}</span>
-              {active && (
+              {showAlertBadge ? (
+                <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light min-w-[18px] text-center"
+                  style={{
+                    background: badgeIsCritical ? 'rgba(255,75,75,0.15)' : 'rgba(247,199,0,0.12)',
+                    color: badgeIsCritical ? '#FF6B6B' : '#F7C700',
+                    border: `1px solid ${badgeIsCritical ? 'rgba(255,75,75,0.25)' : 'rgba(247,199,0,0.2)'}`,
+                  }}>
+                  {badgeCount}
+                </span>
+              ) : active ? (
                 <div className="ml-auto w-1 h-1 rounded-full"
                   style={{ background: isNova ? 'rgba(191,159,241,0.5)' : 'rgba(255,255,255,0.3)' }} />
-              )}
+              ) : null}
             </Link>
           );
         })}

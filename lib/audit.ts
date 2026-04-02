@@ -16,7 +16,9 @@ export type AuditAction =
   // Automations
   | 'automation.created' | 'automation.toggled' | 'automation.run'
   // Webhooks
-  | 'webhook.created' | 'webhook.deleted' | 'webhook.test';
+  | 'webhook.created' | 'webhook.deleted' | 'webhook.test'
+  // Alerts
+  | 'alert.fired';
 
 type AuditParams = {
   action: AuditAction;

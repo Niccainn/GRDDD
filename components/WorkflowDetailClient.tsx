@@ -64,6 +64,8 @@ export default function WorkflowDetailClient({
   const [deleting, setDeleting] = useState(false);
   const [versions, setVersions] = useState<{ id: string; version: number; description: string | null; createdAt: string }[]>([]);
   const [showVersions, setShowVersions] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const [savedAsTemplate, setSavedAsTemplate] = useState(false);
 
   useEffect(() => {
     fetch(`/api/workflows/${initial.id}/versions`)
@@ -153,6 +155,16 @@ export default function WorkflowDetailClient({
     router.push('/workflows');
   }
 
+  async function handleDuplicate() {
+    setDuplicating(true);
+    const res = await fetch(`/api/workflows/${workflow.id}/duplicate`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      router.push(`/workflows/${data.id}`);
+    }
+    setDuplicating(false);
+  }
+
   function addStage() {
     if (!newStage.trim()) return;
     setEditStages(prev => [...prev, newStage.trim()]);
@@ -237,6 +249,12 @@ export default function WorkflowDetailClient({
           ) : (
             <button onClick={() => setEditing(true)} className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.3)' }}>Edit</button>
           )}
+
+          <button onClick={handleDuplicate} disabled={duplicating}
+            className="text-xs font-light transition-colors disabled:opacity-40"
+            style={{ color: 'rgba(255,255,255,0.2)' }}>
+            {duplicating ? '···' : 'Duplicate'}
+          </button>
 
           {confirmDelete ? (
             <span className="flex items-center gap-1.5">
@@ -488,6 +506,33 @@ export default function WorkflowDetailClient({
               </span>
               <span className="opacity-50 group-hover:opacity-100 transition-opacity">→</span>
             </Link>
+
+            {/* Save as template */}
+            <button
+              onClick={async () => {
+                await fetch(`/api/workflows/${workflow.id}/save-template`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ category: 'Custom' }),
+                });
+                setSavedAsTemplate(true);
+                setTimeout(() => setSavedAsTemplate(false), 3000);
+              }}
+              className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-xs font-light transition-all"
+              style={{
+                background: savedAsTemplate ? 'rgba(21,173,112,0.08)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${savedAsTemplate ? 'rgba(21,173,112,0.2)' : 'var(--border)'}`,
+                color: savedAsTemplate ? '#15AD70' : 'rgba(255,255,255,0.35)',
+              }}>
+              <span className="flex items-center gap-2">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 1h8l1 3H1L2 1z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+                  <rect x="2" y="4" width="8" height="7" rx="1" stroke="currentColor" strokeWidth="1.1"/>
+                  <path d="M4 7.5h4M4 9.5h2" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+                </svg>
+                {savedAsTemplate ? '✓ Saved as template' : 'Save as template'}
+              </span>
+            </button>
 
             {versions.length > 0 && (
               <button onClick={() => setShowVersions(v => !v)}
