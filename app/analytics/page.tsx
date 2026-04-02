@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
             <div className="h-20 animate-pulse rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
           ) : (
             <>
-              <BarChart data={data.daily as Record<string, number>[]} keyA="queries" color="#BF9FF1" height={80} />
+              <BarChart data={data.daily as unknown as Record<string, number>[]} keyA="queries" color="#BF9FF1" height={80} />
               <div className="flex justify-between mt-2 text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
                 <span>{fmtDate(data.daily[0]?.date ?? '')}</span>
                 <span>{fmtDate(data.daily[data.daily.length - 1]?.date ?? '')}</span>
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
             <div className="h-20 animate-pulse rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
           ) : (
             <>
-              <BarChart data={data.execDaily as Record<string, number>[]} keyA="completed" keyB="failed" color="#15AD70" colorB="#FF6B6B" height={72} />
+              <BarChart data={data.execDaily as unknown as Record<string, number>[]} keyA="completed" keyB="failed" color="#15AD70" colorB="#FF6B6B" height={72} />
               <div className="flex justify-between mt-2 text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
                 <span>{fmtDate(data.execDaily[0]?.date ?? '')}</span>
                 <span>{fmtDate(data.execDaily[data.execDaily.length - 1]?.date ?? '')}</span>

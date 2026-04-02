@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import InlineEdit from '@/components/InlineEdit';
 import DeleteButton from '@/components/DeleteButton';
+import CloneEnvironmentButton from '@/components/CloneEnvironmentButton';
 
 async function getEnvironment(slug: string) {
   return prisma.environment.findUnique({
@@ -46,7 +47,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
           )}
           <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>/{environment.slug}</p>
 
-          {/* Edit / Delete inline */}
+          {/* Edit / Delete / Clone inline */}
           <div className="flex items-center gap-4 mt-4">
             <InlineEdit
               id={environment.id}
@@ -54,6 +55,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
               initialName={environment.name}
               initialDescription={environment.description}
             />
+            <CloneEnvironmentButton environmentId={environment.id} sourceName={environment.name} />
             <DeleteButton id={environment.id} type="environments" redirectTo="/environments" />
           </div>
         </div>
