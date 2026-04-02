@@ -95,6 +95,17 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    href: '/inbox',
+    label: 'Inbox',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <path d="M1.5 4.5C1.5 3.95 1.95 3.5 2.5 3.5H12.5C13.05 3.5 13.5 3.95 13.5 4.5V10.5C13.5 11.05 13.05 11.5 12.5 11.5H2.5C1.95 11.5 1.5 11.05 1.5 10.5V4.5Z" stroke="currentColor" strokeWidth="1.1"/>
+        <path d="M1.5 5L7.5 8.5L13.5 5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+      </svg>
+    ),
+    badge: 'inbox',
+  },
 ];
 
 export default function Sidebar() {
@@ -102,6 +113,7 @@ export default function Sidebar() {
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
   const [alertCount, setAlertCount] = useState<{ critical: number; warning: number } | null>(null);
+  const [inboxUnread, setInboxUnread] = useState(0);
 
   useEffect(() => {
     const check = () => {
@@ -114,6 +126,10 @@ export default function Sidebar() {
             warning: alerts.filter(a => a.severity === 'warning').length,
           });
         })
+        .catch(() => {});
+      fetch('/api/signals?limit=1')
+        .then(r => r.json())
+        .then(d => setInboxUnread(d.unreadCount ?? 0))
         .catch(() => {});
     };
     check();
@@ -171,11 +187,13 @@ export default function Sidebar() {
           const active = isActive(item.href);
           const isNova = item.href === '/nova';
           const isDashboard = item.href === '/dashboard';
+          const isInbox = item.href === '/inbox';
 
           // Alert badge on Operate/Dashboard
           const showAlertBadge = isDashboard && alertCount && (alertCount.critical + alertCount.warning) > 0;
           const badgeCount = alertCount ? alertCount.critical + alertCount.warning : 0;
           const badgeIsCritical = alertCount ? alertCount.critical > 0 : false;
+          const showInboxBadge = isInbox && inboxUnread > 0;
 
           return (
             <Link
@@ -201,6 +219,15 @@ export default function Sidebar() {
                     border: `1px solid ${badgeIsCritical ? 'rgba(255,75,75,0.25)' : 'rgba(247,199,0,0.2)'}`,
                   }}>
                   {badgeCount}
+                </span>
+              ) : showInboxBadge ? (
+                <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light min-w-[18px] text-center"
+                  style={{
+                    background: 'rgba(191,159,241,0.12)',
+                    color: '#BF9FF1',
+                    border: '1px solid rgba(191,159,241,0.25)',
+                  }}>
+                  {inboxUnread}
                 </span>
               ) : active ? (
                 <div className="ml-auto w-1 h-1 rounded-full"

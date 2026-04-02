@@ -34,6 +34,7 @@ model Identity {
   createdWorkflows      Workflow[]       @relation("WorkflowCreator")
   createdIntelligence   Intelligence[]   @relation("IntelligenceCreator")
   intelligenceLogs      IntelligenceLog[]
+  goals                 Goal[]
   apiKeys               ApiKey[]
 
   @@index([email])
@@ -70,6 +71,8 @@ model Environment {
   intelligence Intelligence[]
   webhooks     Webhook[]
   apiKeys      ApiKey[]
+  goals        Goal[]
+  signals      Signal[]
 
   @@index([ownerId])
   @@index([slug])
@@ -127,6 +130,8 @@ model System {
   intelligenceLogs IntelligenceLog[]
   executions       Execution[]
   systemState      SystemState?
+  goals            Goal[]
+  signals          Signal[]
 
   @@index([environmentId])
   @@index([creatorId])
@@ -212,6 +217,7 @@ model Workflow {
   intelligenceLogs IntelligenceLog[]
   executions       Execution[]
   versions         WorkflowVersion[]
+  signals          Signal[]
 
   @@index([systemId])
   @@index([environmentId])
@@ -416,4 +422,76 @@ model AuditLog {
   @@index([entityId])
   @@index([actorId])
   @@index([environmentId])
+}
+
+// ===============================================
+// OBJECT 12: GOAL
+// OKR-style goals attached to a system
+// ===============================================
+
+model Goal {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String
+  description String?
+  metric      String?   // What to measure (e.g. "Articles published per week")
+  target      String?   // Target value or description
+  current     String?   // Current value (updated manually or by Nova)
+  status      String    @default("ON_TRACK") // "ON_TRACK" | "AT_RISK" | "BEHIND" | "ACHIEVED" | "CANCELLED"
+  dueDate     DateTime?
+  progress    Float?    // 0-100 progress percentage
+
+  systemId String
+  system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  creatorId String
+  creator   Identity @relation(fields: [creatorId], references: [id])
+
+  @@index([systemId])
+  @@index([environmentId])
+  @@index([status])
+}
+
+// ===============================================
+// OBJECT 13: SIGNAL
+// Inbox items — incoming work routed to systems
+// ===============================================
+
+model Signal {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Content
+  title     String
+  body      String?
+  source    String    // "manual" | "api" | "email" | "webhook" | "nova"
+  sourceRef String?   // External reference (e.g. email message-id, webhook event id)
+  priority  String    @default("NORMAL") // "LOW" | "NORMAL" | "HIGH" | "URGENT"
+  status    String    @default("UNREAD") // "UNREAD" | "READ" | "TRIAGED" | "DISMISSED"
+
+  // Routing
+  systemId      String?
+  system        System?      @relation(fields: [systemId], references: [id], onDelete: SetNull)
+
+  workflowId    String?
+  workflow      Workflow?    @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  // Nova triage
+  novaRouting   String?  // JSON: { suggestedSystemId, reasoning, confidence }
+  novaTriaged   Boolean  @default(false)
+
+  @@index([environmentId])
+  @@index([systemId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
 }
