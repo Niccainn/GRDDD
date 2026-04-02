@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 
 export async function GET() {
-  const [systems, logs, workflows] = await Promise.all([
+  const [systems, logs, workflows, recentExecutions] = await Promise.all([
     prisma.system.findMany({
       include: {
         environment: true,
@@ -20,6 +20,15 @@ export async function GET() {
     prisma.workflow.findMany({
       include: { system: { select: { name: true } } },
       orderBy: { updatedAt: 'desc' },
+    }),
+    prisma.execution.findMany({
+      include: {
+        system: { select: { id: true, name: true, color: true } },
+        workflow: { select: { id: true, name: true } },
+        validationResult: { select: { score: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 8,
     }),
   ]);
 
@@ -64,5 +73,16 @@ export async function GET() {
     ? Math.round(healthScores.reduce((sum, s) => sum + (s.healthScore ?? 0), 0) / healthScores.length)
     : null;
 
-  return Response.json({ systems: systemData, activity: activityFeed, workflows: wfStats, avgHealth });
+  const executions = recentExecutions.map(e => ({
+    id: e.id,
+    status: e.status,
+    input: e.input?.slice(0, 100) ?? '',
+    createdAt: e.createdAt.toISOString(),
+    completedAt: e.completedAt?.toISOString() ?? null,
+    system: { id: e.system.id, name: e.system.name, color: e.system.color },
+    workflow: e.workflow ? { id: e.workflow.id, name: e.workflow.name } : null,
+    validationScore: e.validationResult?.score ?? null,
+  }));
+
+  return Response.json({ systems: systemData, activity: activityFeed, workflows: wfStats, avgHealth, executions });
 }
