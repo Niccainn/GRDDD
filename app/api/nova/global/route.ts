@@ -202,7 +202,7 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
           break;
         }
 
-        send({ type: 'done', executionId: 'global', tokens: totalTokens });
+        send({ type: 'done', executionId: 'global', tokens: totalTokens, cost: 0 });
       } catch (err) {
         send({ type: 'error', message: err instanceof Error ? err.message : 'Nova failed' });
       } finally {
