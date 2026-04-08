@@ -21,9 +21,9 @@ type GoalsWidgetProps = {
 
 function statusColor(status: string): string {
   switch (status) {
-    case 'ON_TRACK': return '#22c55e';
-    case 'AT_RISK': return 'var(--warning)';
-    case 'BEHIND': return 'var(--danger)';
+    case 'ON_TRACK': return '#15AD70';
+    case 'AT_RISK': return '#F7C700';
+    case 'BEHIND': return '#FF5757';
     default: return 'var(--text-3)';
   }
 }
@@ -34,6 +34,14 @@ function statusLabel(status: string): string {
     case 'AT_RISK': return 'At risk';
     case 'BEHIND': return 'Behind';
     default: return status;
+  }
+}
+
+function statusTagClass(status: string): string {
+  switch (status) {
+    case 'ON_TRACK': return 'tag-status-on-track';
+    case 'AT_RISK': return 'tag-status-at-risk';
+    default: return 'tag-priority-urgent';
   }
 }
 
@@ -48,37 +56,32 @@ function daysLeft(dateStr: string): string {
 
 export default function GoalsWidget({ goals }: GoalsWidgetProps) {
   return (
-    <Widget title="GOALS">
-      <div className="space-y-4">
+    <Widget title="GOALS" action={{ label: 'View all →', href: '/goals' }}>
+      <div className="space-y-3 overflow-y-auto" style={{ maxHeight: '300px' }}>
         {goals.length === 0 && (
           <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>No goals set</p>
         )}
-        {goals.map((goal) => {
-          const pct = goal.progress ?? 0;
+        {goals.map(goal => {
+          const pct = Math.round(goal.progress ?? 0);
           const color = statusColor(goal.status);
 
           return (
-            <div key={goal.id} className="space-y-1.5">
-              {/* Title row */}
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-light truncate" style={{ color: 'var(--text-1)' }}>
+            <div key={goal.id} className="glass-deep rounded-xl p-4">
+              {/* Title + status tag */}
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="text-sm font-light leading-snug" style={{ color: 'var(--text-1)' }}>
                   {goal.title}
                 </span>
-                <span
-                  className="text-[10px] font-light px-1.5 py-0.5 rounded-full shrink-0"
-                  style={{ color, border: `1px solid ${color}33` }}
-                >
+                <span className={`tag ${statusTagClass(goal.status)} shrink-0`}>
                   {statusLabel(goal.status)}
                 </span>
               </div>
 
               {/* System + due date */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <div
-                    className="w-1 h-1 rounded-full"
-                    style={{ background: goal.systemColor || 'var(--text-3)' }}
-                  />
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: goal.systemColor || 'var(--text-3)' }} />
                   <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
                     {goal.systemName}
                   </span>
@@ -90,18 +93,15 @@ export default function GoalsWidget({ goals }: GoalsWidgetProps) {
                 )}
               </div>
 
-              {/* Progress bar */}
-              <div className="flex items-center gap-2">
-                <div
-                  className="flex-1 h-1 rounded-full overflow-hidden"
-                  style={{ background: 'rgba(255,255,255,0.06)' }}
-                >
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${Math.min(100, pct)}%`, background: color }}
-                  />
+              {/* Progress bar + percentage */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-2 rounded-full overflow-hidden"
+                  style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${Math.min(100, pct)}%`, background: color }} />
                 </div>
-                <span className="text-[10px] font-light shrink-0" style={{ color: 'var(--text-3)' }}>
+                <span className="stat-number text-sm tabular-nums shrink-0 w-10 text-right"
+                  style={{ color }}>
                   {pct}%
                 </span>
               </div>

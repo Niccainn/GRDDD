@@ -178,6 +178,112 @@ body {
   box-shadow: var(--glass-shadow), var(--glass-inset);
 }
 
+/* ─── Deep glass — stronger frosted effect for widgets ─── */
+.glass-deep {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(80px) saturate(1.4);
+  -webkit-backdrop-filter: blur(80px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  transition: all var(--duration) var(--ease);
+}
+
+.glass-deep:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 16px 64px rgba(0, 0, 0, 0.7),
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .glass-deep {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* ─── Stat number — bold instrument panel number ─── */
+.stat-number {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-number-lg {
+  font-size: 2.75rem;
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Dot matrix chart ─── */
+.dot-matrix {
+  display: grid;
+  gap: 3px;
+}
+
+.dot-matrix-cell {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: opacity var(--duration) var(--ease);
+}
+
+/* ─── Category tag ─── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.tag-priority-urgent {
+  background: rgba(255, 87, 87, 0.12);
+  color: #FF5757;
+  border: 1px solid rgba(255, 87, 87, 0.2);
+}
+
+.tag-priority-high {
+  background: rgba(247, 199, 0, 0.12);
+  color: #F7C700;
+  border: 1px solid rgba(247, 199, 0, 0.2);
+}
+
+.tag-priority-normal {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-3);
+  border: 1px solid var(--glass-border);
+}
+
+.tag-status-on-track {
+  background: rgba(21, 173, 112, 0.12);
+  color: #15AD70;
+  border: 1px solid rgba(21, 173, 112, 0.2);
+}
+
+.tag-status-at-risk {
+  background: rgba(247, 199, 0, 0.12);
+  color: #F7C700;
+  border: 1px solid rgba(247, 199, 0, 0.2);
+}
+
 .glass-pill {
   background: var(--glass);
   backdrop-filter: blur(20px);
