@@ -31,7 +31,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
     <div className="px-10 py-10 min-h-screen">
       {/* Breadcrumb */}
       <Link href="/environments" className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
-        style={{ color: 'var(--text-tertiary)' }}>
+        style={{ color: 'var(--text-3)' }}>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -43,9 +43,9 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">{environment.name}</h1>
           {environment.description && (
-            <p className="text-sm font-light" style={{ color: 'var(--text-secondary)' }}>{environment.description}</p>
+            <p className="text-sm font-light" style={{ color: 'var(--text-2)' }}>{environment.description}</p>
           )}
-          <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>/{environment.slug}</p>
+          <p className="text-xs mt-2" style={{ color: 'var(--text-3)' }}>/{environment.slug}</p>
 
           {/* Edit / Delete / Clone inline */}
           <div className="flex items-center gap-4 mt-4">
@@ -60,8 +60,8 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{environment.owner.name}</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>{environment.owner.name}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
             {new Date(environment.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>
         </div>
@@ -70,7 +70,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
       <div className="grid grid-cols-3 gap-8">
         <div className="col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>SYSTEMS</p>
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>SYSTEMS</p>
             <Link href="/systems" className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
               + Add system
@@ -78,9 +78,9 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
           </div>
 
           {environment.systems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-              <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No systems yet</p>
-              <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Add systems to this environment</p>
+            <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+              <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No systems yet</p>
+              <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Add systems to this environment</p>
               <Link href="/systems" className="text-xs font-light px-4 py-2 rounded-lg"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
                 Go to Systems →
@@ -91,7 +91,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
               {environment.systems.map(system => (
                 <Link key={system.id} href={`/systems/${system.id}`}
                   className="group flex flex-col justify-between p-5 rounded-xl transition-all"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       {system.color && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: system.color }} />}
@@ -110,11 +110,11 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
                       {system.name}
                     </p>
                     {system.description && (
-                      <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{system.description}</p>
+                      <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--text-3)' }}>{system.description}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-3 mt-3">
-                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>
                       {system._count.workflows} workflow{system._count.workflows !== 1 ? 's' : ''}
                     </span>
                     {system.workflows.length > 0 && (
@@ -148,9 +148,9 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
             return (
               <>
                 {avgHealth !== null && (
-                  <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div className="rounded-xl p-4" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Avg Health</span>
+                      <span className="text-xs" style={{ color: 'var(--text-3)' }}>Avg Health</span>
                       <span className="text-sm font-light" style={{ color: healthColor }}>{avgHealth}%</span>
                     </div>
                     <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
@@ -158,7 +158,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
                     </div>
                   </div>
                 )}
-                <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                   {[
                     { label: 'Systems', value: environment.systems.length },
                     { label: 'Total workflows', value: environment.systems.reduce((sum, s) => sum + s._count.workflows, 0) },
@@ -168,7 +168,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
                     { label: 'Created', value: new Date(environment.createdAt).toLocaleDateString() },
                   ].map(({ label, value, color }) => (
                     <div key={label} className="flex items-center justify-between">
-                      <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
+                      <span className="text-xs" style={{ color: 'var(--text-3)' }}>{label}</span>
                       <span className="text-xs font-light" style={{ color: color ?? 'rgba(255,255,255,0.6)' }}>{value}</span>
                     </div>
                   ))}

@@ -109,12 +109,12 @@ export default function SystemGoals({
   const doneGoals   = goals.filter(g => g.status === 'ACHIEVED' || g.status === 'CANCELLED');
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
       {/* Header */}
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3 transition-colors"
-        style={{ background: 'var(--surface)' }}
+        style={{ background: 'var(--glass)' }}
       >
         <div className="flex items-center gap-2">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
@@ -122,7 +122,7 @@ export default function SystemGoals({
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
-          <span className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>GOALS</span>
+          <span className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>GOALS</span>
           {activeGoals.length > 0 && (
             <span className="text-xs px-1.5 py-0.5 rounded-full"
               style={{ background: 'rgba(247,199,0,0.1)', color: '#F7C700', border: '1px solid rgba(247,199,0,0.2)' }}>
@@ -131,13 +131,13 @@ export default function SystemGoals({
           )}
         </div>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
-          style={{ color: 'var(--text-tertiary)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+          style={{ color: 'var(--text-3)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
           <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
 
       {open && (
-        <div className="px-4 pb-4 pt-2" style={{ background: 'rgba(247,199,0,0.02)', borderTop: '1px solid var(--border)' }}>
+        <div className="px-4 pb-4 pt-2" style={{ background: 'rgba(247,199,0,0.02)', borderTop: '1px solid var(--glass-border)' }}>
           {!loaded ? (
             <div className="h-10 rounded-lg animate-pulse mt-2" style={{ background: 'rgba(255,255,255,0.04)' }} />
           ) : (

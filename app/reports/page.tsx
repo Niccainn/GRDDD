@@ -205,7 +205,7 @@ export default function ReportsPage() {
     <div className="px-10 py-10 min-h-screen">
       <div className="mb-8">
         <h1 className="text-2xl font-extralight tracking-tight mb-1">Reports</h1>
-        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
           Nova-generated organisation summaries and analysis
         </p>
       </div>
@@ -215,20 +215,20 @@ export default function ReportsPage() {
         <div className="space-y-4">
           {/* Report type selector */}
           <div>
-            <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-tertiary)' }}>REPORT TYPE</p>
+            <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-3)' }}>REPORT TYPE</p>
             <div className="space-y-1.5">
               {REPORT_TYPES.map(rt => (
                 <button key={rt.id} onClick={() => setSelectedType(rt.id)}
                   className="w-full text-left px-4 py-3 rounded-xl transition-all"
                   style={{
-                    background: selectedType === rt.id ? 'rgba(191,159,241,0.08)' : 'var(--surface)',
-                    border: `1px solid ${selectedType === rt.id ? 'rgba(191,159,241,0.25)' : 'var(--border)'}`,
+                    background: selectedType === rt.id ? 'rgba(191,159,241,0.08)' : 'var(--glass)',
+                    border: `1px solid ${selectedType === rt.id ? 'rgba(191,159,241,0.25)' : 'var(--glass-border)'}`,
                   }}>
                   <p className="text-sm font-light mb-0.5"
                     style={{ color: selectedType === rt.id ? '#BF9FF1' : 'rgba(255,255,255,0.7)' }}>
                     {rt.label}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{rt.desc}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-3)' }}>{rt.desc}</p>
                 </button>
               ))}
             </div>
@@ -260,7 +260,7 @@ export default function ReportsPage() {
           {/* History */}
           {savedReports.length > 0 && (
             <div>
-              <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-tertiary)' }}>HISTORY</p>
+              <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-3)' }}>HISTORY</p>
               <div className="space-y-1.5">
                 {savedReports.map(r => (
                   <button key={r.id} onClick={() => { setActiveReport(r); setStreamedText(''); }}
@@ -295,18 +295,18 @@ export default function ReportsPage() {
                 </svg>
               </div>
               <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No report yet</p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                 Select a report type and click Generate
               </p>
             </div>
           ) : (
             <div className="rounded-xl overflow-hidden"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
               {/* Toolbar */}
               <div className="flex items-center justify-between px-5 py-3"
-                style={{ borderBottom: '1px solid var(--border)' }}>
+                style={{ borderBottom: '1px solid var(--glass-border)' }}>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>
                     {REPORT_TYPES.find(rt => rt.id === (activeReport?.type ?? selectedType))?.label}
                   </span>
                   {generating && (
@@ -322,12 +322,12 @@ export default function ReportsPage() {
                   <div className="flex items-center gap-2">
                     <button onClick={copyReport}
                       className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: copied ? '#15AD70' : 'rgba(255,255,255,0.4)' }}>
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: copied ? '#15AD70' : 'rgba(255,255,255,0.4)' }}>
                       {copied ? '✓ Copied' : 'Copy'}
                     </button>
                     <button onClick={downloadReport}
                       className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.4)' }}>
                       ↓ .md
                     </button>
                   </div>

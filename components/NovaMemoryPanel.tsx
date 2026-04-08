@@ -57,12 +57,12 @@ export default function NovaMemoryPanel({ systemId }: { systemId: string }) {
   }
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
       {/* Header / toggle */}
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3 transition-colors"
-        style={{ background: 'var(--surface)' }}
+        style={{ background: 'var(--glass)' }}
       >
         <div className="flex items-center gap-2">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
@@ -70,24 +70,24 @@ export default function NovaMemoryPanel({ systemId }: { systemId: string }) {
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
           </svg>
-          <span className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>NOVA MEMORY</span>
+          <span className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>NOVA MEMORY</span>
           {data.memory && (
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#BF9FF1', opacity: 0.6 }} />
           )}
         </div>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
-          style={{ color: 'var(--text-tertiary)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+          style={{ color: 'var(--text-3)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
           <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
 
       {open && (
-        <div className="px-4 pb-4 pt-2" style={{ background: 'rgba(191,159,241,0.02)', borderTop: '1px solid var(--border)' }}>
+        <div className="px-4 pb-4 pt-2" style={{ background: 'rgba(191,159,241,0.02)', borderTop: '1px solid var(--glass-border)' }}>
           {!loaded ? (
             <div className="h-12 rounded-lg animate-pulse mt-2" style={{ background: 'rgba(255,255,255,0.04)' }} />
           ) : !data.memory && !editing ? (
             <div className="py-4 text-center">
-              <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs mb-2" style={{ color: 'var(--text-3)' }}>
                 No memory yet — Nova will build it as you interact
               </p>
               <button

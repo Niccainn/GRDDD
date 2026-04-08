@@ -71,7 +71,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
     <div className="px-10 py-10 min-h-screen">
       {/* Breadcrumb */}
       <Link href="/systems" className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
-        style={{ color: 'var(--text-tertiary)' }}>
+        style={{ color: 'var(--text-3)' }}>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -85,12 +85,12 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-extralight tracking-tight mb-1">{system.name}</h1>
             {system.description && (
-              <p className="text-sm font-light" style={{ color: 'var(--text-secondary)' }}>{system.description}</p>
+              <p className="text-sm font-light" style={{ color: 'var(--text-2)' }}>{system.description}</p>
             )}
-            <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>
+            <p className="text-xs mt-2" style={{ color: 'var(--text-3)' }}>
               in{' '}
               <Link href={`/environments/${system.environment.slug}`}
-                className="transition-colors hover:text-white/60" style={{ color: 'var(--text-tertiary)' }}>
+                className="transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>
                 {system.environment.name}
               </Link>
             </p>
@@ -107,7 +107,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
         </div>
         {system.healthScore !== null && (
           <div className="text-right flex-shrink-0">
-            <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Health</p>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>Health</p>
             <p className="text-2xl font-extralight" style={{ color: healthColor }}>
               {Math.round(system.healthScore || 0)}%
             </p>
@@ -116,7 +116,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
       </div>
 
       {/* Nova */}
-      <div className="mb-8 rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="mb-8 rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <NovaBar systemId={system.id} systemName={system.name} recentLogs={novaLogs} />
       </div>
 
@@ -124,8 +124,8 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
         {/* Workflows */}
         <div className="col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>
-              WORKFLOWS <span style={{ color: 'var(--text-tertiary)', fontWeight: 300 }}>({system.workflows.length})</span>
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>
+              WORKFLOWS <span style={{ color: 'var(--text-3)', fontWeight: 300 }}>({system.workflows.length})</span>
             </p>
             <form action={createWorkflow}>
               <input type="hidden" name="systemId" value={system.id} />
@@ -137,16 +137,16 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
             </form>
           </div>
           {system.workflows.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-              <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No workflows yet</p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Use Nova above or create one manually</p>
+            <div className="flex flex-col items-center justify-center py-12 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+              <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No workflows yet</p>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>Use Nova above or create one manually</p>
             </div>
           ) : (
             <div className="space-y-2">
               {system.workflows.map(w => (
                 <Link key={w.id} href={`/workflows/${w.id}`}
                   className="flex items-center justify-between px-4 py-3 rounded-lg group transition-all"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                   <div className="flex items-center gap-3">
                     <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STATUS_COLOR[w.status] ?? 'rgba(255,255,255,0.2)' }} />
                     <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.75)' }}>
@@ -165,8 +165,8 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
         {/* Meta + Execution chart */}
         <div className="space-y-6">
           <div>
-            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>DETAILS</p>
-            <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>DETAILS</p>
+            <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
               {[
                 { label: 'Workflows', value: system.workflows.length },
                 { label: 'Active', value: system.workflows.filter(w => w.status === 'ACTIVE').length },
@@ -174,14 +174,14 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
                 { label: 'Created', value: new Date(system.createdAt).toLocaleDateString() },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between">
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
+                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>{label}</span>
                   <span className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.55)' }}>{value}</span>
                 </div>
               ))}
               {system.healthScore !== null && (
-                <div className="pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+                <div className="pt-2" style={{ borderTop: '1px solid var(--glass-border)' }}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Health</span>
+                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>Health</span>
                     <span className="text-xs font-light" style={{ color: healthColor }}>{Math.round(system.healthScore || 0)}%</span>
                   </div>
                   <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>

@@ -107,7 +107,7 @@ export default function WebhooksPage() {
   return (
     <div className="px-10 py-10 min-h-screen max-w-3xl">
       <Link href="/settings" className="text-xs font-light mb-8 inline-flex items-center gap-1.5"
-        style={{ color: 'var(--text-tertiary)' }}>
+        style={{ color: 'var(--text-3)' }}>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -117,7 +117,7 @@ export default function WebhooksPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Webhooks</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             Receive HTTP callbacks when GRID events fire
           </p>
         </div>
@@ -131,28 +131,28 @@ export default function WebhooksPage() {
       {/* Create form */}
       {showCreate && (
         <form onSubmit={handleCreate} className="mb-8 p-5 rounded-xl space-y-5"
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>NEW WEBHOOK</p>
+          style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>NEW WEBHOOK</p>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Name</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Name</label>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="Slack alerts"
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Endpoint URL</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Endpoint URL</label>
               <input value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                 placeholder="https://hooks.slack.com/…"
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
             </div>
           </div>
 
           <div>
-            <label className="text-xs mb-2 block" style={{ color: 'var(--text-tertiary)' }}>Events to subscribe</label>
+            <label className="text-xs mb-2 block" style={{ color: 'var(--text-3)' }}>Events to subscribe</label>
             <div className="flex flex-wrap gap-2">
               {ALL_EVENTS.map(ev => {
                 const on = form.events.includes(ev.id);
@@ -161,7 +161,7 @@ export default function WebhooksPage() {
                     className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
                     style={{
                       background: on ? `${ev.color}15` : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${on ? ev.color + '45' : 'var(--border)'}`,
+                      border: `1px solid ${on ? ev.color + '45' : 'var(--glass-border)'}`,
                       color: on ? ev.color : 'rgba(255,255,255,0.4)',
                     }}>
                     {ev.label}
@@ -172,13 +172,13 @@ export default function WebhooksPage() {
           </div>
 
           <div>
-            <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>
+            <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>
               Signing secret <span style={{ color: 'rgba(255,255,255,0.2)' }}>(optional)</span>
             </label>
             <input value={form.secret} onChange={e => setForm(f => ({ ...f, secret: e.target.value }))}
               placeholder="Used to verify HMAC-SHA256 signature"
               className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
           </div>
 
           {error && <p className="text-xs" style={{ color: '#FF6B6B' }}>{error}</p>}
@@ -199,13 +199,13 @@ export default function WebhooksPage() {
       {!loaded ? (
         <div className="space-y-2">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : webhooks.length === 0 ? (
-        <div className="rounded-xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="rounded-xl p-8 text-center" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No webhooks yet</p>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             Add a webhook to receive notifications in Slack, Discord, or any HTTP endpoint
           </p>
         </div>
@@ -215,7 +215,7 @@ export default function WebhooksPage() {
             const tr = testResult[wh.id];
             return (
               <div key={wh.id} className="rounded-xl p-5"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Toggle */}
@@ -233,7 +233,7 @@ export default function WebhooksPage() {
                     </button>
                     <div className="min-w-0">
                       <p className="text-sm font-light truncate" style={{ color: 'rgba(255,255,255,0.8)' }}>{wh.name}</p>
-                      <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-tertiary)', fontFamily: 'monospace' }}>{wh.url}</p>
+                      <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-3)', fontFamily: 'monospace' }}>{wh.url}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
@@ -299,8 +299,8 @@ export default function WebhooksPage() {
       )}
 
       {/* Payload format reference */}
-      <div className="mt-8 rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-tertiary)' }}>PAYLOAD FORMAT</p>
+      <div className="mt-8 rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+        <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-3)' }}>PAYLOAD FORMAT</p>
         <pre className="text-xs font-light leading-relaxed overflow-x-auto"
           style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'monospace' }}>
 {`{

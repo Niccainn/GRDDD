@@ -109,14 +109,14 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="mb-10">
         <h1 className="text-2xl font-extralight tracking-tight mb-1">Analytics</h1>
-        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Nova activity and workflow performance · last 30 days</p>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>Nova activity and workflow performance · last 30 days</p>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-3 mb-8">
         {!data ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-xl p-4 animate-pulse" style={{ background: 'var(--surface)', height: 80 }} />
+            <div key={i} className="rounded-xl p-4 animate-pulse" style={{ background: 'var(--glass)', height: 80 }} />
           ))
         ) : (
           [
@@ -125,8 +125,8 @@ export default function AnalyticsPage() {
             { label: 'Nova success', value: `${data.summary.successRate}%`, sub: 'query success rate', color: '#15AD70' },
             { label: 'Executions', value: fmt(data.summary.execTotal), sub: `${data.summary.execSuccessRate}% completed`, color: '#F7C700' },
           ].map(stat => (
-            <div key={stat.label} className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-xs font-light mb-2" style={{ color: 'var(--text-tertiary)' }}>{stat.label}</p>
+            <div key={stat.label} className="rounded-xl p-4" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+              <p className="text-xs font-light mb-2" style={{ color: 'var(--text-3)' }}>{stat.label}</p>
               <p className="text-2xl font-extralight tabular-nums mb-1" style={{ color: stat.color }}>{stat.value}</p>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{stat.sub}</p>
             </div>
@@ -136,11 +136,11 @@ export default function AnalyticsPage() {
 
       <div className="space-y-6">
         {/* Nova queries chart */}
-        <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-light mb-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>Nova queries</p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Daily activity over 30 days</p>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>Daily activity over 30 days</p>
             </div>
             {data && (
               <div className="flex items-center gap-4 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -162,11 +162,11 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Token usage chart */}
-        <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-light mb-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>Token usage</p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Tokens consumed per day</p>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>Tokens consumed per day</p>
             </div>
           </div>
           {!data ? (
@@ -177,11 +177,11 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Workflow executions chart */}
-        <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-sm font-light mb-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>Workflow executions</p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Completed vs failed over 30 days</p>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>Completed vs failed over 30 days</p>
             </div>
             {data && (
               <div className="flex items-center gap-3 text-xs">
@@ -211,17 +211,17 @@ export default function AnalyticsPage() {
 
         {/* Token usage by system */}
         {data && data.bySystem.length > 0 && (
-          <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-            <div className="px-5 py-4" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+          <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
+            <div className="px-5 py-4" style={{ background: 'var(--glass)', borderBottom: '1px solid var(--glass-border)' }}>
               <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.7)' }}>Token usage by system</p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>All-time Nova interactions</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>All-time Nova interactions</p>
             </div>
             {data.bySystem.map((s, i) => {
               const pct = Math.round((s.tokens / maxTokenSystem) * 100);
               return (
                 <div key={s.systemId ?? i}
                   className="flex items-center gap-4 px-5 py-3.5"
-                  style={{ background: 'var(--surface)', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                  style={{ background: 'var(--glass)', borderTop: i > 0 ? '1px solid var(--glass-border)' : 'none' }}>
                   <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                     style={{ background: s.color ?? '#7193ED' }} />
                   <span className="text-sm font-light flex-shrink-0" style={{ color: 'rgba(255,255,255,0.7)', minWidth: 120 }}>
@@ -245,9 +245,9 @@ export default function AnalyticsPage() {
 
         {/* Empty state */}
         {data && data.summary.totalQueries === 0 && (
-          <div className="rounded-xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="rounded-xl p-8 text-center" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
             <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No Nova activity yet</p>
-            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Start a conversation with Nova on any system to see analytics here</p>
+            <p className="text-xs" style={{ color: 'var(--text-3)' }}>Start a conversation with Nova on any system to see analytics here</p>
           </div>
         )}
       </div>

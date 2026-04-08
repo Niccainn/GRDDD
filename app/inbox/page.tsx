@@ -165,7 +165,7 @@ export default function InboxPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Inbox</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             Signals and incoming work · {unreadCount > 0 ? `${unreadCount} unread` : 'all clear'}
           </p>
         </div>
@@ -179,14 +179,14 @@ export default function InboxPage() {
       {/* Create form */}
       {showCreate && (
         <form onSubmit={handleCreate} className="mb-8 p-5 rounded-xl space-y-4"
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>NEW SIGNAL</p>
+          style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>NEW SIGNAL</p>
           <input
             value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
             placeholder="Signal title or task description"
             className="w-full text-sm font-light px-3 py-2.5 rounded-lg focus:outline-none"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }}
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }}
             autoFocus
           />
           <textarea
@@ -195,34 +195,34 @@ export default function InboxPage() {
             placeholder="Additional context (optional)"
             rows={3}
             className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none resize-none"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.65)' }}
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.65)' }}
           />
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs mb-1 block" style={{ color: 'var(--text-tertiary)' }}>Priority</label>
+              <label className="text-xs mb-1 block" style={{ color: 'var(--text-3)' }}>Priority</label>
               <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.65)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.65)' }}>
                 {['LOW', 'NORMAL', 'HIGH', 'URGENT'].map(p => (
                   <option key={p} value={p} style={{ background: '#111' }}>{p.charAt(0) + p.slice(1).toLowerCase()}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs mb-1 block" style={{ color: 'var(--text-tertiary)' }}>Environment</label>
+              <label className="text-xs mb-1 block" style={{ color: 'var(--text-3)' }}>Environment</label>
               <select value={form.environmentId} onChange={e => setForm(f => ({ ...f, environmentId: e.target.value }))}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.65)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.65)' }}>
                 {environments.map(e => (
                   <option key={e.id} value={e.id} style={{ background: '#111' }}>{e.name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs mb-1 block" style={{ color: 'var(--text-tertiary)' }}>Assign to system</label>
+              <label className="text-xs mb-1 block" style={{ color: 'var(--text-3)' }}>Assign to system</label>
               <select value={form.systemId} onChange={e => setForm(f => ({ ...f, systemId: e.target.value }))}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.65)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.65)' }}>
                 <option value="" style={{ background: '#111' }}>— Unassigned —</option>
                 {systems.map(s => (
                   <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>
@@ -273,14 +273,14 @@ export default function InboxPage() {
       {!loaded ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center py-24 rounded-xl"
-          style={{ border: '1px dashed var(--border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No signals</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
+          style={{ border: '1px dashed var(--glass-border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No signals</p>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
             Signals arrive here from API, webhooks, email, or manual entry
           </p>
           <button onClick={() => setShowCreate(true)}
@@ -295,8 +295,8 @@ export default function InboxPage() {
             <div key={signal.id}
               className="rounded-xl overflow-hidden transition-all"
               style={{
-                background: signal.status === 'UNREAD' ? PRIORITY_BG[signal.priority] : 'var(--surface)',
-                border: `1px solid ${signal.status === 'UNREAD' && signal.priority !== 'NORMAL' ? PRIORITY_COLOR[signal.priority] + '30' : 'var(--border)'}`,
+                background: signal.status === 'UNREAD' ? PRIORITY_BG[signal.priority] : 'var(--glass)',
+                border: `1px solid ${signal.status === 'UNREAD' && signal.priority !== 'NORMAL' ? PRIORITY_COLOR[signal.priority] + '30' : 'var(--glass-border)'}`,
               }}>
               {/* Main row */}
               <div
@@ -325,7 +325,7 @@ export default function InboxPage() {
                     )}
                   </div>
                   {signal.system && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
                       <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5"
                         style={{ backgroundColor: signal.system.color ?? 'rgba(255,255,255,0.3)' }} />
                       {signal.system.name}
@@ -352,7 +352,7 @@ export default function InboxPage() {
 
               {/* Expanded panel */}
               {expanded === signal.id && (
-                <div className="px-5 pb-4 pt-2 space-y-3" style={{ borderTop: '1px solid var(--border)' }}>
+                <div className="px-5 pb-4 pt-2 space-y-3" style={{ borderTop: '1px solid var(--glass-border)' }}>
                   {signal.body && (
                     <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
                       {signal.body}
@@ -378,7 +378,7 @@ export default function InboxPage() {
                       value={signal.systemId ?? ''}
                       onChange={e => assignSystem(signal.id, e.target.value)}
                       className="text-xs font-light px-2.5 py-1.5 rounded-lg focus:outline-none appearance-none"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}>
                       <option value="" style={{ background: '#111' }}>— Route to system —</option>
                       {systems.map(s => (
                         <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>
@@ -398,7 +398,7 @@ export default function InboxPage() {
                     {signal.system && (
                       <Link href={`/systems/${signal.system.id}`}
                         className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.4)' }}>
                         Open system →
                       </Link>
                     )}
