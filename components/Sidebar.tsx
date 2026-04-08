@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from './AuthProvider';
+import ThemeToggle from './ThemeToggle';
 import { useEnvironmentBrand } from './EnvironmentBrand';
 
 const coreNav = [
@@ -134,8 +135,11 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User */}
+      {/* Theme + User */}
       <div className="px-3 py-4" style={{ borderTop: '1px solid var(--glass-border)' }}>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <ThemeToggle />
+        </div>
         <div className="flex items-center gap-3">
           <Link href="/settings" className="flex items-center gap-3 flex-1 min-w-0 group">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-light flex-shrink-0"
