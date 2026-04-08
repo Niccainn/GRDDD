@@ -49,7 +49,7 @@ export function audit(params: AuditParams): void {
       after:           params.after    ? JSON.stringify(params.after)    : null,
       metadata:        params.metadata ? JSON.stringify(params.metadata) : null,
       actorId:         params.actorId   ?? null,
-      actorName:       params.actorName ?? 'Demo User',
+      actorName:       params.actorName ?? null,
       actorType:       params.actorType ?? 'PERSON',
       environmentId:   params.environmentId   ?? null,
       environmentName: params.environmentName ?? null,
@@ -57,13 +57,3 @@ export function audit(params: AuditParams): void {
   }).catch(() => { /* audit must never crash callers */ });
 }
 
-/**
- * Get the demo actor identity for use in audit calls.
- */
-export async function getDemoActor() {
-  const identity = await prisma.identity.findFirst({
-    where: { email: 'demo@grid.app' },
-    select: { id: true, name: true, type: true },
-  });
-  return identity ?? { id: null, name: 'Demo User', type: 'PERSON' };
-}

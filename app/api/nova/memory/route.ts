@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
@@ -5,6 +7,9 @@ import { prisma } from '@/lib/db';
 // reasoning field holds the plain-text memory summary
 
 export async function GET(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { searchParams } = new URL(req.url);
   const systemId = searchParams.get('systemId');
   if (!systemId) return Response.json({ memory: null });
@@ -18,15 +23,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { systemId, memory } = await req.json();
   if (!systemId || !memory) return Response.json({ error: 'Missing fields' }, { status: 400 });
 
-  const [identity, intelligence] = await Promise.all([
-    prisma.identity.findFirst({ where: { email: 'demo@grid.app' } }),
-    prisma.intelligence.findFirst({ where: { systemId, name: 'Nova' } }),
-  ]);
-
-  if (!identity || !intelligence) return Response.json({ error: 'System not ready' }, { status: 404 });
+  const intelligence = await prisma.intelligence.findFirst({ where: { systemId, name: 'Nova' } });
+  if (!intelligence) return Response.json({ error: 'System not ready' }, { status: 404 });
 
   const log = await prisma.intelligenceLog.create({
     data: {
@@ -45,6 +49,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { systemId } = await req.json();
   if (!systemId) return Response.json({ error: 'Missing systemId' }, { status: 400 });
 

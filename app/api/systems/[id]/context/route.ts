@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
@@ -5,6 +7,9 @@ import { prisma } from '@/lib/db';
 // name = document title, description = short summary, metadata = { body: "..." }
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
 
   const docs = await prisma.intelligence.findMany({
@@ -23,6 +28,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   const { title, body } = await req.json();
 
@@ -31,7 +39,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const system = await prisma.system.findUnique({ where: { id }, select: { environmentId: true } });
   if (!system) return Response.json({ error: 'System not found' }, { status: 404 });
 
-  const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   if (!identity) return Response.json({ error: 'Identity not found' }, { status: 404 });
 
   const doc = await prisma.intelligence.create({

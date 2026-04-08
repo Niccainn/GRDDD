@@ -1,8 +1,13 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 
 export async function GET(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status') ?? '';
   const systemId = searchParams.get('systemId') ?? '';
@@ -49,6 +54,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { workflowId, systemId, input, withStages } = await req.json();
   if (!systemId || !input) {
     return Response.json({ error: 'Missing systemId or input' }, { status: 400 });

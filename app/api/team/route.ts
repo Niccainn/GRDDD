@@ -1,7 +1,12 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
 export async function GET() {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const members = await prisma.identity.findMany({
     include: {
       environmentMemberships: {
@@ -28,34 +33,40 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { name, email, type, environmentId, role } = await req.json();
   if (!name || !email) return Response.json({ error: 'Name and email required' }, { status: 400 });
 
   const existing = await prisma.identity.findFirst({ where: { email } });
   if (existing) return Response.json({ error: 'Email already exists' }, { status: 409 });
 
-  const identity = await prisma.identity.create({
+  const newMember = await prisma.identity.create({
     data: { name, email, type: type ?? 'PERSON' },
   });
 
   if (environmentId && role) {
     await prisma.environmentMembership.create({
-      data: { environmentId, identityId: identity.id, role },
+      data: { environmentId, identityId: newMember.id, role },
     });
   }
 
-  return Response.json({ id: identity.id, name: identity.name, email: identity.email });
+  return Response.json({ id: newMember.id, name: newMember.name, email: newMember.email });
 }
 
 export async function DELETE(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
+
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return Response.json({ error: 'Missing id' }, { status: 400 });
 
-  // Don't delete the demo user
-  const identity = await prisma.identity.findUnique({ where: { id } });
-  if (identity?.email === 'demo@grid.app') {
-    return Response.json({ error: 'Cannot remove primary account' }, { status: 403 });
+  // Can't delete yourself
+  if (id === identity.id) {
+    return Response.json({ error: 'Cannot remove yourself' }, { status: 403 });
   }
 
   await prisma.identity.delete({ where: { id } });

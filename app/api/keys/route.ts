@@ -1,9 +1,14 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { generateApiKey } from '@/lib/api-keys';
 import { audit } from '@/lib/audit';
 
 export async function GET() {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const keys = await prisma.apiKey.findMany({
     orderBy: { createdAt: 'desc' },
   });
@@ -19,10 +24,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { name, expiresInDays } = await req.json();
   if (!name?.trim()) return Response.json({ error: 'Name required' }, { status: 400 });
 
-  const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   const { key, hash, prefix } = generateApiKey();
 
   const expiresAt = expiresInDays

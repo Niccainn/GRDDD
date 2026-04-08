@@ -1,8 +1,12 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 
 export async function GET() {
-  const [identity, systemCount, workflowCount, envCount, logCount] = await Promise.all([
-    prisma.identity.findFirst({ where: { email: 'demo@grid.app' } }),
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
+  const [systemCount, workflowCount, envCount, logCount] = await Promise.all([
     prisma.system.count(),
     prisma.workflow.count(),
     prisma.environment.count(),
@@ -28,10 +32,10 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const body = await req.json();
-  const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
-  if (!identity) return Response.json({ error: 'Identity not found' }, { status: 404 });
-
   const updated = await prisma.identity.update({
     where: { id: identity.id },
     data: {

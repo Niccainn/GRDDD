@@ -1,15 +1,18 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { name, systemId, environmentId } = await req.json();
   if (!name || !systemId || !environmentId) {
     return Response.json({ error: 'Missing fields' }, { status: 400 });
   }
-  let identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   if (!identity) {
-    identity = await prisma.identity.create({ data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' } });
   }
   const env = await prisma.environment.findUnique({ where: { id: environmentId }, select: { name: true } });
   const workflow = await prisma.workflow.create({
@@ -29,6 +32,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search') ?? '';
   const status = searchParams.get('status') ?? '';

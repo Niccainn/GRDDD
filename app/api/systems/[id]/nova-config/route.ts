@@ -1,7 +1,12 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   const intel = await prisma.intelligence.findFirst({
     where: { systemId: id, type: 'AI_AGENT' },
@@ -17,6 +22,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   const { model } = await req.json();
 
@@ -25,7 +33,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return Response.json({ error: 'Invalid model' }, { status: 400 });
   }
 
-  const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   const system   = await prisma.system.findUnique({ where: { id }, select: { environmentId: true } });
   if (!system || !identity) return Response.json({ error: 'Not found' }, { status: 404 });
 
