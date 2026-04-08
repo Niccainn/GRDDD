@@ -18,32 +18,59 @@ model Identity {
   updatedAt DateTime @updatedAt
 
   // Core Identity Properties
-  type  String // "PERSON" | "TEAM" | "AGENT" | "CLIENT"
-  name  String
-  email String? @unique
+  type         String // "PERSON" | "TEAM" | "AGENT" | "CLIENT"
+  name         String
+  email        String? @unique
+  passwordHash String? // bcrypt hash for credentials auth
+
+  // Auth
+  authId String? @unique // external auth provider ID
 
   // Optional Properties
   avatar      String?
   description String?
   metadata    String? // JSON string for flexible data
 
+  // Soft delete
+  deletedAt DateTime?
+
   // Relationships
-  ownedEnvironments     Environment[]
+  ownedEnvironments      Environment[]
   environmentMemberships EnvironmentMembership[]
-  createdSystems        System[]         @relation("SystemCreator")
-  createdWorkflows      Workflow[]       @relation("WorkflowCreator")
-  createdIntelligence   Intelligence[]   @relation("IntelligenceCreator")
-  intelligenceLogs      IntelligenceLog[]
-  goals                 Goal[]
-  apiKeys               ApiKey[]
+  createdSystems         System[]         @relation("SystemCreator")
+  createdWorkflows       Workflow[]       @relation("WorkflowCreator")
+  createdIntelligence    Intelligence[]   @relation("IntelligenceCreator")
+  intelligenceLogs       IntelligenceLog[]
+  goals                  Goal[]
+  apiKeys                ApiKey[]
+  sessions               Session[]
 
   @@index([email])
   @@index([type])
+  @@index([authId])
+}
+
+// ===============================================
+// SESSION (for token-based auth)
+// ===============================================
+
+model Session {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  token String @unique
+
+  identityId String
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([expiresAt])
 }
 
 // ===============================================
 // OBJECT 2: ENVIRONMENT
-// Organizational containers
+// Organizational containers — white-label ready
 // ===============================================
 
 model Environment {
@@ -57,9 +84,22 @@ model Environment {
   description String?
   settings    String? // JSON string for environment config
 
-  // Visual Identity
+  // Visual Identity (original)
   color String?
   icon  String?
+
+  // White-label branding
+  brandName  String? // Client-facing name (replaces "GRID" in their view)
+  brandColor String? // Primary brand color (hex)
+  brandLogo  String? // URL or base64 of brand logo
+
+  // Budget & Cost Controls
+  tokenBudget  Int?               // Monthly token budget (null = unlimited)
+  tokensUsed   Int      @default(0) // Tokens consumed this period
+  budgetResetAt DateTime?          // When to reset tokensUsed
+
+  // Soft delete
+  deletedAt DateTime?
 
   // Relationships
   ownerId String
@@ -99,7 +139,6 @@ model EnvironmentMembership {
 
 // ===============================================
 // OBJECT 3: SYSTEM
-// Structured organizational functions
 // ===============================================
 
 model System {
@@ -107,18 +146,17 @@ model System {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Core System Properties
   name        String
   description String?
   color       String?
   icon        String?
-  config      String? // JSON for system configuration
+  config      String?
 
-  // Metrics & Health
-  metrics     String? // JSON for system metrics
+  metrics     String?
   healthScore Float?
 
-  // Relationships
+  deletedAt DateTime?
+
   environmentId String
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 
@@ -141,10 +179,10 @@ model Execution {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  status       String  // "RUNNING" | "COMPLETED" | "FAILED"
+  status       String
   input        String
   output       String?
-  currentStage Int?    // index of the active stage (0-based)
+  currentStage Int?
   completedAt  DateTime?
 
   systemId   String
@@ -163,8 +201,8 @@ model ValidationResult {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  score           Float   // 0-1 alignment score
-  issues          String? // JSON array of issue strings
+  score           Float
+  issues          String?
   correctedOutput String?
 
   executionId String    @unique
@@ -185,7 +223,6 @@ model SystemState {
 
 // ===============================================
 // OBJECT 4: WORKFLOW
-// Movement within systems
 // ===============================================
 
 model Workflow {
@@ -193,18 +230,17 @@ model Workflow {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Core Workflow Properties
   name        String
   description String?
-  status      String // "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED"
+  status      String
   config      String?
 
-  // Workflow Structure (stored as JSON strings)
-  stages String // JSON array of workflow stages
-  nodes  String? // JSON for node-based workflow
-  edges  String? // JSON for node connections
+  stages String
+  nodes  String?
+  edges  String?
 
-  // Relationships
+  deletedAt DateTime?
+
   systemId String
   system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
@@ -226,7 +262,6 @@ model Workflow {
 
 // ===============================================
 // OBJECT 5: INTELLIGENCE
-// Adaptive AI layer
 // ===============================================
 
 model Intelligence {
@@ -234,17 +269,14 @@ model Intelligence {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Core Intelligence Properties
-  type        String // "AI_AGENT" | "AUTOMATION" | "ANALYTICS" | "RECOMMENDATION"
+  type        String
   name        String
   description String?
-  config      String? // JSON for intelligence configuration
+  config      String?
 
-  // State & Control
   isActive Boolean @default(true)
-  metadata String? // JSON for additional data
+  metadata String?
 
-  // Relationships
   systemId String
   system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
@@ -266,17 +298,15 @@ model IntelligenceLog {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  // Log Properties
   action    String
-  input     String? // JSON
-  output    String? // JSON
-  reasoning String? // AI reasoning/explanation
+  input     String?
+  output    String?
+  reasoning String?
   tokens    Int?
   cost      Float?
   success   Boolean @default(true)
   error     String?
 
-  // Relationships
   intelligenceId String
   intelligence   Intelligence @relation(fields: [intelligenceId], references: [id], onDelete: Cascade)
 
@@ -295,8 +325,7 @@ model IntelligenceLog {
 }
 
 // ===============================================
-// OBJECT 8: WEBHOOK
-// Outbound notification delivery
+// WEBHOOK
 // ===============================================
 
 model Webhook {
@@ -306,11 +335,10 @@ model Webhook {
 
   name     String
   url      String
-  events   String  // JSON array: ["alert.critical","alert.warning","execution.failed","execution.completed","automation.run"]
+  events   String
   isActive Boolean @default(true)
-  secret   String? // Optional HMAC-SHA256 signing secret
+  secret   String?
 
-  // Optional environment scope (null = workspace-wide)
   environmentId String?
   environment   Environment? @relation(fields: [environmentId], references: [id], onDelete: SetNull)
 
@@ -324,12 +352,12 @@ model WebhookDelivery {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  event     String   // the event type that triggered this
-  payload   String   // JSON payload sent
-  status    Int?     // HTTP response status
+  event     String
+  payload   String
+  status    Int?
   success   Boolean  @default(false)
-  error     String?  // error message if failed
-  duration  Int?     // ms
+  error     String?
+  duration  Int?
 
   webhookId String
   webhook   Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
@@ -339,19 +367,18 @@ model WebhookDelivery {
 }
 
 // ===============================================
-// OBJECT 9: WORKFLOW VERSION
-// Immutable snapshots of workflow structure
+// WORKFLOW VERSION
 // ===============================================
 
 model WorkflowVersion {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  version     Int     // incrementing version number
-  description String? // optional change note
-  stages      String  // JSON snapshot of stages
-  nodes       String? // JSON snapshot of nodes
-  edges       String? // JSON snapshot of edges
+  version     Int
+  description String?
+  stages      String
+  nodes       String?
+  edges       String?
 
   workflowId  String
   workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
@@ -361,8 +388,7 @@ model WorkflowVersion {
 }
 
 // ===============================================
-// OBJECT 10: API KEY
-// External access tokens for the public API
+// API KEY
 // ===============================================
 
 model ApiKey {
@@ -371,13 +397,12 @@ model ApiKey {
   updatedAt DateTime @updatedAt
 
   name      String
-  keyHash   String   @unique // SHA-256 hash of the key
-  keyPrefix String            // first 8 chars for display (e.g. "grd_abc1")
+  keyHash   String   @unique
+  keyPrefix String
   isActive  Boolean  @default(true)
   lastUsed  DateTime?
   expiresAt DateTime?
 
-  // Scope
   environmentId String?
   environment   Environment? @relation(fields: [environmentId], references: [id], onDelete: SetNull)
 
@@ -389,31 +414,26 @@ model ApiKey {
 }
 
 // ===============================================
-// OBJECT 11: AUDIT LOG
-// Immutable activity history
+// AUDIT LOG
 // ===============================================
 
 model AuditLog {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  // What happened
-  action    String   // e.g. "workflow.created", "execution.run", "system.updated", "member.added"
-  entity    String   // e.g. "Workflow", "System", "Identity"
-  entityId  String?  // ID of the affected record
-  entityName String? // Human-readable name at time of action
+  action    String
+  entity    String
+  entityId  String?
+  entityName String?
 
-  // Change details
-  before    String?  // JSON snapshot before
-  after     String?  // JSON snapshot after
-  metadata  String?  // Additional context JSON
+  before    String?
+  after     String?
+  metadata  String?
 
-  // Who
   actorId   String?
   actorName String?
-  actorType String?  // "PERSON" | "AGENT" | "SYSTEM"
+  actorType String?
 
-  // Where
   environmentId   String?
   environmentName String?
 
@@ -425,8 +445,7 @@ model AuditLog {
 }
 
 // ===============================================
-// OBJECT 12: GOAL
-// OKR-style goals attached to a system
+// GOAL
 // ===============================================
 
 model Goal {
@@ -436,12 +455,12 @@ model Goal {
 
   title       String
   description String?
-  metric      String?   // What to measure (e.g. "Articles published per week")
-  target      String?   // Target value or description
-  current     String?   // Current value (updated manually or by Nova)
-  status      String    @default("ON_TRACK") // "ON_TRACK" | "AT_RISK" | "BEHIND" | "ACHIEVED" | "CANCELLED"
+  metric      String?
+  target      String?
+  current     String?
+  status      String    @default("ON_TRACK")
   dueDate     DateTime?
-  progress    Float?    // 0-100 progress percentage
+  progress    Float?
 
   systemId String
   system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
@@ -458,8 +477,7 @@ model Goal {
 }
 
 // ===============================================
-// OBJECT 13: SIGNAL
-// Inbox items — incoming work routed to systems
+// SIGNAL
 // ===============================================
 
 model Signal {
@@ -467,15 +485,13 @@ model Signal {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Content
   title     String
   body      String?
-  source    String    // "manual" | "api" | "email" | "webhook" | "nova"
-  sourceRef String?   // External reference (e.g. email message-id, webhook event id)
-  priority  String    @default("NORMAL") // "LOW" | "NORMAL" | "HIGH" | "URGENT"
-  status    String    @default("UNREAD") // "UNREAD" | "READ" | "TRIAGED" | "DISMISSED"
+  source    String
+  sourceRef String?
+  priority  String    @default("NORMAL")
+  status    String    @default("UNREAD")
 
-  // Routing
   systemId      String?
   system        System?      @relation(fields: [systemId], references: [id], onDelete: SetNull)
 
@@ -485,8 +501,7 @@ model Signal {
   environmentId String
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 
-  // Nova triage
-  novaRouting   String?  // JSON: { suggestedSystemId, reasoning, confidence }
+  novaRouting   String?
   novaTriaged   Boolean  @default(false)
 
   @@index([environmentId])

@@ -1,7 +1,13 @@
 import { NextRequest } from 'next/server';
 import { runNovaAgent, type NovaEvent } from '@/lib/nova';
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitNova } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitNova(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
+
   const { systemId, input } = await req.json();
 
   if (!systemId || !input) {
@@ -20,7 +26,7 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        await runNovaAgent({ systemId, input, onEvent: send });
+        await runNovaAgent({ systemId, identityId: identity.id, input, onEvent: send });
       } catch (err) {
         send({ type: 'error', message: err instanceof Error ? err.message : 'Nova failed' });
       } finally {

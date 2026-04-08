@@ -1,15 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from './db';
+import { calculateCost, checkBudget, recordTokenUsage } from './cost';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ─── Event types streamed back to the client ────────────────────────────────
 export type NovaEvent =
   | { type: 'thinking' }
+  | { type: 'reasoning'; text: string }
   | { type: 'tool_start'; name: string; label: string }
   | { type: 'tool_done'; name: string; label: string; summary: string }
   | { type: 'text'; text: string }
-  | { type: 'done'; executionId: string; tokens: number }
+  | { type: 'budget_warning'; used: number; budget: number }
+  | { type: 'done'; executionId: string; tokens: number; cost: number }
   | { type: 'error'; message: string };
 
 // ─── Tool definitions ────────────────────────────────────────────────────────
@@ -107,19 +110,45 @@ const NOVA_TOOLS: Anthropic.Tool[] = [
       required: ['goalId'],
     },
   },
+  {
+    name: 'analyse_cross_system',
+    description: 'Analyse patterns, bottlenecks, and opportunities across all systems in the environment. Returns a holistic organizational view.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        focus: { type: 'string', description: 'What to focus the analysis on: "health", "bottlenecks", "opportunities", "alignment"' },
+      },
+    },
+  },
+  {
+    name: 'create_signal',
+    description: 'Route a new signal (task/request/alert) to the inbox for triage or direct system routing.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        title: { type: 'string', description: 'Signal title' },
+        body: { type: 'string', description: 'Signal details' },
+        priority: { type: 'string', enum: ['LOW', 'NORMAL', 'HIGH', 'URGENT'] },
+        targetSystemId: { type: 'string', description: 'System to route to (optional)' },
+      },
+      required: ['title'],
+    },
+  },
 ];
 
 // ─── Tool labels for UI display ───────────────────────────────────────────────
 const TOOL_LABELS: Record<string, string> = {
-  list_systems: 'Reading systems',
+  list_systems: 'Scanning systems',
   list_workflows: 'Reading workflows',
-  get_activity: 'Checking activity',
+  get_activity: 'Reviewing activity',
   create_workflow: 'Creating workflow',
   update_workflow: 'Updating workflow',
-  set_health_score: 'Updating health score',
-  update_memory: 'Saving to memory',
-  list_goals: 'Reading goals',
-  update_goal: 'Updating goal',
+  set_health_score: 'Calibrating health',
+  update_memory: 'Persisting memory',
+  list_goals: 'Reading objectives',
+  update_goal: 'Updating objective',
+  analyse_cross_system: 'Cross-system analysis',
+  create_signal: 'Routing signal',
 };
 
 // ─── Tool executor ────────────────────────────────────────────────────────────
@@ -133,7 +162,7 @@ async function executeTool(
   switch (name) {
     case 'list_systems': {
       const systems = await prisma.system.findMany({
-        where: { environmentId: ctx.environmentId },
+        where: { environmentId: ctx.environmentId, deletedAt: null },
         include: { _count: { select: { workflows: true } }, systemState: true },
         orderBy: { updatedAt: 'desc' },
       });
@@ -149,7 +178,7 @@ async function executeTool(
 
     case 'list_workflows': {
       const workflows = await prisma.workflow.findMany({
-        where: { systemId: ctx.systemId },
+        where: { systemId: ctx.systemId, deletedAt: null },
         orderBy: { updatedAt: 'desc' },
       });
       const result = workflows.map(w => ({
@@ -240,7 +269,7 @@ async function executeTool(
 
     case 'update_memory': {
       const memory = input.memory as string;
-      const intelligence = await prisma.intelligence.findFirst({ where: { systemId: ctx.systemId, name: 'Nova' } });
+      const intelligence = await prisma.intelligence.findFirst({ where: { systemId: ctx.systemId, name: 'Nova', type: 'AI_AGENT' } });
       if (intelligence) {
         await prisma.intelligenceLog.create({
           data: {
@@ -291,6 +320,50 @@ async function executeTool(
       };
     }
 
+    case 'analyse_cross_system': {
+      const systems = await prisma.system.findMany({
+        where: { environmentId: ctx.environmentId, deletedAt: null },
+        include: {
+          systemState: true,
+          _count: { select: { workflows: true, executions: true, goals: true } },
+          goals: { where: { status: { in: ['BEHIND', 'AT_RISK'] } } },
+        },
+      });
+      const result = {
+        systems: systems.map(s => ({
+          id: s.id,
+          name: s.name,
+          health: s.systemState?.healthScore ?? s.healthScore,
+          workflows: s._count.workflows,
+          executions: s._count.executions,
+          goals: s._count.goals,
+          atRiskGoals: s.goals.map(g => ({ title: g.title, status: g.status })),
+          lastActivity: s.systemState?.lastActivity,
+        })),
+        environmentHealth: systems.length > 0
+          ? systems.reduce((sum, s) => sum + (s.systemState?.healthScore ?? s.healthScore ?? 0), 0) / systems.length
+          : null,
+      };
+      return { result, summary: `Analysed ${systems.length} systems` };
+    }
+
+    case 'create_signal': {
+      const signal = await prisma.signal.create({
+        data: {
+          title: input.title as string,
+          body: (input.body as string) ?? null,
+          source: 'nova',
+          priority: (input.priority as string) ?? 'NORMAL',
+          environmentId: ctx.environmentId,
+          systemId: (input.targetSystemId as string) ?? ctx.systemId,
+        },
+      });
+      return {
+        result: { id: signal.id, title: signal.title, priority: signal.priority },
+        summary: `Signal "${signal.title}" created`,
+      };
+    }
+
     default:
       return { result: { error: `Unknown tool: ${name}` }, summary: 'Tool failed' };
   }
@@ -337,9 +410,11 @@ function buildPrompt(ctx: {
     ? `\n**System knowledge documents:**\n${ctx.contextDocs.map(d => `### ${d.title}\n${d.body}`).join('\n\n')}\n`
     : '';
 
-  return `You are Nova — the intelligence execution engine inside GRID, an adaptive organizational operating system.
+  return `You are Nova — the intelligence layer inside GRID, an adaptive organizational operating system that bridges human teams and AI into a unified workspace.
 
-You are operating inside the **${ctx.systemName}** system (${ctx.environmentName} environment).
+You are NOT a chatbot. You are an embedded AGI agent with persistent memory, tools, and organizational awareness. You understand the structure of work — environments, systems, workflows, goals — and you act within it.
+
+You are currently operating inside the **${ctx.systemName}** system in the **${ctx.environmentName}** environment.
 
 **System purpose:** ${ctx.systemDescription ?? 'Not yet defined'}
 
@@ -347,15 +422,22 @@ You are operating inside the **${ctx.systemName}** system (${ctx.environmentName
 ${wfList}
 ${memoryBlock}${contextBlock}
 **Your capabilities:**
-You have tools to read and write GRID data. When a user asks you to do something actionable — create a workflow, update a status, analyse health — **use your tools and do it**. Don't just describe what you could do.
+You have tools to observe and act on the organizational state. When a user asks you to do something — create a workflow, flag health issues, route signals, analyse cross-system patterns — **do it immediately with your tools**. Don't describe. Act.
 
-Use \`update_memory\` whenever you learn something worth persisting: decisions made, patterns observed, preferences, key context. Memory carries forward across all future conversations.
+You can also:
+- **Analyse cross-system** to identify bottlenecks, misalignment, and opportunities across all systems
+- **Create signals** to route work to the right system
+- **Persist memory** — save decisions, patterns, and context that carry forward across all future conversations
+
+**What makes you different from other AI:**
+You don't just answer questions. You understand organizational structure and can take actions within it. You see the health of systems, the status of goals, the flow of workflows — and you intervene when needed. You are the intelligence layer that makes the invisible infrastructure work.
 
 **Response style:**
-- Be direct and operational. No filler.
-- When you take an action, confirm it with specifics.
+- Direct and operational. No filler.
+- When you take an action, confirm with specifics.
 - Use **bold** for emphasis, bullet points for lists, headers (##) for sections.
-- Keep responses concise unless a detailed breakdown is requested.
+- Show your reasoning when making decisions — transparency builds trust.
+- If you notice something concerning (low health, stalled workflows, missed goals), proactively surface it.
 
 Operator: ${ctx.identityName}`;
 }
@@ -377,30 +459,38 @@ export async function getOrCreateNovaIntelligence(
 // ─── Main agent runner ────────────────────────────────────────────────────────
 export async function runNovaAgent({
   systemId,
+  identityId,
   input,
   onEvent,
 }: {
   systemId: string;
+  identityId: string;
   input: string;
   onEvent: (event: NovaEvent) => void;
 }): Promise<void> {
   // Load context
-  const [system, identity] = await Promise.all([
-    prisma.system.findUnique({
-      where: { id: systemId },
-      include: { environment: true, workflows: { orderBy: { updatedAt: 'desc' } } },
-    }),
-    prisma.identity.findFirst({ where: { email: 'demo@grid.app' } }),
-  ]);
+  const system = await prisma.system.findUnique({
+    where: { id: systemId },
+    include: { environment: true, workflows: { where: { deletedAt: null }, orderBy: { updatedAt: 'desc' } } },
+  });
 
   if (!system) throw new Error('System not found');
-  if (!identity) throw new Error('No identity found');
+
+  const identity = await prisma.identity.findUnique({ where: { id: identityId } });
+  if (!identity) throw new Error('Identity not found');
+
+  // Check budget
+  const budget = await checkBudget(system.environmentId);
+  if (!budget.allowed) {
+    onEvent({ type: 'error', message: 'Token budget exceeded for this environment. Contact an admin to increase the budget.' });
+    return;
+  }
 
   const intelligence = await getOrCreateNovaIntelligence(system.id, system.environmentId, identity.id);
 
-  // Resolve model — check Intelligence config, fall back to Opus
+  // Resolve model
   const intelConfig = intelligence.config ? (() => { try { return JSON.parse(intelligence.config!); } catch { return {}; } })() : {};
-  const novaModel: string = intelConfig.model ?? 'claude-opus-4-6';
+  const novaModel: string = intelConfig.model ?? 'claude-sonnet-4-6';
   const execution = await prisma.execution.create({ data: { status: 'RUNNING', input, systemId } });
 
   const toolCtx: ToolCtx = {
@@ -409,7 +499,7 @@ export async function runNovaAgent({
     identityId: identity.id,
   };
 
-  // Load most recent memory and context docs for this system
+  // Load memory and context docs
   const [memoryLog, contextDocs] = await Promise.all([
     prisma.intelligenceLog.findFirst({
       where: { systemId: system.id, action: 'memory_update' },
@@ -444,10 +534,9 @@ export async function runNovaAgent({
 
   // ── Agentic loop ─────────────────────────────────────────────────────────────
   for (let round = 0; round < 6; round++) {
-    // Non-streaming call to detect tool use
     const response = await anthropic.messages.create({
       model: novaModel,
-      max_tokens: 2048,
+      max_tokens: 4096,
       system: systemPrompt,
       tools: NOVA_TOOLS,
       messages,
@@ -459,7 +548,6 @@ export async function runNovaAgent({
       (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use'
     );
 
-    // ── Tool use round ──────────────────────────────────────────────────────
     if (response.stop_reason === 'tool_use' && toolBlocks.length > 0) {
       messages.push({ role: 'assistant', content: response.content });
 
@@ -479,13 +567,13 @@ export async function runNovaAgent({
       }
 
       messages.push({ role: 'user', content: toolResults });
-      continue; // next round
+      continue;
     }
 
-    // ── Final text response — stream it ────────────────────────────────────
+    // Final text response — stream it
     const stream = anthropic.messages.stream({
       model: novaModel,
-      max_tokens: 2048,
+      max_tokens: 4096,
       system: systemPrompt,
       messages,
     });
@@ -500,11 +588,14 @@ export async function runNovaAgent({
     break;
   }
 
-  // ── Persist ────────────────────────────────────────────────────────────────
+  // Calculate cost
+  const cost = calculateCost(novaModel, totalTokens * 0.7, totalTokens * 0.3);
+
+  // Persist
   await Promise.all([
     prisma.execution.update({
       where: { id: execution.id },
-      data: { status: 'COMPLETED', output: fullOutput },
+      data: { status: 'COMPLETED', output: fullOutput, completedAt: new Date() },
     }),
     prisma.intelligenceLog.create({
       data: {
@@ -512,6 +603,7 @@ export async function runNovaAgent({
         input: JSON.stringify({ query: input }),
         output: JSON.stringify({ response: fullOutput }),
         tokens: totalTokens,
+        cost,
         success: true,
         intelligenceId: intelligence.id,
         identityId: identity.id,
@@ -523,7 +615,13 @@ export async function runNovaAgent({
       update: { lastActivity: new Date() },
       create: { systemId: system.id, lastActivity: new Date() },
     }),
+    recordTokenUsage(system.environmentId, totalTokens),
   ]);
 
-  onEvent({ type: 'done', executionId: execution.id, tokens: totalTokens });
+  // Budget warning
+  if (budget.budget !== null && budget.used + totalTokens >= budget.budget * 0.8) {
+    onEvent({ type: 'budget_warning', used: budget.used + totalTokens, budget: budget.budget });
+  }
+
+  onEvent({ type: 'done', executionId: execution.id, tokens: totalTokens, cost });
 }
