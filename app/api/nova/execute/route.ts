@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
 import { audit } from '@/lib/audit';
+import { computeHealthScore } from '@/lib/health';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -85,8 +86,37 @@ Be direct. Produce real work — not descriptions of work.`;
               : '';
 
             const systemPrompt = `You are Nova, an AI operations engine inside ${system.name} (${system.environment.name}).
-You are processing a workflow stage by stage. Produce concrete, specific output for each stage.
-Do not explain what you're doing — just do it. Be concise but complete.`;
+You produce real, concrete work output — not descriptions of work. Each stage must deliver a complete, usable artifact.
+Use markdown formatting. Be thorough but focused. Write as a senior professional would.`;
+
+            // Stage-specific instructions for richer output
+            const stageInstructions: Record<string, string> = {
+              'Research': 'Conduct thorough research. Deliver: key findings, target audience insights, competitive landscape, 5-8 data points or statistics, and recommended angle. Format as a structured brief.',
+              'Draft': 'Write the complete draft using insights from the Research stage. Deliver the full text — not an outline. Use clear structure with headers, engaging opening, substantive body, and strong conclusion. Target 1500-2000 words.',
+              'Review': 'Review the Draft for quality, clarity, brand alignment, and impact. Deliver: a quality score (1-10), specific strengths, specific issues to fix, suggested edits with before/after, and SEO recommendations.',
+              'Publish': 'Prepare the final publication package. Deliver: optimized title tag (60 chars), meta description (155 chars), 3 social media share variants (Twitter, LinkedIn, Instagram), suggested publish date/time, and target keywords.',
+              'Discovery': 'Conduct a thorough discovery analysis. Identify requirements, constraints, stakeholders, risks, and success criteria. Deliver a structured discovery document.',
+              'Setup': 'Design the setup and configuration plan. Deliver: step-by-step setup checklist, resource requirements, timeline, and dependencies.',
+              'Training': 'Create a training plan. Deliver: learning objectives, session outlines, key materials needed, and success metrics.',
+              'Handoff': 'Prepare the handoff package. Deliver: summary of work completed, open items, documentation links, and next steps for the receiving team.',
+              'Brief': 'Create a comprehensive creative brief. Deliver: objectives, target audience, key messages, tone/voice, deliverables list, timeline, and budget estimate.',
+              'Creative': 'Develop the creative concepts. Deliver: 2-3 concept directions with rationale, headline options, visual direction notes, and recommended approach.',
+              'Launch': 'Plan the launch execution. Deliver: launch checklist, channel distribution plan, timing strategy, and success metrics to track.',
+              'Measure': 'Define the measurement framework. Deliver: KPIs, tracking setup requirements, reporting cadence, and optimization triggers.',
+              'Planning': 'Run sprint planning. Deliver: sprint goal, prioritized backlog items with estimates, capacity allocation, and risk flags.',
+              'Development': 'Track development progress. Deliver: completed items summary, in-progress status, blockers, and velocity assessment.',
+              'Deploy': 'Prepare deployment. Deliver: deployment checklist, rollback plan, monitoring alerts to set, and stakeholder communication.',
+              'Proposal': 'Create the design proposal. Deliver: problem statement, proposed solution with rationale, visual references, and scope definition.',
+              'Critique': 'Conduct design critique. Deliver: assessment against design principles, usability concerns, accessibility check, and prioritized improvement list.',
+              'Iterate': 'Plan design iterations. Deliver: specific changes to make based on critique, updated specifications, and revised timeline.',
+              'Approve': 'Prepare for approval. Deliver: final design summary, changes made since proposal, compliance checklist, and implementation handoff notes.',
+              'Data Collection': 'Gather and organize relevant data. Deliver: data sources identified, collection methodology, quality assessment, and initial findings.',
+              'Analysis': 'Analyze the collected data. Deliver: key insights, trends, anomalies, statistical summaries, and actionable conclusions.',
+              'Report': 'Write the formal report. Deliver: executive summary, detailed findings, visualizations described, and strategic recommendations.',
+              'Present': 'Prepare the presentation. Deliver: slide deck outline, key talking points per slide, anticipated questions with answers, and call-to-action.',
+            };
+
+            const specificInstruction = stageInstructions[stage] ?? `Process the **${stage}** stage. Produce the actual output/deliverable.`;
 
             const stagePrompt = `Workflow: ${workflow?.name ?? 'Custom run'}
 Current stage: **${stage}** (${i + 1} of ${workflowStages.length})
@@ -99,11 +129,12 @@ ${input}
 
 ---
 
-Process the **${stage}** stage now. Produce the actual output/deliverable for this stage.`;
+**${stage} stage instructions:**
+${specificInstruction}`;
 
             const stream = anthropic.messages.stream({
-              model: 'claude-opus-4-6',
-              max_tokens: 1200,
+              model: 'claude-sonnet-4-6',
+              max_tokens: 2500,
               system: systemPrompt,
               messages: [{ role: 'user', content: stagePrompt }],
             });
@@ -217,6 +248,11 @@ Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusa
           stages: stageOutputs.map(s => s.stage),
           tokens: totalTokens,
         }, system.environmentId).catch(() => {});
+
+        // Recompute health score after execution
+        computeHealthScore(systemId).then(score => {
+          if (score !== null) prisma.system.update({ where: { id: systemId }, data: { healthScore: score } }).catch(() => {});
+        }).catch(() => {});
 
         send({ type: 'done', executionId, tokens: totalTokens });
       } catch (err) {
