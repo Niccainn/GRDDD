@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
@@ -14,6 +16,9 @@ export type ExecuteEvent =
   | { type: 'error'; message: string };
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { executionId, workflowId, systemId, input, stages } = await req.json();
 
   if (!executionId || !input || !systemId) {
@@ -172,7 +177,6 @@ Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusa
         } catch { /* validation is best-effort */ }
 
         // Log to intelligence
-        const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
         if (identity) {
           await prisma.intelligenceLog.create({
             data: {
@@ -222,7 +226,7 @@ Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusa
           systemId,
           workflowId: workflowId ?? null,
           error: err instanceof Error ? err.message : 'Unknown error',
-        }).catch(() => {});
+        }, system.environmentId).catch(() => {});
         send({ type: 'error', message: err instanceof Error ? err.message : 'Execution failed' });
       } finally {
         controller.close();

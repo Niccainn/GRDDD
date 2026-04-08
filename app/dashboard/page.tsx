@@ -111,7 +111,7 @@ export default function OperatePage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Operate</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded ? `${systems.length} system${systems.length !== 1 ? 's' : ''} · ${wfStats?.active ?? 0} active workflows` : 'Loading···'}
           </p>
         </div>
@@ -147,9 +147,8 @@ export default function OperatePage() {
             { label: 'Stalled', value: wfStats?.paused ?? 0, color: wfStats?.paused ? '#F7C700' : 'rgba(255,255,255,0.2)', href: '/workflows' },
           ].map(stat => (
             <Link key={stat.label} href={stat.href}
-              className="px-5 py-4 rounded-xl group transition-all"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-xs mb-2 transition-colors group-hover:text-white/50" style={{ color: 'var(--text-tertiary)' }}>{stat.label}</p>
+              className="glass px-5 py-4 group transition-all">
+              <p className="text-xs mb-2 transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>{stat.label}</p>
               <p className="text-2xl font-extralight" style={{ color: stat.color }}>{stat.value}</p>
             </Link>
           ))}
@@ -160,9 +159,9 @@ export default function OperatePage() {
         {/* Systems panel */}
         <div className="col-span-1">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>SYSTEMS</p>
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>SYSTEMS</p>
             <Link href="/systems" className="text-xs font-light transition-colors"
-              style={{ color: 'var(--text-tertiary)' }}>
+              style={{ color: 'var(--text-3)' }}>
               Manage →
             </Link>
           </div>
@@ -172,15 +171,14 @@ export default function OperatePage() {
                 <div key={i} className="h-12 rounded-lg animate-pulse" style={{ background: 'var(--surface)' }} />
               ))
             ) : systems.length === 0 ? (
-              <div className="flex flex-col items-center py-10 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>No systems yet</p>
+              <div className="flex flex-col items-center py-10 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+                <p className="text-xs" style={{ color: 'var(--text-3)' }}>No systems yet</p>
                 <Link href="/systems" className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.4)' }}>Create one →</Link>
               </div>
             ) : (
               systems.map(s => (
                 <Link key={s.id} href={`/systems/${s.id}`}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg group transition-all"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  className="glass flex items-center gap-3 px-4 py-3 group transition-all">
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: s.color ?? 'rgba(255,255,255,0.3)' }} />
                   <span className="flex-1 text-sm font-light truncate group-hover:text-white transition-colors"
@@ -206,7 +204,7 @@ export default function OperatePage() {
           {/* Stalled */}
           {loaded && wfStats && wfStats.stalled.length > 0 && (
             <div className="mt-6">
-              <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-tertiary)' }}>STALLED</p>
+              <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>STALLED</p>
               <div className="space-y-1.5">
                 {wfStats.stalled.map(w => (
                   <Link key={w.id} href={`/workflows/${w.id}`}
@@ -216,7 +214,7 @@ export default function OperatePage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-light truncate group-hover:text-white transition-colors"
                         style={{ color: 'rgba(255,255,255,0.7)' }}>{w.name}</p>
-                      <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{w.systemName}</p>
+                      <p className="text-xs" style={{ color: 'var(--text-3)' }}>{w.systemName}</p>
                     </div>
                   </Link>
                 ))}
@@ -227,7 +225,7 @@ export default function OperatePage() {
           {/* Quick links */}
           {loaded && (
             <div className="mt-6 space-y-1.5">
-              <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-tertiary)' }}>QUICK ACCESS</p>
+              <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>QUICK ACCESS</p>
               {[
                 { label: 'Inbox', href: '/inbox', icon: '✉' },
                 { label: 'Reports', href: '/reports', icon: '⊡' },
@@ -264,7 +262,7 @@ export default function OperatePage() {
             ))}
             <Link href={feedTab === 'runs' ? '/executions' : '/nova'}
               className="ml-auto text-xs font-light transition-colors"
-              style={{ color: 'var(--text-tertiary)' }}>
+              style={{ color: 'var(--text-3)' }}>
               View all →
             </Link>
           </div>
@@ -279,15 +277,15 @@ export default function OperatePage() {
               </div>
             ) : executions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 rounded-xl"
-                style={{ border: '1px dashed var(--border)' }}>
+                style={{ border: '1px dashed var(--glass-border)' }}>
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-4"
                   style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.15)' }}>
                   <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
                     <path d="M3 2.5L12 7.5L3 12.5V2.5Z" stroke="#15AD70" strokeWidth="1.1" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No runs yet</p>
-                <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Open a workflow and click ▶ Run</p>
+                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No runs yet</p>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Open a workflow and click ▶ Run</p>
                 <Link href="/workflows" className="text-xs font-light px-4 py-2 rounded-lg transition-all"
                   style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}>
                   Go to workflows →
@@ -300,8 +298,7 @@ export default function OperatePage() {
                   const color = STATUS_COLOR[ex.status] ?? 'rgba(255,255,255,0.3)';
                   return (
                     <Link key={ex.id} href={`/executions/${ex.id}`}
-                      className="flex items-center gap-4 px-4 py-3 rounded-xl group transition-all"
-                      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                      className="glass flex items-center gap-4 px-4 py-3 group transition-all">
                       {/* Status dot */}
                       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${ex.status === 'RUNNING' ? 'animate-pulse' : ''}`}
                         style={{ backgroundColor: color }} />
@@ -331,7 +328,7 @@ export default function OperatePage() {
                 })}
                 <Link href="/executions"
                   className="flex items-center justify-center w-full py-2.5 text-xs font-light rounded-xl transition-all mt-1"
-                  style={{ color: 'rgba(255,255,255,0.2)', border: '1px solid var(--border)' }}>
+                  style={{ color: 'rgba(255,255,255,0.2)', border: '1px solid var(--glass-border)' }}>
                   View all executions →
                 </Link>
               </div>
@@ -348,15 +345,14 @@ export default function OperatePage() {
               </div>
             ) : activity.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 rounded-xl"
-                style={{ border: '1px dashed var(--border)' }}>
-                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No activity yet</p>
-                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Open a system and ask Nova something</p>
+                style={{ border: '1px dashed var(--glass-border)' }}>
+                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No activity yet</p>
+                <p className="text-xs" style={{ color: 'var(--text-3)' }}>Open a system and ask Nova something</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {activity.map(item => (
-                  <div key={item.id} className="px-5 py-4 rounded-xl"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div key={item.id} className="glass px-5 py-4">
                     <div className="flex items-start justify-between gap-4 mb-2">
                       <div className="flex items-center gap-2 min-w-0">
                         {item.systemColor && (
@@ -366,20 +362,20 @@ export default function OperatePage() {
                         <Link href={item.systemId ? `/systems/${item.systemId}` : '#'}
                           onClick={e => e.stopPropagation()}
                           className="text-xs font-light transition-colors hover:text-white/60 flex-shrink-0"
-                          style={{ color: 'var(--text-tertiary)' }}>
+                          style={{ color: 'var(--text-3)' }}>
                           {item.systemName}
                         </Link>
-                        <span style={{ color: 'var(--text-tertiary)' }}>·</span>
+                        <span style={{ color: 'var(--text-3)' }}>·</span>
                         <p className="text-xs font-light truncate italic" style={{ color: 'rgba(255,255,255,0.5)' }}>
                           "{item.query}"
                         </p>
                       </div>
-                      <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+                      <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-3)' }}>
                         {timeAgo(item.createdAt)}
                       </span>
                     </div>
                     {item.response && (
-                      <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--text-tertiary)' }}>
+                      <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--text-3)' }}>
                         {item.response.replace(/[#*`]/g, '').slice(0, 200)}
                       </p>
                     )}

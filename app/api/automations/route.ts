@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
@@ -35,6 +37,9 @@ function nextRunTime(schedule: string): Date {
 }
 
 export async function GET(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { searchParams } = new URL(req.url);
   const systemId = searchParams.get('systemId') ?? undefined;
 
@@ -75,14 +80,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { name, description, systemId, workflowId, schedule, input } = await req.json();
   if (!name || !systemId || !schedule) return Response.json({ error: 'Missing fields' }, { status: 400 });
 
-  const [identity, system] = await Promise.all([
-    prisma.identity.findFirst({ where: { email: 'demo@grid.app' } }),
-    prisma.system.findUnique({ where: { id: systemId } }),
-  ]);
-  if (!identity || !system) return Response.json({ error: 'Not found' }, { status: 404 });
+  const system = await prisma.system.findUnique({ where: { id: systemId } });
+  if (!system) return Response.json({ error: 'Not found' }, { status: 404 });
 
   const nextRun = nextRunTime(schedule);
   const automation = await prisma.intelligence.create({

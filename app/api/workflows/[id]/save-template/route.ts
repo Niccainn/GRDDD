@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
@@ -6,6 +8,9 @@ import { prisma } from '@/lib/db';
  * Templates are stored as ARCHIVED workflows with a special config flag.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
   const category: string = body.category?.trim() || 'Custom';
@@ -13,7 +18,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const source = await prisma.workflow.findUnique({ where: { id } });
   if (!source) return Response.json({ error: 'Not found' }, { status: 404 });
 
-  const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   if (!identity) return Response.json({ error: 'No identity' }, { status: 500 });
 
   // Store the template config within the source workflow's config field

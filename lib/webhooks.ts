@@ -23,15 +23,13 @@ export type WebhookPayload = {
 export async function fireWebhooks(
   event: WebhookEvent,
   data: Record<string, unknown>,
-  environmentId?: string
+  environmentId: string
 ): Promise<void> {
   try {
     const webhooks = await prisma.webhook.findMany({
       where: {
         isActive: true,
-        ...(environmentId
-          ? { OR: [{ environmentId }, { environmentId: null }] }
-          : {}),
+        environmentId,
       },
     });
 

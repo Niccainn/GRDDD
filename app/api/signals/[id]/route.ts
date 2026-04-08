@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 

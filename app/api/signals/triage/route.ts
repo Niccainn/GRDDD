@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 /**
  * POST /api/signals/triage
  * Nova reads an unrouted signal and suggests which system + workflow it belongs to.
@@ -9,6 +11,9 @@ import Anthropic from '@anthropic-ai/sdk';
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
   }

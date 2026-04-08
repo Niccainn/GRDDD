@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
@@ -24,6 +26,9 @@ async function uniqueSlug(base: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
   const newName: string = body.name?.trim() || '';
@@ -44,7 +49,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   if (!source) return Response.json({ error: 'Not found' }, { status: 404 });
 
-  const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   if (!identity) return Response.json({ error: 'No identity' }, { status: 500 });
 
   const newSlug = await uniqueSlug(slugify(newName));

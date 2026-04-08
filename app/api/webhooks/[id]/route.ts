@@ -1,8 +1,13 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   const webhook = await prisma.webhook.findUnique({
     where: { id },
@@ -22,6 +27,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   const body = await req.json();
   const updated = await prisma.webhook.update({
@@ -38,6 +46,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   await prisma.webhook.delete({ where: { id } });
   return Response.json({ deleted: true });
@@ -45,6 +56,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
 // POST to /api/webhooks/[id] — test fire
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
   const webhook = await prisma.webhook.findUnique({ where: { id } });
   if (!webhook) return Response.json({ error: 'Not found' }, { status: 404 });

@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
 import { audit } from '@/lib/audit';
@@ -8,6 +10,9 @@ import { audit } from '@/lib/audit';
  * This can be called from a cron, from the alerts UI, or after health score updates.
  */
 export async function POST() {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const [systems, runningExecutions] = await Promise.all([
     prisma.system.findMany({
       where: { healthScore: { not: null } },

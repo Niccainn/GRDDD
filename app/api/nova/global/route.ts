@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
@@ -134,11 +136,13 @@ async function executeGlobalTool(name: string, input: Record<string, unknown>) {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { input } = await req.json();
   if (!input) return new Response(JSON.stringify({ error: 'Missing input' }), { status: 400 });
   if (!process.env.ANTHROPIC_API_KEY) return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500 });
 
-  const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   const systemCount = await prisma.system.count();
   const workflowCount = await prisma.workflow.count();
 

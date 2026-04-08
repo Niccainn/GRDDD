@@ -1,7 +1,12 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { searchParams } = new URL(req.url);
   const systemId = searchParams.get('systemId') ?? undefined;
   const environmentId = searchParams.get('environmentId') ?? undefined;
@@ -35,6 +40,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const body = await req.json();
   const { title, description, metric, target, dueDate, systemId, environmentId } = body;
 
@@ -42,7 +50,6 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'title, systemId, and environmentId required' }, { status: 400 });
   }
 
-  const identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
   if (!identity) return Response.json({ error: 'Identity not found' }, { status: 404 });
 
   const goal = await prisma.goal.create({

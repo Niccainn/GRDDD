@@ -1,3 +1,5 @@
+import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
@@ -54,20 +56,19 @@ const WORKFLOW_TEMPLATES = [
 ];
 
 export async function GET() {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   return Response.json(WORKFLOW_TEMPLATES);
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { templateId, systemId, environmentId } = await req.json();
   const template = WORKFLOW_TEMPLATES.find(t => t.id === templateId);
   if (!template) return Response.json({ error: 'Template not found' }, { status: 404 });
-
-  let identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
-  if (!identity) {
-    identity = await prisma.identity.create({
-      data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' },
-    });
-  }
 
   const workflow = await prisma.workflow.create({
     data: {
