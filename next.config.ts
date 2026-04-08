@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(import.meta.dirname ?? __dirname),
   },
+  // Standalone output for Docker/serverless deployments
+  output: process.env.STANDALONE === 'true' ? 'standalone' : undefined,
   async headers() {
     return [
       {
@@ -21,6 +23,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Optimize for production
+  poweredByHeader: false,
+  reactStrictMode: true,
 };
 
 export default nextConfig;
