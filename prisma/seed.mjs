@@ -197,7 +197,19 @@ async function seed() {
     },
   });
 
-  console.log('  Workflows: 6 created');
+  const wfSocialCampaign = await prisma.workflow.create({
+    data: {
+      name: 'Social Media Campaign',
+      description: 'End-to-end social media campaign: strategy, content creation, scheduling, and publishing across Instagram, Facebook, and LinkedIn.',
+      status: 'ACTIVE',
+      stages: JSON.stringify(['Narrative', 'Assets', 'Review', 'Publish']),
+      systemId: sysMarketing.id,
+      environmentId: envGrowth.id,
+      creatorId: alex.id,
+    },
+  });
+
+  console.log('  Workflows: 7 created');
 
   // ── Intelligence (Nova per environment) ────────────────────────────────────
 

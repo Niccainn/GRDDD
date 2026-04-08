@@ -10,7 +10,7 @@ type Integration = {
   connected: boolean;
 };
 
-const CATEGORIES = ['All', 'Communication', 'Meetings', 'Documents', 'Design', 'Development', 'CRM', 'Analytics', 'Automation'];
+const CATEGORIES = ['All', 'Social', 'Communication', 'Meetings', 'Documents', 'Design', 'Development', 'CRM', 'Analytics', 'Automation'];
 
 const INTEGRATIONS: Integration[] = [
   {
@@ -60,6 +60,22 @@ const INTEGRATIONS: Integration[] = [
   {
     id: 'stripe', name: 'Stripe', description: 'Payment signals', category: 'CRM', connected: false,
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M13 8c-1.5 0-3 .5-3 2s1.5 2 3 2 3 .5 3 2-1.5 2-3 2M12 6v2M12 16v2"/></svg>,
+  },
+  {
+    id: 'instagram', name: 'Instagram', description: 'Content publishing & analytics', category: 'Social', connected: true,
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>,
+  },
+  {
+    id: 'facebook', name: 'Facebook', description: 'Page management & ads', category: 'Social', connected: true,
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>,
+  },
+  {
+    id: 'x-twitter', name: 'X / Twitter', description: 'Social posting & monitoring', category: 'Social', connected: false,
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M4 4l6.5 8L4 20h2l5.5-6.8L16 20h4l-6.8-8.4L19.5 4h-2L12.4 10 8 4H4z"/></svg>,
+  },
+  {
+    id: 'linkedin', name: 'LinkedIn', description: 'Professional content & leads', category: 'Social', connected: false,
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>,
   },
 ];
 
