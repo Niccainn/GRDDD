@@ -340,7 +340,7 @@ export default function NovaPage() {
               </p>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map(s => (
-                  <button key={s} onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                  <button key={s} onClick={() => { setInput(s); setTimeout(() => { const form = inputRef.current?.closest('form'); if (form) form.requestSubmit(); }, 50); }}
                     className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.4)' }}>
                     {s}

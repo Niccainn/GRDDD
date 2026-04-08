@@ -199,10 +199,31 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
             continue;
           }
 
+          let fullText = '';
           const stream = anthropic.messages.stream({ model: 'claude-opus-4-6', max_tokens: 2048, system: systemPrompt, messages });
-          stream.on('text', text => send({ type: 'text', text }));
+          stream.on('text', text => { fullText += text; send({ type: 'text', text }); });
           const final = await stream.finalMessage();
           totalTokens += final.usage.input_tokens + final.usage.output_tokens;
+
+          // Persist to interaction log so it shows up in the Nova page
+          try {
+            const intel = await prisma.intelligence.findFirst({ where: { type: 'AI_AGENT', name: 'Nova' } });
+            if (intel) {
+              await prisma.intelligenceLog.create({
+                data: {
+                  action: 'nova_query',
+                  input: input,
+                  output: fullText,
+                  tokens: totalTokens,
+                  success: true,
+                  intelligenceId: intel.id,
+                  systemId: intel.systemId,
+                  identityId: identity.id,
+                },
+              });
+            }
+          } catch { /* best-effort persistence */ }
+
           break;
         }
 

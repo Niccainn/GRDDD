@@ -1,11 +1,16 @@
 import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
+import { refreshAllHealthScores } from '@/lib/health';
 
 export async function GET() {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
+
+  // Recompute health scores from real data (best-effort, non-blocking)
+  refreshAllHealthScores().catch(() => {});
+
   const [systems, logs, workflows, recentExecutions] = await Promise.all([
     prisma.system.findMany({
       include: {

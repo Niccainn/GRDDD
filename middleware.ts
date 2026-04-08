@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   '/api/auth/sign-up',
   '/api/auth/sign-out',
   '/api/v1/run',
+  '/api/webhooks/slack',
 ];
 
 export function middleware(req: NextRequest) {
