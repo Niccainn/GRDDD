@@ -15,7 +15,6 @@ const coreNav = [
 ];
 
 const secondaryNav = [
-  { href: '/automations', label: 'Automations', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><circle cx="12" cy="12" r="9"/><path strokeLinecap="round" d="M12 7v5l3 3"/></svg> },
   { href: '/analytics', label: 'Analytics', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 12L5.5 8L8.5 10L13 4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 13.5H13" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg> },
   { href: '/inbox', label: 'Inbox', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 4.5C1.5 3.95 1.95 3.5 2.5 3.5H12.5C13.05 3.5 13.5 3.95 13.5 4.5V10.5C13.5 11.05 13.05 11.5 12.5 11.5H2.5C1.95 11.5 1.5 11.05 1.5 10.5V4.5Z" stroke="currentColor" strokeWidth="1.1"/><path d="M1.5 5L7.5 8.5L13.5 5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>, badge: 'inbox' },
   { href: '/goals', label: 'Goals', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" strokeWidth="1.1"/><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.1"/></svg> },

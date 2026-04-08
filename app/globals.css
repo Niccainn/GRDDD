@@ -457,6 +457,40 @@ body {
   animation: tool-trace 2s var(--ease) forwards;
 }
 
+/* ─── Nova pulse glow ─── */
+@keyframes nova-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(191, 159, 241, 0.15), 0 0 2px rgba(191, 159, 241, 0.1); }
+  50% { box-shadow: 0 0 16px rgba(191, 159, 241, 0.25), 0 0 4px rgba(191, 159, 241, 0.15); }
+}
+
+.nova-pulse {
+  animation: nova-glow 3s ease-in-out infinite;
+}
+
+/* ─── Status badge with count ─── */
+.badge-count {
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ─── Toast animations ─── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-8px) scale(0.95); }
+}
+
 /* ─── Noise texture overlay ─── */
 .noise::before {
   content: '';

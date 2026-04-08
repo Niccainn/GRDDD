@@ -121,7 +121,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
                       <span className="text-xs" style={{ color: '#15AD70' }}>{system.workflows.length} active</span>
                     )}
                     {system._count.executions > 0 && (
-                      <span className="text-xs ml-auto" style={{ color: 'rgba(255,255,255,0.2)' }}>{system._count.executions} runs</span>
+                      <span className="text-xs ml-auto" style={{ color: 'rgba(255,255,255,0.2)' }}>{system._count.executions} {system._count.executions === 1 ? 'run' : 'runs'}</span>
                     )}
                   </div>
                 </Link>

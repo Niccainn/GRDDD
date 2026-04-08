@@ -15,7 +15,7 @@ export async function GET(_req: NextRequest) {
   const novaLogs = await prisma.intelligenceLog.findMany({
     where: {
       createdAt: { gte: thirtyDaysAgo },
-      action: { in: ['query', 'global_query'] },
+      action: 'nova_query',
     },
     select: {
       createdAt: true,
@@ -42,7 +42,7 @@ export async function GET(_req: NextRequest) {
   // ── Token usage by system (all time) ──────────────────────────────────────
   const bySystemRaw = await prisma.intelligenceLog.groupBy({
     by: ['systemId'],
-    where: { action: { in: ['query', 'global_query'] }, tokens: { not: null } },
+    where: { action: 'nova_query', tokens: { not: null } },
     _sum: { tokens: true, cost: true },
     _count: true,
     orderBy: { _sum: { tokens: 'desc' } },

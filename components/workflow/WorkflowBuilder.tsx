@@ -360,7 +360,7 @@ export default function WorkflowBuilder({
 
         <div className="ml-auto flex items-center gap-3">
           <span className="text-xs font-light tabular-nums" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            {nodes.length} nodes · {edges.length} edges
+            {nodes.length} {nodes.length === 1 ? 'node' : 'nodes'} · {edges.length} {edges.length === 1 ? 'edge' : 'edges'}
           </span>
           <button onClick={() => fitView()}
             className="text-xs font-light px-2 py-1 rounded transition-colors"

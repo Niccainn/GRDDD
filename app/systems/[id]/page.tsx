@@ -8,6 +8,7 @@ import SystemExecutionChart from '@/components/SystemExecutionChart';
 import NovaMemoryPanel from '@/components/NovaMemoryPanel';
 import SystemContextDocs from '@/components/SystemContextDocs';
 import SystemGoals from '@/components/SystemGoals';
+import Breadcrumb from '@/components/Breadcrumb';
 
 async function createWorkflow(formData: FormData) {
   'use server';
@@ -69,14 +70,11 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
 
   return (
     <div className="px-10 py-10 min-h-screen">
-      {/* Breadcrumb */}
-      <Link href="/systems" className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
-        style={{ color: 'var(--text-3)' }}>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Systems
-      </Link>
+      <Breadcrumb items={[
+        { label: 'Systems', href: '/systems' },
+        { label: system.environment?.name ?? 'Environment', href: `/environments/${system.environment?.slug ?? ''}` },
+        { label: system.name },
+      ]} />
 
       {/* Header */}
       <div className="flex items-start justify-between mb-8">

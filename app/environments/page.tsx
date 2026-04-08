@@ -56,13 +56,20 @@ export default async function EnvironmentsPage() {
       ) : (
         <div className="grid grid-cols-3 gap-3">
           {environments.map((env) => (
-            <div key={env.id} className="group flex flex-col rounded-xl transition-all"
+            <div key={env.id} className="group flex flex-col rounded-xl transition-all relative overflow-hidden"
               style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+              {/* Color accent bar */}
+              {env.color && (
+                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: env.color, opacity: 0.6 }} />
+              )}
               <Link href={`/environments/${env.slug}`} className="flex flex-col p-5 flex-1">
                 <div className="flex items-start justify-between mb-4">
-                  <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                    {env.name}
-                  </p>
+                  <div className="flex items-center gap-2.5">
+                    {env.color && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: env.color }} />}
+                    <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                      {env.name}
+                    </p>
+                  </div>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'var(--text-3)', marginTop: '3px', flexShrink: 0 }}>
                     <path d="M3 1h8v8M1 11L11 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
                   </svg>

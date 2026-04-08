@@ -139,7 +139,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Content area */}
-      <div className="flex-1 py-10 px-10 max-w-2xl">
+      <div className="flex-1 py-10 px-10 max-w-2xl min-w-0">
 
         {/* Appearance tab */}
         {activeTab === 'appearance' && (
@@ -163,7 +163,7 @@ export default function SettingsPage() {
                   { value: 'system' as ThemeMode, label: 'System', icon: '◑' },
                 ]).map(opt => (
                   <button key={opt.value} onClick={() => setTheme(opt.value)}
-                    className="chrome-pill px-4 py-3 text-sm font-light flex items-center justify-center gap-2 transition-all"
+                    className="chrome-pill px-4 py-3 text-sm font-light flex items-center justify-center gap-2 transition-all whitespace-nowrap"
                     style={{
                       color: theme === opt.value ? 'var(--brand)' : 'var(--text-3)',
                       background: theme === opt.value ? 'var(--brand-glow)' : undefined,
@@ -183,7 +183,7 @@ export default function SettingsPage() {
                   { value: 'compact' as Density, label: 'Compact' },
                 ]).map(opt => (
                   <button key={opt.value} onClick={() => setDensityMode(opt.value)}
-                    className="chrome-pill px-4 py-3 text-sm font-light transition-all"
+                    className="chrome-pill px-4 py-3 text-sm font-light transition-all whitespace-nowrap"
                     style={{
                       color: density === opt.value ? 'var(--text-1)' : 'var(--text-3)',
                       background: density === opt.value ? 'var(--glass-active)' : undefined,
@@ -203,7 +203,7 @@ export default function SettingsPage() {
                   { value: 'hover' as SidebarMode, label: 'Hover to expand' },
                 ]).map(opt => (
                   <button key={opt.value} onClick={() => setSidebar(opt.value)}
-                    className="chrome-pill px-4 py-3 text-sm font-light transition-all"
+                    className="chrome-pill px-4 py-3 text-sm font-light transition-all whitespace-nowrap"
                     style={{
                       color: sidebarMode === opt.value ? 'var(--text-1)' : 'var(--text-3)',
                       background: sidebarMode === opt.value ? 'var(--glass-active)' : undefined,

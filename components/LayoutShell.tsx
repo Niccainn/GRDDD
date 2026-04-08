@@ -5,6 +5,7 @@ import EnvironmentBrandProvider from './EnvironmentBrand';
 import Sidebar from './Sidebar';
 import CommandPalette from './CommandPalette';
 import AlertCenter from './AlertCenter';
+import { ToastProvider } from './Toast';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
 
@@ -45,7 +46,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <AppContent>{children}</AppContent>
+      <ToastProvider>
+        <AppContent>{children}</AppContent>
+      </ToastProvider>
     </AuthProvider>
   );
 }

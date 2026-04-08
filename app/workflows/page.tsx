@@ -340,28 +340,26 @@ export default function WorkflowsPage() {
                 )}
                 {w.stages.length > 0 && (
                   <div className="flex items-center gap-1 mt-3 overflow-hidden">
-                    {w.stages.slice(0, 5).map((s, i) => (
-                      <span key={i} className="text-xs px-1.5 py-0.5 rounded flex-shrink-0"
+                    {w.stages.slice(0, 3).map((s, i) => (
+                      <span key={i} className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 max-w-[80px] truncate"
                         style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.25)' }}>
                         {s}
                       </span>
                     ))}
-                    {w.stages.length > 5 && (
-                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.15)' }}>+{w.stages.length - 5}</span>
+                    {w.stages.length > 3 && (
+                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.15)' }}>+{w.stages.length - 3}</span>
                     )}
                   </div>
                 )}
               </Link>
-              <div className="flex items-center justify-between px-5 pb-4 pt-1"
+              <div className="flex items-center justify-between px-5 pb-4 pt-1 gap-2"
                 style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>{w.systemName}</span>
-                </div>
-                <div className="flex items-center gap-3">
+                <span className="text-xs truncate min-w-0 flex-shrink" style={{ color: 'var(--text-3)' }}>{w.systemName}</span>
+                <div className="flex items-center gap-3 flex-shrink-0">
                   {w.executions > 0 && (
-                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{w.executions} runs</span>
+                    <span className="text-xs whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.2)' }}>{w.executions} {w.executions === 1 ? 'run' : 'runs'}</span>
                   )}
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.15)' }}>{timeAgo(w.updatedAt)}</span>
+                  <span className="text-xs whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.15)' }}>{timeAgo(w.updatedAt)}</span>
                 </div>
               </div>
             </div>

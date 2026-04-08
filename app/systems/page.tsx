@@ -98,7 +98,7 @@ export default async function SystemsPage() {
                     <div className="flex items-center justify-between px-5 pb-4">
                       <p className="text-xs" style={{ color: 'var(--text-3)' }}>{s.environment.name}</p>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs" style={{ color: 'var(--text-3)' }}>{s._count.workflows} workflows</span>
+                        <span className="text-xs" style={{ color: 'var(--text-3)' }}>{s._count.workflows} {s._count.workflows === 1 ? 'workflow' : 'workflows'}</span>
                         <DeleteButton id={s.id} type="systems" />
                       </div>
                     </div>

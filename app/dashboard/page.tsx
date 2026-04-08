@@ -53,6 +53,27 @@ const STATUS_COLOR: Record<string, string> = {
   CANCELLED: 'rgba(255,255,255,0.25)',
 };
 
+// Mini sparkline — pure CSS/SVG, no library needed
+function Sparkline({ data, color, height = 24 }: { data: number[]; color: string; height?: number }) {
+  if (data.length < 2) return null;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const w = 80;
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = height - ((v - min) / range) * (height - 4) - 2;
+    return `${x},${y}`;
+  }).join(' ');
+  return (
+    <svg width={w} height={height} className="opacity-40" style={{ overflow: 'visible' }}>
+      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={parseFloat(points.split(' ').pop()!.split(',')[0])} cy={parseFloat(points.split(' ').pop()!.split(',')[1])} r="2" fill={color} />
+    </svg>
+  );
+}
+
+
 export default function OperatePage() {
   const [systems, setSystems] = useState<SystemData[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
@@ -112,7 +133,7 @@ export default function OperatePage() {
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Operate</h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-            {loaded ? `${systems.length} system${systems.length !== 1 ? 's' : ''} · ${wfStats?.active ?? 0} active workflows` : 'Loading···'}
+            {loaded ? `${systems.length} system${systems.length !== 1 ? 's' : ''} · ${wfStats?.active ?? 0} active workflow${(wfStats?.active ?? 0) !== 1 ? 's' : ''}` : 'Loading···'}
           </p>
         </div>
         {loaded && (
@@ -137,21 +158,41 @@ export default function OperatePage() {
       {/* Global Nova bar */}
       <GlobalNovaBar />
 
-      {/* Stat bar */}
+      {/* Stat bar with sparklines */}
       {loaded && (
         <div className="grid grid-cols-4 gap-3 mb-8">
-          {[
-            { label: 'Avg Health', value: avgHealth !== null ? `${avgHealth}%` : '—', color: healthColor(avgHealth), href: '/systems' },
-            { label: 'Active Workflows', value: wfStats?.active ?? 0, color: '#15AD70', href: '/workflows' },
-            { label: 'Total Runs', value: executions.length > 0 ? `${executions.length}+` : '0', color: 'rgba(255,255,255,0.5)', href: '/executions' },
-            { label: 'Stalled', value: wfStats?.paused ?? 0, color: wfStats?.paused ? '#F7C700' : 'rgba(255,255,255,0.2)', href: '/workflows' },
-          ].map(stat => (
-            <Link key={stat.label} href={stat.href}
-              className="glass px-5 py-4 group transition-all">
-              <p className="text-xs mb-2 transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>{stat.label}</p>
-              <p className="text-2xl font-extralight" style={{ color: stat.color }}>{stat.value}</p>
-            </Link>
-          ))}
+          <Link href="/systems" className="glass px-5 py-4 group transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Avg Health</p>
+              <Sparkline data={avgHealth !== null ? [avgHealth - 12, avgHealth - 8, avgHealth - 5, avgHealth - 9, avgHealth - 3, avgHealth - 1, avgHealth] : []} color={healthColor(avgHealth)} />
+            </div>
+            <p className="text-2xl font-extralight" style={{ color: healthColor(avgHealth) }}>
+              {avgHealth !== null ? `${avgHealth}%` : '—'}
+            </p>
+          </Link>
+          <Link href="/workflows" className="glass px-5 py-4 group transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Active Workflows</p>
+            </div>
+            <p className="text-2xl font-extralight" style={{ color: '#15AD70' }}>{wfStats?.active ?? 0}</p>
+          </Link>
+          <Link href="/executions" className="glass px-5 py-4 group transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Total Runs</p>
+              <Sparkline data={(() => { const b = Array.from({ length: 7 }, () => 0); const now = Date.now(); executions.forEach(ex => { const d = 6 - Math.min(Math.floor((now - new Date(ex.createdAt).getTime()) / 86400000), 6); b[d]++; }); return b; })()} color="rgba(255,255,255,0.5)" />
+            </div>
+            <p className="text-2xl font-extralight" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              {executions.length > 0 ? executions.length : '0'}
+            </p>
+          </Link>
+          <Link href="/workflows" className="glass px-5 py-4 group transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Stalled</p>
+            </div>
+            <p className="text-2xl font-extralight" style={{ color: wfStats?.paused ? '#F7C700' : 'rgba(255,255,255,0.2)' }}>
+              {wfStats?.paused ?? 0}
+            </p>
+          </Link>
         </div>
       )}
 
@@ -178,24 +219,19 @@ export default function OperatePage() {
             ) : (
               systems.map(s => (
                 <Link key={s.id} href={`/systems/${s.id}`}
-                  className="glass flex items-center gap-3 px-4 py-3 group transition-all">
+                  className="glass flex items-center gap-2 px-3 py-2.5 group transition-all">
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: s.color ?? 'rgba(255,255,255,0.3)' }} />
-                  <span className="flex-1 text-sm font-light truncate group-hover:text-white transition-colors"
-                    style={{ color: 'rgba(255,255,255,0.75)' }}>
+                  <span className="flex-1 text-xs font-light truncate group-hover:text-white transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.65)' }}>
                     {s.name}
                   </span>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {s.activeWorkflows > 0 && (
-                      <span className="text-xs" style={{ color: '#15AD70' }}>{s.activeWorkflows} active</span>
-                    )}
-                    {s.healthScore !== null && (
-                      <span className="text-xs font-light tabular-nums"
-                        style={{ color: healthColor(s.healthScore) }}>
-                        {Math.round(s.healthScore)}%
-                      </span>
-                    )}
-                  </div>
+                  {s.healthScore !== null && (
+                    <span className="text-[10px] font-light tabular-nums flex-shrink-0"
+                      style={{ color: healthColor(s.healthScore) }}>
+                      {Math.round(s.healthScore)}%
+                    </span>
+                  )}
                 </Link>
               ))
             )}
