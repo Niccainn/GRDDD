@@ -88,7 +88,7 @@ export default function ApiKeysPage() {
   return (
     <div className="px-10 py-10 min-h-screen max-w-3xl">
       <Link href="/settings" className="text-xs font-light mb-8 inline-flex items-center gap-1.5"
-        style={{ color: 'var(--text-tertiary)' }}>
+        style={{ color: 'var(--text-3)' }}>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -98,7 +98,7 @@ export default function ApiKeysPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">API Keys</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             Authenticate external requests to the GRID public API
           </p>
         </div>
@@ -133,21 +133,21 @@ export default function ApiKeysPage() {
       {/* Create form */}
       {showCreate && (
         <form onSubmit={handleCreate} className="mb-6 p-5 rounded-xl space-y-4"
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>NEW API KEY</p>
+          style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>NEW API KEY</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Key name</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Key name</label>
               <input value={name} onChange={e => setName(e.target.value)}
                 placeholder="e.g. Zapier integration"
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Expiry</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Expiry</label>
               <select value={expiry} onChange={e => setExpiry(e.target.value)}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.6)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.6)' }}>
                 {EXPIRY_OPTIONS.map(o => <option key={o.value} value={o.value} style={{ background: '#111' }}>{o.label}</option>)}
               </select>
             </div>
@@ -168,19 +168,19 @@ export default function ApiKeysPage() {
       {!loaded ? (
         <div className="space-y-2">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : keys.length === 0 ? (
-        <div className="rounded-xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="rounded-xl p-8 text-center" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No API keys yet</p>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Generate a key to trigger workflows from external tools</p>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Generate a key to trigger workflows from external tools</p>
         </div>
       ) : (
         <div className="space-y-2">
           {keys.map(k => (
             <div key={k.id} className="flex items-center gap-4 px-4 py-3.5 rounded-xl"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
               <button onClick={() => toggleKey(k.id, k.isActive)}
                 className="flex-shrink-0 rounded-full transition-colors relative"
                 style={{ width: 32, height: 18, background: k.isActive ? 'rgba(21,173,112,0.35)' : 'rgba(255,255,255,0.1)' }}>
@@ -218,8 +218,8 @@ export default function ApiKeysPage() {
       )}
 
       {/* Usage reference */}
-      <div className="mt-8 rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-tertiary)' }}>USAGE</p>
+      <div className="mt-8 rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+        <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-3)' }}>USAGE</p>
         <pre className="text-xs font-light leading-relaxed overflow-x-auto"
           style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'monospace' }}>
 {`curl -X POST https://your-grid.app/api/v1/run \\

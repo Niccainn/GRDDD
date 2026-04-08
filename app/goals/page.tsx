@@ -101,7 +101,7 @@ export default function GoalsPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Goals</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded
               ? `${summary.total} goal${summary.total !== 1 ? 's' : ''} across ${systems.length} system${systems.length !== 1 ? 's' : ''}`
               : 'Loading···'}
@@ -121,10 +121,10 @@ export default function GoalsPage() {
             <button key={s.label} onClick={() => setStatusFilter(statusFilter === s.filter ? '' : s.filter)}
               className="px-5 py-4 rounded-xl text-left transition-all"
               style={{
-                background: statusFilter === s.filter ? `${s.color}10` : 'var(--surface)',
-                border: `1px solid ${statusFilter === s.filter ? `${s.color}35` : 'var(--border)'}`,
+                background: statusFilter === s.filter ? `${s.color}10` : 'var(--glass)',
+                border: `1px solid ${statusFilter === s.filter ? `${s.color}35` : 'var(--glass-border)'}`,
               }}>
-              <p className="text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>{s.label}</p>
+              <p className="text-xs mb-2" style={{ color: 'var(--text-3)' }}>{s.label}</p>
               <p className="text-2xl font-extralight" style={{ color: s.color }}>{s.value}</p>
             </button>
           ))}
@@ -135,13 +135,13 @@ export default function GoalsPage() {
       {!loaded ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : goals.length === 0 ? (
-        <div className="flex flex-col items-center py-24 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No goals yet</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
+        <div className="flex flex-col items-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No goals yet</p>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
             Add goals to systems to track OKR-style progress
           </p>
           <Link href="/systems"
@@ -168,7 +168,7 @@ export default function GoalsPage() {
                 <div className="space-y-2">
                   {groupGoals.map(goal => (
                     <div key={goal.id} className="px-5 py-4 rounded-xl"
-                      style={{ background: 'var(--surface)', border: `1px solid ${meta.color}18` }}>
+                      style={{ background: 'var(--glass)', border: `1px solid ${meta.color}18` }}>
                       <div className="flex items-start gap-4">
                         {/* System dot */}
                         <div className="flex-shrink-0 mt-1">
@@ -200,7 +200,7 @@ export default function GoalsPage() {
                           <div className="flex items-center gap-3">
                             <Link href={`/systems/${goal.systemId}`}
                               className="text-xs transition-colors hover:text-white/50"
-                              style={{ color: 'var(--text-tertiary)' }}>
+                              style={{ color: 'var(--text-3)' }}>
                               {goal.system.name}
                             </Link>
                             {goal.metric && (

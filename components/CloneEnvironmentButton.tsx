@@ -68,14 +68,14 @@ export default function CloneEnvironmentButton({
               <h2 className="text-base font-light mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
                 Clone environment
               </h2>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                 Creates a full copy of <span style={{ color: 'rgba(255,255,255,0.5)' }}>{sourceName}</span> — all systems, workflows, and Nova configurations. Cloned workflows start as drafts.
               </p>
             </div>
 
             <form onSubmit={handleClone} className="space-y-4">
               <div>
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>
                   New environment name
                 </label>
                 <input

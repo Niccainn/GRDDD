@@ -120,7 +120,7 @@ export default function AutomationsPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Automations</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded ? `${automations.filter(a => a.isActive).length} active · ${automations.length} total` : 'Loading···'}
           </p>
         </div>
@@ -134,49 +134,49 @@ export default function AutomationsPage() {
       {/* Create form */}
       {showCreate && (
         <form onSubmit={handleCreate} className="mb-8 p-5 rounded-xl space-y-4"
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>NEW AUTOMATION</p>
+          style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>NEW AUTOMATION</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Name</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Name</label>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="Weekly content brief"
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Schedule</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Schedule</label>
               <select value={form.schedule} onChange={e => setForm(f => ({ ...f, schedule: e.target.value }))}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.7)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
                 {SCHEDULES.map(s => <option key={s.value} value={s.value} style={{ background: '#111' }}>{s.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>System</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>System</label>
               <select value={form.systemId} onChange={e => setForm(f => ({ ...f, systemId: e.target.value, workflowId: '' }))}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.7)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
                 {systems.map(s => <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Workflow (optional)</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Workflow (optional)</label>
               <select value={form.workflowId} onChange={e => setForm(f => ({ ...f, workflowId: e.target.value }))}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.7)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
                 <option value="" style={{ background: '#111' }}>None (free-form)</option>
                 {systemWorkflows.map(w => <option key={w.id} value={w.id} style={{ background: '#111' }}>{w.name}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Input / instructions</label>
+            <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Input / instructions</label>
             <textarea value={form.input} onChange={e => setForm(f => ({ ...f, input: e.target.value }))}
               placeholder="What should this automation do each time it runs? Be specific."
               rows={3}
               className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none resize-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
           </div>
           <div className="flex items-center gap-3">
             <button type="submit" disabled={!form.name || !form.systemId}
@@ -192,21 +192,21 @@ export default function AutomationsPage() {
 
       {!loaded ? (
         <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />)}
+          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />)}
         </div>
       ) : automations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
+        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
           <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)' }}>
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5">
               <circle cx="12" cy="12" r="9"/><path strokeLinecap="round" d="M12 7v5l3 3"/>
             </svg>
           </div>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No automations yet</p>
-          <p className="text-xs mb-5" style={{ color: 'var(--text-tertiary)' }}>Schedule workflows to run automatically</p>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No automations yet</p>
+          <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>Schedule workflows to run automatically</p>
           <button onClick={() => setShowCreate(true)}
             className="text-xs font-light px-4 py-2 rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}>
             Create your first automation →
           </button>
         </div>
@@ -214,7 +214,7 @@ export default function AutomationsPage() {
         <div className="space-y-2">
           {automations.map(a => (
             <div key={a.id} className="flex items-center gap-4 px-5 py-4 rounded-xl"
-              style={{ background: 'var(--surface)', border: `1px solid ${a.isActive ? 'var(--border)' : 'rgba(255,255,255,0.04)'}`, opacity: a.isActive ? 1 : 0.5 }}>
+              style={{ background: 'var(--glass)', border: `1px solid ${a.isActive ? 'var(--glass-border)' : 'rgba(255,255,255,0.04)'}`, opacity: a.isActive ? 1 : 0.5 }}>
               {/* Toggle */}
               <button onClick={() => toggleActive(a.id, a.isActive)}
                 className="w-8 h-4 rounded-full flex-shrink-0 relative transition-all"
@@ -235,7 +235,7 @@ export default function AutomationsPage() {
                 <div className="flex items-center gap-3">
                   <Link href={`/systems/${a.systemId}`}
                     className="flex items-center gap-1.5 text-xs transition-colors"
-                    style={{ color: 'var(--text-tertiary)' }}>
+                    style={{ color: 'var(--text-3)' }}>
                     {a.systemColor && <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: a.systemColor }} />}
                     {a.systemName}
                   </Link>
@@ -256,7 +256,7 @@ export default function AutomationsPage() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button onClick={() => triggerNow(a.id)} disabled={triggering === a.id}
                   className="text-xs font-light px-3 py-1.5 rounded-lg transition-all disabled:opacity-40"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}>
                   {triggering === a.id ? '···' : '▶ Run now'}
                 </button>
                 <button onClick={() => deleteAutomation(a.id)}

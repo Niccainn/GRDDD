@@ -36,14 +36,14 @@ export default async function SystemsPage() {
     <div className="px-10 py-10 min-h-screen">
       <div className="mb-10">
         <h1 className="text-2xl font-extralight tracking-tight mb-1">Systems</h1>
-        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Structured organisational functions</p>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>Structured organisational functions</p>
       </div>
 
       {environments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 rounded-xl"
-          style={{ border: '1px dashed var(--border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No environments yet</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Systems need an environment to operate in</p>
+          style={{ border: '1px dashed var(--glass-border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No environments yet</p>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Systems need an environment to operate in</p>
           <Link href="/environments" className="text-xs font-light px-4 py-2 rounded-lg transition-all"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
             Create environment →
@@ -53,7 +53,7 @@ export default async function SystemsPage() {
         <>
           {/* Templates */}
           <div className="mb-10">
-            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>QUICK ADD</p>
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>QUICK ADD</p>
             <div className="grid grid-cols-5 gap-2">
               {TEMPLATES.map(t => (
                 <form key={t.name} action={createSystem}>
@@ -63,10 +63,10 @@ export default async function SystemsPage() {
                   <input type="hidden" name="environmentId" value={environments[0].id} />
                   <button type="submit"
                     className="w-full text-left p-4 rounded-xl transition-all group"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                     <div className="w-1.5 h-1.5 rounded-full mb-3" style={{ backgroundColor: t.color }} />
                     <p className="text-xs font-light mb-1 group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>{t.name}</p>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{t.description}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{t.description}</p>
                   </button>
                 </form>
               ))}
@@ -76,11 +76,11 @@ export default async function SystemsPage() {
           {/* Existing systems */}
           {systems.length > 0 && (
             <div>
-              <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>YOUR SYSTEMS</p>
+              <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>YOUR SYSTEMS</p>
               <div className="grid grid-cols-3 gap-3">
                 {systems.map(s => (
                   <div key={s.id} className="group flex flex-col rounded-xl transition-all"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                     <Link href={`/systems/${s.id}`} className="flex flex-col p-5 flex-1">
                       <div className="flex items-start justify-between mb-3">
                         {s.color && <div className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: s.color }} />}
@@ -93,12 +93,12 @@ export default async function SystemsPage() {
                       <p className="text-sm font-light mb-1 group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
                         {s.name}
                       </p>
-                      {s.description && <p className="text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{s.description}</p>}
+                      {s.description && <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{s.description}</p>}
                     </Link>
                     <div className="flex items-center justify-between px-5 pb-4">
-                      <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{s.environment.name}</p>
+                      <p className="text-xs" style={{ color: 'var(--text-3)' }}>{s.environment.name}</p>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{s._count.workflows} workflows</span>
+                        <span className="text-xs" style={{ color: 'var(--text-3)' }}>{s._count.workflows} workflows</span>
                         <DeleteButton id={s.id} type="systems" />
                       </div>
                     </div>

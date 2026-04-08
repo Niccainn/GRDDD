@@ -201,7 +201,7 @@ export default function ExecutionDetailPage() {
       <div className="flex items-center gap-2 mb-8">
         <button onClick={() => router.back()}
           className="text-xs font-light inline-flex items-center gap-1.5 transition-colors"
-          style={{ color: 'var(--text-tertiary)' }}>
+          style={{ color: 'var(--text-3)' }}>
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -209,10 +209,10 @@ export default function ExecutionDetailPage() {
         </button>
         {execution?.workflow && (
           <>
-            <span style={{ color: 'var(--text-tertiary)' }}>·</span>
+            <span style={{ color: 'var(--text-3)' }}>·</span>
             <Link href={`/workflows/${execution.workflow.id}`}
               className="text-xs font-light transition-colors"
-              style={{ color: 'var(--text-tertiary)' }}>
+              style={{ color: 'var(--text-3)' }}>
               {execution.workflow.name}
             </Link>
           </>
@@ -222,11 +222,11 @@ export default function ExecutionDetailPage() {
       {!loaded ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : !execution ? (
-        <div className="flex flex-col items-center py-24"><p style={{ color: 'var(--text-tertiary)' }}>Execution not found</p></div>
+        <div className="flex flex-col items-center py-24"><p style={{ color: 'var(--text-3)' }}>Execution not found</p></div>
       ) : (
         <>
           {/* Header */}
@@ -238,13 +238,13 @@ export default function ExecutionDetailPage() {
                 <span className="text-xs font-light" style={{ color: execution.status === 'COMPLETED' ? '#15AD70' : execution.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }}>
                   {execution.status.toLowerCase()}
                 </span>
-                <span style={{ color: 'var(--text-tertiary)' }}>·</span>
-                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{timeAgo(execution.createdAt)}</span>
+                <span style={{ color: 'var(--text-3)' }}>·</span>
+                <span className="text-xs" style={{ color: 'var(--text-3)' }}>{timeAgo(execution.createdAt)}</span>
                 {tokens && <span className="text-xs" style={{ color: 'rgba(255,255,255,0.15)' }}>{tokens.toLocaleString()} tokens</span>}
               </div>
               <Link href={`/systems/${execution.system.id}`}
                 className="text-xs font-light transition-colors"
-                style={{ color: 'var(--text-tertiary)' }}>
+                style={{ color: 'var(--text-3)' }}>
                 {execution.system.name} · {execution.system.environmentName}
               </Link>
             </div>
@@ -253,12 +253,12 @@ export default function ExecutionDetailPage() {
                 <>
                   <button onClick={copyToClipboard}
                     className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: copied ? '#15AD70' : 'rgba(255,255,255,0.4)' }}>
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: copied ? '#15AD70' : 'rgba(255,255,255,0.4)' }}>
                     {copied ? '✓ Copied' : 'Copy markdown'}
                   </button>
                   <button onClick={downloadMarkdown}
                     className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.4)' }}>
                     ↓ Download
                   </button>
                 </>
@@ -277,8 +277,8 @@ export default function ExecutionDetailPage() {
           </div>
 
           {/* Input */}
-          <div className="mb-6 p-5 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-tertiary)' }}>INPUT</p>
+          <div className="mb-6 p-5 rounded-xl" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+            <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-3)' }}>INPUT</p>
             <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>{execution.input}</p>
           </div>
 
@@ -294,8 +294,8 @@ export default function ExecutionDetailPage() {
                     <div key={idx} className="flex items-center">
                       <div className="flex flex-col items-center px-3 py-2.5 rounded-lg min-w-[90px] text-center transition-all"
                         style={{
-                          background: isActive ? 'rgba(191,159,241,0.06)' : isDone ? 'rgba(21,173,112,0.06)' : 'var(--surface)',
-                          border: `1px solid ${isActive ? 'rgba(191,159,241,0.25)' : isDone ? 'rgba(21,173,112,0.2)' : 'var(--border)'}`,
+                          background: isActive ? 'rgba(191,159,241,0.06)' : isDone ? 'rgba(21,173,112,0.06)' : 'var(--glass)',
+                          border: `1px solid ${isActive ? 'rgba(191,159,241,0.25)' : isDone ? 'rgba(21,173,112,0.2)' : 'var(--glass-border)'}`,
                         }}>
                         <span className="text-xs mb-1 tabular-nums" style={{ color: stageColor }}>
                           {isDone ? '✓' : isActive ? '···' : String(idx + 1).padStart(2, '0')}
@@ -318,7 +318,7 @@ export default function ExecutionDetailPage() {
           {/* Nova output */}
           {(hasNovaOutput || streamingStage) && (
             <div className="space-y-4">
-              <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>
                 NOVA OUTPUT {running && <span className="ml-2 animate-pulse">processing···</span>}
               </p>
 
@@ -371,7 +371,7 @@ export default function ExecutionDetailPage() {
                     : 'rgba(255,107,107,0.15)'}`,
               }}>
               <div className="flex-shrink-0">
-                <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Quality score</p>
+                <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>Quality score</p>
                 <p className="text-2xl font-extralight tabular-nums"
                   style={{ color: execution.validation.score >= 0.8 ? '#15AD70' : execution.validation.score >= 0.6 ? '#F7C700' : '#FF6B6B' }}>
                   {Math.round(execution.validation.score * 100)}%
@@ -399,8 +399,8 @@ export default function ExecutionDetailPage() {
 
           {/* Plain output (non-Nova, non-structured) */}
           {!hasNovaOutput && !streamingStage && execution.output && (
-            <div className="p-5 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-tertiary)' }}>OUTPUT</p>
+            <div className="p-5 rounded-xl" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+              <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-3)' }}>OUTPUT</p>
               <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{execution.output}</p>
             </div>
           )}
@@ -416,7 +416,7 @@ export default function ExecutionDetailPage() {
                 </svg>
               </div>
               <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>No output yet</p>
-              <p className="text-xs mb-5" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>
                 Let Nova process this {stages.length > 0 ? `${stages.length}-stage workflow` : 'request'}
               </p>
               <button onClick={runWithNova}

@@ -59,8 +59,8 @@ export default function SystemExecutionChart({ systemId }: { systemId: string })
           { label: 'Running', value: loaded ? recent.filter(e => e.status === 'RUNNING').length : '—', color: '#F7C700' },
         ].map(s => (
           <div key={s.label} className="px-4 py-3 rounded-xl text-center"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>{s.label}</p>
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>{s.label}</p>
             <p className="text-xl font-extralight" style={{ color: s.color }}>{s.value}</p>
           </div>
         ))}
@@ -70,7 +70,7 @@ export default function SystemExecutionChart({ systemId }: { systemId: string })
       {loaded && chart.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>EXECUTIONS / 14 DAYS</p>
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>EXECUTIONS / 14 DAYS</p>
             {hoveredDay && (
               <span className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.45)' }}>
                 {new Date(hoveredDay.date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
@@ -115,25 +115,25 @@ export default function SystemExecutionChart({ systemId }: { systemId: string })
 
       {/* Recent executions */}
       <div>
-        <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-tertiary)' }}>
+        <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>
           RECENT RUNS
         </p>
         {!loaded ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-10 rounded-lg animate-pulse" style={{ background: 'var(--surface)' }} />
+              <div key={i} className="h-10 rounded-lg animate-pulse" style={{ background: 'var(--glass)' }} />
             ))}
           </div>
         ) : recent.length === 0 ? (
-          <div className="flex flex-col items-center py-8 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>No executions yet</p>
+          <div className="flex flex-col items-center py-8 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-3)' }}>No executions yet</p>
           </div>
         ) : (
           <div className="space-y-1.5">
             {recent.slice(0, 8).map(exec => (
               <div key={exec.id}
                 className="flex items-center gap-3 px-4 py-2.5 rounded-lg"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                 <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                   style={{ backgroundColor: exec.status === 'COMPLETED' ? '#15AD70' : exec.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
                 <div className="flex-1 min-w-0">
@@ -144,7 +144,7 @@ export default function SystemExecutionChart({ systemId }: { systemId: string })
                     <p className="text-xs" style={{ color: '#F7C700' }}>Stage {exec.currentStage + 1}</p>
                   )}
                 </div>
-                <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+                <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-3)' }}>
                   {timeAgo(exec.createdAt)}
                 </span>
               </div>

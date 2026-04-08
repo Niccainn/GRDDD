@@ -132,7 +132,7 @@ export default function WorkflowsPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Workflows</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded ? `${filtered.length} of ${workflows.length} workflow${workflows.length !== 1 ? 's' : ''}` : 'Loading···'}
           </p>
         </div>
@@ -156,16 +156,16 @@ export default function WorkflowsPage() {
       {showCreate && (
         <form onSubmit={handleCreate}
           className="mb-6 p-5 rounded-xl flex items-end gap-3"
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <div className="flex-1">
-            <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Name</label>
+            <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Name</label>
             <input value={createName} onChange={e => setCreateName(e.target.value)}
               placeholder="Workflow name"
               className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
           </div>
           <div>
-            <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>System</label>
+            <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>System</label>
             <select value={createSystemId}
               onChange={e => {
                 setCreateSystemId(e.target.value);
@@ -173,7 +173,7 @@ export default function WorkflowsPage() {
                 if (sys) setCreateEnvId(sys.environmentId);
               }}
               className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.7)', minWidth: '160px' }}>
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)', minWidth: '160px' }}>
               {systems.map(s => <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>)}
             </select>
           </div>
@@ -189,9 +189,9 @@ export default function WorkflowsPage() {
 
       {/* Template picker */}
       {showTemplates && (
-        <div className="mb-6 p-5 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid rgba(191,159,241,0.2)' }}>
+        <div className="mb-6 p-5 rounded-xl" style={{ background: 'var(--glass)', border: '1px solid rgba(191,159,241,0.2)' }}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>WORKFLOW TEMPLATES</p>
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>WORKFLOW TEMPLATES</p>
             <div className="flex items-center gap-3">
               <div>
                 <select value={createSystemId}
@@ -201,7 +201,7 @@ export default function WorkflowsPage() {
                     if (sys) setCreateEnvId(sys.environmentId);
                   }}
                   className="text-xs font-light px-2 py-1.5 rounded-lg focus:outline-none appearance-none"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.6)' }}>
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.6)' }}>
                   {systems.map(s => <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>)}
                 </select>
               </div>
@@ -213,15 +213,15 @@ export default function WorkflowsPage() {
             {templates.map(t => (
               <button key={t.id} onClick={() => handleTemplateCreate(t)} disabled={creating || !createSystemId}
                 className="text-left p-4 rounded-xl transition-all group disabled:opacity-40"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: t.color }} />
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t.category}</span>
+                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>{t.category}</span>
                 </div>
                 <p className="text-sm font-light mb-1 group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
                   {t.name}
                 </p>
-                <p className="text-xs mb-3 leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{t.description}</p>
+                <p className="text-xs mb-3 leading-relaxed" style={{ color: 'var(--text-3)' }}>{t.description}</p>
                 <div className="flex flex-wrap gap-1">
                   {t.stages.slice(0, 4).map((s, i) => (
                     <span key={i} className="text-xs px-1.5 py-0.5 rounded"
@@ -253,7 +253,7 @@ export default function WorkflowsPage() {
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search workflows···"
               className="text-sm font-light pl-8 pr-4 py-2 rounded-lg focus:outline-none"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white', width: '200px' }} />
+              style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'white', width: '200px' }} />
           </div>
 
           {/* Status pills */}
@@ -275,7 +275,7 @@ export default function WorkflowsPage() {
           {systems.length > 1 && (
             <select value={systemFilter} onChange={e => setSystemFilter(e.target.value)}
               className="text-xs font-light px-3 py-2 rounded-lg focus:outline-none appearance-none ml-auto"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+              style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}>
               <option value="" style={{ background: '#111' }}>All systems</option>
               {systems.map(s => <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>)}
             </select>
@@ -287,24 +287,24 @@ export default function WorkflowsPage() {
       {!loaded ? (
         <div className="grid grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-32 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-32 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : systems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No systems yet</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Workflows operate within systems</p>
+        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No systems yet</p>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Workflows operate within systems</p>
           <Link href="/systems" className="text-xs font-light px-4 py-2 rounded-lg"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
             Create a system →
           </Link>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>
+        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
             {workflows.length === 0 ? 'No workflows yet' : 'No matches'}
           </p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
             {workflows.length === 0 ? 'Create one or use a template to get started' : 'Try adjusting your filters'}
           </p>
           {workflows.length === 0 && (
@@ -319,7 +319,7 @@ export default function WorkflowsPage() {
         <div className="grid grid-cols-3 gap-3">
           {filtered.map(w => (
             <div key={w.id} className="group flex flex-col rounded-xl transition-all"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
               <Link href={`/workflows/${w.id}`} className="flex flex-col p-5 flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <span className="w-1.5 h-1.5 rounded-full mt-1" style={{ backgroundColor: STATUS_COLOR[w.status] ?? 'rgba(255,255,255,0.2)' }} />
@@ -336,7 +336,7 @@ export default function WorkflowsPage() {
                   {w.name}
                 </p>
                 {w.description && (
-                  <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--text-tertiary)' }}>{w.description}</p>
+                  <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--text-3)' }}>{w.description}</p>
                 )}
                 {w.stages.length > 0 && (
                   <div className="flex items-center gap-1 mt-3 overflow-hidden">
@@ -355,7 +355,7 @@ export default function WorkflowsPage() {
               <div className="flex items-center justify-between px-5 pb-4 pt-1"
                 style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{w.systemName}</span>
+                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>{w.systemName}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   {w.executions > 0 && (

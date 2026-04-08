@@ -238,8 +238,8 @@ export default function GlobalNovaBar() {
           onClick={() => setOpen(true)}
           className="w-full flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all group"
           style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
+            background: 'var(--glass)',
+            border: '1px solid var(--glass-border)',
           }}
         >
           <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -260,7 +260,7 @@ export default function GlobalNovaBar() {
 
       {/* Expanded panel */}
       {open && (
-        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid rgba(191,159,241,0.2)' }}>
+        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--glass)', border: '1px solid rgba(191,159,241,0.2)' }}>
           {/* Panel header */}
           <div className="flex items-center justify-between px-5 py-3.5"
             style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -273,7 +273,7 @@ export default function GlobalNovaBar() {
               </div>
               <div>
                 <span className="text-sm font-light">Nova</span>
-                <span className="text-xs ml-2" style={{ color: 'var(--text-tertiary)' }}>global mode</span>
+                <span className="text-xs ml-2" style={{ color: 'var(--text-3)' }}>global mode</span>
               </div>
               {streaming && (
                 <div className="flex items-center gap-1.5">
@@ -284,7 +284,7 @@ export default function GlobalNovaBar() {
             </div>
             <button onClick={() => setOpen(false)}
               className="text-xs px-2 py-1 rounded transition-all"
-              style={{ color: 'var(--text-tertiary)' }}>
+              style={{ color: 'var(--text-3)' }}>
               ✕
             </button>
           </div>
@@ -350,7 +350,7 @@ export default function GlobalNovaBar() {
                 {SUGGESTIONS.map(s => (
                   <button key={s} onClick={() => setInput(s)}
                     className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.4)' }}>
                     {s}
                   </button>
                 ))}

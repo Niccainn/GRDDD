@@ -77,7 +77,7 @@ export default function TeamPage() {
     <div className="px-10 py-10 min-h-screen max-w-3xl">
       {/* Back */}
       <Link href="/settings" className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
-        style={{ color: 'var(--text-tertiary)' }}>
+        style={{ color: 'var(--text-3)' }}>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -87,7 +87,7 @@ export default function TeamPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Team</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded ? `${members.length} member${members.length !== 1 ? 's' : ''}` : 'Loading···'}
           </p>
         </div>
@@ -101,47 +101,47 @@ export default function TeamPage() {
       {/* Invite form */}
       {showInvite && (
         <form onSubmit={handleInvite} className="mb-8 p-5 rounded-xl space-y-4"
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-tertiary)' }}>ADD MEMBER</p>
+          style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>ADD MEMBER</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Name</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Name</label>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="Sarah Chen"
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Email</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Email</label>
               <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 placeholder="sarah@company.com" type="email"
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'white' }} />
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Type</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Type</label>
               <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.7)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
                 {['PERSON', 'TEAM', 'AGENT', 'CLIENT'].map(t => (
                   <option key={t} value={t} style={{ background: '#111' }}>{TYPE_LABEL[t]}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Role</label>
+              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Role</label>
               <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
                 className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.7)' }}>
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
                 {ROLES.map(r => <option key={r} value={r} style={{ background: '#111' }}>{r.toLowerCase()}</option>)}
               </select>
             </div>
             {environments.length > 0 && (
               <div className="col-span-2">
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-tertiary)' }}>Add to environment</label>
+                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Add to environment</label>
                 <select value={form.environmentId} onChange={e => setForm(f => ({ ...f, environmentId: e.target.value }))}
                   className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.7)' }}>
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
                   <option value="" style={{ background: '#111' }}>No environment</option>
                   {environments.map(e => <option key={e.id} value={e.id} style={{ background: '#111' }}>{e.name}</option>)}
                 </select>
@@ -167,7 +167,7 @@ export default function TeamPage() {
       {!loaded ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : (
@@ -176,7 +176,7 @@ export default function TeamPage() {
             const isDemoUser = member.email === 'demo@grid.app';
             return (
               <div key={member.id} className="flex items-center gap-4 px-5 py-4 rounded-xl"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                 {/* Avatar */}
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-light flex-shrink-0"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -199,7 +199,7 @@ export default function TeamPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-3">
-                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{member.email}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-3)' }}>{member.email}</p>
                     {member.memberships.length > 0 && (
                       <div className="flex items-center gap-1.5">
                         {member.memberships.map(m => (

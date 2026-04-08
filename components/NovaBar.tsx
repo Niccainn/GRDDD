@@ -287,7 +287,7 @@ export default function NovaBar({
         </div>
         <div>
           <span className="text-sm font-light">Nova</span>
-          <span className="text-xs ml-2" style={{ color: 'var(--text-tertiary)' }}>{systemName}</span>
+          <span className="text-xs ml-2" style={{ color: 'var(--text-3)' }}>{systemName}</span>
         </div>
         <div className="ml-auto flex items-center gap-2">
           {memory && (
@@ -329,7 +329,7 @@ export default function NovaBar({
           </div>
 
           {streaming && <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#BF9FF1' }} />}
-          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <span className="text-xs" style={{ color: 'var(--text-3)' }}>
             {streaming ? 'thinking···' : 'ready'}
           </span>
         </div>
@@ -405,7 +405,7 @@ export default function NovaBar({
           {SUGGESTIONS.map(s => (
             <button key={s} onClick={() => setInput(s)}
               className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.4)' }}>
               {s}
             </button>
           ))}

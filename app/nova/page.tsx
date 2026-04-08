@@ -244,7 +244,7 @@ export default function NovaPage() {
             </div>
             <div>
               <h1 className="text-2xl font-extralight tracking-tight">Nova</h1>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                 AI operations engine · global mode
               </p>
             </div>
@@ -258,7 +258,7 @@ export default function NovaPage() {
 
         {/* ── Chat interface ────────────────────────────────────────────── */}
         <div className="rounded-2xl overflow-hidden mb-10"
-          style={{ background: 'var(--surface)', border: '1px solid rgba(191,159,241,0.2)' }}>
+          style={{ background: 'var(--glass)', border: '1px solid rgba(191,159,241,0.2)' }}>
 
           {/* Messages */}
           {messages.length > 0 && (
@@ -335,14 +335,14 @@ export default function NovaPage() {
           {/* Suggestions (empty state) */}
           {messages.length === 0 && (
             <div className="px-6 pt-6 pb-2">
-              <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
                 Nova has access to all systems, workflows, and activity across your organisation. Ask anything.
               </p>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map(s => (
                   <button key={s} onClick={() => { setInput(s); inputRef.current?.focus(); }}
                     className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.4)' }}>
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.4)' }}>
                     {s}
                   </button>
                 ))}
@@ -395,7 +395,7 @@ export default function NovaPage() {
         {/* ── Interaction log ───────────────────────────────────────────── */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-tertiary)' }}>
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>
               INTERACTION LOG
               {logsLoaded && (
                 <span className="ml-2 normal-case tracking-normal" style={{ color: 'rgba(255,255,255,0.2)' }}>
@@ -415,7 +415,7 @@ export default function NovaPage() {
               <input value={logSearch} onChange={e => setLogSearch(e.target.value)}
                 placeholder="Search queries···"
                 className="w-full text-sm font-light pl-8 pr-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white' }} />
+                style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'white' }} />
             </div>
             <div className="flex items-center gap-1.5 overflow-x-auto">
               <button onClick={() => setSelectedSystem('')}
@@ -445,11 +445,11 @@ export default function NovaPage() {
           {!logsLoaded ? (
             <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+                <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
               ))}
             </div>
           ) : filteredLogs.length === 0 ? (
-            <div className="py-16 text-center rounded-xl" style={{ border: '1px dashed var(--border)' }}>
+            <div className="py-16 text-center rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
               <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.3)' }}>
                 {logs.length === 0 ? 'No interactions yet — ask Nova something above' : 'No matches'}
               </p>
@@ -459,7 +459,7 @@ export default function NovaPage() {
               {filteredLogs.map(log => (
                 <div key={log.id}
                   className="rounded-xl overflow-hidden cursor-pointer transition-all"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                  style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
                   onClick={() => setExpanded(expanded === log.id ? null : log.id)}>
                   <div className="px-5 py-3.5">
                     <div className="flex items-start gap-4">
@@ -469,11 +469,11 @@ export default function NovaPage() {
                         {log.systemId ? (
                           <Link href={`/systems/${log.systemId}`} onClick={e => e.stopPropagation()}
                             className="text-xs font-light truncate hover:text-white/60 transition-colors"
-                            style={{ color: 'var(--text-tertiary)' }}>
+                            style={{ color: 'var(--text-3)' }}>
                             {log.systemName}
                           </Link>
                         ) : (
-                          <span className="text-xs font-light" style={{ color: 'var(--text-tertiary)' }}>Global</span>
+                          <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>Global</span>
                         )}
                       </div>
                       <p className="flex-1 text-sm font-light truncate italic" style={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -483,7 +483,7 @@ export default function NovaPage() {
                         {log.tokens && (
                           <span className="text-xs" style={{ color: 'rgba(255,255,255,0.15)' }}>{log.tokens.toLocaleString()} tk</span>
                         )}
-                        <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{timeAgo(log.createdAt)}</span>
+                        <span className="text-xs" style={{ color: 'var(--text-3)' }}>{timeAgo(log.createdAt)}</span>
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
                           style={{ transform: expanded === log.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', color: 'rgba(255,255,255,0.2)' }}>
                           <path d="M2 3.5l3 3 3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -491,7 +491,7 @@ export default function NovaPage() {
                       </div>
                     </div>
                     {expanded !== log.id && log.response && (
-                      <p className="text-xs mt-2 ml-[116px] line-clamp-1 leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                      <p className="text-xs mt-2 ml-[116px] line-clamp-1 leading-relaxed" style={{ color: 'var(--text-3)' }}>
                         {stripMarkdown(log.response).slice(0, 200)}
                       </p>
                     )}
@@ -499,13 +499,13 @@ export default function NovaPage() {
                   {expanded === log.id && (
                     <div className="px-5 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                       <div className="ml-[116px]">
-                        <p className="text-xs mt-3 mb-2" style={{ color: 'var(--text-tertiary)' }}>Response</p>
+                        <p className="text-xs mt-3 mb-2" style={{ color: 'var(--text-3)' }}>Response</p>
                         <div className="text-sm font-light leading-relaxed whitespace-pre-wrap"
                           style={{ color: 'rgba(255,255,255,0.6)' }}>
                           {log.response || <span style={{ opacity: 0.4 }}>No response recorded</span>}
                         </div>
                         <div className="flex items-center gap-4 mt-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                          <span className="text-xs" style={{ color: 'var(--text-3)' }}>
                             {new Date(log.createdAt).toLocaleString()}
                           </span>
                           {log.tokens && (

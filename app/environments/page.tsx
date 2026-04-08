@@ -28,7 +28,7 @@ export default async function EnvironmentsPage() {
       <div className="flex items-start justify-between mb-10">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Environments</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Organisational containers where systems operate</p>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Organisational containers where systems operate</p>
         </div>
 
         <form action={createEnvironment} className="flex items-center gap-2">
@@ -37,7 +37,7 @@ export default async function EnvironmentsPage() {
             required
             placeholder="New environment name"
             className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none transition-all"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white', width: '200px' }}
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'white', width: '200px' }}
           />
           <button type="submit"
             className="text-xs font-light px-3 py-2 rounded-lg transition-all"
@@ -49,34 +49,34 @@ export default async function EnvironmentsPage() {
 
       {environments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24"
-          style={{ border: '1px dashed var(--border)', borderRadius: '12px' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No environments</p>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Create your first environment above</p>
+          style={{ border: '1px dashed var(--glass-border)', borderRadius: '12px' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No environments</p>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Create your first environment above</p>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-3">
           {environments.map((env) => (
             <div key={env.id} className="group flex flex-col rounded-xl transition-all"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
               <Link href={`/environments/${env.slug}`} className="flex flex-col p-5 flex-1">
                 <div className="flex items-start justify-between mb-4">
                   <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
                     {env.name}
                   </p>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'var(--text-tertiary)', marginTop: '3px', flexShrink: 0 }}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'var(--text-3)', marginTop: '3px', flexShrink: 0 }}>
                     <path d="M3 1h8v8M1 11L11 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
                   </svg>
                 </div>
                 {env.description && (
-                  <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                  <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-3)' }}>
                     {env.description}
                   </p>
                 )}
               </Link>
               <div className="flex items-center justify-between px-5 pb-4">
-                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>/{env.slug}</span>
+                <span className="text-xs" style={{ color: 'var(--text-3)' }}>/{env.slug}</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{env.systems.length} system{env.systems.length !== 1 ? 's' : ''}</span>
+                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>{env.systems.length} system{env.systems.length !== 1 ? 's' : ''}</span>
                   <DeleteButton id={env.id} type="environments" />
                 </div>
               </div>

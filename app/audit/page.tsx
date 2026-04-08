@@ -123,7 +123,7 @@ export default function AuditPage() {
     <div className="px-10 py-10 min-h-screen max-w-3xl">
       <div className="mb-8">
         <h1 className="text-2xl font-extralight tracking-tight mb-1">Audit Log</h1>
-        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
           Immutable activity history · {total.toLocaleString()} events
         </p>
       </div>
@@ -141,12 +141,12 @@ export default function AuditPage() {
             onChange={e => setSearch(e.target.value)}
             placeholder="Search events···"
             className="w-full text-sm font-light pl-9 pr-4 py-2 rounded-lg focus:outline-none"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white' }}
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'white' }}
           />
         </div>
         <select value={filterAction} onChange={e => { setFilterAction(e.target.value); setPage(0); }}
           className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.6)' }}>
+          style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.6)' }}>
           <option value="">All actions</option>
           {ACTION_GROUPS.map(g => (
             <option key={g} value={g} style={{ background: '#111' }}>{g}</option>
@@ -158,13 +158,13 @@ export default function AuditPage() {
       {!loaded ? (
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-12 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-12 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : logs.length === 0 ? (
-        <div className="rounded-xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="rounded-xl p-8 text-center" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No activity yet</p>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             Actions like creating workflows, running executions, and querying Nova will appear here
           </p>
         </div>
@@ -245,12 +245,12 @@ export default function AuditPage() {
               <div className="flex items-center gap-2">
                 <button onClick={() => setPage(p => p - 1)} disabled={page === 0}
                   className="text-xs font-light px-3 py-1.5 rounded-lg disabled:opacity-30 transition-all"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+                  style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}>
                   ← Prev
                 </button>
                 <button onClick={() => setPage(p => p + 1)} disabled={(page + 1) * LIMIT >= total}
                   className="text-xs font-light px-3 py-1.5 rounded-lg disabled:opacity-30 transition-all"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+                  style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}>
                   Next →
                 </button>
               </div>

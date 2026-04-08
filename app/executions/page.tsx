@@ -115,14 +115,14 @@ export default function ExecutionsPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Executions</h1>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded ? `${total.toLocaleString()} run${total !== 1 ? 's' : ''} total` : 'Loading···'}
           </p>
         </div>
 
         {/* Live refresh indicator */}
         <button onClick={load} className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.3)' }}>
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.3)' }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
             <polyline points="1 4 1 10 7 10"/>
             <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
@@ -152,13 +152,13 @@ export default function ExecutionsPage() {
       {!loaded ? (
         <div className="space-y-1.5">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : executions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No executions yet</p>
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+        <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No executions yet</p>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             Runs will appear here when workflows are executed via Nova
           </p>
         </div>
@@ -171,7 +171,7 @@ export default function ExecutionsPage() {
             return (
               <div key={ex.id}
                 className="rounded-xl overflow-hidden"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                 {/* Row */}
                 <button
                   onClick={() => toggleExpand(ex.id)}
@@ -313,7 +313,7 @@ export default function ExecutionsPage() {
       {/* Pagination */}
       {pages > 1 && (
         <div className="flex items-center justify-between mt-6">
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             Page {currentPage} of {pages}
           </p>
           <div className="flex items-center gap-2">
@@ -321,14 +321,14 @@ export default function ExecutionsPage() {
               onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
               disabled={offset === 0}
               className="text-xs font-light px-3 py-1.5 rounded-lg transition-all disabled:opacity-30"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}>
               ← Previous
             </button>
             <button
               onClick={() => setOffset(offset + PAGE_SIZE)}
               disabled={offset + PAGE_SIZE >= total}
               className="text-xs font-light px-3 py-1.5 rounded-lg transition-all disabled:opacity-30"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}>
               Next →
             </button>
           </div>

@@ -168,7 +168,7 @@ export default function OperatePage() {
           <div className="space-y-2">
             {!loaded ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-12 rounded-lg animate-pulse" style={{ background: 'var(--surface)' }} />
+                <div key={i} className="h-12 rounded-lg animate-pulse" style={{ background: 'var(--glass)' }} />
               ))
             ) : systems.length === 0 ? (
               <div className="flex flex-col items-center py-10 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
@@ -272,7 +272,7 @@ export default function OperatePage() {
             !loaded ? (
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+                  <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
                 ))}
               </div>
             ) : executions.length === 0 ? (
@@ -340,7 +340,7 @@ export default function OperatePage() {
             !loaded ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
+                  <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
                 ))}
               </div>
             ) : activity.length === 0 ? (

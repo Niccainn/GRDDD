@@ -177,7 +177,7 @@ export default function WorkflowDetailClient({
   return (
     <div className="px-10 py-10 min-h-screen">
       <Link href="/workflows" className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
-        style={{ color: 'var(--text-tertiary)' }}>
+        style={{ color: 'var(--text-3)' }}>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -197,10 +197,10 @@ export default function WorkflowDetailClient({
           )}
           <div className="flex items-center gap-3 mt-2">
             <Link href={`/systems/${workflow.systemId}`} className="text-xs font-light transition-colors hover:text-white/60"
-              style={{ color: 'var(--text-tertiary)' }}>{workflow.systemName}</Link>
-            <span style={{ color: 'var(--text-tertiary)' }}>·</span>
+              style={{ color: 'var(--text-3)' }}>{workflow.systemName}</Link>
+            <span style={{ color: 'var(--text-3)' }}>·</span>
             <Link href={`/environments/${workflow.environmentSlug}`} className="text-xs font-light transition-colors hover:text-white/60"
-              style={{ color: 'var(--text-tertiary)' }}>{workflow.environmentName}</Link>
+              style={{ color: 'var(--text-3)' }}>{workflow.environmentName}</Link>
           </div>
         </div>
 
@@ -217,7 +217,7 @@ export default function WorkflowDetailClient({
               </svg>
             </button>
             <div className="absolute right-0 top-full mt-1 z-10 hidden group-focus-within:block group-hover:block rounded-lg overflow-hidden py-1"
-              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', minWidth: '130px' }}>
+              style={{ background: 'var(--bg-subtle)', border: '1px solid var(--glass-border)', minWidth: '130px' }}>
               {STATUS_OPTIONS.map(s => (
                 <button key={s} onClick={() => handleStatusChange(s)}
                   className="w-full text-left px-3 py-1.5 text-xs font-light transition-colors hover:bg-white/5 flex items-center gap-2"
@@ -279,7 +279,7 @@ export default function WorkflowDetailClient({
           className="w-full text-sm font-light px-0 py-2 bg-transparent border-b focus:outline-none resize-none mb-8"
           style={{ borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }} />
       ) : workflow.description && (
-        <p className="text-sm font-light mb-8 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>{workflow.description}</p>
+        <p className="text-sm font-light mb-8 max-w-2xl" style={{ color: 'var(--text-2)' }}>{workflow.description}</p>
       )}
 
       {/* Run input modal */}
@@ -293,7 +293,7 @@ export default function WorkflowDetailClient({
             <h3 className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
               Run · {workflow.name}
             </h3>
-            <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
+            <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
               {workflow.stages.length > 0 ? `${workflow.stages.length} stages` : 'No stages'} · {workflow.systemName}
             </p>
             <textarea
@@ -370,13 +370,13 @@ export default function WorkflowDetailClient({
         <div className="col-span-2 space-y-8">
           {/* Stage pipeline */}
           <div>
-            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>STAGES</p>
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>STAGES</p>
 
             {(editing ? editStages : workflow.stages).length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 rounded-xl"
-                style={{ border: '1px dashed var(--border)' }}>
-                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No stages defined</p>
-                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{editing ? 'Add stages below' : 'Click Edit to add stages'}</p>
+                style={{ border: '1px dashed var(--glass-border)' }}>
+                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No stages defined</p>
+                <p className="text-xs" style={{ color: 'var(--text-3)' }}>{editing ? 'Add stages below' : 'Click Edit to add stages'}</p>
               </div>
             ) : (
               <div className="flex items-start gap-0 overflow-x-auto pb-2">
@@ -389,8 +389,8 @@ export default function WorkflowDetailClient({
                     <div key={idx} className="flex items-center">
                       <div className="flex flex-col items-center px-4 py-3 rounded-xl min-w-[110px] relative transition-all"
                         style={{
-                          background: isActive ? 'rgba(247,199,0,0.06)' : isDone ? 'rgba(21,173,112,0.06)' : 'var(--surface)',
-                          border: `1px solid ${isActive ? 'rgba(247,199,0,0.2)' : isDone ? 'rgba(21,173,112,0.2)' : 'var(--border)'}`,
+                          background: isActive ? 'rgba(247,199,0,0.06)' : isDone ? 'rgba(21,173,112,0.06)' : 'var(--glass)',
+                          border: `1px solid ${isActive ? 'rgba(247,199,0,0.2)' : isDone ? 'rgba(21,173,112,0.2)' : 'var(--glass-border)'}`,
                         }}>
                         <span className="text-xs font-light mb-1.5 tabular-nums" style={{ color: stageColor }}>
                           {isDone ? '✓' : String(idx + 1).padStart(2, '0')}
@@ -420,7 +420,7 @@ export default function WorkflowDetailClient({
                   onKeyDown={e => e.key === 'Enter' && addStage()}
                   placeholder="Add stage name···"
                   className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none flex-1"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'white' }} />
+                  style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'white' }} />
                 <button onClick={addStage} disabled={!newStage.trim()}
                   className="text-xs font-light px-3 py-2 rounded-lg disabled:opacity-30"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
@@ -432,24 +432,24 @@ export default function WorkflowDetailClient({
 
           {/* Run history */}
           <div>
-            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>
               RUNS ({executions.length})
             </p>
             {executions.length === 0 ? (
-              <div className="flex flex-col items-center py-10 rounded-xl" style={{ border: '1px dashed var(--border)' }}>
-                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-secondary)' }}>No runs yet</p>
-                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Click ▶ Run to start the first execution</p>
+              <div className="flex flex-col items-center py-10 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No runs yet</p>
+                <p className="text-xs" style={{ color: 'var(--text-3)' }}>Click ▶ Run to start the first execution</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {executions.map(exec => (
                   <Link key={exec.id} href={`/executions/${exec.id}`}
                     className="flex items-start gap-4 px-4 py-3 rounded-lg group transition-all"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex' }}>
+                    style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', display: 'flex' }}>
                     <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full"
                         style={{ backgroundColor: exec.status === 'COMPLETED' ? '#15AD70' : exec.status === 'RUNNING' ? '#F7C700' : '#FF7070' }} />
-                      <span className="text-xs font-light" style={{ color: 'var(--text-tertiary)' }}>{exec.status.toLowerCase()}</span>
+                      <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>{exec.status.toLowerCase()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-light group-hover:text-white/80 transition-colors" style={{ color: 'rgba(255,255,255,0.6)' }}>{exec.input}</p>
@@ -462,7 +462,7 @@ export default function WorkflowDetailClient({
                         <p className="text-xs mt-1" style={{ color: 'rgba(191,159,241,0.5)' }}>View Nova output →</p>
                       )}
                     </div>
-                    <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
+                    <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-3)' }}>
                       {new Date(exec.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </Link>
@@ -474,8 +474,8 @@ export default function WorkflowDetailClient({
 
         {/* Meta */}
         <div>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>DETAILS</p>
-          <div className="rounded-xl p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>DETAILS</p>
+          <div className="rounded-xl p-5 space-y-3" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
             {[
               { label: 'Status', value: workflow.status.toLowerCase() },
               { label: 'System', value: workflow.systemName },
@@ -485,7 +485,7 @@ export default function WorkflowDetailClient({
               { label: 'Updated', value: new Date(workflow.updatedAt).toLocaleDateString() },
             ].map(({ label, value }) => (
               <div key={label} className="flex items-center justify-between">
-                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{label}</span>
+                <span className="text-xs" style={{ color: 'var(--text-3)' }}>{label}</span>
                 <span className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.55)' }}>{value}</span>
               </div>
             ))}
@@ -521,7 +521,7 @@ export default function WorkflowDetailClient({
               className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-xs font-light transition-all"
               style={{
                 background: savedAsTemplate ? 'rgba(21,173,112,0.08)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${savedAsTemplate ? 'rgba(21,173,112,0.2)' : 'var(--border)'}`,
+                border: `1px solid ${savedAsTemplate ? 'rgba(21,173,112,0.2)' : 'var(--glass-border)'}`,
                 color: savedAsTemplate ? '#15AD70' : 'rgba(255,255,255,0.35)',
               }}>
               <span className="flex items-center gap-2">
@@ -537,7 +537,7 @@ export default function WorkflowDetailClient({
             {versions.length > 0 && (
               <button onClick={() => setShowVersions(v => !v)}
                 className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-xs font-light transition-all"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.35)' }}>
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.35)' }}>
                 <span className="flex items-center gap-2">
                   <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
                     <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.1"/>
@@ -550,11 +550,11 @@ export default function WorkflowDetailClient({
             )}
 
             {showVersions && versions.length > 0 && (
-              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
                 {versions.slice(0, 8).map((v, i) => (
                   <div key={v.id}
                     className="flex items-center justify-between px-3.5 py-2.5 text-xs"
-                    style={{ borderTop: i > 0 ? '1px solid var(--border)' : 'none', background: 'var(--surface)' }}>
+                    style={{ borderTop: i > 0 ? '1px solid var(--glass-border)' : 'none', background: 'var(--glass)' }}>
                     <div className="flex items-center gap-2">
                       <span className="font-mono" style={{ color: 'rgba(113,147,237,0.7)' }}>v{v.version}</span>
                       <span className="font-light" style={{ color: 'rgba(255,255,255,0.35)' }}>

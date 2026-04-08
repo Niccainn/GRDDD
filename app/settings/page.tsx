@@ -46,14 +46,14 @@ export default function SettingsPage() {
     <div className="px-10 py-10 min-h-screen max-w-2xl">
       <div className="mb-10">
         <h1 className="text-2xl font-extralight tracking-tight mb-1">Settings</h1>
-        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Workspace configuration and status</p>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>Workspace configuration and status</p>
       </div>
 
       <div className="space-y-6">
         {/* Identity */}
         <section>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>IDENTITY</p>
-          <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>IDENTITY</p>
+          <div className="rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
             {!settings ? (
               <div className="h-16 animate-pulse rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
             ) : (
@@ -93,7 +93,7 @@ export default function SettingsPage() {
                       </button>
                     </div>
                   )}
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
                     {settings.identity?.email ?? 'demo@grid.app'}
                   </p>
                 </div>
@@ -108,8 +108,8 @@ export default function SettingsPage() {
 
         {/* API */}
         <section>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>NOVA / ANTHROPIC</p>
-          <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>NOVA / ANTHROPIC</p>
+          <div className="rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
             {!settings ? (
               <div className="h-12 animate-pulse rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
             ) : (
@@ -117,7 +117,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-light mb-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>API Key</p>
-                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                    <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                       Set via <code className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.06)', fontFamily: 'monospace' }}>ANTHROPIC_API_KEY</code> environment variable
                     </p>
                   </div>
@@ -131,7 +131,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Model</span>
+                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>Model</span>
                   <code className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>
                     claude-opus-4-6
                   </code>
@@ -143,10 +143,10 @@ export default function SettingsPage() {
 
         {/* Usage stats */}
         <section>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>WORKSPACE</p>
-          <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>WORKSPACE</p>
+          <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
             {!settings ? (
-              <div className="h-40 animate-pulse" style={{ background: 'var(--surface)' }} />
+              <div className="h-40 animate-pulse" style={{ background: 'var(--glass)' }} />
             ) : (
               <div>
                 {[
@@ -159,8 +159,8 @@ export default function SettingsPage() {
                   <div key={row.label}
                     className="flex items-center justify-between px-5 py-3"
                     style={{
-                      background: 'var(--surface)',
-                      borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                      background: 'var(--glass)',
+                      borderTop: i > 0 ? '1px solid var(--glass-border)' : 'none',
                     }}>
                     <span className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.5)' }}>{row.label}</span>
                     <span className="text-sm font-light tabular-nums" style={{ color: 'rgba(255,255,255,0.75)' }}>{row.value}</span>
@@ -173,15 +173,15 @@ export default function SettingsPage() {
 
         {/* Team */}
         <section>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>TEAM</p>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>TEAM</p>
           <a href="/settings/team"
             className="flex items-center justify-between px-5 py-4 rounded-xl transition-all group"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
             <div>
               <p className="text-sm font-light mb-0.5 group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
                 Manage team members
               </p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                 Add people, agents, and clients · assign roles per environment
               </p>
             </div>
@@ -191,15 +191,15 @@ export default function SettingsPage() {
 
         {/* API */}
         <section>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>PUBLIC API</p>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>PUBLIC API</p>
           <a href="/settings/api-keys"
             className="flex items-center justify-between px-5 py-4 rounded-xl transition-all group"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
             <div>
               <p className="text-sm font-light mb-0.5 group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
                 API Keys
               </p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                 Generate keys to trigger workflows from external tools and automations
               </p>
             </div>
@@ -209,15 +209,15 @@ export default function SettingsPage() {
 
         {/* Notifications */}
         <section>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>NOTIFICATIONS</p>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>NOTIFICATIONS</p>
           <a href="/settings/webhooks"
             className="flex items-center justify-between px-5 py-4 rounded-xl transition-all group"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
             <div>
               <p className="text-sm font-light mb-0.5 group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
                 Webhooks
               </p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                 Receive HTTP callbacks for executions, alerts, and automations
               </p>
             </div>
@@ -227,8 +227,8 @@ export default function SettingsPage() {
 
         {/* About */}
         <section>
-          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-tertiary)' }}>ABOUT</p>
-          <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>ABOUT</p>
+          <div className="rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
             <div className="flex items-center gap-3 mb-3">
               <svg width="20" height="26" viewBox="0 0 79 100" fill="none">
                 <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2" strokeOpacity="0.6"/>
@@ -237,10 +237,10 @@ export default function SettingsPage() {
               </svg>
               <div>
                 <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.7)' }}>GRID</p>
-                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Adaptive Organizational Infrastructure</p>
+                <p className="text-xs" style={{ color: 'var(--text-3)' }}>Adaptive Organizational Infrastructure</p>
               </div>
             </div>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>
               GRID structures how identity, operations, and intelligence interact across your organisation. Built with Next.js, Prisma, and Claude.
             </p>
           </div>
