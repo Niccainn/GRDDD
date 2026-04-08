@@ -110,6 +110,89 @@ Use markdown formatting. Be thorough but focused. Write as a senior professional
               'Critique': 'Conduct design critique. Deliver: assessment against design principles, usability concerns, accessibility check, and prioritized improvement list.',
               'Iterate': 'Plan design iterations. Deliver: specific changes to make based on critique, updated specifications, and revised timeline.',
               'Approve': 'Prepare for approval. Deliver: final design summary, changes made since proposal, compliance checklist, and implementation handoff notes.',
+              'Narrative': `Act as a senior social media strategist and SME. Analyze the brief and deliver:
+
+## Campaign Strategy
+- **Campaign Theme**: A compelling, ownable concept
+- **Core Message**: 1 sentence that drives everything
+- **3 Supporting Messages**: Pillar messages that ladder up to the core
+- **Tone & Voice**: Specific guidelines (e.g. "confident but not arrogant, conversational, data-backed")
+- **Target Audience Segments**: 2-3 segments with psychographic detail
+- **Platform Strategy**: Which platforms get which content types and why
+- **10 Hashtags**: Mix of branded, industry, and trending — with estimated reach per hashtag
+- **Posting Cadence**: Recommended frequency per platform per week
+
+Write as if briefing a creative team.`,
+
+              'Assets': `Act as a social media content creator and copywriter. Using the Narrative strategy, create the full content package:
+
+## Instagram Posts (3 posts)
+For each: exact caption (with emoji and line breaks), image/video direction (detailed enough for a designer), posting time recommendation, and hashtags.
+
+## Instagram Stories (2 stories)
+For each: slide-by-slide breakdown with copy, CTA, sticker/poll suggestions, and swipe-up direction.
+
+## Facebook Posts (2 posts)
+Longer-form versions optimized for Facebook's algorithm — include link preview copy if applicable.
+
+## LinkedIn Posts (1 post)
+Professional angle, thought leadership framing, personal storytelling hook.
+
+## Content Calendar
+A day-by-day schedule for the next 2 weeks showing which post goes where and when.
+
+Write all copy as final — ready to post, not drafts.`,
+
+              'Review': `Act as a brand manager and compliance reviewer. Review ALL content from the Assets stage:
+
+## Brand Alignment Check
+- Does each post match the tone/voice from Narrative stage? Score 1-10.
+- Are visual directions consistent with brand identity?
+- Any messaging that could be misinterpreted or controversial?
+
+## Platform Compliance
+- Instagram: caption under 2,200 chars? 30 hashtag limit? CTA clear?
+- Facebook: link preview optimized? Text-to-image ratio for ads?
+- LinkedIn: professional tone? No excessive hashtags?
+
+## Quality Scorecard
+| Post | Platform | Quality (1-10) | Issues | Status |
+For each post, score and flag issues.
+
+## Recommended Edits
+Specific before→after changes for any posts scoring below 8.
+
+## Final Verdict
+"Approved for publish" or "Requires revision" with clear next steps.`,
+
+              'Publish': `Act as a social media scheduler. Prepare the FINAL publishing manifest:
+
+## Publishing Schedule
+
+For EACH post, deliver:
+- **Post ID**: AUTO-[6 random alphanumeric chars]
+- **Status**: ✅ Scheduled
+- **Platform**: Instagram Feed / Instagram Story / Facebook / LinkedIn
+- **Publish Date**: [specific date and time with timezone]
+- **Caption**: [final approved caption — exact text]
+- **Hashtags**: [final set]
+- **Media**: [image/video specification]
+- **Target Audience**: [if boosted/promoted]
+- **Preview**: https://grid.app/preview/[post-id]
+
+## Campaign Summary
+- Total posts scheduled: [N]
+- Platforms: Instagram ([N]), Facebook ([N]), LinkedIn ([N])
+- Campaign duration: [start] → [end]
+- Estimated total reach: [number] (based on follower count + hashtag reach + historical performance)
+- Estimated engagement rate: [percentage]
+
+## Post-Campaign Tracking
+- Metrics to monitor: reach, impressions, engagement rate, link clicks, saves, shares
+- Check-in dates: Day 3, Day 7, Day 14
+- Success criteria: [specific KPIs from the Narrative stage]
+
+✅ All content approved and scheduled. Campaign is live.`,
               'Data Collection': 'Gather and organize relevant data. Deliver: data sources identified, collection methodology, quality assessment, and initial findings.',
               'Analysis': 'Analyze the collected data. Deliver: key insights, trends, anomalies, statistical summaries, and actionable conclusions.',
               'Report': 'Write the formal report. Deliver: executive summary, detailed findings, visualizations described, and strategic recommendations.',
