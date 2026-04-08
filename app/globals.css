@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════
+   GRID DESIGN SYSTEM — Glass + Chrome + Light/Dark
+   Invisible infrastructure that adapts to any brand
+   ═══════════════════════════════════════════════════════════ */
+
 :root {
-  /* ─── Background ─── */
+  /* ─── Mode: Dark (default) ─── */
   --bg: #08080c;
   --bg-subtle: #0c0c12;
+  --bg-elevated: #111118;
 
   /* ─── Glass system ─── */
   --glass: rgba(255, 255, 255, 0.025);
@@ -16,6 +22,11 @@
   --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
   --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   --glass-inset-strong: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* ─── Chrome (neumorphic highlight edge) ─── */
+  --chrome-edge: rgba(255, 255, 255, 0.12);
+  --chrome-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  --chrome-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 
   /* ─── Text hierarchy ─── */
   --text-1: rgba(255, 255, 255, 0.92);
@@ -43,6 +54,7 @@
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 32px;
+  --radius-squircle: 22%;
   --radius-pill: 9999px;
 
   /* ─── Timing ─── */
@@ -50,6 +62,56 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration: 0.2s;
   --duration-slow: 0.4s;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT MODE — Glass becomes frosted translucent on light
+   ═══════════════════════════════════════════════════════════ */
+
+[data-theme="light"] {
+  --bg: #e4e4e8;
+  --bg-subtle: #eaeaee;
+  --bg-elevated: #f2f2f6;
+
+  --glass: rgba(255, 255, 255, 0.5);
+  --glass-hover: rgba(255, 255, 255, 0.65);
+  --glass-active: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-border-hover: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --glass-inset-strong: inset 0 1px 0 rgba(255, 255, 255, 1);
+
+  --chrome-edge: rgba(255, 255, 255, 0.7);
+  --chrome-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+  --chrome-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+
+  --text-1: rgba(0, 0, 0, 0.85);
+  --text-2: rgba(0, 0, 0, 0.55);
+  --text-3: rgba(0, 0, 0, 0.30);
+
+  --brand-soft: rgba(21, 173, 112, 0.08);
+  --brand-glow: rgba(21, 173, 112, 0.05);
+  --brand-border: rgba(21, 173, 112, 0.15);
+
+  --nova-soft: rgba(140, 100, 220, 0.08);
+  --warning-soft: rgba(200, 160, 0, 0.08);
+  --danger-soft: rgba(220, 60, 60, 0.08);
+  --info-soft: rgba(80, 120, 220, 0.08);
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(21, 173, 112, 0.15);
+  color: #000;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
 }
 
 @theme inline {
@@ -73,6 +135,7 @@ body {
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background var(--duration-slow) var(--ease), color var(--duration-slow) var(--ease);
 }
 
 ::selection {
@@ -131,7 +194,7 @@ body {
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
@@ -144,8 +207,12 @@ body {
 }
 
 .glass-input:focus {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--glass-border-hover);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.03), var(--glass-inset-strong);
+}
+
+[data-theme="light"] .glass-input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.03), var(--glass-inset-strong);
 }
 
 .glass-input::placeholder {
@@ -183,6 +250,127 @@ body {
   background: var(--brand-soft);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   CHROME SYSTEM — Neumorphic tactile buttons with depth
+   Inspired by Apple Vision Pro + Chromify chrome buttons
+   ═══════════════════════════════════════════════════════════ */
+
+.chrome {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--chrome-edge);
+  border-radius: var(--radius-md);
+  box-shadow: var(--chrome-shadow);
+  transition: all var(--duration) var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.chrome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 50%, rgba(0, 0, 0, 0.04) 100%);
+  pointer-events: none;
+}
+
+.chrome:hover {
+  box-shadow: var(--chrome-shadow-hover);
+  transform: translateY(-0.5px);
+}
+
+.chrome:active {
+  transform: translateY(0.5px);
+  box-shadow: var(--chrome-shadow);
+}
+
+/* Chrome circle button — like the upload arrow in reference */
+.chrome-circle {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--chrome-edge);
+  border-radius: 50%;
+  box-shadow: var(--chrome-shadow);
+  transition: all var(--duration) var(--ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.chrome-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 255, 255, 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.chrome-circle:hover {
+  box-shadow: var(--chrome-shadow-hover);
+  transform: scale(1.02);
+}
+
+/* Chrome pill button — like "Upload" in reference */
+.chrome-pill {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--chrome-edge);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--chrome-shadow);
+  transition: all var(--duration) var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.chrome-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.chrome-pill:hover {
+  box-shadow: var(--chrome-shadow-hover);
+  transform: translateY(-0.5px);
+}
+
+/* Chrome squircle — like ecwora card */
+.chrome-squircle {
+  background: var(--glass);
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
+  border: 1px solid var(--chrome-edge);
+  border-radius: var(--radius-squircle);
+  box-shadow: var(--chrome-shadow);
+  transition: all var(--duration) var(--ease);
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.chrome-squircle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.06), transparent 60%);
+  pointer-events: none;
+}
+
+.chrome-squircle:hover {
+  box-shadow: var(--chrome-shadow-hover);
+  transform: scale(1.02);
+}
+
 /* ─── Floating card with depth ─── */
 .float {
   transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
@@ -198,6 +386,13 @@ body {
   background:
     radial-gradient(ellipse 80% 50% at 50% -20%, var(--brand-glow), transparent),
     radial-gradient(ellipse 60% 40% at 80% 50%, rgba(113, 147, 237, 0.03), transparent),
+    var(--bg);
+}
+
+[data-theme="light"] .ambient-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(21, 173, 112, 0.04), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 50%, rgba(113, 147, 237, 0.02), transparent),
     var(--bg);
 }
 
@@ -227,6 +422,37 @@ body {
   animation: fade-in 0.4s var(--ease) forwards;
 }
 
+/* ─── AGI reasoning visualization ─── */
+@keyframes reasoning-pulse {
+  0% { opacity: 0.4; transform: scale(0.97); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.4; transform: scale(0.97); }
+}
+
+.agi-thinking {
+  animation: reasoning-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes tool-trace {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.agi-trace {
+  position: relative;
+  overflow: hidden;
+}
+
+.agi-trace::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--nova), transparent);
+  animation: tool-trace 2s var(--ease) forwards;
+}
+
 /* ─── Noise texture overlay ─── */
 .noise::before {
   content: '';
@@ -236,4 +462,8 @@ body {
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   z-index: 9999;
+}
+
+[data-theme="light"] .noise::before {
+  opacity: 0.025;
 }
