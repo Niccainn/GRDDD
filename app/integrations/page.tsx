@@ -14,11 +14,11 @@ const CATEGORIES = ['All', 'Communication', 'Meetings', 'Documents', 'Design', '
 
 const INTEGRATIONS: Integration[] = [
   {
-    id: 'slack', name: 'Slack', description: 'Route signals from channels', category: 'Communication', connected: false,
+    id: 'slack', name: 'Slack', description: 'Route signals from channels', category: 'Communication', connected: true,
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M14 20.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5h-1.5z"/><path d="M10 9.5C10 10.33 9.33 11 8.5 11h-5C2.67 11 2 10.33 2 9.5S2.67 8 3.5 8h5c.83 0 1.5.67 1.5 1.5z"/></svg>,
   },
   {
-    id: 'notion', name: 'Notion', description: 'Sync pages and databases', category: 'Documents', connected: false,
+    id: 'notion', name: 'Notion', description: 'Sync pages and databases', category: 'Documents', connected: true,
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M4 4.5A2.5 2.5 0 016.5 2H18l2 2v15.5a2.5 2.5 0 01-2.5 2.5H6.5A2.5 2.5 0 014 19.5z"/><path d="M8 7h8M8 11h6M8 15h4"/></svg>,
   },
   {
@@ -26,7 +26,7 @@ const INTEGRATIONS: Integration[] = [
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="12" r="2.5"/><path d="M6.5 2h5v8h-5a4 4 0 010-8z"/><path d="M12.5 2h5a4 4 0 010 8h-5z"/><path d="M6.5 10h5v4a4 4 0 01-5 0z"/></svg>,
   },
   {
-    id: 'github', name: 'GitHub', description: 'Repos and issue tracking', category: 'Development', connected: false,
+    id: 'github', name: 'GitHub', description: 'Repos and issue tracking', category: 'Development', connected: true,
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.66-.22.66-.48v-1.69c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0112 6.8c.85 0 1.71.11 2.51.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.16.58.67.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z"/></svg>,
   },
   {
@@ -80,7 +80,7 @@ export default function IntegrationsPage() {
         <div className="mb-10 animate-fade-in">
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Integrations</h1>
           <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-            Connect external tools to route signals into your systems
+            {INTEGRATIONS.filter(i => i.connected).length} connected · {INTEGRATIONS.length} available
           </p>
         </div>
 
@@ -139,12 +139,26 @@ export default function IntegrationsPage() {
               </p>
 
               {/* Connect button */}
-              <button
-                className="chrome-pill px-5 py-2 text-xs font-light mt-auto"
-                style={{ color: integration.connected ? 'var(--brand)' : 'var(--text-2)' }}
-              >
-                {integration.connected ? 'Connected' : 'Connect'}
-              </button>
+              {integration.connected ? (
+                <div
+                  className="chrome-pill px-5 py-2 text-xs font-light mt-auto flex items-center gap-2"
+                  style={{
+                    color: '#34d399',
+                    background: 'rgba(52, 211, 153, 0.08)',
+                    borderColor: 'rgba(52, 211, 153, 0.15)',
+                  }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  Connected
+                </div>
+              ) : (
+                <button
+                  className="chrome-pill px-5 py-2 text-xs font-light mt-auto"
+                  style={{ color: 'var(--text-2)' }}
+                >
+                  Connect
+                </button>
+              )}
             </div>
           ))}
         </div>

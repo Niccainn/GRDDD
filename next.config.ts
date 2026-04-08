@@ -11,7 +11,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   turbopack: {
-    root: path.resolve(__dirname),
+    root: path.resolve(import.meta.dirname ?? __dirname),
   },
   async headers() {
     return [

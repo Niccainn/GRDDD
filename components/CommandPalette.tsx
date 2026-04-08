@@ -20,7 +20,20 @@ const NAV_SHORTCUTS = [
   { label: 'Systems', href: '/systems', icon: '⊞', hint: 'All systems' },
   { label: 'Workflows', href: '/workflows', icon: '⇌', hint: 'All workflows' },
   { label: 'Nova', href: '/nova', icon: '⚡', hint: 'Intelligence log' },
+  { label: 'Inbox', href: '/inbox', icon: '✉', hint: 'Signals & incoming work' },
+  { label: 'Goals', href: '/goals', icon: '◎', hint: 'OKR tracking' },
+  { label: 'Analytics', href: '/analytics', icon: '∿', hint: 'Performance data' },
+  { label: 'Reports', href: '/reports', icon: '⊡', hint: 'Nova-generated reports' },
+  { label: 'Integrations', href: '/integrations', icon: '⊕', hint: 'Connected tools' },
   { label: 'Settings', href: '/settings', icon: '⚙', hint: 'Workspace settings' },
+];
+
+const ACTION_COMMANDS = [
+  { label: 'Create environment', href: '/environments', icon: '+', hint: 'New organizational container', section: 'action' },
+  { label: 'Create workflow', href: '/workflows', icon: '+', hint: 'New executable process', section: 'action' },
+  { label: 'Ask Nova', href: '/nova', icon: '⚡', hint: 'Query the intelligence engine', section: 'action' },
+  { label: 'Generate report', href: '/reports', icon: '⊡', hint: 'Nova-powered analysis', section: 'action' },
+  { label: 'View audit log', href: '/audit', icon: '☰', hint: 'Immutable activity history', section: 'action' },
 ];
 
 export default function CommandPalette() {
@@ -77,7 +90,7 @@ export default function CommandPalette() {
 
   // Flat list of all navigable items for keyboard nav
   const allItems = useCallback((): { href: string; label: string }[] => {
-    if (!query.trim()) return NAV_SHORTCUTS.map(n => ({ href: n.href, label: n.label }));
+    if (!query.trim()) return [...NAV_SHORTCUTS.map(n => ({ href: n.href, label: n.label })), ...ACTION_COMMANDS.map(a => ({ href: a.href, label: a.label }))];
     return [
       ...results.environments.map(e => ({ href: `/environments/${e.slug}`, label: e.name })),
       ...results.systems.map(s => ({ href: `/systems/${s.id}`, label: s.name })),
@@ -154,6 +167,20 @@ export default function CommandPalette() {
                   onMouseEnter={() => setSelected(i)}>
                   <span className="w-6 h-6 rounded-lg flex items-center justify-center text-sm flex-shrink-0"
                     style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+                    {item.icon}
+                  </span>
+                  <span className="text-sm font-light flex-1" style={{ color: 'rgba(255,255,255,0.7)' }}>{item.label}</span>
+                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{item.hint}</span>
+                </button>
+              ))}
+              <p className="text-xs px-4 py-2 mt-2 tracking-[0.1em]" style={{ color: 'rgba(255,255,255,0.2)' }}>ACTIONS</p>
+              {ACTION_COMMANDS.map((item, i) => (
+                <button key={item.label} onClick={() => navigate(item.href)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all"
+                  style={{ background: selected === NAV_SHORTCUTS.length + i ? 'rgba(255,255,255,0.05)' : 'transparent' }}
+                  onMouseEnter={() => setSelected(NAV_SHORTCUTS.length + i)}>
+                  <span className="w-6 h-6 rounded-lg flex items-center justify-center text-sm flex-shrink-0"
+                    style={{ background: 'rgba(21,173,112,0.08)', color: '#15AD70' }}>
                     {item.icon}
                   </span>
                   <span className="text-sm font-light flex-1" style={{ color: 'rgba(255,255,255,0.7)' }}>{item.label}</span>

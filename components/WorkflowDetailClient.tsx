@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
+import Breadcrumb from './Breadcrumb';
 
 const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED'];
 const STATUS_COLOR: Record<string, string> = {
@@ -176,13 +176,11 @@ export default function WorkflowDetailClient({
 
   return (
     <div className="px-10 py-10 min-h-screen">
-      <Link href="/workflows" className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
-        style={{ color: 'var(--text-3)' }}>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Workflows
-      </Link>
+      <Breadcrumb items={[
+        { label: 'Workflows', href: '/workflows' },
+        { label: workflow.systemName, href: `/systems/${workflow.systemId}` },
+        { label: workflow.name },
+      ]} />
 
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
@@ -294,7 +292,7 @@ export default function WorkflowDetailClient({
               Run · {workflow.name}
             </h3>
             <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
-              {workflow.stages.length > 0 ? `${workflow.stages.length} stages` : 'No stages'} · {workflow.systemName}
+              {workflow.stages.length > 0 ? `${workflow.stages.length} ${workflow.stages.length === 1 ? 'stage' : 'stages'}` : 'No stages'} · {workflow.systemName}
             </p>
             <textarea
               value={runInput}

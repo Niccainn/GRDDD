@@ -197,24 +197,23 @@ export default function ExecutionDetailPage() {
 
   return (
     <div className="px-10 py-10 min-h-screen max-w-4xl">
-      {/* Back */}
-      <div className="flex items-center gap-2 mb-8">
-        <button onClick={() => router.back()}
-          className="text-xs font-light inline-flex items-center gap-1.5 transition-colors"
-          style={{ color: 'var(--text-3)' }}>
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back
-        </button>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 mb-6 animate-fade-in">
+        <Link href="/executions" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Runs</Link>
         {execution?.workflow && (
           <>
-            <span style={{ color: 'var(--text-3)' }}>·</span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.2 }}><path d="M3.5 2L6.5 5L3.5 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             <Link href={`/workflows/${execution.workflow.id}`}
-              className="text-xs font-light transition-colors"
+              className="text-xs font-light transition-colors hover:text-white/60"
               style={{ color: 'var(--text-3)' }}>
               {execution.workflow.name}
             </Link>
+          </>
+        )}
+        {execution && (
+          <>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.2 }}><path d="M3.5 2L6.5 5L3.5 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <span className="text-xs font-light" style={{ color: 'var(--text-2)' }}>Run {execution.id.slice(0, 8)}</span>
           </>
         )}
       </div>
