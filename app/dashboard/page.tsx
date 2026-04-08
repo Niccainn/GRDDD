@@ -131,7 +131,7 @@ export default function OperatePage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-extralight tracking-tight mb-1">Operate</h1>
+          <h1 className="stat-number tracking-tight mb-1">Operate</h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded ? `${systems.length} system${systems.length !== 1 ? 's' : ''} · ${wfStats?.active ?? 0} active workflow${(wfStats?.active ?? 0) !== 1 ? 's' : ''}` : 'Loading···'}
           </p>
@@ -161,35 +161,35 @@ export default function OperatePage() {
       {/* Stat bar with sparklines */}
       {loaded && (
         <div className="grid grid-cols-4 gap-3 mb-8">
-          <Link href="/systems" className="glass px-5 py-4 group transition-all">
+          <Link href="/systems" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Avg Health</p>
               <Sparkline data={avgHealth !== null ? [avgHealth - 12, avgHealth - 8, avgHealth - 5, avgHealth - 9, avgHealth - 3, avgHealth - 1, avgHealth] : []} color={healthColor(avgHealth)} />
             </div>
-            <p className="text-2xl font-extralight" style={{ color: healthColor(avgHealth) }}>
+            <p className="stat-number" style={{ color: healthColor(avgHealth) }}>
               {avgHealth !== null ? `${avgHealth}%` : '—'}
             </p>
           </Link>
-          <Link href="/workflows" className="glass px-5 py-4 group transition-all">
+          <Link href="/workflows" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Active Workflows</p>
             </div>
-            <p className="text-2xl font-extralight" style={{ color: '#15AD70' }}>{wfStats?.active ?? 0}</p>
+            <p className="stat-number" style={{ color: '#15AD70' }}>{wfStats?.active ?? 0}</p>
           </Link>
-          <Link href="/executions" className="glass px-5 py-4 group transition-all">
+          <Link href="/executions" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Total Runs</p>
               <Sparkline data={(() => { const b = Array.from({ length: 7 }, () => 0); const now = Date.now(); executions.forEach(ex => { const d = 6 - Math.min(Math.floor((now - new Date(ex.createdAt).getTime()) / 86400000), 6); b[d]++; }); return b; })()} color="rgba(255,255,255,0.5)" />
             </div>
-            <p className="text-2xl font-extralight" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <p className="stat-number" style={{ color: 'rgba(255,255,255,0.5)' }}>
               {executions.length > 0 ? executions.length : '0'}
             </p>
           </Link>
-          <Link href="/workflows" className="glass px-5 py-4 group transition-all">
+          <Link href="/workflows" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Stalled</p>
             </div>
-            <p className="text-2xl font-extralight" style={{ color: wfStats?.paused ? '#F7C700' : 'rgba(255,255,255,0.2)' }}>
+            <p className="stat-number" style={{ color: wfStats?.paused ? '#F7C700' : 'rgba(255,255,255,0.2)' }}>
               {wfStats?.paused ?? 0}
             </p>
           </Link>
