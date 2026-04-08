@@ -69,27 +69,27 @@
    ═══════════════════════════════════════════════════════════ */
 
 [data-theme="light"] {
-  --bg: #e4e4e8;
-  --bg-subtle: #eaeaee;
-  --bg-elevated: #f2f2f6;
+  --bg: #f2f2f5;
+  --bg-subtle: #f7f7fa;
+  --bg-elevated: #fafafe;
 
-  --glass: rgba(255, 255, 255, 0.5);
-  --glass-hover: rgba(255, 255, 255, 0.65);
-  --glass-active: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(0, 0, 0, 0.06);
-  --glass-border-hover: rgba(0, 0, 0, 0.1);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
-  --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.06);
-  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-hover: rgba(255, 255, 255, 0.7);
+  --glass-active: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --glass-border-hover: rgba(0, 0, 0, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --glass-shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --glass-inset-strong: inset 0 1px 0 rgba(255, 255, 255, 1);
 
-  --chrome-edge: rgba(255, 255, 255, 0.7);
-  --chrome-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.04);
-  --chrome-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+  --chrome-edge: rgba(255, 255, 255, 0.5);
+  --chrome-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --chrome-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 
-  --text-1: rgba(0, 0, 0, 0.85);
-  --text-2: rgba(0, 0, 0, 0.55);
-  --text-3: rgba(0, 0, 0, 0.30);
+  --text-1: #1d1d1f; /* Apple-level crisp black */
+  --text-2: #6e6e73; /* Apple secondary grey */
+  --text-3: #aeaeb2; /* Apple tertiary */
 
   --brand-soft: rgba(21, 173, 112, 0.08);
   --brand-glow: rgba(21, 173, 112, 0.05);
@@ -391,9 +391,13 @@ body {
 
 [data-theme="light"] .ambient-bg {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(21, 173, 112, 0.04), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 50%, rgba(113, 147, 237, 0.02), transparent),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(21, 173, 112, 0.03), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 50%, rgba(113, 147, 237, 0.015), transparent),
     var(--bg);
+}
+
+[data-theme="light"] .ambient-bg {
+  color: var(--text-1);
 }
 
 /* ─── Status indicators ─── */
