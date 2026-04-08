@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 type Settings = {
   identity: { id: string; name: string; email: string; type: string } | null;
@@ -14,11 +15,20 @@ type Settings = {
   apiKeyConfigured: boolean;
 };
 
+type ThemeMode = 'dark' | 'light' | 'system';
+type Density = 'comfortable' | 'compact';
+type SidebarMode = 'visible' | 'hover';
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [editName, setEditName] = useState('');
   const [editingName, setEditingName] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Appearance state
+  const [theme, setThemeState] = useState<ThemeMode>('dark');
+  const [density, setDensity] = useState<Density>('comfortable');
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>('visible');
 
   useEffect(() => {
     fetch('/api/settings')
@@ -27,7 +37,38 @@ export default function SettingsPage() {
         setSettings(data);
         setEditName(data.identity?.name ?? '');
       });
+
+    // Load appearance preferences
+    const storedTheme = localStorage.getItem('grid-theme') as ThemeMode | null;
+    const storedDensity = localStorage.getItem('grid-density') as Density | null;
+    const storedSidebar = localStorage.getItem('grid-sidebar') as SidebarMode | null;
+    if (storedTheme) setThemeState(storedTheme);
+    if (storedDensity) setDensity(storedDensity);
+    if (storedSidebar) setSidebarMode(storedSidebar);
   }, []);
+
+  function setTheme(mode: ThemeMode) {
+    setThemeState(mode);
+    localStorage.setItem('grid-theme', mode);
+    if (mode === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', mode);
+    }
+  }
+
+  function setDensityMode(d: Density) {
+    setDensity(d);
+    localStorage.setItem('grid-density', d);
+    document.documentElement.setAttribute('data-density', d);
+  }
+
+  function setSidebar(mode: SidebarMode) {
+    setSidebarMode(mode);
+    localStorage.setItem('grid-sidebar', mode);
+    document.documentElement.setAttribute('data-sidebar', mode);
+  }
 
   async function saveName() {
     if (!editName.trim()) return;
@@ -50,6 +91,95 @@ export default function SettingsPage() {
       </div>
 
       <div className="space-y-6">
+        {/* Appearance */}
+        <section>
+          <div className="mb-10">
+            <h2 className="text-lg font-extralight tracking-tight mb-1">Appearance</h2>
+            <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Customize how GRID looks and feels</p>
+            <Link href="/settings/brand" className="chrome-pill px-4 py-2 text-xs font-light inline-flex items-center gap-2"
+              style={{ color: 'var(--brand)' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="3"/><path strokeLinecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+              </svg>
+              Open brand skin editor →
+            </Link>
+          </div>
+
+          {/* Theme */}
+          <div className="glass-panel p-5 mb-4">
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>THEME</p>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: 'dark' as ThemeMode, label: 'Dark', icon: '■' },
+                { value: 'light' as ThemeMode, label: 'Light', icon: '□' },
+                { value: 'system' as ThemeMode, label: 'System', icon: '◑' },
+              ]).map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setTheme(opt.value)}
+                  className="chrome-pill px-4 py-3 text-sm font-light flex items-center justify-center gap-2 transition-all"
+                  style={{
+                    color: theme === opt.value ? 'var(--brand)' : 'var(--text-3)',
+                    background: theme === opt.value ? 'var(--brand-glow)' : undefined,
+                    borderColor: theme === opt.value ? 'var(--brand-border)' : undefined,
+                  }}
+                >
+                  <span className="text-xs">{opt.icon}</span>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Density */}
+          <div className="glass-panel p-5 mb-4">
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>DENSITY</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: 'comfortable' as Density, label: 'Comfortable' },
+                { value: 'compact' as Density, label: 'Compact' },
+              ]).map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setDensityMode(opt.value)}
+                  className="chrome-pill px-4 py-3 text-sm font-light transition-all"
+                  style={{
+                    color: density === opt.value ? 'var(--text-1)' : 'var(--text-3)',
+                    background: density === opt.value ? 'var(--glass-active)' : undefined,
+                    borderColor: density === opt.value ? 'var(--glass-border-hover)' : undefined,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="glass-panel p-5">
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>SIDEBAR</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: 'visible' as SidebarMode, label: 'Always visible' },
+                { value: 'hover' as SidebarMode, label: 'Hover to expand' },
+              ]).map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSidebar(opt.value)}
+                  className="chrome-pill px-4 py-3 text-sm font-light transition-all"
+                  style={{
+                    color: sidebarMode === opt.value ? 'var(--text-1)' : 'var(--text-3)',
+                    background: sidebarMode === opt.value ? 'var(--glass-active)' : undefined,
+                    borderColor: sidebarMode === opt.value ? 'var(--glass-border-hover)' : undefined,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Identity */}
         <section>
           <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>IDENTITY</p>
