@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { runNovaAgent, type NovaEvent } from '@/lib/nova';
 import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitNova } from '@/lib/rate-limit';
+import { MissingKeyError } from '@/lib/nova/client-factory';
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
@@ -12,9 +13,6 @@ export async function POST(req: NextRequest) {
 
   if (!systemId || !input) {
     return new Response(JSON.stringify({ error: 'Missing systemId or input' }), { status: 400 });
-  }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }), { status: 500 });
   }
 
   const encoder = new TextEncoder();
@@ -28,6 +26,10 @@ export async function POST(req: NextRequest) {
       try {
         await runNovaAgent({ systemId, identityId: identity.id, input, onEvent: send });
       } catch (err) {
+        if (err instanceof MissingKeyError) {
+          send({ type: 'error', message: err.message });
+          return;
+        }
         send({ type: 'error', message: err instanceof Error ? err.message : 'Nova failed' });
       } finally {
         controller.close();

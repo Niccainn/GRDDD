@@ -7,19 +7,36 @@ import { rateLimitApi } from '@/lib/rate-limit';
  */
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
-import Anthropic from '@anthropic-ai/sdk';
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
-  }
 
   const { type = 'weekly', environmentId } = await req.json().catch(() => ({}));
+
+  // Resolve the user's environment to get their BYOK key
+  let envId = environmentId;
+  if (!envId) {
+    const firstEnv = await prisma.environment.findFirst({
+      where: { ownerId: identity.id },
+      select: { id: true },
+    });
+    if (!firstEnv) return Response.json({ error: 'No environment found' }, { status: 400 });
+    envId = firstEnv.id;
+  }
+
+  let anthropic;
+  try {
+    const resolved = await getAnthropicClientForEnvironment(envId);
+    anthropic = resolved.client;
+  } catch (err) {
+    if (err instanceof MissingKeyError) {
+      return Response.json({ error: err.message, actionUrl: err.actionUrl }, { status: 402 });
+    }
+    throw err;
+  }
 
   // Gather all org data
   const [systems, executions, goals, workflows, signals] = await Promise.all([
