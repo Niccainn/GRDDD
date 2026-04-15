@@ -53,7 +53,7 @@ export default function AgentsPage() {
   }, []);
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       <div className="flex items-start justify-between mb-8 max-w-5xl">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Agents</h1>

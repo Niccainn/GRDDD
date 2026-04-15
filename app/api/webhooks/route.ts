@@ -7,7 +7,20 @@ export async function GET() {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
+  // Scope to environments the user owns or is a member of.
+  const userEnvIds = await prisma.environment.findMany({
+    where: {
+      deletedAt: null,
+      OR: [
+        { ownerId: identity.id },
+        { memberships: { some: { identityId: identity.id } } },
+      ],
+    },
+    select: { id: true },
+  }).then(envs => envs.map(e => e.id));
+
   const webhooks = await prisma.webhook.findMany({
+    where: { environmentId: { in: userEnvIds } },
     include: {
       _count: { select: { deliveries: true } },
       deliveries: {
@@ -50,6 +63,24 @@ export async function POST(req: NextRequest) {
 
   if (!Array.isArray(events) || events.length === 0) {
     return Response.json({ error: 'Select at least one event' }, { status: 400 });
+  }
+
+  // Verify environment ownership if environmentId provided.
+  if (environmentId) {
+    const env = await prisma.environment.findFirst({
+      where: {
+        id: environmentId,
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!env) {
+      return Response.json({ error: 'Environment not found' }, { status: 404 });
+    }
   }
 
   const webhook = await prisma.webhook.create({

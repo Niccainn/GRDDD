@@ -71,7 +71,7 @@ export async function PATCH(req: NextRequest) {
     return Response.json({ error: 'Insight not found' }, { status: 404 });
   }
 
-  const data: Record<string, unknown> = {};
+  const data: { acknowledged?: boolean; actionTaken?: string; resolvedAt?: Date } = {};
   if (typeof acknowledged === 'boolean') data.acknowledged = acknowledged;
   if (typeof actionTaken === 'string') {
     data.actionTaken = actionTaken;

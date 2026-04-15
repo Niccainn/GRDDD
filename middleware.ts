@@ -32,8 +32,10 @@ const PUBLIC_PATHS = [
   '/api/cron/tick',
   '/api/cron/agents',
   '/api/health',
+  '/api/waitlist',
   '/f',
   '/api/forms/submit',
+  '/api/waitlist',
 ];
 
 // Security headers applied to every response. Bare minimum for a

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/components/Toast';
+import SettingsNav from '@/components/SettingsNav';
 
 type Member = {
   id: string;
@@ -62,6 +63,7 @@ export default function TeamPage() {
 
   return (
     <div style={{ padding: '2rem 2.5rem', maxWidth: 720, margin: '0 auto' }}>
+      <SettingsNav />
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem' }}>
         <div>

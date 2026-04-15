@@ -23,7 +23,8 @@ model Identity {
   // Core Identity Properties
   type         String // "PERSON" | "TEAM" | "AGENT" | "CLIENT"
   name         String
-  email        String? @unique
+  email        String?           // AES-256-GCM encrypted at rest (see lib/db.ts)
+  emailHash    String? @unique   // HMAC-SHA256 for deterministic lookups
   passwordHash String? // bcrypt hash for credentials auth
 
   // Auth
@@ -86,7 +87,7 @@ model Identity {
   approvalRequests       ApprovalRequest[] @relation("ApprovalRequester")
   timeEntries            TimeEntry[]
 
-  @@index([email])
+  @@index([emailHash])
   @@index([type])
   @@index([authId])
 }
@@ -1718,5 +1719,20 @@ model CrossDomainInsight {
 
   @@index([category])
   @@index([severity])
+  @@index([createdAt])
+}
+
+// ===============================================
+// WAITLIST
+// Early access email collection
+// ===============================================
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  email     String   @unique
+  source    String   @default("landing") // "landing" | "referral" | etc.
+  notes     String?
+
   @@index([createdAt])
 }

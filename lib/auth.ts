@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db';
+import { hashEmail } from './crypto/email-hash';
 import { sendVerificationEmail } from './email-verification';
 
 const SESSION_COOKIE = 'grid_session';
@@ -65,7 +66,7 @@ export async function getAuthIdentity(): Promise<AuthIdentity> {
  * Sign up a new user with email + password.
  */
 export async function signUp(name: string, email: string, password: string) {
-  const existing = await prisma.identity.findUnique({ where: { email } });
+  const existing = await prisma.identity.findUnique({ where: { emailHash: hashEmail(email) } });
   if (existing) {
     throw new Error('An account with this email already exists');
   }
@@ -95,7 +96,7 @@ export async function signUp(name: string, email: string, password: string) {
  * Sign in with email + password.
  */
 export async function signIn(email: string, password: string) {
-  const identity = await prisma.identity.findUnique({ where: { email } });
+  const identity = await prisma.identity.findUnique({ where: { emailHash: hashEmail(email) } });
   if (!identity || !identity.passwordHash || identity.deletedAt) {
     throw new Error('Invalid email or password');
   }
@@ -150,5 +151,5 @@ export async function createSession(identityId: string) {
   });
 
   const identity = await prisma.identity.findUnique({ where: { id: identityId } });
-  return { id: identity!.id, name: identity!.name, email: identity!.email };
+  return { id: identity!.id, name: identity!.name, email: identity!.email, onboardedAt: identity!.onboardedAt };
 }

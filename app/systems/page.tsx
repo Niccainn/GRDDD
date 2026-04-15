@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { getAuthIdentity } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DeleteButton from '@/components/DeleteButton';
@@ -20,8 +21,7 @@ async function createSystem(formData: FormData) {
   const color = formData.get('color') as string;
   const environmentId = formData.get('environmentId') as string;
   if (!name || !environmentId) return;
-  let identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
-  if (!identity) identity = await prisma.identity.create({ data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' } });
+  const identity = await getAuthIdentity();
   const system = await prisma.system.create({
     data: { name, description, color, environmentId, creatorId: identity.id, healthScore: Math.random() * 0.3 + 0.7 }
   });

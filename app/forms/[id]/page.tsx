@@ -127,7 +127,7 @@ export default function FormBuilderPage() {
 
   if (!loaded) {
     return (
-      <div className="px-10 py-10 min-h-screen">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
         <div className="h-8 w-48 rounded-lg animate-pulse mb-6" style={{ background: 'var(--glass)' }} />
         <div className="h-[600px] rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
       </div>
@@ -136,7 +136,7 @@ export default function FormBuilderPage() {
 
   if (!form) {
     return (
-      <div className="px-10 py-10 min-h-screen">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
         <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>Form not found</p>
       </div>
     );

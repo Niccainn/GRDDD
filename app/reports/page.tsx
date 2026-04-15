@@ -202,7 +202,7 @@ export default function ReportsPage() {
   const hasContent = displayText.length > 0;
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       <div className="mb-8">
         <h1 className="text-2xl font-extralight tracking-tight mb-1">Reports</h1>
         <p className="text-xs" style={{ color: 'var(--text-3)' }}>
