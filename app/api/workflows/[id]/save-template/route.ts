@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsWorkflow } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -15,10 +16,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const body = await req.json().catch(() => ({}));
   const category: string = body.category?.trim() || 'Custom';
 
+  // Ownership check — ensures the caller owns this workflow's environment
+  await assertOwnsWorkflow(id, identity.id);
+
   const source = await prisma.workflow.findUnique({ where: { id } });
   if (!source) return Response.json({ error: 'Not found' }, { status: 404 });
-
-  if (!identity) return Response.json({ error: 'No identity' }, { status: 500 });
 
   // Store the template config within the source workflow's config field
   const existingConfig = (() => { try { return JSON.parse(source.config ?? '{}'); } catch { return {}; } })();

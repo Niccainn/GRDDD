@@ -81,9 +81,13 @@ const TOOL_LABELS: Record<string, string> = {
 };
 
 async function executeInternalTool(name: string, input: Record<string, unknown>, identityId: string) {
+  // Ownership filter — scope all queries to environments owned by the caller
+  const ownerScope = { environment: { ownerId: identityId, deletedAt: null } };
+
   switch (name) {
     case 'get_overview': {
       const systems = await prisma.system.findMany({
+        where: ownerScope,
         include: {
           environment: true,
           systemState: true,
@@ -104,8 +108,8 @@ async function executeInternalTool(name: string, input: Record<string, unknown>,
     }
 
     case 'get_system_detail': {
-      const system = await prisma.system.findUnique({
-        where: { id: input.systemId as string },
+      const system = await prisma.system.findFirst({
+        where: { id: input.systemId as string, ...ownerScope },
         include: {
           environment: true,
           workflows: { orderBy: { updatedAt: 'desc' } },
@@ -131,7 +135,7 @@ async function executeInternalTool(name: string, input: Record<string, unknown>,
     case 'get_recent_activity': {
       const limit = (input.limit as number) ?? 10;
       const logs = await prisma.intelligenceLog.findMany({
-        where: { action: 'nova_query' },
+        where: { action: 'nova_query', system: { environment: { ownerId: identityId, deletedAt: null } } },
         include: { system: { select: { name: true } } },
         orderBy: { createdAt: 'desc' },
         take: limit,
@@ -149,6 +153,9 @@ async function executeInternalTool(name: string, input: Record<string, unknown>,
     case 'flag_system': {
       const score = input.healthScore as number;
       const systemId = input.systemId as string;
+      // Verify ownership before allowing health score mutation
+      const ownedSystem = await prisma.system.findFirst({ where: { id: systemId, ...ownerScope } });
+      if (!ownedSystem) return { result: { error: 'Not found' }, summary: 'System not found' };
       await prisma.systemState.upsert({
         where: { systemId },
         update: { healthScore: score },
@@ -159,7 +166,7 @@ async function executeInternalTool(name: string, input: Record<string, unknown>,
     }
 
     case 'get_tasks': {
-      const where: Record<string, unknown> = { deletedAt: null, parentId: null };
+      const where: Record<string, unknown> = { deletedAt: null, parentId: null, ...ownerScope };
       if (input.status) where.status = input.status;
       const tasks = await prisma.task.findMany({
         where,
@@ -237,8 +244,8 @@ export async function POST(req: NextRequest) {
 
   const internalNames = new Set(INTERNAL_TOOLS.map(t => t.name));
 
-  const systemCount = await prisma.system.count();
-  const workflowCount = await prisma.workflow.count();
+  const systemCount = await prisma.system.count({ where: { environment: { ownerId: identity.id, deletedAt: null } } });
+  const workflowCount = await prisma.workflow.count({ where: { environment: { ownerId: identity.id, deletedAt: null } } });
 
   // Load brand identity from primary environment
   const primaryEnv = await prisma.environment.findFirst({

@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsSignal } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 /**
  * POST /api/signals/triage
@@ -15,6 +16,9 @@ export async function POST(req: NextRequest) {
 
   const { signalId } = await req.json();
   if (!signalId) return Response.json({ error: 'signalId required' }, { status: 400 });
+
+  // Ownership check — ensures the caller owns this signal's environment
+  await assertOwnsSignal(signalId, identity.id);
 
   const signal = await prisma.signal.findUnique({
     where: { id: signalId },
