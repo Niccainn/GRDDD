@@ -3,12 +3,16 @@ import { prisma } from '@/lib/db';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  await getAuthIdentity();
+  const identity = await getAuthIdentity();
   const { id } = await params;
 
-  // Find environment by id or slug
+  // Find environment by id or slug — scoped to the authenticated user
   const environment = await prisma.environment.findFirst({
-    where: { OR: [{ id }, { slug: id }] },
+    where: {
+      OR: [{ id }, { slug: id }],
+      ownerId: identity.id,
+      deletedAt: null,
+    },
     include: { owner: { select: { name: true } } },
   });
 
