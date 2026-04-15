@@ -49,7 +49,7 @@ export default function EnvironmentWorkspaceLayout({ children }: { children: Rea
 
   if (loading) {
     return (
-      <div className="px-10 py-10 min-h-screen">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
         <div className="h-4 w-32 rounded-lg animate-pulse mb-6" style={{ background: 'var(--glass)' }} />
         <div className="h-8 w-48 rounded-lg animate-pulse mb-2" style={{ background: 'var(--glass)' }} />
         <div className="h-4 w-64 rounded-lg animate-pulse mb-6" style={{ background: 'var(--glass)' }} />
@@ -65,7 +65,7 @@ export default function EnvironmentWorkspaceLayout({ children }: { children: Rea
 
   if (notFound || !env) {
     return (
-      <div className="px-10 py-10 min-h-screen flex items-center justify-center">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
             style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
@@ -88,7 +88,7 @@ export default function EnvironmentWorkspaceLayout({ children }: { children: Rea
       color: env.color,
       description: env.description,
     }}>
-      <div className="px-10 py-10 min-h-screen">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
         {/* Breadcrumb */}
         <Breadcrumb items={[
           { label: 'Environments', href: '/environments' },
@@ -96,7 +96,7 @@ export default function EnvironmentWorkspaceLayout({ children }: { children: Rea
         ]} />
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-6">
           <div className="flex items-center gap-4">
             {env.color && (
               <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: env.color }} />

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import SettingsNav from '@/components/SettingsNav';
 
 type PlanType = 'FREE' | 'PRO' | 'TEAM';
 
@@ -154,6 +155,7 @@ export default function BillingPage() {
   if (betaMode) {
     return (
       <div style={{ padding: '2rem 2.5rem', maxWidth: 1100, margin: '0 auto' }}>
+        <SettingsNav />
         {/* Header */}
         <div style={{ marginBottom: '2.5rem' }}>
           <h1
@@ -334,6 +336,7 @@ export default function BillingPage() {
 
   return (
     <div style={{ padding: '2rem 2.5rem', maxWidth: 1100, margin: '0 auto' }}>
+      <SettingsNav />
       {/* Toast */}
       {toast && (
         <div

@@ -24,6 +24,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { executeAgentRun, AgentRunError } from '@/lib/agents/run';
 import { isDue, isAutoSchedule } from '@/lib/agents/schedule';
+import { purgeOldLogs } from '@/lib/gdpr';
 
 function isAuthorized(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
@@ -94,12 +95,22 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Data retention: purge intelligence logs older than 90 days.
+  let purgedLogs = 0;
+  try {
+    purgedLogs = await purgeOldLogs(90);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[cron] purgeOldLogs failed:', err);
+  }
+
   return Response.json({
     tickAt: now.toISOString(),
     inspected: candidates.length,
     fired: outcomes.filter((o) => o.status === 'fired').length,
     skipped: outcomes.filter((o) => o.status === 'skipped').length,
     errors: outcomes.filter((o) => o.status === 'error').length,
+    purgedLogs,
     outcomes,
   });
 }

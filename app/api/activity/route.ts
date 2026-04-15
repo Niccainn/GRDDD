@@ -42,7 +42,24 @@ export async function GET(req: NextRequest) {
     team: 'member.',
   };
 
-  const where: Record<string, unknown> = {};
+  // Scope to environments the user owns or is a member of.
+  const userEnvIds = await prisma.environment.findMany({
+    where: {
+      deletedAt: null,
+      OR: [
+        { ownerId: identity.id },
+        { memberships: { some: { identityId: identity.id } } },
+      ],
+    },
+    select: { id: true },
+  }).then(envs => envs.map(e => e.id));
+
+  const where: Record<string, unknown> = {
+    OR: [
+      { environmentId: { in: userEnvIds } },
+      { actorId: identity.id },
+    ],
+  };
 
   if (type && typeMap[type]) {
     where.action = { startsWith: typeMap[type] };

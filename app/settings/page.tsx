@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/components/Toast';
 import AutonomyConfig from '@/components/AutonomyConfig';
+import SettingsNav from '@/components/SettingsNav';
 
 type Profile = {
   id: string;
@@ -109,6 +110,8 @@ export default function ProfilePage() {
           Manage your account and Nova configuration.
         </p>
       </div>
+
+      <SettingsNav />
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 2, marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 0 }}>

@@ -350,7 +350,7 @@ export default function DashboardEditorPage() {
 
   if (!dashboard) {
     return (
-      <div className="px-10 py-10 min-h-screen flex items-center justify-center">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 rounded-full animate-pulse" style={{ background: 'var(--glass)' }} />
       </div>
     );
@@ -365,7 +365,7 @@ export default function DashboardEditorPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <div className="px-10 py-6 flex items-center justify-between flex-shrink-0" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+      <div className="px-4 md:px-10 py-6 flex items-center justify-between flex-shrink-0" style={{ borderBottom: '1px solid var(--glass-border)' }}>
         <div className="flex items-center gap-4">
           <Link href="/dashboards" className="text-xs font-light transition-colors" style={{ color: 'var(--text-3)' }}>
             Dashboards

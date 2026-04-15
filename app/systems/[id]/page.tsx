@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { getAuthIdentity } from '@/lib/auth';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import NovaBar from '@/components/NovaBar';
@@ -17,8 +18,7 @@ async function createWorkflow(formData: FormData) {
   'use server';
   const systemId = formData.get('systemId') as string;
   const environmentId = formData.get('environmentId') as string;
-  let identity = await prisma.identity.findFirst({ where: { email: 'demo@grid.app' } });
-  if (!identity) identity = await prisma.identity.create({ data: { type: 'PERSON', name: 'Demo User', email: 'demo@grid.app' } });
+  const identity = await getAuthIdentity();
   const workflow = await prisma.workflow.create({
     data: {
       name: 'New Workflow', status: 'DRAFT', systemId, environmentId, creatorId: identity.id,
@@ -72,7 +72,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
     : healthPct >= 80 ? '#15AD70' : healthPct >= 50 ? '#F7C700' : '#FF4D4D';
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       <Breadcrumb items={[
         { label: 'Systems', href: '/systems' },
         { label: system.environment?.name ?? 'Environment', href: `/environments/${system.environment?.slug ?? ''}` },

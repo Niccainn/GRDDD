@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useToast } from '@/components/Toast';
+import SettingsNav from '@/components/SettingsNav';
 
 type ThemeMode = 'dark' | 'light' | 'system';
 type DateFormat = 'relative' | 'short' | 'long';
@@ -125,6 +126,7 @@ export default function PreferencesPage() {
 
   return (
     <div style={{ padding: '2rem 2.5rem', maxWidth: 720, margin: '0 auto' }}>
+      <SettingsNav />
       {/* Header */}
       <div style={{ marginBottom: '2.5rem' }}>
         <h1

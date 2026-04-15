@@ -14,13 +14,24 @@
  * Public route — whitelisted in middleware under /api/auth/forgot-password.
  */
 import { prisma } from '@/lib/db';
+import { hashEmail } from '@/lib/crypto/email-hash';
 import { sendResetEmail, constantTimeWork } from '@/lib/auth/password-reset';
+import { rateLimitDistributed } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    // Rate limit by IP: 5 attempts per 15 minutes.
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rl = await rateLimitDistributed(`forgot:ip:${ip}`, 5, 15 * 60_000);
+    if (!rl.allowed) {
+      // Still return 200 with { ok: true } to prevent enumeration via
+      // different status codes, but silently drop the request.
+      return Response.json({ ok: true });
+    }
+
     const body = await req.json().catch(() => ({}));
     const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
 
@@ -28,7 +39,13 @@ export async function POST(req: Request) {
       return Response.json({ ok: true }); // Still 200 — no enumeration.
     }
 
-    const identity = await prisma.identity.findUnique({ where: { email } });
+    // Secondary rate limit by email: 3 attempts per 15 minutes.
+    const emailRl = await rateLimitDistributed(`forgot:email:${email}`, 3, 15 * 60_000);
+    if (!emailRl.allowed) {
+      return Response.json({ ok: true });
+    }
+
+    const identity = await prisma.identity.findUnique({ where: { emailHash: hashEmail(email) } });
     let devLink: string | null = null;
     if (identity && !identity.deletedAt) {
       devLink = await sendResetEmail(identity.id, identity.name, email);

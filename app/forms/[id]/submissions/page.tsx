@@ -94,7 +94,7 @@ export default function SubmissionsPage() {
 
   if (!loaded || !form) {
     return (
-      <div className="px-10 py-10 min-h-screen">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
         <div className="h-8 w-48 rounded-lg animate-pulse mb-6" style={{ background: 'var(--glass)' }} />
         <div className="h-96 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
       </div>
@@ -102,7 +102,7 @@ export default function SubmissionsPage() {
   }
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>

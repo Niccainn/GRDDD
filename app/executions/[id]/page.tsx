@@ -196,7 +196,7 @@ export default function ExecutionDetailPage() {
   const canRunNova = loaded && execution && !running && !!process.env.NEXT_PUBLIC_HAS_API_KEY !== false;
 
   return (
-    <div className="px-10 py-10 min-h-screen max-w-4xl">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen max-w-4xl">
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 mb-6 animate-fade-in">
         <Link href="/executions" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Runs</Link>
