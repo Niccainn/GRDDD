@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 /**
  * Slack Events API webhook receiver.
@@ -11,9 +12,50 @@ import { prisma } from '@/lib/db';
  * Setup: Create a Slack App → Event Subscriptions → point to:
  *   https://your-domain.com/api/webhooks/slack
  * Subscribe to: message.channels, message.groups
+ *
+ * Security: Validates requests using the Slack Signing Secret.
+ * Set SLACK_SIGNING_SECRET in your environment variables.
  */
+
+function verifySlackSignature(req: NextRequest, rawBody: string): boolean {
+  const secret = process.env.SLACK_SIGNING_SECRET;
+  if (!secret) return false; // No secret configured — reject all requests
+
+  const timestamp = req.headers.get('x-slack-request-timestamp');
+  const slackSignature = req.headers.get('x-slack-signature');
+  if (!timestamp || !slackSignature) return false;
+
+  // Reject requests older than 5 minutes to prevent replay attacks
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - Number(timestamp)) > 300) return false;
+
+  const sigBasestring = `v0:${timestamp}:${rawBody}`;
+  const mySignature = 'v0=' + createHmac('sha256', secret).update(sigBasestring).digest('hex');
+
+  try {
+    return timingSafeEqual(Buffer.from(mySignature), Buffer.from(slackSignature));
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const rawBody = await req.text();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let body: any;
+  try {
+    body = JSON.parse(rawBody);
+  } catch {
+    return Response.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  // URL verification doesn't need signature check (Slack sends it
+  // before the signing secret is confirmed), but all other events do.
+  if (body.type !== 'url_verification') {
+    if (!verifySlackSignature(req, rawBody)) {
+      return Response.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+  }
 
   // Slack URL verification handshake
   if (body.type === 'url_verification') {
