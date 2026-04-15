@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import WorkflowDetailClient from '@/components/WorkflowDetailClient';
 
+export const dynamic = 'force-dynamic';
+
 async function getWorkflow(id: string) {
   return prisma.workflow.findUnique({
     where: { id },

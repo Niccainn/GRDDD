@@ -11,6 +11,8 @@ import SystemGoals from '@/components/SystemGoals';
 import Breadcrumb from '@/components/Breadcrumb';
 import SystemWorkflowsView from '@/components/SystemWorkflowsView';
 
+export const dynamic = 'force-dynamic';
+
 async function createWorkflow(formData: FormData) {
   'use server';
   const systemId = formData.get('systemId') as string;
