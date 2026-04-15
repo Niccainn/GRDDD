@@ -22,6 +22,34 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: 'entityType and entityId required' }, { status: 400 });
   }
 
+  // Verify the caller owns the entity before returning its comments.
+  // All entity types are scoped via their environment's ownerId.
+  const ownerFilter = { environment: { ownerId: identity.id, deletedAt: null } };
+  let entityExists = false;
+  switch (entityType) {
+    case 'system':
+      entityExists = !!(await prisma.system.findFirst({ where: { id: entityId, ...ownerFilter } }));
+      break;
+    case 'workflow':
+      entityExists = !!(await prisma.workflow.findFirst({ where: { id: entityId, ...ownerFilter } }));
+      break;
+    case 'execution':
+      entityExists = !!(await prisma.execution.findFirst({ where: { id: entityId, system: ownerFilter } }));
+      break;
+    case 'goal':
+      entityExists = !!(await prisma.goal.findFirst({ where: { id: entityId, ...ownerFilter } }));
+      break;
+    case 'signal':
+      entityExists = !!(await prisma.signal.findFirst({ where: { id: entityId, ...ownerFilter } }));
+      break;
+    case 'task':
+      entityExists = !!(await prisma.task.findFirst({ where: { id: entityId, ...ownerFilter } }));
+      break;
+  }
+  if (!entityExists) {
+    return Response.json({ error: 'Not found' }, { status: 404 });
+  }
+
   const comments = await prisma.comment.findMany({
     where: { entityType, entityId, parentId: null, deletedAt: null },
     include: {
