@@ -165,14 +165,14 @@ export const createSessionForIdentity = createSession;
 export async function upsertOAuthIdentity(profile: {
   provider: string;
   providerAccountId: string;
-  email: string;
+  email: string | null;
   name: string;
   avatar?: string | null;
 }) {
   // Try to find existing identity by email
-  const existing = await prisma.identity.findUnique({
-    where: { email: profile.email },
-  });
+  const existing = profile.email
+    ? await prisma.identity.findUnique({ where: { email: profile.email } })
+    : null;
 
   if (existing) {
     // Update with latest OAuth info
