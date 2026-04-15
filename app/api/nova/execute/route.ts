@@ -1,14 +1,12 @@
 import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
 import { audit } from '@/lib/audit';
 import { computeHealthScore } from '@/lib/health';
 import { trackUsage } from '@/lib/billing/usage';
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
 
 export type ExecuteEvent =
   | { type: 'stage_start'; stage: string; index: number }
@@ -26,9 +24,6 @@ export async function POST(req: NextRequest) {
   if (!executionId || !input || !systemId) {
     return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500 });
-  }
 
   const [system, workflow] = await Promise.all([
     prisma.system.findUnique({
@@ -41,6 +36,17 @@ export async function POST(req: NextRequest) {
   ]);
 
   if (!system) return new Response(JSON.stringify({ error: 'System not found' }), { status: 404 });
+
+  let resolved;
+  try {
+    resolved = await getAnthropicClientForEnvironment(system.environmentId);
+  } catch (err) {
+    if (err instanceof MissingKeyError) {
+      return Response.json({ error: err.message, actionUrl: err.actionUrl }, { status: 402 });
+    }
+    throw err;
+  }
+  const anthropic = resolved.client;
 
   const workflowStages: string[] = stages ?? (workflow ? JSON.parse(workflow.stages ?? '[]') : []);
 

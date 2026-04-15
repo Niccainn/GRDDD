@@ -5,8 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
 import type { NovaEvent } from '@/lib/nova';
 import { selectAvailableTools } from '@/lib/integrations/tools';
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
 
 // ── Internal Grid tools (database reads) ─────────────────────────────
 const INTERNAL_TOOLS: Anthropic.Tool[] = [
@@ -219,7 +218,6 @@ export async function POST(req: NextRequest) {
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { input } = await req.json();
   if (!input) return new Response(JSON.stringify({ error: 'Missing input' }), { status: 400 });
-  if (!process.env.ANTHROPIC_API_KEY) return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500 });
 
   // ── Load integration tools dynamically ──────────────────────────
   const integrations = await prisma.integration.findMany({
@@ -253,6 +251,21 @@ export async function POST(req: NextRequest) {
     },
     orderBy: { createdAt: 'asc' },
   });
+
+  if (!primaryEnv) {
+    return new Response(JSON.stringify({ error: 'No environment found' }), { status: 400 });
+  }
+
+  let resolved;
+  try {
+    resolved = await getAnthropicClientForEnvironment(primaryEnv.id);
+  } catch (err) {
+    if (err instanceof MissingKeyError) {
+      return Response.json({ error: err.message, actionUrl: err.actionUrl }, { status: 402 });
+    }
+    throw err;
+  }
+  const anthropic = resolved.client;
 
   const brandLines: string[] = [];
   if (primaryEnv) {

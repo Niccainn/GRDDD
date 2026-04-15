@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // tokens rather than by the session cookie.
 const PUBLIC_PATHS = [
   '/',
+  '/access',
   '/sign-in',
   '/sign-up',
   '/forgot-password',
