@@ -14,32 +14,11 @@
 
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
-import { hashApiKey } from '@/lib/api-keys';
+import { authenticateApiKey } from '@/lib/api-auth';
 import { audit } from '@/lib/audit';
 
 export async function POST(req: NextRequest) {
-  // ── Auth ──────────────────────────────────────────────────────────────────
-  const authHeader = req.headers.get('authorization') ?? '';
-  const rawKey = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-  if (!rawKey) {
-    return Response.json({ error: 'Missing Authorization header' }, { status: 401 });
-  }
-
-  const keyHash = hashApiKey(rawKey);
-  const apiKey = await prisma.apiKey.findUnique({ where: { keyHash } });
-
-  if (!apiKey || !apiKey.isActive) {
-    return Response.json({ error: 'Invalid or inactive API key' }, { status: 401 });
-  }
-  if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
-    return Response.json({ error: 'API key expired' }, { status: 401 });
-  }
-
-  // Update last used timestamp
-  prisma.apiKey.update({
-    where: { id: apiKey.id },
-    data: { lastUsed: new Date() },
-  }).catch(() => {});
+  const apiKey = await authenticateApiKey(req);
 
   // ── Body ──────────────────────────────────────────────────────────────────
   let body: { workflowId?: string; systemId?: string; input?: string; async?: boolean };

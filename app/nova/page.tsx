@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import NovaSecondBrainPanel from '@/components/NovaSecondBrainPanel';
 
 // ─── Markdown renderer ────────────────────────────────────────────────────────
 function renderInline(text: string): React.ReactNode {
@@ -92,6 +93,9 @@ export default function NovaPage() {
   const [error, setError] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Second Brain panel
+  const [brainOpen, setBrainOpen] = useState(false);
 
   // Logs state
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -249,11 +253,31 @@ export default function NovaPage() {
               </p>
             </div>
           </div>
-          {totalTokens > 0 && (
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              {totalTokens.toLocaleString()} tokens this session
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {totalTokens > 0 && (
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                {totalTokens.toLocaleString()} tokens this session
+              </span>
+            )}
+            <button
+              onClick={() => setBrainOpen(true)}
+              title="Nova Second Brain"
+              className="flex items-center justify-center transition-all"
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                background: 'rgba(191,159,241,0.08)',
+                border: '1px solid rgba(191,159,241,0.15)',
+                cursor: 'pointer',
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#BF9FF1" strokeWidth="1.8">
+                <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M9 21h6" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* ── Chat interface ────────────────────────────────────────────── */}
@@ -523,6 +547,7 @@ export default function NovaPage() {
           )}
         </div>
       </div>
+      <NovaSecondBrainPanel open={brainOpen} onClose={() => setBrainOpen(false)} />
     </div>
   );
 }

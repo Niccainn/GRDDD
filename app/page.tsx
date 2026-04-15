@@ -47,7 +47,7 @@ function MarketingSite() {
       </div>
 
       {/* ═══ NAV ═══ */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-5"
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 py-4 md:py-5"
         style={{ backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', background: 'rgba(8,8,12,0.7)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
         <div className="flex items-center gap-2.5">
           <svg width="24" height="31" viewBox="0 0 79 100" fill="none" style={{ opacity: 0.4 }}>
@@ -58,10 +58,11 @@ function MarketingSite() {
           </svg>
           <span className="text-sm font-light tracking-[0.15em]" style={{ color: 'var(--text-2)' }}>GRID</span>
         </div>
-        <div className="flex items-center gap-6">
-          <a href="#product" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Product</a>
-          <a href="#impact" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Impact</a>
-          <a href="#thesis" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Thesis</a>
+        <div className="flex items-center gap-4 md:gap-6">
+          <a href="#product" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Product</a>
+          <a href="#impact" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Impact</a>
+          <a href="#thesis" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Thesis</a>
+          <Link href="/pricing" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Pricing</Link>
           <Link href="/sign-in" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Sign in</Link>
           <a href="#waitlist" className="text-xs font-light px-4 py-2 rounded-full transition-all"
             style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-border)', color: 'var(--brand)' }}>
@@ -71,7 +72,7 @@ function MarketingSite() {
       </nav>
 
       {/* ═══ HERO ═══ */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-8 pt-20 relative">
+      <section className="min-h-screen flex flex-col items-center justify-center px-5 md:px-8 pt-20 relative">
         <div className="text-center max-w-3xl">
           <p className="text-[10px] tracking-[0.4em] uppercase mb-6 animate-fade-in" style={{ color: 'var(--brand)', opacity: 0.6 }}>
             The End of Operational Overhead
@@ -102,7 +103,7 @@ function MarketingSite() {
       </section>
 
       {/* ═══ IMPACT STATS ═══ */}
-      <section id="impact" className="py-32 px-8">
+      <section id="impact" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-5xl mx-auto">
           <p className="text-[10px] tracking-[0.3em] uppercase mb-6 text-center" style={{ color: 'var(--text-3)' }}>
             Measured Impact
@@ -147,7 +148,7 @@ function MarketingSite() {
       </section>
 
       {/* ═══ PRODUCT ═══ */}
-      <section id="product" className="py-32 px-8">
+      <section id="product" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>How It Works</p>
@@ -213,7 +214,7 @@ function MarketingSite() {
       </section>
 
       {/* ═══ USE CASES ═══ */}
-      <section className="py-32 px-8">
+      <section className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-5xl mx-auto">
           <p className="text-[10px] tracking-[0.3em] uppercase mb-4 text-center" style={{ color: 'var(--text-3)' }}>Use Cases</p>
           <h2 className="text-3xl font-extralight tracking-tight mb-16 text-center">
@@ -244,7 +245,7 @@ function MarketingSite() {
       </section>
 
       {/* ═══ THESIS ═══ */}
-      <section id="thesis" className="py-32 px-8">
+      <section id="thesis" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-[10px] tracking-[0.3em] uppercase mb-6" style={{ color: 'var(--text-3)' }}>The Thesis</p>
           <h2 className="text-3xl font-extralight tracking-tight leading-snug mb-8">
@@ -272,7 +273,7 @@ function MarketingSite() {
       </section>
 
       {/* ═══ WAITLIST CTA ═══ */}
-      <section id="waitlist" className="py-32 px-8">
+      <section id="waitlist" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--brand)', opacity: 0.6 }}>
             Early Access
@@ -314,7 +315,7 @@ function MarketingSite() {
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="py-12 px-8" style={{ borderTop: '1px solid var(--glass-border)' }}>
+      <footer className="py-12 px-5 md:px-8" style={{ borderTop: '1px solid var(--glass-border)' }}>
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <svg width="16" height="21" viewBox="0 0 79 100" fill="none" style={{ opacity: 0.2 }}>

@@ -33,10 +33,10 @@ export default async function SystemsPage() {
   ]);
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       <div className="mb-10">
-        <h1 className="text-2xl font-extralight tracking-tight mb-1">Systems</h1>
-        <p className="text-xs" style={{ color: 'var(--text-3)' }}>Structured organisational functions</p>
+        <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Systems</h1>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>The core functions that power your organisation</p>
       </div>
 
       {environments.length === 0 ? (
@@ -54,7 +54,7 @@ export default async function SystemsPage() {
           {/* Templates */}
           <div className="mb-10">
             <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>QUICK ADD</p>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
               {TEMPLATES.map(t => (
                 <form key={t.name} action={createSystem}>
                   <input type="hidden" name="name" value={t.name} />
@@ -77,7 +77,7 @@ export default async function SystemsPage() {
           {systems.length > 0 && (
             <div>
               <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>YOUR SYSTEMS</p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {systems.map(s => (
                   <div key={s.id} className="group flex flex-col rounded-xl transition-all"
                     style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>

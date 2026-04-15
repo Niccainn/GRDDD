@@ -1,8 +1,11 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsSystem } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
+import { trackUsage } from '@/lib/billing/usage';
+import { createNotification } from '@/lib/notifications';
 
 export async function GET(req: NextRequest) {
   const identity = await getAuthIdentity();
@@ -17,6 +20,7 @@ export async function GET(req: NextRequest) {
   const [executions, total] = await Promise.all([
     prisma.execution.findMany({
       where: {
+        system: { environment: { ownerId: identity.id, deletedAt: null } },
         ...(status ? { status } : {}),
         ...(systemId ? { systemId } : {}),
       },
@@ -31,6 +35,7 @@ export async function GET(req: NextRequest) {
     }),
     prisma.execution.count({
       where: {
+        system: { environment: { ownerId: identity.id, deletedAt: null } },
         ...(status ? { status } : {}),
         ...(systemId ? { systemId } : {}),
       },
@@ -62,6 +67,8 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Missing systemId or input' }, { status: 400 });
   }
 
+  await assertOwnsSystem(systemId, identity.id);
+
   const execution = await prisma.execution.create({
     data: {
       status: withStages ? 'RUNNING' : 'COMPLETED',
@@ -91,6 +98,21 @@ export async function POST(req: NextRequest) {
     metadata: { systemId, workflowId: workflowId ?? null, input: input.slice(0, 200) },
     environmentId: system?.environmentId,
   });
+
+  // Track billing usage
+  trackUsage(identity.id, 'executions').catch(() => {});
+
+  // Create notification based on execution status
+  const execStatus = withStages ? 'RUNNING' : 'COMPLETED';
+  if (execStatus === 'COMPLETED') {
+    createNotification({
+      identityId: identity.id,
+      type: 'execution_complete',
+      title: `Execution completed`,
+      body: `${workflow?.name ?? system?.name ?? 'Execution'} finished successfully`,
+      href: `/systems/${systemId}`,
+    }).catch(() => {});
+  }
 
   return Response.json(execution);
 }

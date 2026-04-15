@@ -1,233 +1,267 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/Toast';
 
 type Member = {
   id: string;
   name: string;
   email: string | null;
   type: string;
-  avatar: string | null;
-  createdAt: string;
-  memberships: { role: string; environmentId: string; environmentName: string; environmentColor: string | null }[];
+  role: 'owner' | 'admin' | 'member';
 };
 
-type Environment = { id: string; name: string; color: string | null };
-
-const ROLES = ['ADMIN', 'CONTRIBUTOR', 'VIEWER'];
-const ROLE_COLOR: Record<string, string> = {
-  ADMIN: '#BF9FF1',
-  CONTRIBUTOR: '#15AD70',
-  VIEWER: 'rgba(255,255,255,0.3)',
-};
-const TYPE_LABEL: Record<string, string> = {
-  PERSON: 'Person', TEAM: 'Team', AGENT: 'Agent', CLIENT: 'Client',
+const ROLE_STYLES: Record<string, { bg: string; color: string }> = {
+  owner: { bg: 'rgba(168,120,255,0.12)', color: '#a878ff' },
+  admin: { bg: 'rgba(99,149,255,0.12)', color: '#6395ff' },
+  member: { bg: 'rgba(255,255,255,0.06)', color: 'var(--text-3)' },
 };
 
 export default function TeamPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [members, setMembers] = useState<Member[]>([]);
-  const [environments, setEnvironments] = useState<Environment[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', type: 'PERSON', environmentId: '', role: 'CONTRIBUTOR' });
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/team').then(r => r.json()),
-      fetch('/api/environments').then(r => r.json()),
-    ]).then(([team, envs]) => {
-      setMembers(team);
-      setEnvironments(envs);
-      if (envs.length > 0) setForm(f => ({ ...f, environmentId: envs[0].id }));
-      setLoaded(true);
-    });
-  }, []);
-
-  async function handleInvite(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.name || !form.email) return;
-    setSaving(true);
-    setError('');
-    const res = await fetch('/api/team', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      const updated = await fetch('/api/team').then(r => r.json());
-      setMembers(updated);
-      setShowInvite(false);
-      setForm({ name: '', email: '', type: 'PERSON', environmentId: environments[0]?.id ?? '', role: 'CONTRIBUTOR' });
-    } else {
-      const data = await res.json();
-      setError(data.error ?? 'Failed to add member');
+    // For now, show current user as the sole team member (owner)
+    if (user) {
+      setMembers([
+        {
+          id: user.id ?? 'current',
+          name: user.name ?? 'You',
+          email: user.email ?? null,
+          type: 'PERSON',
+          role: 'owner',
+        },
+      ]);
     }
-    setSaving(false);
+    setLoading(false);
+  }, [user]);
+
+  function handleInvite() {
+    if (!inviteEmail.trim() || !inviteEmail.includes('@')) {
+      toast('Please enter a valid email address', 'error');
+      return;
+    }
+    toast('Invitations coming soon', 'info');
+    setInviteEmail('');
+    setShowInvite(false);
   }
 
-  async function handleRemove(id: string) {
-    await fetch(`/api/team?id=${id}`, { method: 'DELETE' });
-    setMembers(prev => prev.filter(m => m.id !== id));
+  if (loading) {
+    return (
+      <div style={{ padding: '3rem', color: 'var(--text-3)' }}>
+        <div style={{ fontWeight: 300 }}>Loading team...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="px-10 py-10 min-h-screen max-w-3xl">
-      {/* Back */}
-      <Link href="/settings" className="text-xs font-light mb-8 inline-flex items-center gap-1.5 transition-colors"
-        style={{ color: 'var(--text-3)' }}>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M6 2L3 5l3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        Settings
-      </Link>
-
-      <div className="flex items-start justify-between mb-8">
+    <div style={{ padding: '2rem 2.5rem', maxWidth: 720, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem' }}>
         <div>
-          <h1 className="text-2xl font-extralight tracking-tight mb-1">Team</h1>
-          <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-            {loaded ? `${members.length} member${members.length !== 1 ? 's' : ''}` : 'Loading···'}
+          <h1
+            style={{
+              fontSize: 28,
+              fontWeight: 300,
+              color: 'var(--text-1)',
+              letterSpacing: '-0.02em',
+              marginBottom: 6,
+            }}
+          >
+            Team
+          </h1>
+          <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 14 }}>
+            Manage your team members and roles.
           </p>
         </div>
-        <button onClick={() => setShowInvite(v => !v)}
-          className="text-xs font-light px-3 py-2 rounded-lg transition-all"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
-          + Add member
-        </button>
+        {!showInvite && (
+          <button
+            onClick={() => setShowInvite(true)}
+            style={{
+              padding: '10px 20px',
+              borderRadius: 12,
+              border: 'none',
+              background: 'linear-gradient(135deg, rgba(99,149,255,0.25), rgba(99,149,255,0.1))',
+              color: '#6395ff',
+              fontWeight: 400,
+              fontSize: 13,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Invite member
+          </button>
+        )}
       </div>
 
       {/* Invite form */}
       {showInvite && (
-        <form onSubmit={handleInvite} className="mb-8 p-5 rounded-xl space-y-4"
-          style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>ADD MEMBER</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Name</label>
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Sarah Chen"
-                className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
-            </div>
-            <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Email</label>
-              <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="sarah@company.com" type="email"
-                className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }} />
-            </div>
-            <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Type</label>
-              <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
-                className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
-                {['PERSON', 'TEAM', 'AGENT', 'CLIENT'].map(t => (
-                  <option key={t} value={t} style={{ background: '#111' }}>{TYPE_LABEL[t]}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Role</label>
-              <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-                className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
-                {ROLES.map(r => <option key={r} value={r} style={{ background: '#111' }}>{r.toLowerCase()}</option>)}
-              </select>
-            </div>
-            {environments.length > 0 && (
-              <div className="col-span-2">
-                <label className="text-xs mb-1.5 block" style={{ color: 'var(--text-3)' }}>Add to environment</label>
-                <select value={form.environmentId} onChange={e => setForm(f => ({ ...f, environmentId: e.target.value }))}
-                  className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none appearance-none"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.7)' }}>
-                  <option value="" style={{ background: '#111' }}>No environment</option>
-                  {environments.map(e => <option key={e.id} value={e.id} style={{ background: '#111' }}>{e.name}</option>)}
-                </select>
-              </div>
-            )}
+        <div
+          style={{
+            background: 'var(--glass)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: 16,
+            padding: '1.5rem',
+            marginBottom: '1.5rem',
+            backdropFilter: 'blur(20px)',
+          }}
+        >
+          <h3 style={{ color: 'var(--text-1)', fontWeight: 300, fontSize: 15, marginBottom: 16 }}>
+            Invite a team member
+          </h3>
+          <div style={{ marginBottom: 16 }}>
+            <label
+              style={{
+                display: 'block',
+                color: 'var(--text-2)',
+                fontWeight: 300,
+                fontSize: 13,
+                marginBottom: 6,
+              }}
+            >
+              Email address
+            </label>
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="colleague@company.com"
+              onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: 12,
+                border: '1px solid var(--glass-border)',
+                background: 'var(--glass-deep)',
+                color: 'var(--text-1)',
+                fontWeight: 300,
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
           </div>
-          {error && (
-            <p className="text-xs" style={{ color: '#FF6B6B' }}>{error}</p>
-          )}
-          <div className="flex items-center gap-3">
-            <button type="submit" disabled={!form.name || !form.email || saving}
-              className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
-              style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.25)', color: '#15AD70' }}>
-              {saving ? '···' : 'Add member'}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={handleInvite}
+              style={{
+                padding: '10px 20px',
+                borderRadius: 12,
+                border: 'none',
+                background: 'linear-gradient(135deg, rgba(99,149,255,0.25), rgba(99,149,255,0.1))',
+                color: '#6395ff',
+                fontWeight: 400,
+                fontSize: 13,
+                cursor: 'pointer',
+              }}
+            >
+              Send invite
             </button>
-            <button type="button" onClick={() => { setShowInvite(false); setError(''); }}
-              className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.25)' }}>Cancel</button>
+            <button
+              onClick={() => { setShowInvite(false); setInviteEmail(''); }}
+              style={{
+                padding: '10px 20px',
+                borderRadius: 12,
+                border: '1px solid var(--glass-border)',
+                background: 'transparent',
+                color: 'var(--text-3)',
+                fontWeight: 300,
+                fontSize: 13,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
           </div>
-        </form>
+        </div>
       )}
 
       {/* Member list */}
-      {!loaded ? (
-        <div className="space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {members.map(member => {
-            const isDemoUser = member.email === 'demo@grid.app';
-            return (
-              <div key={member.id} className="flex items-center gap-4 px-5 py-4 rounded-xl"
-                style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
-                {/* Avatar */}
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-light flex-shrink-0"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  {member.name.charAt(0).toUpperCase()}
-                </div>
+      <div
+        style={{
+          background: 'var(--glass)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: 20,
+          overflow: 'hidden',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        {members.map((m, i) => {
+          const initials = m.name
+            .split(' ')
+            .map((w) => w[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase();
+          const roleStyle = ROLE_STYLES[m.role] ?? ROLE_STYLES.member;
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.8)' }}>{member.name}</p>
-                    <span className="text-xs px-1.5 py-0.5 rounded"
-                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)' }}>
-                      {TYPE_LABEL[member.type] ?? member.type}
-                    </span>
-                    {isDemoUser && (
-                      <span className="text-xs px-1.5 py-0.5 rounded"
-                        style={{ background: 'rgba(21,173,112,0.08)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>
-                        you
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p className="text-xs" style={{ color: 'var(--text-3)' }}>{member.email}</p>
-                    {member.memberships.length > 0 && (
-                      <div className="flex items-center gap-1.5">
-                        {member.memberships.map(m => (
-                          <span key={m.environmentId} className="flex items-center gap-1 text-xs"
-                            style={{ color: 'rgba(255,255,255,0.25)' }}>
-                            {m.environmentColor && <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: m.environmentColor }} />}
-                            {m.environmentName}
-                            <span style={{ color: ROLE_COLOR[m.role] ?? 'rgba(255,255,255,0.2)' }}>·{m.role.toLowerCase()}</span>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Remove */}
-                {!isDemoUser && (
-                  <button onClick={() => handleRemove(member.id)}
-                    className="text-xs font-light px-2 py-1 rounded transition-all flex-shrink-0"
-                    style={{ color: 'rgba(255,255,255,0.2)' }}>
-                    Remove
-                  </button>
-                )}
+          return (
+            <div
+              key={m.id}
+              style={{
+                padding: '1.25rem 1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 16,
+                borderBottom: i < members.length - 1 ? '1px solid var(--glass-border)' : 'none',
+              }}
+            >
+              {/* Avatar */}
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 14,
+                  fontWeight: 300,
+                  background: 'var(--brand-glow)',
+                  color: 'var(--brand)',
+                  border: '1px solid var(--brand-border)',
+                  flexShrink: 0,
+                }}
+              >
+                {initials}
               </div>
-            );
-          })}
-        </div>
-      )}
+
+              {/* Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ color: 'var(--text-1)', fontWeight: 300, fontSize: 14 }}>
+                  {m.name}
+                </p>
+                <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 12 }}>
+                  {m.email ?? 'No email'}
+                </p>
+              </div>
+
+              {/* Role badge */}
+              <span
+                style={{
+                  background: roleStyle.bg,
+                  color: roleStyle.color,
+                  padding: '3px 12px',
+                  borderRadius: 20,
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  flexShrink: 0,
+                }}
+              >
+                {m.role}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

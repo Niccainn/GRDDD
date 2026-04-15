@@ -24,11 +24,11 @@ export default async function EnvironmentsPage() {
   const environments = await getEnvironments();
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       <div className="flex items-start justify-between mb-10">
         <div>
-          <h1 className="text-2xl font-extralight tracking-tight mb-1">Environments</h1>
-          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Organisational containers where systems operate</p>
+          <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Environments</h1>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Workspaces for your teams, departments, or business areas</p>
         </div>
 
         <form action={createEnvironment} className="flex items-center gap-2">
@@ -54,7 +54,7 @@ export default async function EnvironmentsPage() {
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>Create your first environment above</p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {environments.map((env) => (
             <div key={env.id} className="group flex flex-col rounded-xl transition-all relative overflow-hidden"
               style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>

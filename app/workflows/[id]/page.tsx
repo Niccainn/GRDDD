@@ -20,7 +20,12 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
   const workflow = await getWorkflow(id);
   if (!workflow) notFound();
 
-  const stages: string[] = JSON.parse(workflow.stages ?? '[]');
+  const stages: string[] = (() => {
+    try {
+      const parsed = JSON.parse(workflow.stages ?? '[]');
+      return parsed.map((s: unknown) => typeof s === 'string' ? s : (s as { name?: string }).name ?? '');
+    } catch { return []; }
+  })();
   const executions = workflow.executions.map(e => ({
     id: e.id,
     status: e.status,
@@ -41,6 +46,7 @@ export default async function WorkflowDetailPage({ params }: { params: Promise<{
         systemId: workflow.systemId,
         systemName: workflow.system.name,
         environmentName: workflow.environment.name,
+        environmentId: workflow.environmentId,
         environmentSlug: workflow.system.environment.slug,
         createdAt: workflow.createdAt.toISOString(),
         updatedAt: workflow.updatedAt.toISOString(),

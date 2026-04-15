@@ -1,200 +1,485 @@
 'use client';
-import { useState } from 'react';
+
+/**
+ * /integrations — provider grid + connected accounts list.
+ *
+ * Two stacked surfaces:
+ *
+ *   1. CONNECTED — pulled from /api/integrations?environmentId=… for
+ *      the selected environment. Each row shows the provider glyph,
+ *      display name, masked credential preview, and a Test button
+ *      that hits /api/integrations/[id]/test. Soft-delete via a
+ *      Disconnect button.
+ *
+ *   2. AVAILABLE — pulled from /api/integrations/providers, grouped
+ *      by category. api_key providers open an inline modal with the
+ *      fields declared in the registry; oauth providers redirect to
+ *      /api/integrations/oauth/<provider>/start. Providers that are
+ *      `implemented=false` or `envReady=false` stay visible but are
+ *      greyed-out with a tooltip explaining why.
+ *
+ * Authorization: the server routes enforce admin membership, so we
+ * don't re-check here. If the user can't administer the selected
+ * environment they'll see 404s in the responses and the UI will
+ * surface them as toast errors.
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+import IntegrationConfigModal from '@/components/IntegrationConfigModal';
+
+type ProviderSummary = {
+  id: string;
+  name: string;
+  tagline: string;
+  category: string;
+  categoryLabel: string;
+  authType: 'oauth' | 'api_key' | 'service_account';
+  accentColor: string;
+  glyph: string;
+  implemented: boolean;
+  envReady: boolean;
+  missingEnvVars: string[];
+  apiKeyFields?: { name: string; label: string; type: 'text' | 'password'; placeholder?: string; helper?: string }[];
+};
 
 type Integration = {
   id: string;
-  name: string;
-  description: string;
-  category: string;
-  icon: React.ReactNode;
-  connected: boolean;
+  provider: string;
+  displayName: string;
+  accountLabel: string | null;
+  authType: string;
+  credentialsPreview: string;
+  status: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'ERROR';
+  lastSyncedAt: string | null;
+  lastError: string | null;
+  expiresAt: string | null;
+  createdAt: string;
 };
 
-const CATEGORIES = ['All', 'Social', 'Communication', 'Meetings', 'Documents', 'Design', 'Development', 'CRM', 'Analytics', 'Automation'];
+type Environment = { id: string; name: string; slug: string; color?: string | null };
 
-const INTEGRATIONS: Integration[] = [
-  {
-    id: 'slack', name: 'Slack', description: 'Route signals from channels', category: 'Communication', connected: true,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M14 20.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5h-1.5z"/><path d="M10 9.5C10 10.33 9.33 11 8.5 11h-5C2.67 11 2 10.33 2 9.5S2.67 8 3.5 8h5c.83 0 1.5.67 1.5 1.5z"/></svg>,
-  },
-  {
-    id: 'notion', name: 'Notion', description: 'Sync pages and databases', category: 'Documents', connected: true,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M4 4.5A2.5 2.5 0 016.5 2H18l2 2v15.5a2.5 2.5 0 01-2.5 2.5H6.5A2.5 2.5 0 014 19.5z"/><path d="M8 7h8M8 11h6M8 15h4"/></svg>,
-  },
-  {
-    id: 'figma', name: 'Figma', description: 'Design system bridge', category: 'Design', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="12" r="2.5"/><path d="M6.5 2h5v8h-5a4 4 0 010-8z"/><path d="M12.5 2h5a4 4 0 010 8h-5z"/><path d="M6.5 10h5v4a4 4 0 01-5 0z"/></svg>,
-  },
-  {
-    id: 'github', name: 'GitHub', description: 'Repos and issue tracking', category: 'Development', connected: true,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.66-.22.66-.48v-1.69c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0112 6.8c.85 0 1.71.11 2.51.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.16.58.67.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z"/></svg>,
-  },
-  {
-    id: 'linear', name: 'Linear', description: 'Issue and project sync', category: 'Development', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>,
-  },
-  {
-    id: 'zoom', name: 'Zoom', description: 'Meeting intelligence', category: 'Meetings', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="2" y="6" width="13" height="12" rx="2"/><path d="M15 10l5-3v10l-5-3z"/></svg>,
-  },
-  {
-    id: 'hubspot', name: 'HubSpot', description: 'CRM pipeline signals', category: 'CRM', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><path d="M12 6.5v2M12 15.5v2M6.5 12h2M15.5 12h2"/></svg>,
-  },
-  {
-    id: 'google-analytics', name: 'Analytics', description: 'Web performance data', category: 'Analytics', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M3 20h18M6 16v4M10 12v8M14 8v12M18 4v16"/></svg>,
-  },
-  {
-    id: 'zapier', name: 'Zapier', description: 'Workflow automation bridge', category: 'Automation', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>,
-  },
-  {
-    id: 'gmail', name: 'Gmail', description: 'Email signal routing', category: 'Communication', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/></svg>,
-  },
-  {
-    id: 'drive', name: 'Google Drive', description: 'Document access', category: 'Documents', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M8 2l8 14H4L12 2z"/><path d="M16 16l4-7H8"/><path d="M8 16l-4-7h12"/></svg>,
-  },
-  {
-    id: 'stripe', name: 'Stripe', description: 'Payment signals', category: 'CRM', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M13 8c-1.5 0-3 .5-3 2s1.5 2 3 2 3 .5 3 2-1.5 2-3 2M12 6v2M12 16v2"/></svg>,
-  },
-  {
-    id: 'instagram', name: 'Instagram', description: 'Content publishing & analytics', category: 'Social', connected: true,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>,
-  },
-  {
-    id: 'facebook', name: 'Facebook', description: 'Page management & ads', category: 'Social', connected: true,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>,
-  },
-  {
-    id: 'x-twitter', name: 'X / Twitter', description: 'Social posting & monitoring', category: 'Social', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M4 4l6.5 8L4 20h2l5.5-6.8L16 20h4l-6.8-8.4L19.5 4h-2L12.4 10 8 4H4z"/></svg>,
-  },
-  {
-    id: 'linkedin', name: 'LinkedIn', description: 'Professional content & leads', category: 'Social', connected: false,
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>,
-  },
-];
+type CategoryDef = { id: string; label: string };
 
 export default function IntegrationsPage() {
-  const [category, setCategory] = useState('All');
+  const [environments, setEnvironments] = useState<Environment[]>([]);
+  const [environmentId, setEnvironmentId] = useState<string | null>(null);
+  const [providers, setProviders] = useState<ProviderSummary[]>([]);
+  const [categories, setCategories] = useState<CategoryDef[]>([]);
+  const [connected, setConnected] = useState<Integration[]>([]);
+  const [category, setCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [connectModal, setConnectModal] = useState<ProviderSummary | null>(null);
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+  const [configModal, setConfigModal] = useState<ProviderSummary | null>(null);
 
-  const filtered = INTEGRATIONS.filter(i => {
-    if (category !== 'All' && i.category !== category) return false;
-    if (search && !i.name.toLowerCase().includes(search.toLowerCase())) return false;
+  // Load environments + providers once.
+  useEffect(() => {
+    (async () => {
+      try {
+        const [envRes, provRes] = await Promise.all([
+          fetch('/api/environments'),
+          fetch('/api/integrations/providers'),
+        ]);
+        if (envRes.ok) {
+          const envs = (await envRes.json()) as Environment[];
+          setEnvironments(envs);
+          // Auto-select environment from ?environmentId or first owned
+          const urlEnvId = new URLSearchParams(window.location.search).get('environmentId');
+          setEnvironmentId(urlEnvId ?? envs[0]?.id ?? null);
+        }
+        if (provRes.ok) {
+          const data = (await provRes.json()) as { providers: ProviderSummary[]; categories: CategoryDef[] };
+          setProviders(data.providers);
+          setCategories(data.categories);
+        }
+      } catch (err) {
+        setToast({ kind: 'err', text: err instanceof Error ? err.message : 'Failed to load' });
+      }
+    })();
+
+    // Surface OAuth callback status
+    const params = new URLSearchParams(window.location.search);
+    const oauth = params.get('oauth');
+    if (oauth === 'success') setToast({ kind: 'ok', text: 'Connected successfully' });
+    if (oauth === 'error') setToast({ kind: 'err', text: params.get('message') ?? 'OAuth failed' });
+  }, []);
+
+  // Reload connected integrations whenever environment changes.
+  const loadConnected = useCallback(async (envId: string) => {
+    const res = await fetch(`/api/integrations?environmentId=${envId}`);
+    if (!res.ok) {
+      setConnected([]);
+      return;
+    }
+    const data = (await res.json()) as { integrations: Integration[] };
+    setConnected(data.integrations);
+  }, []);
+
+  useEffect(() => {
+    if (environmentId) loadConnected(environmentId);
+  }, [environmentId, loadConnected]);
+
+  const filtered = providers.filter(p => {
+    if (category !== 'all' && p.category !== category) return false;
+    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
+  const handleConnect = async (prov: ProviderSummary) => {
+    if (!environmentId) {
+      setToast({ kind: 'err', text: 'Pick an environment first' });
+      return;
+    }
+    if (!prov.implemented) {
+      setToast({ kind: 'err', text: `${prov.name} is coming soon` });
+      return;
+    }
+    if (!prov.envReady) {
+      setToast({ kind: 'err', text: `${prov.name} needs env vars: ${prov.missingEnvVars.join(', ')}` });
+      return;
+    }
+    if (prov.authType === 'oauth') {
+      window.location.href = `/api/integrations/oauth/${prov.id}/start?environmentId=${environmentId}`;
+      return;
+    }
+    // api_key: open modal
+    setConnectModal(prov);
+    setFormValues({});
+  };
+
+  const submitApiKey = async () => {
+    if (!connectModal || !environmentId) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/integrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          environmentId,
+          provider: connectModal.id,
+          credentials: formValues,
+        }),
+      });
+      const data = (await res.json()) as { error?: string; integration?: Integration };
+      if (!res.ok || data.error) throw new Error(data.error ?? 'Connection failed');
+      setToast({ kind: 'ok', text: `${connectModal.name} connected` });
+      setConnectModal(null);
+      await loadConnected(environmentId);
+    } catch (err) {
+      setToast({ kind: 'err', text: err instanceof Error ? err.message : 'Failed' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleTest = async (integrationId: string) => {
+    try {
+      const res = await fetch(`/api/integrations/${integrationId}/test`, { method: 'POST' });
+      const data = (await res.json()) as { ok?: boolean; error?: string; summary?: Record<string, unknown> };
+      if (!data.ok) throw new Error(data.error ?? 'Test failed');
+      setToast({ kind: 'ok', text: 'Connection healthy' });
+      if (environmentId) await loadConnected(environmentId);
+    } catch (err) {
+      setToast({ kind: 'err', text: err instanceof Error ? err.message : 'Test failed' });
+      if (environmentId) await loadConnected(environmentId);
+    }
+  };
+
+  const handleDisconnect = async (integrationId: string, displayName: string) => {
+    if (!confirm(`Disconnect ${displayName}? The credential will be wiped.`)) return;
+    try {
+      const res = await fetch(`/api/integrations/${integrationId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Disconnect failed');
+      setToast({ kind: 'ok', text: 'Disconnected' });
+      if (environmentId) await loadConnected(environmentId);
+    } catch (err) {
+      setToast({ kind: 'err', text: err instanceof Error ? err.message : 'Failed' });
+    }
+  };
+
+  const connectedProviderIds = new Set(connected.map(c => c.provider));
+
   return (
     <div className="px-12 py-12 min-h-screen">
-      <div className="max-w-5xl">
+      <div className="max-w-6xl">
         {/* Header */}
-        <div className="mb-10 animate-fade-in">
-          <h1 className="text-2xl font-extralight tracking-tight mb-1">Integrations</h1>
-          <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-            {INTEGRATIONS.filter(i => i.connected).length} connected · {INTEGRATIONS.length} available
-          </p>
+        <div className="mb-8 animate-fade-in flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-extralight tracking-tight mb-1">Integrations</h1>
+            <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
+              {connected.length} connected · {providers.filter(p => p.implemented).length} available
+            </p>
+          </div>
+          {environments.length > 0 && (
+            <select
+              value={environmentId ?? ''}
+              onChange={e => setEnvironmentId(e.target.value)}
+              className="glass-input px-3 py-2 text-sm"
+            >
+              {environments.map(e => (
+                <option key={e.id} value={e.id}>{e.name}</option>
+              ))}
+            </select>
+          )}
         </div>
 
-        {/* Search + Categories */}
-        <div className="flex items-center gap-4 mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        {/* Toast */}
+        {toast && (
+          <div
+            className="mb-6 px-4 py-3 text-sm rounded-lg animate-fade-in"
+            style={{
+              background: toast.kind === 'ok' ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)',
+              color: toast.kind === 'ok' ? '#34d399' : '#f87171',
+              border: `1px solid ${toast.kind === 'ok' ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
+            }}
+          >
+            {toast.text}
+            <button onClick={() => setToast(null)} className="ml-3 opacity-60 hover:opacity-100">×</button>
+          </div>
+        )}
+
+        {/* Connected section */}
+        {connected.length > 0 && (
+          <section className="mb-10 animate-fade-in">
+            <h2 className="text-xs uppercase tracking-wider mb-4" style={{ color: 'var(--text-3)' }}>
+              Connected
+            </h2>
+            <div className="grid grid-cols-1 gap-2">
+              {connected.map(int => {
+                const prov = providers.find(p => p.id === int.provider);
+                const statusColor =
+                  int.status === 'ACTIVE' ? '#34d399' :
+                  int.status === 'ERROR' ? '#f87171' :
+                  '#fbbf24';
+                return (
+                  <div key={int.id} className="chrome p-4 flex items-center gap-4">
+                    <div
+                      className="chrome-squircle w-10 h-10 flex items-center justify-center text-lg shrink-0"
+                      style={{ color: prov?.accentColor ?? 'var(--text-2)' }}
+                    >
+                      {prov?.glyph ?? '◎'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-light" style={{ color: 'var(--text-1)' }}>
+                          {int.displayName}
+                        </span>
+                        <span
+                          className="inline-block w-1.5 h-1.5 rounded-full"
+                          style={{ background: statusColor }}
+                        />
+                        <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
+                          {int.status}
+                        </span>
+                      </div>
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
+                        {int.credentialsPreview}
+                        {int.accountLabel && ` · ${int.accountLabel}`}
+                        {int.lastSyncedAt && ` · last checked ${new Date(int.lastSyncedAt).toLocaleString()}`}
+                      </div>
+                      {int.lastError && (
+                        <div className="text-xs mt-1" style={{ color: '#f87171' }}>
+                          {int.lastError}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleTest(int.id)}
+                        className="chrome-pill px-3 py-1.5 text-xs font-light"
+                        style={{ color: 'var(--text-2)' }}
+                      >
+                        Test
+                      </button>
+                      <button
+                        onClick={() => handleDisconnect(int.id, int.displayName)}
+                        className="chrome-pill px-3 py-1.5 text-xs font-light"
+                        style={{ color: 'var(--text-3)' }}
+                      >
+                        Disconnect
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Filter bar */}
+        <div className="flex items-center gap-4 mb-6 animate-fade-in">
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="glass-input px-4 py-2.5 text-sm w-64"
-            placeholder="Search integrations..."
+            placeholder="Search providers..."
           />
           <div className="flex items-center gap-1.5 overflow-x-auto">
-            {CATEGORIES.map(cat => (
+            <button
+              onClick={() => setCategory('all')}
+              className="chrome-pill px-3 py-1.5 text-xs font-light whitespace-nowrap"
+              style={{
+                color: category === 'all' ? 'var(--text-1)' : 'var(--text-3)',
+                background: category === 'all' ? 'var(--glass-active)' : undefined,
+              }}
+            >
+              All
+            </button>
+            {categories.map(cat => (
               <button
-                key={cat}
-                onClick={() => setCategory(cat)}
+                key={cat.id}
+                onClick={() => setCategory(cat.id)}
                 className="chrome-pill px-3 py-1.5 text-xs font-light whitespace-nowrap"
                 style={{
-                  color: category === cat ? 'var(--text-1)' : 'var(--text-3)',
-                  background: category === cat ? 'var(--glass-active)' : undefined,
+                  color: category === cat.id ? 'var(--text-1)' : 'var(--text-3)',
+                  background: category === cat.id ? 'var(--glass-active)' : undefined,
                 }}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Integration Grid */}
-        <div className="grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.15s' }}>
-          {filtered.map(integration => (
-            <div
-              key={integration.id}
-              className="chrome p-6 flex flex-col items-center text-center group cursor-pointer"
-            >
-              {/* Icon — chrome squircle */}
+        {/* Provider grid */}
+        <h2 className="text-xs uppercase tracking-wider mb-4" style={{ color: 'var(--text-3)' }}>
+          Available
+        </h2>
+        <div className="grid grid-cols-3 gap-4 animate-fade-in">
+          {filtered.map(prov => {
+            const alreadyConnected = connectedProviderIds.has(prov.id);
+            const disabled = !prov.implemented || !prov.envReady;
+            return (
               <div
-                className="chrome-squircle w-16 h-16 flex items-center justify-center mb-4"
-                style={{ color: 'var(--text-2)' }}
+                key={prov.id}
+                className="chrome p-6 flex flex-col items-center text-center relative cursor-pointer transition-all duration-200 hover:scale-[1.02]"
+                style={{ opacity: disabled ? 0.7 : 1 }}
+                onClick={() => setConfigModal(prov)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfigModal(prov); } }}
               >
-                <div className="w-7 h-7">
-                  {integration.icon}
-                </div>
-              </div>
-
-              {/* Name */}
-              <h3 className="text-sm font-light mb-1 group-hover:text-[var(--text-1)] transition-colors"
-                style={{ color: 'var(--text-2)' }}>
-                {integration.name}
-              </h3>
-
-              {/* Description */}
-              <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
-                {integration.description}
-              </p>
-
-              {/* Connect button */}
-              {integration.connected ? (
                 <div
-                  className="chrome-pill px-5 py-2 text-xs font-light mt-auto flex items-center gap-2"
-                  style={{
-                    color: '#34d399',
-                    background: 'rgba(52, 211, 153, 0.08)',
-                    borderColor: 'rgba(52, 211, 153, 0.15)',
-                  }}
+                  className="chrome-squircle w-16 h-16 flex items-center justify-center mb-4 text-2xl"
+                  style={{ color: prov.accentColor }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                  Connected
+                  {prov.glyph}
                 </div>
-              ) : (
-                <button
-                  className="chrome-pill px-5 py-2 text-xs font-light mt-auto"
-                  style={{ color: 'var(--text-2)' }}
-                >
-                  Connect
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Custom integration */}
-        <div className="mt-8 glass-panel p-8 text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <div className="chrome-circle w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-3)' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-              <path strokeLinecap="round" d="M12 5v14M5 12h14" />
-            </svg>
-          </div>
-          <h3 className="text-sm font-light mb-1">Custom Integration</h3>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
-            Use the GRID API to build your own integration
-          </p>
-          <button className="chrome-pill px-5 py-2 text-xs font-light" style={{ color: 'var(--text-2)' }}>
-            View API docs
-          </button>
+                <h3 className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
+                  {prov.name}
+                </h3>
+                <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>
+                  {prov.tagline}
+                </p>
+                <p className="text-[10px] uppercase tracking-wider mb-4" style={{ color: 'var(--text-3)' }}>
+                  {prov.categoryLabel} · {prov.authType === 'oauth' ? 'OAuth' : 'API key'}
+                </p>
+                {alreadyConnected ? (
+                  <div
+                    className="chrome-pill px-5 py-2 text-xs font-light mt-auto flex items-center gap-2"
+                    style={{
+                      color: '#34d399',
+                      background: 'rgba(52,211,153,0.08)',
+                      borderColor: 'rgba(52,211,153,0.15)',
+                    }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                    Connected
+                  </div>
+                ) : (
+                  <span
+                    className="chrome-pill px-5 py-2 text-xs font-light mt-auto"
+                    style={{ color: 'var(--text-2)' }}
+                  >
+                    Connect &rarr;
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
+
+      {/* Integration config modal */}
+      {configModal && (
+        <IntegrationConfigModal
+          open={!!configModal}
+          onClose={() => setConfigModal(null)}
+          integration={configModal}
+          isConnected={connectedProviderIds.has(configModal.id)}
+          onToast={setToast}
+        />
+      )}
+
+      {/* API key connect modal */}
+      {connectModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={e => {
+            if (e.target === e.currentTarget && !submitting) setConnectModal(null);
+          }}
+        >
+          <div className="chrome p-8 max-w-md w-full">
+            <div className="flex items-center gap-3 mb-6">
+              <div
+                className="chrome-squircle w-12 h-12 flex items-center justify-center text-xl"
+                style={{ color: connectModal.accentColor }}
+              >
+                {connectModal.glyph}
+              </div>
+              <div>
+                <h2 className="text-lg font-light">Connect {connectModal.name}</h2>
+                <p className="text-xs" style={{ color: 'var(--text-3)' }}>{connectModal.tagline}</p>
+              </div>
+            </div>
+            <div className="space-y-4 mb-6">
+              {connectModal.apiKeyFields?.map(field => (
+                <div key={field.name}>
+                  <label className="block text-xs mb-1.5" style={{ color: 'var(--text-2)' }}>
+                    {field.label}
+                  </label>
+                  <input
+                    type={field.type}
+                    value={formValues[field.name] ?? ''}
+                    onChange={e => setFormValues(v => ({ ...v, [field.name]: e.target.value }))}
+                    placeholder={field.placeholder}
+                    className="glass-input w-full px-3 py-2 text-sm font-mono"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  {field.helper && (
+                    <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-3)' }}>
+                      {field.helper}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setConnectModal(null)}
+                disabled={submitting}
+                className="chrome-pill px-4 py-2 text-xs font-light"
+                style={{ color: 'var(--text-3)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitApiKey}
+                disabled={submitting}
+                className="chrome-pill px-4 py-2 text-xs font-light"
+                style={{ color: 'var(--text-1)', background: 'var(--glass-active)' }}
+              >
+                {submitting ? 'Validating...' : 'Connect'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

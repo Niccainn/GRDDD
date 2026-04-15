@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsWorkflow } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -8,6 +9,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsWorkflow(id, identity.id);
   const versions = await prisma.workflowVersion.findMany({
     where: { workflowId: id },
     orderBy: { version: 'desc' },
@@ -28,6 +30,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsWorkflow(id, identity.id);
   const workflow = await prisma.workflow.findUnique({
     where: { id },
     select: { stages: true, nodes: true, edges: true },

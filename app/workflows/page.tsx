@@ -1,8 +1,16 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+
+const AUTONOMY_LEVELS = [
+  { name: 'Observe', color: 'rgba(255,255,255,0.35)' },
+  { name: 'Suggest', color: '#6395ff' },
+  { name: 'Act & Notify', color: '#15AD70' },
+  { name: 'Autonomous', color: '#a878ff' },
+  { name: 'Self-Direct', color: '#F7C700' },
+];
 
 const STATUS_COLOR: Record<string, string> = {
   ACTIVE: '#15AD70',
@@ -48,7 +56,24 @@ function timeAgo(iso: string) {
 }
 
 export default function WorkflowsPage() {
+  return (
+    <Suspense fallback={
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-32 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
+          ))}
+        </div>
+      </div>
+    }>
+      <WorkflowsContent />
+    </Suspense>
+  );
+}
+
+function WorkflowsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [systems, setSystems] = useState<System[]>([]);
@@ -56,7 +81,7 @@ export default function WorkflowsPage() {
   const [loaded, setLoaded] = useState(false);
 
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get('status') ?? '');
   const [systemFilter, setSystemFilter] = useState('');
 
   // Create form state
@@ -66,6 +91,12 @@ export default function WorkflowsPage() {
   const [createSystemId, setCreateSystemId] = useState('');
   const [createEnvId, setCreateEnvId] = useState('');
   const [creating, setCreating] = useState(false);
+
+  // Integration awareness for workflow creation
+  const [envIntegrations, setEnvIntegrations] = useState<{ id: string; provider: string; displayName: string; status: string }[]>([]);
+
+  // Autonomy levels per workflow
+  const [autonomyLevels, setAutonomyLevels] = useState<Record<string, number>>({});
 
   useEffect(() => {
     Promise.all([
@@ -82,6 +113,43 @@ export default function WorkflowsPage() {
       setLoaded(true);
     });
   }, []);
+
+  // Load autonomy levels for workflows
+  useEffect(() => {
+    if (!environments.length) return;
+    const envId = environments[0]?.id;
+    if (!envId) return;
+    fetch(`/api/autonomy?environmentId=${envId}&scopeType=workflow`)
+      .then(r => r.ok ? r.json() : [])
+      .then((configs: { scopeId: string; level: number }[]) => {
+        if (!Array.isArray(configs)) return;
+        const map: Record<string, number> = {};
+        for (const c of configs) map[c.scopeId] = c.level;
+        setAutonomyLevels(map);
+      })
+      .catch(() => {});
+  }, [environments]);
+
+  // Load integrations when environment changes
+  useEffect(() => {
+    if (!createEnvId) return;
+    fetch(`/api/integrations?environmentId=${createEnvId}`)
+      .then(r => r.ok ? r.json() : { integrations: [] })
+      .then(d => setEnvIntegrations(d.integrations ?? []))
+      .catch(() => setEnvIntegrations([]));
+  }, [createEnvId]);
+
+  // Sync status filter to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (statusFilter) {
+      params.set('status', statusFilter);
+    } else {
+      params.delete('status');
+    }
+    const qs = params.toString();
+    router.replace(qs ? `?${qs}` : '/workflows', { scroll: false });
+  }, [statusFilter, router, searchParams]);
 
   const filtered = workflows.filter(w => {
     if (statusFilter && w.status !== statusFilter) return false;
@@ -127,11 +195,11 @@ export default function WorkflowsPage() {
   const STATUSES = ['ACTIVE', 'DRAFT', 'PAUSED', 'COMPLETED', 'ARCHIVED'];
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-extralight tracking-tight mb-1">Workflows</h1>
+          <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Workflows</h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded ? `${filtered.length} of ${workflows.length} workflow${workflows.length !== 1 ? 's' : ''}` : 'Loading···'}
           </p>
@@ -184,6 +252,26 @@ export default function WorkflowsPage() {
           </button>
           <button type="button" onClick={() => setShowCreate(false)}
             className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.25)' }}>Cancel</button>
+
+          {/* Connected integrations for this environment */}
+          {envIntegrations.length > 0 && (
+            <div className="flex items-center gap-2 ml-2 pl-3" style={{ borderLeft: '1px solid var(--glass-border)' }}>
+              <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>Available:</span>
+              {envIntegrations.map(int => (
+                <span key={int.id} className="text-[10px] px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(21,173,112,0.06)', border: '1px solid rgba(21,173,112,0.15)', color: 'rgba(21,173,112,0.7)' }}>
+                  {int.provider.replace(/_/g, ' ')}
+                </span>
+              ))}
+            </div>
+          )}
+          {envIntegrations.length === 0 && createEnvId && (
+            <Link href={`/integrations?environmentId=${createEnvId}`}
+              className="text-[10px] font-light ml-2 pl-3 transition-colors"
+              style={{ borderLeft: '1px solid var(--glass-border)', color: 'var(--text-3)' }}>
+              + Connect integrations
+            </Link>
+          )}
         </form>
       )}
 
@@ -209,7 +297,7 @@ export default function WorkflowsPage() {
                 className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.25)' }}>Close</button>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {templates.map(t => (
               <button key={t.id} onClick={() => handleTemplateCreate(t)} disabled={creating || !createSystemId}
                 className="text-left p-4 rounded-xl transition-all group disabled:opacity-40"
@@ -246,14 +334,23 @@ export default function WorkflowsPage() {
         <div className="flex items-center gap-3 mb-6">
           {/* Search */}
           <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2" width="11" height="11" viewBox="0 0 12 12" fill="none">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="11" height="11" viewBox="0 0 12 12" fill="none">
               <circle cx="5" cy="5" r="3.5" stroke="rgba(255,255,255,0.25)" strokeWidth="1.2"/>
               <path d="M8 8l2.5 2.5" stroke="rgba(255,255,255,0.25)" strokeWidth="1.2" strokeLinecap="round"/>
             </svg>
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search workflows···"
-              className="text-sm font-light pl-8 pr-4 py-2 rounded-lg focus:outline-none"
-              style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'white', width: '200px' }} />
+              className="glass-input text-sm font-light pl-8 pr-8 py-2 rounded-lg focus:outline-none"
+              style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'var(--text-1)', width: '220px' }} />
+            {search && (
+              <button onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-4 h-4 rounded-full transition-colors"
+                style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-3)' }}>
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                  <path d="M1 1l6 6M7 1l-6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* Status pills */}
@@ -285,15 +382,21 @@ export default function WorkflowsPage() {
 
       {/* Content */}
       {!loaded ? (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-32 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
           ))}
         </div>
       ) : systems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No systems yet</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Workflows operate within systems</p>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <svg width="18" height="18" viewBox="0 0 15 15" fill="none"><circle cx="3" cy="3" r="1.75" stroke="rgba(255,255,255,0.5)" strokeWidth="1.1"/><circle cx="12" cy="7.5" r="1.75" stroke="rgba(255,255,255,0.5)" strokeWidth="1.1"/><circle cx="3" cy="12" r="1.75" stroke="rgba(255,255,255,0.5)" strokeWidth="1.1"/><path d="M4.75 3H8C9.1 3 10 3.9 10 5v1" stroke="rgba(255,255,255,0.5)" strokeWidth="1.1" strokeLinecap="round"/><path d="M4.75 12H8C9.1 12 10 11.1 10 10V9" stroke="rgba(255,255,255,0.5)" strokeWidth="1.1" strokeLinecap="round"/></svg>
+          </div>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>Create a system first</p>
+          <p className="text-xs mb-4 max-w-xs text-center leading-relaxed" style={{ color: 'var(--text-3)' }}>
+            Workflows are automated processes that run inside systems. Create a system (like &quot;Marketing&quot; or &quot;Operations&quot;) to start building workflows.
+          </p>
           <Link href="/systems" className="text-xs font-light px-4 py-2 rounded-lg"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
             Create a system →
@@ -316,7 +419,7 @@ export default function WorkflowsPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {filtered.map(w => (
             <div key={w.id} className="group flex flex-col rounded-xl transition-all"
               style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
@@ -356,6 +459,21 @@ export default function WorkflowsPage() {
                 style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                 <span className="text-xs truncate min-w-0 flex-shrink" style={{ color: 'var(--text-3)' }}>{w.systemName}</span>
                 <div className="flex items-center gap-3 flex-shrink-0">
+                  {autonomyLevels[w.id] !== undefined && (() => {
+                    const lvl = AUTONOMY_LEVELS[autonomyLevels[w.id]];
+                    return lvl ? (
+                      <span title={`Autonomy: ${lvl.name}`}
+                        className="flex items-center gap-1"
+                        style={{ cursor: 'default' }}>
+                        <span style={{
+                          width: 5, height: 5, borderRadius: '50%',
+                          backgroundColor: lvl.color,
+                          boxShadow: `0 0 6px ${lvl.color}50`,
+                          display: 'inline-block',
+                        }} />
+                      </span>
+                    ) : null;
+                  })()}
                   {w.executions > 0 && (
                     <span className="text-xs whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.2)' }}>{w.executions} {w.executions === 1 ? 'run' : 'runs'}</span>
                   )}

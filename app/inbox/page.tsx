@@ -160,13 +160,13 @@ export default function InboxPage() {
   );
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-extralight tracking-tight mb-1">Inbox</h1>
+          <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Inbox</h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-            Signals and incoming work · {unreadCount > 0 ? `${unreadCount} unread` : 'all clear'}
+            Incoming updates and notifications · {unreadCount > 0 ? `${unreadCount} unread` : 'all clear'}
           </p>
         </div>
         <button onClick={() => setShowCreate(v => !v)}
@@ -197,7 +197,7 @@ export default function InboxPage() {
             className="w-full text-sm font-light px-3 py-2 rounded-lg focus:outline-none resize-none"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.65)' }}
           />
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <div>
               <label className="text-xs mb-1 block" style={{ color: 'var(--text-3)' }}>Priority</label>
               <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
@@ -279,14 +279,18 @@ export default function InboxPage() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center py-24 rounded-xl"
           style={{ border: '1px dashed var(--glass-border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No signals</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
-            Signals arrive here from API, webhooks, email, or manual entry
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+            style={{ background: 'rgba(191,159,241,0.08)', border: '1px solid rgba(191,159,241,0.15)' }}>
+            <svg width="18" height="18" viewBox="0 0 15 15" fill="none"><path d="M1.5 4.5C1.5 3.95 1.95 3.5 2.5 3.5H12.5C13.05 3.5 13.5 3.95 13.5 4.5V10.5C13.5 11.05 13.05 11.5 12.5 11.5H2.5C1.95 11.5 1.5 11.05 1.5 10.5V4.5Z" stroke="#BF9FF1" strokeWidth="1.1"/><path d="M1.5 5L7.5 8.5L13.5 5" stroke="#BF9FF1" strokeWidth="1.1" strokeLinecap="round"/></svg>
+          </div>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>Your inbox is clear</p>
+          <p className="text-xs mb-4 max-w-xs text-center leading-relaxed" style={{ color: 'var(--text-3)' }}>
+            Incoming signals appear here — from connected integrations, scheduled automations, or manual entries. Nova can auto-triage them for you.
           </p>
           <button onClick={() => setShowCreate(true)}
             className="text-xs font-light px-4 py-2 rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
-            + Add the first signal
+            style={{ background: 'rgba(191,159,241,0.08)', border: '1px solid rgba(191,159,241,0.15)', color: '#BF9FF1' }}>
+            + Create a signal
           </button>
         </div>
       ) : (

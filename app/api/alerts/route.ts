@@ -8,12 +8,16 @@ export async function GET() {
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const [systems, runningExecutions, stalledWorkflows] = await Promise.all([
     prisma.system.findMany({
-      where: { healthScore: { not: null } },
+      where: {
+        environment: { ownerId: identity.id, deletedAt: null },
+        healthScore: { not: null },
+      },
       include: { systemState: true },
       orderBy: { updatedAt: 'desc' },
     }),
     prisma.execution.findMany({
       where: {
+        system: { environment: { ownerId: identity.id, deletedAt: null } },
         status: 'RUNNING',
         createdAt: { lt: new Date(Date.now() - 30 * 60 * 1000) }, // > 30 min old
       },
@@ -25,7 +29,10 @@ export async function GET() {
       take: 10,
     }),
     prisma.workflow.findMany({
-      where: { status: 'PAUSED' },
+      where: {
+        environment: { ownerId: identity.id, deletedAt: null },
+        status: 'PAUSED',
+      },
       include: { system: { select: { id: true, name: true } } },
       orderBy: { updatedAt: 'asc' },
       take: 10,

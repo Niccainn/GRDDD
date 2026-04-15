@@ -1,8 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import GlobalNovaBar from '@/components/GlobalNovaBar';
+import CrossDomainInsights from '@/components/CrossDomainInsights';
+import WelcomeBanner from '@/components/WelcomeBanner';
+import SampleDataBanner from '@/components/SampleDataBanner';
+import ActivitySummary from '@/components/ActivitySummary';
+import OnlineIndicator from '@/components/OnlineIndicator';
+import { useOnboarding } from '@/lib/use-onboarding';
 
 type SystemData = {
   id: string;
@@ -82,6 +88,12 @@ export default function OperatePage() {
   const [avgHealth, setAvgHealth] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [feedTab, setFeedTab] = useState<'activity' | 'runs'>('runs');
+  const [novaInitialQuery, setNovaInitialQuery] = useState<string | undefined>();
+  const { complete: onboardingComplete } = useOnboarding();
+
+  const handleWelcomePrompt = useCallback((query: string) => {
+    setNovaInitialQuery(query);
+  }, []);
 
   useEffect(() => {
     fetch('/api/operate-data')
@@ -125,19 +137,40 @@ export default function OperatePage() {
   }
 
   const driftSystems = systems.filter(s => s.healthScore !== null && s.healthScore < 70);
+  const stalledCount = wfStats?.stalled?.length ?? 0;
+  const failedRuns = executions.filter(e => e.status === 'FAILED').length;
+
+  // Build a human-readable status line
+  function getStatusLine() {
+    if (!loaded) return 'Loading···';
+    const parts: string[] = [];
+    if (driftSystems.length > 0) parts.push(`${driftSystems.length} system${driftSystems.length > 1 ? 's' : ''} need${driftSystems.length === 1 ? 's' : ''} attention`);
+    if (stalledCount > 0) parts.push(`${stalledCount} stalled workflow${stalledCount > 1 ? 's' : ''}`);
+    if (failedRuns > 0) parts.push(`${failedRuns} failed run${failedRuns > 1 ? 's' : ''}`);
+    if (parts.length === 0) return 'Everything is running smoothly.';
+    return parts.join(' · ');
+  }
+
+  function getGreeting() {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="stat-number tracking-tight mb-1">Operate</h1>
+          <h1 className="stat-number tracking-tight mb-1">{getGreeting()}</h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-            {loaded ? `${systems.length} system${systems.length !== 1 ? 's' : ''} · ${wfStats?.active ?? 0} active workflow${(wfStats?.active ?? 0) !== 1 ? 's' : ''}` : 'Loading···'}
+            {getStatusLine()}
           </p>
         </div>
         {loaded && (
           <div className="flex items-center gap-2">
+            <OnlineIndicator />
             {driftSystems.length > 0 ? (
               <Link href="/systems" className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-full transition-all"
                 style={{ background: 'rgba(247,199,0,0.08)', border: '1px solid rgba(247,199,0,0.2)', color: '#F7C700' }}>
@@ -155,15 +188,49 @@ export default function OperatePage() {
         )}
       </div>
 
+      {/* Welcome banner — shown once after onboarding */}
+      <WelcomeBanner onPromptClick={handleWelcomePrompt} />
+      <SampleDataBanner />
+
+      {/* Onboarding incomplete nudge */}
+      {onboardingComplete === false && (
+        <Link
+          href="/onboarding"
+          className="flex items-center gap-3 rounded-xl px-5 py-3.5 mb-6 transition-all group"
+          style={{
+            background: 'linear-gradient(135deg, rgba(113,147,237,0.06), rgba(191,159,241,0.04))',
+            border: '1px solid rgba(191,159,241,0.15)',
+          }}
+        >
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.2)' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(191,159,241,0.7)" strokeWidth="1.8">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-light" style={{ color: 'var(--text-2)' }}>Complete your setup</p>
+            <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+              Finish onboarding to get the most out of GRID
+            </p>
+          </div>
+          <span className="text-xs font-light transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>
+            Continue
+          </span>
+        </Link>
+      )}
+
       {/* Global Nova bar */}
-      <GlobalNovaBar />
+      <div data-tour="nova-bar">
+        <GlobalNovaBar initialQuery={novaInitialQuery} />
+      </div>
 
       {/* Stat bar with sparklines */}
       {loaded && (
-        <div className="grid grid-cols-4 gap-3 mb-8">
+        <div data-tour="stat-bar" className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <Link href="/systems" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Avg Health</p>
+              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Overall Health</p>
               <Sparkline data={avgHealth !== null ? [avgHealth - 12, avgHealth - 8, avgHealth - 5, avgHealth - 9, avgHealth - 3, avgHealth - 1, avgHealth] : []} color={healthColor(avgHealth)} />
             </div>
             <p className="stat-number" style={{ color: healthColor(avgHealth) }}>
@@ -172,13 +239,13 @@ export default function OperatePage() {
           </Link>
           <Link href="/workflows" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Active Workflows</p>
+              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Automations Running</p>
             </div>
             <p className="stat-number" style={{ color: '#15AD70' }}>{wfStats?.active ?? 0}</p>
           </Link>
           <Link href="/executions" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Total Runs</p>
+              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Tasks Completed</p>
               <Sparkline data={(() => { const b = Array.from({ length: 7 }, () => 0); const now = Date.now(); executions.forEach(ex => { const d = 6 - Math.min(Math.floor((now - new Date(ex.createdAt).getTime()) / 86400000), 6); b[d]++; }); return b; })()} color="rgba(255,255,255,0.5)" />
             </div>
             <p className="stat-number" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -187,18 +254,21 @@ export default function OperatePage() {
           </Link>
           <Link href="/workflows" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Stalled</p>
+              <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Needs Attention</p>
             </div>
-            <p className="stat-number" style={{ color: wfStats?.paused ? '#F7C700' : 'rgba(255,255,255,0.2)' }}>
+            <p className="stat-number" style={{ color: (wfStats?.paused ?? 0) > 0 ? '#F7C700' : 'rgba(255,255,255,0.2)' }}>
               {wfStats?.paused ?? 0}
             </p>
           </Link>
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-6">
+      {/* Cross-Domain Intelligence */}
+      {loaded && <CrossDomainInsights className="mb-8" />}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Systems panel */}
-        <div className="col-span-1">
+        <div data-tour="systems-panel" className="col-span-1">
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>SYSTEMS</p>
             <Link href="/systems" className="text-xs font-light transition-colors"
@@ -261,7 +331,7 @@ export default function OperatePage() {
           {/* Quick links */}
           {loaded && (
             <div className="mt-6 space-y-1.5">
-              <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>QUICK ACCESS</p>
+              <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>JUMP TO</p>
               {[
                 { label: 'Inbox', href: '/inbox', icon: '✉' },
                 { label: 'Reports', href: '/reports', icon: '⊡' },
@@ -279,10 +349,15 @@ export default function OperatePage() {
               ))}
             </div>
           )}
+
+          {/* Activity summary */}
+          <div className="mt-6">
+            <ActivitySummary />
+          </div>
         </div>
 
         {/* Activity / Runs feed */}
-        <div className="col-span-2">
+        <div className="col-span-1 md:col-span-2">
           {/* Tab switcher */}
           <div className="flex items-center gap-1 mb-4">
             {(['runs', 'activity'] as const).map(tab => (
@@ -293,7 +368,7 @@ export default function OperatePage() {
                   border: `1px solid ${feedTab === tab ? 'rgba(255,255,255,0.15)' : 'transparent'}`,
                   color: feedTab === tab ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)',
                 }}>
-                {tab === 'runs' ? `Runs${executions.length > 0 ? ` (${executions.length})` : ''}` : `Nova Activity${activity.length > 0 ? ` (${activity.length})` : ''}`}
+                {tab === 'runs' ? `Recent Work${executions.length > 0 ? ` (${executions.length})` : ''}` : `AI Activity${activity.length > 0 ? ` (${activity.length})` : ''}`}
               </button>
             ))}
             <Link href={feedTab === 'runs' ? '/executions' : '/nova'}
@@ -415,11 +490,7 @@ export default function OperatePage() {
                         {item.response.replace(/[#*`]/g, '').slice(0, 200)}
                       </p>
                     )}
-                    {item.tokens && (
-                      <p className="text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.1)' }}>
-                        {item.tokens.toLocaleString()} tokens
-                      </p>
-                    )}
+                    {/* Token count hidden — not meaningful to humans */}
                   </div>
                 ))}
               </div>

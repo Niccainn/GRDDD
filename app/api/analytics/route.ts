@@ -14,6 +14,7 @@ export async function GET(_req: NextRequest) {
   // ── Nova logs for the last 30 days ─────────────────────────────────────────
   const novaLogs = await prisma.intelligenceLog.findMany({
     where: {
+      intelligence: { environment: { ownerId: identity.id, deletedAt: null } },
       createdAt: { gte: thirtyDaysAgo },
       action: 'nova_query',
     },
@@ -30,7 +31,10 @@ export async function GET(_req: NextRequest) {
 
   // ── Execution stats for last 30 days ───────────────────────────────────────
   const executions = await prisma.execution.findMany({
-    where: { createdAt: { gte: thirtyDaysAgo } },
+    where: {
+      system: { environment: { ownerId: identity.id, deletedAt: null } },
+      createdAt: { gte: thirtyDaysAgo },
+    },
     select: {
       createdAt: true,
       status: true,
@@ -42,7 +46,11 @@ export async function GET(_req: NextRequest) {
   // ── Token usage by system (all time) ──────────────────────────────────────
   const bySystemRaw = await prisma.intelligenceLog.groupBy({
     by: ['systemId'],
-    where: { action: 'nova_query', tokens: { not: null } },
+    where: {
+      intelligence: { environment: { ownerId: identity.id, deletedAt: null } },
+      action: 'nova_query',
+      tokens: { not: null },
+    },
     _sum: { tokens: true, cost: true },
     _count: true,
     orderBy: { _sum: { tokens: 'desc' } },
@@ -52,7 +60,10 @@ export async function GET(_req: NextRequest) {
   const systemNames: Record<string, { name: string; color: string | null }> = {};
   if (bySystemRaw.length > 0) {
     const systems = await prisma.system.findMany({
-      where: { id: { in: bySystemRaw.map(s => s.systemId).filter(Boolean) as string[] } },
+      where: {
+        environment: { ownerId: identity.id, deletedAt: null },
+        id: { in: bySystemRaw.map(s => s.systemId).filter(Boolean) as string[] },
+      },
       select: { id: true, name: true, color: true },
     });
     systems.forEach(s => { systemNames[s.id] = { name: s.name, color: s.color }; });

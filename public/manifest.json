@@ -1,0 +1,12 @@
+{
+  "name": "GRID",
+  "short_name": "GRID",
+  "description": "AI-powered workspace OS",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#08080c",
+  "theme_color": "#15AD70",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" }
+  ]
+}

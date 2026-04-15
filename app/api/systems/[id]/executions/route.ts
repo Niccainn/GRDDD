@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsSystem } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -7,7 +8,11 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsSystem(id, identity.id);
 
   // Get executions for the last 14 days grouped by day
   const since = new Date();

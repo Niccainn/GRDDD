@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsWorkflow } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -9,6 +10,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsWorkflow(id, identity.id);
 
   const source = await prisma.workflow.findUnique({ where: { id } });
   if (!source) return Response.json({ error: 'Not found' }, { status: 404 });

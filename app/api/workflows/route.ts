@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsEnvironment, assertOwnsSystem } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -14,6 +15,8 @@ export async function POST(req: NextRequest) {
   }
   if (!identity) {
   }
+  await assertOwnsEnvironment(environmentId, identity.id);
+  await assertOwnsSystem(systemId, identity.id);
   const env = await prisma.environment.findUnique({ where: { id: environmentId }, select: { name: true } });
   const workflow = await prisma.workflow.create({
     data: { name, status: 'DRAFT', systemId, environmentId, creatorId: identity.id, stages: JSON.stringify([]) },
@@ -42,6 +45,7 @@ export async function GET(req: NextRequest) {
 
   const workflows = await prisma.workflow.findMany({
     where: {
+      environment: { ownerId: identity.id, deletedAt: null },
       ...(status ? { status } : {}),
       ...(systemId ? { systemId } : {}),
       ...(search
@@ -66,7 +70,7 @@ export async function GET(req: NextRequest) {
     name: w.name,
     description: w.description,
     status: w.status,
-    stages: (() => { try { return JSON.parse(w.stages ?? '[]'); } catch { return []; } })(),
+    stages: (() => { try { const parsed = JSON.parse(w.stages ?? '[]'); return parsed.map((s: unknown) => typeof s === 'string' ? s : (s as { name?: string }).name ?? ''); } catch { return []; } })(),
     systemId: w.systemId,
     systemName: w.system.name,
     environmentName: w.environment.name,

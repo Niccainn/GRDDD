@@ -1,379 +1,336 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/Toast';
+import AutonomyConfig from '@/components/AutonomyConfig';
 
-type Settings = {
-  identity: { id: string; name: string; email: string; type: string } | null;
-  stats: {
-    environments: number;
-    systems: number;
-    workflows: number;
-    novaInteractions: number;
-    totalTokens: number;
-  };
-  apiKeyConfigured: boolean;
+type Profile = {
+  id: string;
+  name: string;
+  email: string | null;
+  type: string;
+  avatar: string | null;
+  createdAt: string;
 };
 
-type ThemeMode = 'dark' | 'light' | 'system';
-type Density = 'comfortable' | 'compact';
-type SidebarMode = 'visible' | 'hover';
-
-const SETTINGS_NAV = [
-  { id: 'profile', label: 'Profile', icon: '○' },
-  { id: 'appearance', label: 'Appearance', icon: '◑', dot: true },
-  { id: 'notifications', label: 'Notifications', icon: '⌁' },
-  { id: 'workspace', label: 'Workspace', icon: '■' },
-  { id: 'team', label: 'Team', icon: '○' },
-  { id: 'billing', label: 'Billing', icon: '+' },
-  { id: 'api', label: 'API & Keys', icon: '⌐' },
-  { id: 'security', label: 'Security', icon: '◈' },
-  { id: 'admin', label: 'Admin', icon: '⚡' },
-];
-
-const QUICK_LINKS = [
-  { label: 'Appearance & branding', href: '?tab=appearance' },
-  { label: 'Team members', href: '/settings/team' },
-  { label: 'API keys', href: '/settings/api-keys' },
-  { label: 'Webhooks', href: '/settings/webhooks' },
-];
-
-export default function SettingsPage() {
-  const { user } = useAuth();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const activeTab = searchParams.get('tab') ?? 'appearance';
-
-  const [settings, setSettings] = useState<Settings | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editingName, setEditingName] = useState(false);
+export default function ProfilePage() {
+  const { user, refresh } = useAuth();
+  const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
-
-  const [theme, setThemeState] = useState<ThemeMode>('dark');
-  const [density, setDensity] = useState<Density>('comfortable');
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>('visible');
+  const [tab, setTab] = useState<'profile' | 'autonomy'>('profile');
+  const [environmentId, setEnvironmentId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/settings').then(r => r.json()).then(data => {
-      setSettings(data);
-      setEditName(data.identity?.name ?? '');
-    });
-    const storedTheme = localStorage.getItem('grid-theme') as ThemeMode | null;
-    const storedDensity = localStorage.getItem('grid-density') as Density | null;
-    const storedSidebar = localStorage.getItem('grid-sidebar') as SidebarMode | null;
-    if (storedTheme) setThemeState(storedTheme);
-    if (storedDensity) setDensity(storedDensity);
-    if (storedSidebar) setSidebarMode(storedSidebar);
+    fetch('/api/settings/profile')
+      .then((r) => r.json())
+      .then((data) => {
+        setProfile(data);
+        setName(data.name ?? '');
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+    // Fetch first environment for autonomy config
+    fetch('/api/environments')
+      .then((r) => r.json())
+      .then((envs) => {
+        if (Array.isArray(envs) && envs.length > 0) setEnvironmentId(envs[0].id);
+      })
+      .catch(() => {});
   }, []);
 
-  function setTheme(mode: ThemeMode) {
-    setThemeState(mode);
-    localStorage.setItem('grid-theme', mode);
-    if (mode === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-    } else {
-      document.documentElement.setAttribute('data-theme', mode);
+  async function handleSave() {
+    if (!name.trim()) {
+      toast('Name cannot be empty', 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch('/api/settings/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to update');
+      }
+      const updated = await res.json();
+      setProfile((prev) => (prev ? { ...prev, ...updated } : prev));
+      toast('Profile updated');
+      refresh();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Failed to update', 'error');
+    } finally {
+      setSaving(false);
     }
   }
 
-  function setDensityMode(d: Density) {
-    setDensity(d);
-    localStorage.setItem('grid-density', d);
-    document.documentElement.setAttribute('data-density', d);
+  const initials =
+    (profile?.name ?? user?.name ?? '?')
+      .split(' ')
+      .map((w: string) => w[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+
+  if (loading) {
+    return (
+      <div style={{ padding: '3rem', color: 'var(--text-3)' }}>
+        <div style={{ fontWeight: 300, letterSpacing: '0.02em' }}>Loading profile...</div>
+      </div>
+    );
   }
 
-  function setSidebar(mode: SidebarMode) {
-    setSidebarMode(mode);
-    localStorage.setItem('grid-sidebar', mode);
-    document.documentElement.setAttribute('data-sidebar', mode);
-  }
-
-  async function saveName() {
-    if (!editName.trim()) return;
-    setSaving(true);
-    await fetch('/api/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: editName.trim() }) });
-    setSettings(prev => prev ? { ...prev, identity: prev.identity ? { ...prev.identity, name: editName.trim() } : null } : null);
-    setSaving(false);
-    setEditingName(false);
-  }
+  const TABS = [
+    { key: 'profile' as const, label: 'Profile' },
+    { key: 'autonomy' as const, label: 'AI Autonomy' },
+  ];
 
   return (
-    <div className="flex min-h-screen">
-      {/* Settings sidebar */}
-      <div className="w-[200px] flex-shrink-0 py-10 px-6" style={{ borderRight: '1px solid var(--glass-border)' }}>
-        <p className="text-xs tracking-[0.12em] mb-5 font-light" style={{ color: 'var(--text-3)' }}>SETTINGS</p>
-        <nav className="space-y-0.5 mb-8">
-          {SETTINGS_NAV.map(item => {
-            const active = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => router.push(`/settings?tab=${item.id}`)}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm font-light transition-all text-left"
-                style={{
-                  color: active ? 'var(--text-1)' : 'var(--text-3)',
-                  background: active ? 'var(--glass-active)' : 'transparent',
-                }}
-              >
-                <span className="text-xs w-4 text-center" style={{ opacity: 0.5 }}>{item.icon}</span>
-                {item.label}
-                {item.dot && active && <span className="ml-auto w-1 h-1 rounded-full" style={{ background: 'var(--brand)' }} />}
-              </button>
-            );
-          })}
-        </nav>
+    <div className="px-4 md:px-10 py-6 md:py-10" style={{ maxWidth: 720, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h1
+          style={{
+            fontSize: 28,
+            fontWeight: 300,
+            color: 'var(--text-1)',
+            letterSpacing: '-0.02em',
+            marginBottom: 6,
+          }}
+        >
+          Settings
+        </h1>
+        <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 14 }}>
+          Manage your account and Nova configuration.
+        </p>
+      </div>
 
-        <p className="text-xs tracking-[0.12em] mb-4 font-light" style={{ color: 'var(--text-3)' }}>QUICK LINKS</p>
-        <div className="space-y-1">
-          {QUICK_LINKS.map(link => (
-            <Link key={link.label} href={link.href}
-              className="block text-xs font-light py-1.5 transition-colors"
-              style={{ color: 'var(--text-3)' }}>
-              {link.label} →
-            </Link>
-          ))}
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 2, marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 0 }}>
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            style={{
+              padding: '8px 16px',
+              fontSize: 13,
+              fontWeight: tab === t.key ? 400 : 300,
+              color: tab === t.key ? 'var(--text-1)' : 'var(--text-3)',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: tab === t.key ? '2px solid #15AD70' : '2px solid transparent',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              marginBottom: -1,
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'autonomy' && environmentId ? (
+        <AutonomyConfig environmentId={environmentId} />
+      ) : tab === 'autonomy' ? (
+        <div style={{ padding: '3rem 2rem', textAlign: 'center', borderRadius: 16, border: '1px dashed var(--glass-border)' }}>
+          <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 13 }}>
+            No environment found. Create an environment first to configure autonomy.
+          </p>
         </div>
+      ) : (
+      <div>
+
+      {/* Profile card */}
+      <div
+        style={{
+          background: 'var(--glass)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: 20,
+          padding: '2rem',
+          marginBottom: '1.5rem',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        {/* Avatar + info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 }}>
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 18,
+              fontWeight: 300,
+              background: 'var(--brand-glow)',
+              color: 'var(--brand)',
+              border: '1px solid var(--brand-border)',
+              flexShrink: 0,
+            }}
+          >
+            {initials}
+          </div>
+          <div>
+            <p style={{ color: 'var(--text-1)', fontWeight: 300, fontSize: 18 }}>
+              {profile?.name ?? '--'}
+            </p>
+            <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 13 }}>
+              {profile?.email ?? 'No email'}
+            </p>
+          </div>
+          <span
+            style={{
+              marginLeft: 'auto',
+              background: 'rgba(168,120,255,0.12)',
+              color: '#a878ff',
+              padding: '3px 12px',
+              borderRadius: 20,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {profile?.type ?? 'PERSON'}
+          </span>
+        </div>
+
+        {/* Name field */}
+        <div style={{ marginBottom: 20 }}>
+          <label
+            style={{
+              display: 'block',
+              color: 'var(--text-2)',
+              fontWeight: 300,
+              fontSize: 13,
+              marginBottom: 8,
+            }}
+          >
+            Display name
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: 12,
+              border: '1px solid var(--glass-border)',
+              background: 'var(--glass-deep)',
+              color: 'var(--text-1)',
+              fontWeight: 300,
+              fontSize: 14,
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        {/* Email (read-only) */}
+        <div style={{ marginBottom: 24 }}>
+          <label
+            style={{
+              display: 'block',
+              color: 'var(--text-2)',
+              fontWeight: 300,
+              fontSize: 13,
+              marginBottom: 8,
+            }}
+          >
+            Email
+          </label>
+          <input
+            type="text"
+            value={profile?.email ?? ''}
+            disabled
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: 12,
+              border: '1px solid var(--glass-border)',
+              background: 'rgba(255,255,255,0.02)',
+              color: 'var(--text-3)',
+              fontWeight: 300,
+              fontSize: 14,
+              outline: 'none',
+              cursor: 'not-allowed',
+            }}
+          />
+          <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 11, marginTop: 4, opacity: 0.6 }}>
+            Email cannot be changed from here.
+          </p>
+        </div>
+
+        {/* Member since */}
+        {profile?.createdAt && (
+          <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 12, marginBottom: 20 }}>
+            Member since {new Date(profile.createdAt).toLocaleDateString()}
+          </p>
+        )}
+
+        {/* Save button */}
+        <button
+          onClick={handleSave}
+          disabled={saving || name === profile?.name}
+          style={{
+            padding: '10px 24px',
+            borderRadius: 12,
+            border: 'none',
+            background:
+              saving || name === profile?.name
+                ? 'rgba(255,255,255,0.04)'
+                : 'linear-gradient(135deg, rgba(99,149,255,0.25), rgba(99,149,255,0.1))',
+            color: saving || name === profile?.name ? 'var(--text-3)' : '#6395ff',
+            fontWeight: 400,
+            fontSize: 14,
+            cursor: saving || name === profile?.name ? 'default' : 'pointer',
+            transition: 'all 0.2s',
+          }}
+        >
+          {saving ? 'Saving...' : 'Update profile'}
+        </button>
       </div>
 
-      {/* Content area */}
-      <div className="flex-1 py-10 px-10 max-w-2xl min-w-0">
-
-        {/* Appearance tab */}
-        {activeTab === 'appearance' && (
-          <div className="animate-fade-in">
-            <h2 className="text-lg font-extralight tracking-tight mb-1">Appearance</h2>
-            <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>Customize how GRID looks and feels</p>
-            <Link href="/settings?tab=brand" className="chrome-pill px-4 py-2 text-xs font-light inline-flex items-center gap-2 mb-8"
-              style={{ color: 'var(--brand)' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="12" cy="12" r="3"/><path strokeLinecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-              </svg>
-              Open brand skin editor →
-            </Link>
-
-            <div className="glass-panel p-5 mb-4">
-              <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>THEME</p>
-              <div className="grid grid-cols-3 gap-2">
-                {([
-                  { value: 'dark' as ThemeMode, label: 'Dark', icon: '■' },
-                  { value: 'light' as ThemeMode, label: 'Light', icon: '□' },
-                  { value: 'system' as ThemeMode, label: 'System', icon: '◑' },
-                ]).map(opt => (
-                  <button key={opt.value} onClick={() => setTheme(opt.value)}
-                    className="chrome-pill px-4 py-3 text-sm font-light flex items-center justify-center gap-2 transition-all whitespace-nowrap"
-                    style={{
-                      color: theme === opt.value ? 'var(--brand)' : 'var(--text-3)',
-                      background: theme === opt.value ? 'var(--brand-glow)' : undefined,
-                      borderColor: theme === opt.value ? 'var(--brand-border)' : undefined,
-                    }}>
-                    <span className="text-xs">{opt.icon}</span> {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="glass-panel p-5 mb-4">
-              <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>DENSITY</p>
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  { value: 'comfortable' as Density, label: 'Comfortable' },
-                  { value: 'compact' as Density, label: 'Compact' },
-                ]).map(opt => (
-                  <button key={opt.value} onClick={() => setDensityMode(opt.value)}
-                    className="chrome-pill px-4 py-3 text-sm font-light transition-all whitespace-nowrap"
-                    style={{
-                      color: density === opt.value ? 'var(--text-1)' : 'var(--text-3)',
-                      background: density === opt.value ? 'var(--glass-active)' : undefined,
-                      borderColor: density === opt.value ? 'var(--glass-border-hover)' : undefined,
-                    }}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="glass-panel p-5">
-              <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>SIDEBAR</p>
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  { value: 'visible' as SidebarMode, label: 'Always visible' },
-                  { value: 'hover' as SidebarMode, label: 'Hover to expand' },
-                ]).map(opt => (
-                  <button key={opt.value} onClick={() => setSidebar(opt.value)}
-                    className="chrome-pill px-4 py-3 text-sm font-light transition-all whitespace-nowrap"
-                    style={{
-                      color: sidebarMode === opt.value ? 'var(--text-1)' : 'var(--text-3)',
-                      background: sidebarMode === opt.value ? 'var(--glass-active)' : undefined,
-                      borderColor: sidebarMode === opt.value ? 'var(--glass-border-hover)' : undefined,
-                    }}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Profile tab */}
-        {activeTab === 'profile' && (
-          <div className="animate-fade-in">
-            <h2 className="text-lg font-extralight tracking-tight mb-1">Profile</h2>
-            <p className="text-xs mb-8" style={{ color: 'var(--text-3)' }}>Your identity in this workspace</p>
-            <div className="glass-panel p-6">
-              {!settings ? (
-                <div className="h-16 animate-pulse rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
-              ) : (
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-light flex-shrink-0"
-                    style={{ background: 'var(--brand-glow)', color: 'var(--brand)', border: '1px solid var(--brand-border)' }}>
-                    {settings.identity?.name?.charAt(0).toUpperCase() ?? '?'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {editingName ? (
-                      <div className="flex items-center gap-2">
-                        <input value={editName} onChange={e => setEditName(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') setEditingName(false); }}
-                          autoFocus className="glass-input text-sm px-3 py-1.5" />
-                        <button onClick={saveName} disabled={saving} className="chrome-pill px-3 py-1.5 text-xs font-light"
-                          style={{ color: 'var(--text-2)' }}>{saving ? '···' : 'Save'}</button>
-                        <button onClick={() => setEditingName(false)} className="text-xs font-light" style={{ color: 'var(--text-3)' }}>Cancel</button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-3">
-                        <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>{settings.identity?.name ?? user?.name}</p>
-                        <button onClick={() => setEditingName(true)} className="text-xs font-light" style={{ color: 'var(--text-3)' }}>Edit</button>
-                      </div>
-                    )}
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>{settings.identity?.email ?? user?.email}</p>
-                  </div>
-                  <span className="chrome-pill px-3 py-1 text-xs font-light" style={{ color: 'var(--brand)' }}>
-                    {settings.identity?.type.toLowerCase() ?? 'person'}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Workspace tab */}
-        {activeTab === 'workspace' && (
-          <div className="animate-fade-in">
-            <h2 className="text-lg font-extralight tracking-tight mb-1">Workspace</h2>
-            <p className="text-xs mb-8" style={{ color: 'var(--text-3)' }}>Workspace stats and Nova configuration</p>
-
-            <div className="glass-panel p-5 mb-6">
-              <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>NOVA / ANTHROPIC</p>
-              {settings && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-light" style={{ color: 'var(--text-2)' }}>API Key</span>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: settings.apiKeyConfigured ? 'var(--brand)' : 'var(--danger)' }} />
-                      <span className="text-xs font-light" style={{ color: settings.apiKeyConfigured ? 'var(--brand)' : 'var(--danger)' }}>
-                        {settings.apiKeyConfigured ? 'Configured' : 'Not configured'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--glass-border)' }}>
-                    <span className="text-sm font-light" style={{ color: 'var(--text-2)' }}>Model</span>
-                    <code className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--glass)', fontFamily: 'monospace', color: 'var(--text-3)' }}>claude-sonnet-4-6</code>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="glass-panel overflow-hidden">
-              {settings && [
-                { label: 'Environments', value: settings.stats.environments },
-                { label: 'Systems', value: settings.stats.systems },
-                { label: 'Workflows', value: settings.stats.workflows },
-                { label: 'Nova interactions', value: settings.stats.novaInteractions.toLocaleString() },
-                { label: 'Total tokens used', value: settings.stats.totalTokens.toLocaleString() },
-              ].map((row, i) => (
-                <div key={row.label} className="flex items-center justify-between px-5 py-3"
-                  style={{ borderTop: i > 0 ? '1px solid var(--glass-border)' : 'none' }}>
-                  <span className="text-sm font-light" style={{ color: 'var(--text-2)' }}>{row.label}</span>
-                  <span className="text-sm font-light tabular-nums" style={{ color: 'var(--text-1)' }}>{row.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Team tab */}
-        {activeTab === 'team' && (
-          <div className="animate-fade-in">
-            <h2 className="text-lg font-extralight tracking-tight mb-1">Team</h2>
-            <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>Manage workspace members</p>
-            <Link href="/settings/team" className="chrome px-5 py-4 flex items-center justify-between group">
-              <div>
-                <p className="text-sm font-light mb-0.5" style={{ color: 'var(--text-1)' }}>Manage team members</p>
-                <p className="text-xs" style={{ color: 'var(--text-3)' }}>Add people, agents, and clients · assign roles per environment</p>
-              </div>
-              <span className="text-xs" style={{ color: 'var(--text-3)' }}>→</span>
-            </Link>
-          </div>
-        )}
-
-        {/* API tab */}
-        {activeTab === 'api' && (
-          <div className="animate-fade-in">
-            <h2 className="text-lg font-extralight tracking-tight mb-1">API & Keys</h2>
-            <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>External access and webhook configuration</p>
-            <div className="space-y-3">
-              <Link href="/settings/api-keys" className="chrome px-5 py-4 flex items-center justify-between group">
-                <div>
-                  <p className="text-sm font-light mb-0.5" style={{ color: 'var(--text-1)' }}>API Keys</p>
-                  <p className="text-xs" style={{ color: 'var(--text-3)' }}>Generate keys for external integrations</p>
-                </div>
-                <span className="text-xs" style={{ color: 'var(--text-3)' }}>→</span>
-              </Link>
-              <Link href="/settings/webhooks" className="chrome px-5 py-4 flex items-center justify-between group">
-                <div>
-                  <p className="text-sm font-light mb-0.5" style={{ color: 'var(--text-1)' }}>Webhooks</p>
-                  <p className="text-xs" style={{ color: 'var(--text-3)' }}>HTTP callbacks for executions and alerts</p>
-                </div>
-                <span className="text-xs" style={{ color: 'var(--text-3)' }}>→</span>
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Security tab */}
-        {activeTab === 'security' && (
-          <div className="animate-fade-in">
-            <h2 className="text-lg font-extralight tracking-tight mb-1">Security</h2>
-            <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>Data protection and access controls</p>
-            <div className="space-y-3">
-              <div className="glass-panel p-5">
-                <p className="text-sm font-light mb-3" style={{ color: 'var(--text-1)' }}>Data Export (GDPR)</p>
-                <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Download all your data as JSON</p>
-                <a href="/api/me/export" className="chrome-pill px-4 py-2 text-xs font-light inline-block" style={{ color: 'var(--text-2)' }}>
-                  Export my data →
-                </a>
-              </div>
-              <div className="glass-panel p-5">
-                <p className="text-sm font-light mb-3" style={{ color: 'var(--danger)' }}>Delete Account</p>
-                <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Permanently delete your account and all associated data</p>
-                <button className="chrome-pill px-4 py-2 text-xs font-light" style={{ color: 'var(--danger)' }}>
-                  Delete my account
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Fallback for unimplemented tabs */}
-        {!['appearance', 'profile', 'workspace', 'team', 'api', 'security'].includes(activeTab) && (
-          <div className="animate-fade-in">
-            <h2 className="text-lg font-extralight tracking-tight mb-1">{SETTINGS_NAV.find(n => n.id === activeTab)?.label ?? activeTab}</h2>
-            <p className="text-xs" style={{ color: 'var(--text-3)' }}>Coming soon</p>
-          </div>
-        )}
+      {/* Danger zone */}
+      <div
+        style={{
+          background: 'var(--glass)',
+          border: '1px solid rgba(255,80,60,0.15)',
+          borderRadius: 20,
+          padding: '1.75rem 2rem',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        <h3 style={{ color: '#ff5c46', fontWeight: 300, fontSize: 16, marginBottom: 8 }}>
+          Danger zone
+        </h3>
+        <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 13, marginBottom: 16 }}>
+          Permanently delete your account and all associated data. This action cannot be undone.
+        </p>
+        <button
+          disabled
+          style={{
+            padding: '10px 20px',
+            borderRadius: 12,
+            border: '1px solid rgba(255,80,60,0.2)',
+            background: 'rgba(255,80,60,0.06)',
+            color: 'rgba(255,80,60,0.4)',
+            fontWeight: 300,
+            fontSize: 13,
+            cursor: 'not-allowed',
+          }}
+        >
+          Delete account — coming soon
+        </button>
       </div>
+      </div>
+      )}
     </div>
   );
 }

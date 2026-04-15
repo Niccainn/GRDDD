@@ -23,6 +23,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Image optimization — allow remote images from any source (user-uploaded)
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**' },
+    ],
+  },
   // Optimize for production
   poweredByHeader: false,
   reactStrictMode: true,

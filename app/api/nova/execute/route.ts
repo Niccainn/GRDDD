@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
 import { audit } from '@/lib/audit';
 import { computeHealthScore } from '@/lib/health';
+import { trackUsage } from '@/lib/billing/usage';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -143,7 +144,7 @@ A day-by-day schedule for the next 2 weeks showing which post goes where and whe
 
 Write all copy as final — ready to post, not drafts.`,
 
-              'Review': `Act as a brand manager and compliance reviewer. Review ALL content from the Assets stage:
+              'Review:social': `Act as a brand manager and compliance reviewer. Review ALL content from the Assets stage:
 
 ## Brand Alignment Check
 - Does each post match the tone/voice from Narrative stage? Score 1-10.
@@ -165,7 +166,7 @@ Specific before→after changes for any posts scoring below 8.
 ## Final Verdict
 "Approved for publish" or "Requires revision" with clear next steps.`,
 
-              'Publish': `Act as a social media scheduler. Prepare the FINAL publishing manifest:
+              'Publish:social': `Act as a social media scheduler. Prepare the FINAL publishing manifest:
 
 ## Publishing Schedule
 
@@ -199,7 +200,21 @@ For EACH post, deliver:
               'Present': 'Prepare the presentation. Deliver: slide deck outline, key talking points per slide, anticipated questions with answers, and call-to-action.',
             };
 
-            const specificInstruction = stageInstructions[stage] ?? `Process the **${stage}** stage. Produce the actual output/deliverable.`;
+            // Social campaigns share stage names ('Review', 'Publish') with
+            // the generic content flow but need much richer, platform-aware
+            // prompts. Detect social workflows by name and route those two
+            // stages to their '(social)' variants — everything else falls
+            // through to the generic prompt.
+            const isSocialWorkflow =
+              /social|campaign|instagram|facebook|linkedin/i.test(workflow?.name ?? '');
+            const socialStageKey =
+              isSocialWorkflow && (stage === 'Review' || stage === 'Publish')
+                ? `${stage}:social`
+                : stage;
+            const specificInstruction =
+              stageInstructions[socialStageKey] ??
+              stageInstructions[stage] ??
+              `Process the **${stage}** stage. Produce the actual output/deliverable.`;
 
             const stagePrompt = `Workflow: ${workflow?.name ?? 'Custom run'}
 Current stage: **${stage}** (${i + 1} of ${workflowStages.length})
@@ -336,6 +351,9 @@ Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusa
         computeHealthScore(systemId).then(score => {
           if (score !== null) prisma.system.update({ where: { id: systemId }, data: { healthScore: score } }).catch(() => {});
         }).catch(() => {});
+
+        // Track billing usage
+        trackUsage(identity.id, 'nova_queries').catch(() => {});
 
         send({ type: 'done', executionId, tokens: totalTokens });
       } catch (err) {

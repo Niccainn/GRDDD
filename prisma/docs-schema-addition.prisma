@@ -1,0 +1,23 @@
+// Reference snippet: Add this to prisma/schema.prisma
+// Also add `documents Document[]` to both Environment and Identity models.
+
+model Document {
+  id            String   @id @default(cuid())
+  title         String   @default("Untitled")
+  content       String   @default("")
+  icon          String?
+  coverImage    String?
+  isArchived    Boolean  @default(false)
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  identityId    String
+  identity      Identity @relation(fields: [identityId], references: [id])
+  parentId      String?
+  parent        Document? @relation("DocumentTree", fields: [parentId], references: [id])
+  children      Document[] @relation("DocumentTree")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([environmentId])
+  @@index([parentId])
+}

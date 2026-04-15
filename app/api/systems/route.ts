@@ -7,6 +7,7 @@ export async function GET() {
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const systems = await prisma.system.findMany({
+    where: { environment: { ownerId: identity.id, deletedAt: null } },
     select: { id: true, name: true, environmentId: true, color: true },
     orderBy: { name: 'asc' },
   });
