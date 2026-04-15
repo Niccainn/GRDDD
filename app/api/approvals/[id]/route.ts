@@ -34,6 +34,22 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
     return Response.json({ error: 'Approval not found' }, { status: 404 });
   }
 
+  // Verify the user owns or is a member of the approval's environment.
+  const envAccess = await prisma.environment.findFirst({
+    where: {
+      id: approval.environmentId,
+      deletedAt: null,
+      OR: [
+        { ownerId: identity.id },
+        { memberships: { some: { identityId: identity.id } } },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!envAccess) {
+    return Response.json({ error: 'Approval not found' }, { status: 404 });
+  }
+
   return Response.json({
     id: approval.id,
     title: approval.title,
@@ -73,6 +89,22 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   });
 
   if (!approval) {
+    return Response.json({ error: 'Approval not found' }, { status: 404 });
+  }
+
+  // Verify environment access
+  const envAccess = await prisma.environment.findFirst({
+    where: {
+      id: approval.environmentId,
+      deletedAt: null,
+      OR: [
+        { ownerId: identity.id },
+        { memberships: { some: { identityId: identity.id } } },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!envAccess) {
     return Response.json({ error: 'Approval not found' }, { status: 404 });
   }
 

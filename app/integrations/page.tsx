@@ -202,10 +202,10 @@ export default function IntegrationsPage() {
   const connectedProviderIds = new Set(connected.map(c => c.provider));
 
   return (
-    <div className="px-12 py-12 min-h-screen">
+    <div className="px-4 md:px-12 py-6 md:py-12 min-h-screen">
       <div className="max-w-6xl">
         {/* Header */}
-        <div className="mb-8 animate-fade-in flex items-start justify-between">
+        <div className="mb-8 animate-fade-in flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-extralight tracking-tight mb-1">Integrations</h1>
             <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
@@ -213,15 +213,18 @@ export default function IntegrationsPage() {
             </p>
           </div>
           {environments.length > 0 && (
-            <select
-              value={environmentId ?? ''}
-              onChange={e => setEnvironmentId(e.target.value)}
-              className="glass-input px-3 py-2 text-sm"
-            >
-              {environments.map(e => (
-                <option key={e.id} value={e.id}>{e.name}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-light whitespace-nowrap" style={{ color: 'var(--text-3)' }}>Environment:</span>
+              <select
+                value={environmentId ?? ''}
+                onChange={e => setEnvironmentId(e.target.value)}
+                className="glass-input px-3 py-2 text-sm"
+              >
+                {environments.map(e => (
+                  <option key={e.id} value={e.id}>{e.name}</option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
 
@@ -309,12 +312,12 @@ export default function IntegrationsPage() {
         )}
 
         {/* Filter bar */}
-        <div className="flex items-center gap-4 mb-6 animate-fade-in">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6 animate-fade-in">
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="glass-input px-4 py-2.5 text-sm w-64"
+            className="glass-input px-4 py-2.5 text-sm w-full sm:w-64"
             placeholder="Search providers..."
           />
           <div className="flex items-center gap-1.5 overflow-x-auto">
@@ -348,7 +351,7 @@ export default function IntegrationsPage() {
         <h2 className="text-xs uppercase tracking-wider mb-4" style={{ color: 'var(--text-3)' }}>
           Available
         </h2>
-        <div className="grid grid-cols-3 gap-4 animate-fade-in">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
           {filtered.map(prov => {
             const alreadyConnected = connectedProviderIds.has(prov.id);
             const disabled = !prov.implemented || !prov.envReady;

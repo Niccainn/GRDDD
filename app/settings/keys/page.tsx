@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useToast } from '@/components/Toast';
+import SettingsNav from '@/components/SettingsNav';
 
 type ApiKeyItem = {
   id: string;
@@ -103,6 +104,7 @@ export default function ApiKeysPage() {
 
   return (
     <div style={{ padding: '2rem 2.5rem', maxWidth: 720, margin: '0 auto' }}>
+      <SettingsNav />
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem' }}>
         <div>

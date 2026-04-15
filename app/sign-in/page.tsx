@@ -3,9 +3,9 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
-import AuthLayout from '@/components/auth/AuthLayout';
 import GoogleButton from '@/components/auth/GoogleButton';
 import PasswordField from '@/components/auth/PasswordField';
+import AuthLayout from '@/components/auth/AuthLayout';
 
 export default function SignInPage() {
   return (
@@ -24,8 +24,6 @@ function SignInInner() {
   const searchParams = useSearchParams();
   const { refresh } = useAuth();
 
-  // OAuth errors are returned via ?error= on the sign-in redirect.
-  // Surface them once so the user knows why Google didn't take.
   const oauthError = searchParams.get('error');
   const next = searchParams.get('next') || '/dashboard';
 
@@ -127,13 +125,13 @@ function SignInInner() {
           disabled={loading}
           className="w-full py-[13px] text-sm font-light rounded-full transition-all"
           style={{
-            background: 'var(--brand-soft)',
-            border: '1px solid var(--brand-border)',
-            color: 'var(--brand)',
+            background: 'var(--brand)',
+            color: '#000',
+            fontWeight: 400,
             opacity: loading ? 0.5 : 1,
           }}
         >
-          {loading ? 'Signing in…' : 'Sign in'}
+          {loading ? 'Signing in\u2026' : 'Sign in'}
         </button>
       </form>
     </AuthLayout>

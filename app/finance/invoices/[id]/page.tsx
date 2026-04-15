@@ -60,7 +60,7 @@ export default function InvoicePreviewPage() {
 
   if (loading) {
     return (
-      <div className="px-10 py-10 min-h-screen flex items-center justify-center">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen flex items-center justify-center">
         <div className="h-20 w-64 rounded-2xl animate-pulse" style={{ background: 'var(--glass)' }} />
       </div>
     );
@@ -68,7 +68,7 @@ export default function InvoicePreviewPage() {
 
   if (!invoice) {
     return (
-      <div className="px-10 py-10 min-h-screen">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
         <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>Invoice not found</p>
       </div>
     );
@@ -80,7 +80,7 @@ export default function InvoicePreviewPage() {
   const isOverdue = invoice.status !== 'paid' && invoice.status !== 'cancelled' && invoice.dueDate && new Date(invoice.dueDate) < new Date();
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* Action bar - hidden in print */}
       <div className="flex items-center justify-between mb-8 print:hidden">
         <button

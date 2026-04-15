@@ -5,7 +5,25 @@
 import { NextRequest } from 'next/server';
 import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
+import { prisma } from '@/lib/db';
 import { buildPlan, getInvocableAgents, createHandoff, removeHandoff } from '@/lib/orchestrator';
+
+/** Verify the caller has access to the agent's environment. */
+async function assertAgentAccess(identityId: string, agentId: string) {
+  return prisma.agent.findFirst({
+    where: {
+      id: agentId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId } } },
+        ],
+      },
+    },
+    select: { id: true },
+  });
+}
 
 /**
  * POST /api/agents/orchestrate
@@ -21,6 +39,10 @@ export async function POST(req: NextRequest) {
 
   if (!agentId || !input?.trim()) {
     return Response.json({ error: 'agentId and input are required' }, { status: 400 });
+  }
+
+  if (!await assertAgentAccess(identity.id, agentId)) {
+    return Response.json({ error: 'Agent not found' }, { status: 404 });
   }
 
   try {
@@ -41,6 +63,10 @@ export async function GET(req: NextRequest) {
 
   const agentId = req.nextUrl.searchParams.get('agentId');
   if (!agentId) return Response.json({ error: 'agentId required' }, { status: 400 });
+
+  if (!await assertAgentAccess(identity.id, agentId)) {
+    return Response.json({ error: 'Agent not found' }, { status: 404 });
+  }
 
   const invocable = await getInvocableAgents(agentId);
   return Response.json({ handoffs: invocable });
@@ -65,6 +91,11 @@ export async function PUT(req: NextRequest) {
     return Response.json({ error: 'An agent cannot hand off to itself' }, { status: 400 });
   }
 
+  // Verify caller has access to both agents.
+  if (!await assertAgentAccess(identity.id, callerId) || !await assertAgentAccess(identity.id, calleeId)) {
+    return Response.json({ error: 'Agent not found' }, { status: 404 });
+  }
+
   try {
     const handoff = await createHandoff({ callerId, calleeId, trigger, condition, passContext, passMemory });
     return Response.json({ handoff }, { status: 201 });
@@ -86,6 +117,10 @@ export async function DELETE(req: NextRequest) {
 
   if (!callerId || !calleeId) {
     return Response.json({ error: 'callerId and calleeId are required' }, { status: 400 });
+  }
+
+  if (!await assertAgentAccess(identity.id, callerId)) {
+    return Response.json({ error: 'Agent not found' }, { status: 404 });
   }
 
   await removeHandoff(callerId, calleeId);

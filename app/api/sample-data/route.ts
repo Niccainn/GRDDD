@@ -4,13 +4,22 @@ import { prisma } from '@/lib/db';
 export async function DELETE() {
   const identity = await getAuthIdentity();
 
-  // Get all environments owned by this user
-  const envIds = await prisma.environment
+  // Get all environments the user owns or has membership in
+  const ownedEnvIds = await prisma.environment
     .findMany({
       where: { ownerId: identity.id },
       select: { id: true },
     })
     .then((envs) => envs.map((e) => e.id));
+
+  const memberEnvIds = await prisma.environmentMembership
+    .findMany({
+      where: { identityId: identity.id },
+      select: { environmentId: true },
+    })
+    .then((ms) => ms.map((m) => m.environmentId));
+
+  const envIds = [...new Set([...ownedEnvIds, ...memberEnvIds])];
 
   if (envIds.length === 0) {
     return Response.json({ cleared: true });
@@ -37,6 +46,14 @@ export async function DELETE() {
     where: {
       environmentId: { in: envIds },
       description: { startsWith: '[Sample]' },
+    },
+  });
+
+  // Also clean up any demo-seeded data from initial testing
+  await prisma.task.deleteMany({
+    where: {
+      environmentId: { in: envIds },
+      labels: { contains: 'demo' },
     },
   });
 

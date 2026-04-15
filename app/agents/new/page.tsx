@@ -211,7 +211,7 @@ export default function NewAgentPage() {
   // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="px-10 py-10 min-h-screen max-w-4xl">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen max-w-4xl">
       <Link
         href="/agents"
         className="text-xs font-light mb-8 inline-flex items-center gap-1.5"
