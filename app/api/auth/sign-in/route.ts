@@ -67,11 +67,11 @@ export async function POST(req: NextRequest) {
 
     // If the user has already completed onboarding, set the cookie so
     // middleware doesn't redirect them to /welcome on every page load.
-    if ((identity as unknown as { onboardedAt?: Date | null }).onboardedAt) {
+    if (identity.onboardedAt) {
       const headers = new Headers(res.headers);
       headers.append(
         'Set-Cookie',
-        `grid_onboarded=1; Path=/; HttpOnly; SameSite=Strict; Max-Age=${60 * 60 * 24 * 365}`
+        `grid_onboarded=1; Path=/; HttpOnly; SameSite=Strict; Max-Age=${60 * 60 * 24 * 365}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
       );
       return new Response(res.body, { status: res.status, headers });
     }

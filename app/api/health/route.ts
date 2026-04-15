@@ -25,30 +25,34 @@ export async function GET() {
     await prisma.$queryRaw`SELECT 1`;
     checks.database = { status: 'ok', ms: Date.now() - dbStart };
   } catch (err) {
-    checks.database = { status: 'error', message: err instanceof Error ? err.message : 'Unknown', ms: Date.now() - dbStart };
+    // Never leak DB error details (may contain connection strings or
+    // internal topology). Log server-side, return opaque error to caller.
+    // eslint-disable-next-line no-console
+    console.error('[health] database check failed:', err);
+    checks.database = { status: 'error', message: 'Connection failed', ms: Date.now() - dbStart };
   }
 
-  // 2. Required env vars
+  // 2. Required env vars — only report count, never names
   const requiredEnvs = ['DATABASE_URL', 'GRID_ENCRYPTION_KEY'];
-  const missingEnvs = requiredEnvs.filter(k => !process.env[k]);
-  checks.env = missingEnvs.length === 0
+  const missingCount = requiredEnvs.filter(k => !process.env[k]).length;
+  checks.env = missingCount === 0
     ? { status: 'ok' }
-    : { status: 'error', message: `Missing: ${missingEnvs.join(', ')}` };
+    : { status: 'error', message: `${missingCount} required variable(s) missing` };
 
-  // 3. Optional services
-  const optionalServices: Record<string, string> = {
-    ai: 'ANTHROPIC_API_KEY',
-    email: 'RESEND_API_KEY',
-    billing: 'STRIPE_SECRET_KEY',
-    monitoring: 'SENTRY_DSN',
-    redis: 'UPSTASH_REDIS_REST_URL',
-    storage: 'S3_BUCKET',
-  };
+  // 3. Optional services — report status only, never env var names
+  const optionalServices: [string, string][] = [
+    ['ai', 'ANTHROPIC_API_KEY'],
+    ['email', 'RESEND_API_KEY'],
+    ['billing', 'STRIPE_SECRET_KEY'],
+    ['monitoring', 'SENTRY_DSN'],
+    ['redis', 'UPSTASH_REDIS_REST_URL'],
+    ['storage', 'S3_BUCKET'],
+  ];
 
-  for (const [name, envVar] of Object.entries(optionalServices)) {
+  for (const [name, envVar] of optionalServices) {
     checks[name] = process.env[envVar]
       ? { status: 'ok' }
-      : { status: 'warn', message: 'Not configured' };
+      : { status: 'warn' };
   }
 
   // Overall status

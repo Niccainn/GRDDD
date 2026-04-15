@@ -6,16 +6,31 @@ export async function GET() {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
+  // Scope stats to environments the authenticated user owns or is a member of.
+  const envFilter = {
+    deletedAt: null,
+    OR: [
+      { ownerId: identity.id },
+      { memberships: { some: { identityId: identity.id } } },
+    ],
+  };
+  const userEnvIds = await prisma.environment.findMany({
+    where: envFilter,
+    select: { id: true },
+  }).then(envs => envs.map(e => e.id));
+
+  const envScope = { environmentId: { in: userEnvIds } };
+
   const [systemCount, workflowCount, envCount, logCount] = await Promise.all([
-    prisma.system.count(),
-    prisma.workflow.count(),
-    prisma.environment.count(),
-    prisma.intelligenceLog.count({ where: { action: 'nova_query' } }),
+    prisma.system.count({ where: envScope }),
+    prisma.workflow.count({ where: envScope }),
+    Promise.resolve(userEnvIds.length),
+    prisma.intelligenceLog.count({ where: { action: 'nova_query', identityId: identity.id } }),
   ]);
 
   const totalTokens = await prisma.intelligenceLog.aggregate({
     _sum: { tokens: true },
-    where: { action: 'nova_query' },
+    where: { action: 'nova_query', identityId: identity.id },
   });
 
   return Response.json({

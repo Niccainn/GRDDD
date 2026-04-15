@@ -3,6 +3,63 @@ import { getAuthIdentity } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { saveFile, deleteFile, StorageError } from '@/lib/storage';
 
+/**
+ * Verify the authenticated user owns (or is a member of) the environment
+ * that contains the target entity. Prevents IDOR: a user can't list or
+ * attach files to entities in environments they don't belong to.
+ */
+async function assertEntityAccess(
+  identityId: string,
+  entityType: string,
+  entityId: string,
+): Promise<boolean> {
+  let environmentId: string | null = null;
+
+  switch (entityType) {
+    case 'task': {
+      const task = await prisma.task.findUnique({ where: { id: entityId }, select: { environmentId: true } });
+      environmentId = task?.environmentId ?? null;
+      break;
+    }
+    case 'system': {
+      const system = await prisma.system.findUnique({ where: { id: entityId }, select: { environmentId: true } });
+      environmentId = system?.environmentId ?? null;
+      break;
+    }
+    case 'document': {
+      const doc = await prisma.document.findUnique({ where: { id: entityId }, select: { environmentId: true } });
+      environmentId = doc?.environmentId ?? null;
+      break;
+    }
+    case 'execution': {
+      const exec = await prisma.execution.findUnique({
+        where: { id: entityId },
+        select: { system: { select: { environmentId: true } } },
+      });
+      environmentId = exec?.system?.environmentId ?? null;
+      break;
+    }
+    default:
+      return false;
+  }
+
+  if (!environmentId) return false;
+
+  const env = await prisma.environment.findFirst({
+    where: {
+      id: environmentId,
+      deletedAt: null,
+      OR: [
+        { ownerId: identityId },
+        { memberships: { some: { identityId } } },
+      ],
+    },
+    select: { id: true },
+  });
+
+  return !!env;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const identity = await getAuthIdentity();
@@ -17,6 +74,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Verify the user has access to the parent entity's environment.
+    const hasAccess = await assertEntityAccess(identity.id, entityType, entityId);
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
     const attachments = await prisma.attachment.findMany({
       where: { entityType, entityId },
       orderBy: { createdAt: 'desc' },
@@ -25,7 +88,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    void identity; // auth gate only
     return NextResponse.json(attachments);
   } catch (err) {
     if (err instanceof Response) return err;
@@ -55,6 +117,12 @@ export async function POST(request: NextRequest) {
         { error: `entityType must be one of: ${validTypes.join(', ')}` },
         { status: 400 }
       );
+    }
+
+    // Verify the user has access to the parent entity's environment.
+    const hasAccess = await assertEntityAccess(identity.id, entityType, entityId);
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     const saved = await saveFile(file, identity.id);

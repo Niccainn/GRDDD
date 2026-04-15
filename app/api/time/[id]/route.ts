@@ -25,7 +25,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.billable !== undefined) data.billable = body.billable;
   if (body.hourlyRate !== undefined) data.hourlyRate = body.hourlyRate != null ? Number(body.hourlyRate) : null;
   if (body.taskId !== undefined) data.taskId = body.taskId || null;
-  if (body.environmentId !== undefined) data.environmentId = body.environmentId;
+  if (body.environmentId !== undefined) {
+    // Verify the user owns or is a member of the target environment.
+    const env = await prisma.environment.findFirst({
+      where: {
+        id: body.environmentId,
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!env) {
+      return Response.json({ error: 'Invalid environment' }, { status: 400 });
+    }
+    data.environmentId = body.environmentId;
+  }
   if (body.startTime !== undefined) data.startTime = body.startTime ? new Date(body.startTime) : null;
   if (body.endTime !== undefined) data.endTime = body.endTime ? new Date(body.endTime) : null;
 

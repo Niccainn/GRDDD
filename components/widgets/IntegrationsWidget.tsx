@@ -40,7 +40,7 @@ export default function IntegrationsWidget({ environmentId }: { environmentId: s
   const availableNotConnected = providers.filter(p => p.implemented && !connectedProviders.has(p.id)).slice(0, 6);
 
   return (
-    <div className="glass-deep p-5 col-span-1">
+    <div className="glass-deep p-3 md:p-5 col-span-1">
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>INTEGRATIONS</p>
         <Link href={`/integrations?environmentId=${environmentId}`} className="text-xs font-light transition-colors"
@@ -68,13 +68,13 @@ export default function IntegrationsWidget({ environmentId }: { environmentId: s
           {connected.length > 0 && (
             <div className="space-y-1.5">
               {connected.map(int => (
-                <div key={int.id} className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                <div key={int.id} className="flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 rounded-lg min-w-0"
                   style={{ background: 'rgba(21,173,112,0.04)', border: '1px solid rgba(21,173,112,0.1)' }}>
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#15AD70' }} />
-                  <span className="flex-1 text-xs font-light truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                  <span className="flex-1 text-xs font-light truncate min-w-0" style={{ color: 'rgba(255,255,255,0.7)' }}>
                     {int.displayName}
                   </span>
-                  <span className="text-[10px]" style={{ color: 'rgba(21,173,112,0.6)' }}>Connected</span>
+                  <span className="text-[10px] flex-shrink-0 hidden md:inline" style={{ color: 'rgba(21,173,112,0.6)' }}>Connected</span>
                 </div>
               ))}
             </div>
@@ -89,10 +89,10 @@ export default function IntegrationsWidget({ environmentId }: { environmentId: s
               <div className="space-y-1">
                 {availableNotConnected.map(p => (
                   <Link key={p.id} href={`/integrations?environmentId=${environmentId}`}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg group transition-all"
+                    className="flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 rounded-lg group transition-all min-w-0"
                     style={{ background: 'rgba(255,255,255,0.02)' }}>
-                    <span className="text-xs w-5 text-center" style={{ color: p.accentColor, opacity: 0.6 }}>{p.glyph}</span>
-                    <span className="flex-1 text-xs font-light truncate group-hover:text-white/60 transition-colors"
+                    <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: p.accentColor, opacity: 0.6 }}>{p.glyph}</span>
+                    <span className="flex-1 text-xs font-light truncate min-w-0 group-hover:text-white/60 transition-colors"
                       style={{ color: 'rgba(255,255,255,0.35)' }}>
                       {p.name}
                     </span>

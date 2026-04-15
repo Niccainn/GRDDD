@@ -9,6 +9,7 @@
  */
 import { NextRequest } from 'next/server';
 import { consumeVerificationToken } from '@/lib/email-verification';
+import { rateLimitDistributed } from '@/lib/rate-limit';
 
 function appUrl(): string {
   return (
@@ -19,6 +20,13 @@ function appUrl(): string {
 }
 
 export async function GET(req: NextRequest) {
+  // Rate limit by IP: 10 attempts per 15 minutes.
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const rl = await rateLimitDistributed(`verify:ip:${ip}`, 10, 15 * 60_000);
+  if (!rl.allowed) {
+    return Response.redirect(`${appUrl()}/sign-in?verify=rate-limited`, 303);
+  }
+
   const token = req.nextUrl.searchParams.get('token');
   if (!token) {
     return Response.redirect(`${appUrl()}/sign-in?verify=missing`, 303);

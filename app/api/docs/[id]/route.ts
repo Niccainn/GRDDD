@@ -15,7 +15,13 @@ export async function GET(
   const doc = await prisma.document.findFirst({
     where: {
       id,
-      environment: { ownerId: identity.id, deletedAt: null },
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
     },
     include: {
       environment: { select: { id: true, name: true, slug: true, color: true } },
@@ -52,7 +58,13 @@ export async function PATCH(
   const existing = await prisma.document.findFirst({
     where: {
       id,
-      environment: { ownerId: identity.id, deletedAt: null },
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
     },
   });
   if (!existing) {
@@ -89,7 +101,13 @@ export async function DELETE(
   const existing = await prisma.document.findFirst({
     where: {
       id,
-      environment: { ownerId: identity.id, deletedAt: null },
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
     },
   });
   if (!existing) {

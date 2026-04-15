@@ -176,7 +176,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
   if (!loaded) {
     return (
-      <div className="px-10 py-10 min-h-screen">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
         <div className="h-8 w-48 rounded-lg animate-pulse mb-4" style={{ background: 'var(--glass)' }} />
         <div className="h-64 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
       </div>
@@ -188,7 +188,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const parsedLabels: string[] = task.labels ? JSON.parse(task.labels) : [];
 
   return (
-    <div className="px-10 py-10 min-h-screen max-w-4xl">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen max-w-4xl">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-6">
         <Link href="/tasks" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>

@@ -65,9 +65,9 @@ function DotMatrix({ values, colors }: { values: number[]; colors: string[] }) {
 
 function StatCard({ label, value, color, tag }: { label: string; value: string; color?: string; tag?: string }) {
   return (
-    <div className="glass-deep rounded-xl p-4 flex flex-col justify-between min-h-[80px]">
-      <div className="flex items-start justify-between">
-        <span className="text-[10px] tracking-[0.08em] uppercase" style={{ color: 'var(--text-3)' }}>
+    <div className="glass-deep rounded-xl p-2.5 md:p-4 flex flex-col justify-between min-h-[70px] md:min-h-[80px]">
+      <div className="flex items-start justify-between gap-1">
+        <span className="text-[9px] md:text-[10px] tracking-[0.08em] uppercase truncate" style={{ color: 'var(--text-3)' }}>
           {label}
         </span>
         {tag && (
@@ -103,7 +103,7 @@ export default function CampaignAnalyticsWidget({ analytics, successRate }: Camp
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         <StatCard label="Impressions" value={formatNumber(analytics.impressions)} />
         <StatCard label="Reach" value={formatNumber(analytics.reach)} />
         <StatCard label="Engagement" value={formatNumber(analytics.engagement)} tag="social" />
