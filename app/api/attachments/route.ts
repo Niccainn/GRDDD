@@ -3,6 +3,72 @@ import { getAuthIdentity } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { saveFile, deleteFile, StorageError } from '@/lib/storage';
 
+const envOwnershipFilter = (identityId: string) => ({
+  deletedAt: null,
+  OR: [
+    { ownerId: identityId },
+    { memberships: { some: { identityId } } },
+  ],
+});
+
+/**
+ * Verify the caller owns the entity via its parent environment.
+ * Returns true if ownership is confirmed, false otherwise.
+ * Uses 404 semantics (never 403) to avoid leaking resource existence.
+ */
+async function assertOwnsEntity(
+  entityType: string,
+  entityId: string,
+  identityId: string
+): Promise<boolean> {
+  switch (entityType) {
+    case 'task': {
+      const task = await prisma.task.findFirst({
+        where: {
+          id: entityId,
+          deletedAt: null,
+          environment: envOwnershipFilter(identityId),
+        },
+        select: { id: true },
+      });
+      return !!task;
+    }
+    case 'system': {
+      const system = await prisma.system.findFirst({
+        where: {
+          id: entityId,
+          deletedAt: null,
+          environment: envOwnershipFilter(identityId),
+        },
+        select: { id: true },
+      });
+      return !!system;
+    }
+    case 'document': {
+      const doc = await prisma.document.findFirst({
+        where: {
+          id: entityId,
+          environment: envOwnershipFilter(identityId),
+        },
+        select: { id: true },
+      });
+      return !!doc;
+    }
+    case 'execution': {
+      const exec = await prisma.execution.findFirst({
+        where: {
+          id: entityId,
+          system: { environment: envOwnershipFilter(identityId) },
+        },
+        select: { id: true },
+      });
+      return !!exec;
+    }
+    default:
+      return false;
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const identity = await getAuthIdentity();
@@ -17,6 +83,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const owns = await assertOwnsEntity(entityType, entityId, identity.id);
+    if (!owns) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
     const attachments = await prisma.attachment.findMany({
       where: { entityType, entityId },
       orderBy: { createdAt: 'desc' },
@@ -25,7 +96,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    void identity; // auth gate only
     return NextResponse.json(attachments);
   } catch (err) {
     if (err instanceof Response) return err;
@@ -55,6 +125,11 @@ export async function POST(request: NextRequest) {
         { error: `entityType must be one of: ${validTypes.join(', ')}` },
         { status: 400 }
       );
+    }
+
+    const owns = await assertOwnsEntity(entityType, entityId, identity.id);
+    if (!owns) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     const saved = await saveFile(file, identity.id);
