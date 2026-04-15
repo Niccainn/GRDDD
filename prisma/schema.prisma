@@ -1721,11 +1721,16 @@ model CrossDomainInsight {
   @@index([createdAt])
 }
 
+// ===============================================
+// WAITLIST
+// Early access email collection
+// ===============================================
+
 model WaitlistEntry {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   email     String   @unique
-  source    String   @default("landing")
+  source    String   @default("landing") // "landing" | "referral" | etc.
   notes     String?
 
   @@index([createdAt])
