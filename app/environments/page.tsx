@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DeleteButton from '@/components/DeleteButton';
 
+export const dynamic = 'force-dynamic';
+
 async function createEnvironment(formData: FormData) {
   'use server';
   const name = formData.get('name') as string;

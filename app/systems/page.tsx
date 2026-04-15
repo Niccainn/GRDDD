@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DeleteButton from '@/components/DeleteButton';
 
+export const dynamic = 'force-dynamic';
+
 const TEMPLATES = [
   { name: 'Brand System', description: 'Visual identity, messaging, brand guidelines', color: '#15AD70' },
   { name: 'Content System', description: 'Content creation, editorial calendar, publishing', color: '#68D0CA' },
