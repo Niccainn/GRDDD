@@ -16,7 +16,7 @@ import ErrorBoundary from './ErrorBoundary';
 import BottomNav from './BottomNav';
 import SkipLink from './SkipLink';
 
-const AUTH_ROUTES = ['/sign-in', '/sign-up'];
+const AUTH_ROUTES = ['/sign-in', '/sign-up', '/access'];
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
