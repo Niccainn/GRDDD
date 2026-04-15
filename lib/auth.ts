@@ -150,7 +150,7 @@ export async function createSession(identityId: string) {
   });
 
   const identity = await prisma.identity.findUnique({ where: { id: identityId } });
-  return { id: identity!.id, name: identity!.name, email: identity!.email };
+  return { id: identity!.id, name: identity!.name, email: identity!.email, onboardedAt: identity!.onboardedAt };
 }
 
 /**

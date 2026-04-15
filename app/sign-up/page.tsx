@@ -8,7 +8,7 @@ import GoogleButton from '@/components/auth/GoogleButton';
 import PasswordField from '@/components/auth/PasswordField';
 
 // Client-side password strength hint. Intentionally low-friction:
-// the server enforces the actual minimum (8 chars). This is cosmetic
+// the server enforces the actual minimum (12 chars). This is cosmetic
 // feedback only — we don't block submit on strength, only on length.
 function scorePassword(pw: string): { label: string; tone: string; pct: number } {
   if (!pw) return { label: '', tone: 'var(--text-3)', pct: 0 };
@@ -31,7 +31,7 @@ function scorePassword(pw: string): { label: string; tone: string; pct: number }
 
 export default function SignUpPage() {
   return (
-    <Suspense fallback={<AuthLayout title="Create your workspace" subtitle="Set up your organizational infrastructure"><div className="h-64" /></AuthLayout>}>
+    <Suspense fallback={<AuthLayout title="Get started with GRID" subtitle="See how your business actually works"><div className="h-64" /></AuthLayout>}>
       <SignUpInner />
     </Suspense>
   );
@@ -78,8 +78,8 @@ function SignUpInner() {
 
   return (
     <AuthLayout
-      title="Create your workspace"
-      subtitle="Set up your organizational infrastructure"
+      title="Get started with GRID"
+      subtitle="See how your business actually works"
       footer={
         <>
           Already have an account?{' '}
@@ -138,9 +138,9 @@ function SignUpInner() {
           <PasswordField
             value={password}
             onChange={setPassword}
-            placeholder="Min 8 characters"
+            placeholder="Min 12 characters"
             autoComplete="new-password"
-            minLength={8}
+            minLength={12}
           />
           {password && (
             <div className="mt-2">
