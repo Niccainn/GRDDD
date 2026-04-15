@@ -9,7 +9,7 @@ import PasswordField from '@/components/auth/PasswordField';
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={<AuthLayout title="Welcome back" subtitle="Sign in to your workspace"><div className="h-64" /></AuthLayout>}>
+    <Suspense fallback={<AuthLayout title="Sign in to GRID" subtitle="Your workspace is waiting"><div className="h-64" /></AuthLayout>}>
       <SignInInner />
     </Suspense>
   );
@@ -56,13 +56,13 @@ function SignInInner() {
 
   return (
     <AuthLayout
-      title="Welcome back"
-      subtitle="Sign in to your workspace"
+      title="Sign in to GRID"
+      subtitle="Your workspace is waiting"
       footer={
         <>
-          No account?{' '}
+          New to GRID?{' '}
           <Link href="/sign-up" className="transition-colors" style={{ color: 'var(--text-2)' }}>
-            Create one
+            Request access
           </Link>
         </>
       }

@@ -31,8 +31,33 @@ export default function Home() {
     }
   }
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'GRID',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    url: 'https://www.grddd.com',
+    description: 'GRID helps teams and AI learn the business together — so the company becomes more efficient, more adaptive, and more intelligent over time.',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      description: 'Early access',
+    },
+    creator: {
+      '@type': 'Organization',
+      name: 'GRID Systems Inc.',
+      url: 'https://www.grddd.com',
+    },
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Ambient gradient field */}
       <div className="fixed inset-0 pointer-events-none" aria-hidden>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] rounded-full opacity-[0.06]"
@@ -47,21 +72,22 @@ export default function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 py-4 md:py-5"
         style={{ backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', background: 'rgba(8,8,12,0.7)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
         <div className="flex items-center gap-2.5">
-          <svg width="24" height="31" viewBox="0 0 79 100" fill="none" style={{ opacity: 0.4 }}>
-            <rect x="2" y="2" width="75" height="96" rx="8" stroke="url(#nav-grad)" strokeWidth="2"/>
-            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="url(#nav-grad)" strokeWidth="2"/>
-            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="url(#nav-grad)" strokeWidth="2"/>
-            <defs><linearGradient id="nav-grad" x1="0" y1="0" x2="79" y2="100"><stop offset="0%" stopColor="#15AD70"/><stop offset="100%" stopColor="#7193ED"/></linearGradient></defs>
+          <svg width="24" height="31" viewBox="0 0 79 100" fill="none">
+            <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2"/>
+            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2"/>
+            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2"/>
           </svg>
           <span className="text-sm font-light tracking-[0.15em]" style={{ color: 'var(--text-2)' }}>GRID</span>
         </div>
         <div className="flex items-center gap-4 md:gap-6">
           <a href="#problem" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Why</a>
           <a href="#how" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>How</a>
-          <a href="#proof" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Proof</a>
-          <a href="#waitlist" className="text-xs font-light px-4 py-2 rounded-full transition-all"
+          <a href="#use-cases" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Use Cases</a>
+          <a href="#who" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Who</a>
+          <a href="/sign-in" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Sign in</a>
+          <a href="#waitlist" className="text-xs font-light px-4 py-2 rounded-full transition-all whitespace-nowrap"
             style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-border)', color: 'var(--brand)' }}>
-            Request early access
+            Get access
           </a>
         </div>
       </nav>
@@ -70,7 +96,7 @@ export default function Home() {
       <section className="min-h-screen flex flex-col items-center justify-center px-5 md:px-8 pt-20 relative">
         <div className="text-center max-w-3xl">
           <p className="text-[10px] tracking-[0.4em] uppercase mb-6 animate-fade-in" style={{ color: 'var(--brand)', opacity: 0.6 }}>
-            Early Access — Limited Availability
+            Early Access
           </p>
           <h1 className="text-4xl md:text-6xl font-extralight tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             See how your business<br />
@@ -80,12 +106,12 @@ export default function Home() {
             GRID helps teams and AI learn the business together — so the company becomes
             more efficient, more adaptive, and more intelligent over time.
           </p>
-          <div className="flex items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <a href="#waitlist" className="px-8 py-3.5 text-sm font-light rounded-full transition-all"
+          <div className="flex items-center justify-center gap-3 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <a href="#waitlist" className="px-5 md:px-8 py-3 md:py-3.5 text-sm font-light rounded-full transition-all whitespace-nowrap"
               style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}>
-              Request early access
+              Get early access
             </a>
-            <a href="#how" className="glass-pill px-8 py-3.5 text-sm font-light" style={{ color: 'var(--text-2)' }}>
+            <a href="#how" className="glass-pill px-5 md:px-8 py-3 md:py-3.5 text-sm font-light whitespace-nowrap" style={{ color: 'var(--text-2)' }}>
               How it works
             </a>
           </div>
@@ -160,7 +186,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ THE DUAL-ENDED LOOP ═══ */}
+      {/* ═══ HOW IT WORKS ═══ */}
       <section id="how" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
@@ -175,7 +201,7 @@ export default function Home() {
           </div>
 
           {/* The loop visualization */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Human side */}
             <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: '#7193ED', opacity: 0.4 }} />
@@ -239,132 +265,259 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ WHAT BECOMES VISIBLE ═══ */}
+      {/* ═══ USE CASES ═══ */}
+      <section id="use-cases" className="py-20 md:py-32 px-5 md:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>Use Cases</p>
+            <h2 className="text-3xl font-extralight tracking-tight mb-4">
+              Real workflows. Real outcomes.
+            </h2>
+            <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
+              GRID isn&apos;t a dashboard you look at. It&apos;s a system you run. Here&apos;s what that looks like in practice.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {/* Use case 1 — Content */}
+            <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: '#7193ED', opacity: 0.3 }} />
+              <div className="md:flex md:gap-8 md:items-start">
+                <div className="md:flex-1 mb-6 md:mb-0">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full" style={{ background: '#7193ED' }} />
+                    <p className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#7193ED', opacity: 0.7 }}>Content Operations</p>
+                  </div>
+                  <h3 className="text-lg font-light mb-2" style={{ color: 'var(--text-1)' }}>
+                    A blog post from brief to publish-ready in 4 minutes
+                  </h3>
+                  <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
+                    A founder writes a one-line brief. Nova researches the topic, writes a full draft matching the brand voice, reviews it for quality, and prepares SEO metadata — all in a single workflow execution. The founder reviews the output, adjusts the brief, and the next post is even better.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.15)' }}>Research</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.15)' }}>Draft</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.15)' }}>Review</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.15)' }}>Publish</span>
+                  </div>
+                </div>
+                <div className="md:w-48 flex-shrink-0 glass rounded-xl p-4 text-center">
+                  <p className="text-2xl font-extralight mb-1" style={{ color: 'var(--text-1)' }}>4 min</p>
+                  <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>vs. 6-8 hours manually</p>
+                  <div className="w-full h-px my-3" style={{ background: 'var(--glass-border)' }} />
+                  <p className="text-2xl font-extralight mb-1" style={{ color: 'var(--text-1)' }}>8.4/10</p>
+                  <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>avg. quality score</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Use case 2 — Social */}
+            <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: '#FF6B6B', opacity: 0.3 }} />
+              <div className="md:flex md:gap-8 md:items-start">
+                <div className="md:flex-1 mb-6 md:mb-0">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full" style={{ background: '#FF6B6B' }} />
+                    <p className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#FF6B6B', opacity: 0.7 }}>Marketing</p>
+                  </div>
+                  <h3 className="text-lg font-light mb-2" style={{ color: 'var(--text-1)' }}>
+                    A full social campaign across 3 platforms in one execution
+                  </h3>
+                  <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
+                    Describe the campaign goal. Nova builds the narrative strategy, creates platform-specific content for Instagram, LinkedIn, and Facebook, reviews each post for brand alignment, and prepares the publishing schedule. The team learns which formats perform — and the next campaign starts smarter.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,107,107,0.1)', color: '#FF6B6B', border: '1px solid rgba(255,107,107,0.15)' }}>Narrative</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,107,107,0.1)', color: '#FF6B6B', border: '1px solid rgba(255,107,107,0.15)' }}>Assets</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,107,107,0.1)', color: '#FF6B6B', border: '1px solid rgba(255,107,107,0.15)' }}>Review</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,107,107,0.1)', color: '#FF6B6B', border: '1px solid rgba(255,107,107,0.15)' }}>Publish</span>
+                  </div>
+                </div>
+                <div className="md:w-48 flex-shrink-0 glass rounded-xl p-4 text-center">
+                  <p className="text-2xl font-extralight mb-1" style={{ color: 'var(--text-1)' }}>3 min</p>
+                  <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>vs. 2-3 days with a team</p>
+                  <div className="w-full h-px my-3" style={{ background: 'var(--glass-border)' }} />
+                  <p className="text-2xl font-extralight mb-1" style={{ color: 'var(--text-1)' }}>14</p>
+                  <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>posts ready to schedule</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Use case 3 — Operations */}
+            <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: '#15AD70', opacity: 0.3 }} />
+              <div className="md:flex md:gap-8 md:items-start">
+                <div className="md:flex-1 mb-6 md:mb-0">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full" style={{ background: '#15AD70' }} />
+                    <p className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#15AD70', opacity: 0.7 }}>Operations</p>
+                  </div>
+                  <h3 className="text-lg font-light mb-2" style={{ color: 'var(--text-1)' }}>
+                    Client onboarding that self-reports and improves
+                  </h3>
+                  <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
+                    Each new client follows a structured workflow: discovery, setup, training, handoff. Health scores track engagement at every stage. The operator sees which steps cause friction, adjusts the workflow, and every future onboarding gets smoother — without adding headcount.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>Discovery</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>Setup</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>Training</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>Handoff</span>
+                  </div>
+                </div>
+                <div className="md:w-48 flex-shrink-0 glass rounded-xl p-4 text-center">
+                  <p className="text-2xl font-extralight mb-1" style={{ color: 'var(--text-1)' }}>60%</p>
+                  <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>less onboarding friction</p>
+                  <div className="w-full h-px my-3" style={{ background: 'var(--glass-border)' }} />
+                  <p className="text-2xl font-extralight mb-1" style={{ color: 'var(--text-1)' }}>0</p>
+                  <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>status meetings needed</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ HOW GRID HELPS TEAMS ═══ */}
       <section className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>Operational Clarity</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Impact</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4">
-              Hidden work becomes visible
+              What changes when your team uses GRID
             </h2>
             <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              Most teams can&apos;t see where time goes, which systems are drifting, or what AI is actually doing. GRID makes all of it measurable.
+              These aren&apos;t features. They&apos;re outcomes that compound the longer you use the platform.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {[
+              {
+                outcome: 'Operational clarity',
+                desc: 'Every workflow, every system, every signal — visible in real time. No more asking "what\'s the status?" in Slack.',
+                metric: 'Replace status meetings with live dashboards',
+                color: '#15AD70',
+              },
+              {
+                outcome: 'Visible efficiency gains',
+                desc: 'Track how much faster your team moves week over week. See which workflows save the most time and which need redesign.',
+                metric: 'Measure time saved per workflow, per week',
+                color: '#7193ED',
+              },
+              {
+                outcome: 'AI fluency',
+                desc: 'Your team learns to work with AI through real workflows — not chat experiments. Better prompts, better setups, better judgment.',
+                metric: 'Teams improve AI output quality by 40% in 4 weeks',
+                color: '#BF9FF1',
+              },
+              {
+                outcome: 'Adaptive capacity',
+                desc: 'When something changes — a new client, a new market, a new priority — the system adapts. Workflows evolve. AI adjusts. No re-training.',
+                metric: 'Respond to change in hours, not quarters',
+                color: '#F7C700',
+              },
+            ].map(item => (
+              <div key={item.outcome} className="glass-deep p-6 rounded-2xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 rounded-full" style={{ background: item.color }} />
+                  <p className="text-xs font-light" style={{ color: item.color }}>{item.outcome}</p>
+                </div>
+                <p className="text-sm font-light leading-relaxed mb-4" style={{ color: 'var(--text-1)' }}>
+                  {item.desc}
+                </p>
+                <p className="text-[10px] px-3 py-1.5 rounded-lg inline-block" style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--text-3)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  {item.metric}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* The compound line */}
+          <div className="glass-deep p-6 rounded-2xl">
+            <div className="flex items-center gap-6 md:gap-8 overflow-x-auto py-2">
+              {[
+                { week: 'Week 1', label: 'Map your business', opacity: 0.4 },
+                { week: 'Week 2', label: 'First workflow runs', opacity: 0.5 },
+                { week: 'Week 4', label: 'Patterns emerge', opacity: 0.7 },
+                { week: 'Week 8', label: 'System runs itself', opacity: 1 },
+              ].map((step, i) => (
+                <div key={step.week} className="flex items-center gap-4 md:gap-6 flex-shrink-0">
+                  <div className="text-center min-w-[80px]">
+                    <p className="text-[10px] tracking-[0.1em] uppercase mb-1" style={{ color: 'var(--brand)', opacity: step.opacity }}>{step.week}</p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>{step.label}</p>
+                  </div>
+                  {i < 3 && (
+                    <div className="w-8 h-px flex-shrink-0" style={{ background: 'var(--glass-border)' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ WHO THIS IS FOR ═══ */}
+      <section id="who" className="py-20 md:py-32 px-5 md:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[10px] tracking-[0.3em] uppercase mb-6" style={{ color: 'var(--text-3)' }}>
+              Built For
+            </p>
+            <h2 className="text-3xl font-extralight tracking-tight mb-4">
+              Teams that want to understand, not just execute
+            </h2>
+            <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
+              GRID is for people who care about getting better at running work — not just getting more done.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               {
-                label: 'Efficiency over time',
-                value: 'Week 1 vs Week 8',
-                desc: 'See exactly how much faster your workflows execute as AI and your team learn together.',
+                who: 'Founders',
+                scenario: 'You\'re running a 5-person company doing the work of 20.',
+                needs: [
+                  'See every function of the business in one view',
+                  'Build systems that run without you in the loop',
+                  'Know where to focus before something breaks',
+                ],
                 color: '#15AD70',
               },
               {
-                label: 'System health',
-                value: 'Real-time',
-                desc: 'Health scores across every part of your business. Know where to focus before something breaks.',
+                who: 'Operators',
+                scenario: 'You manage processes across teams but can\'t measure what\'s working.',
+                needs: [
+                  'Design workflows you can actually track and improve',
+                  'Replace status meetings with real-time health scores',
+                  'Learn which AI setups produce the best outcomes',
+                ],
                 color: '#7193ED',
               },
               {
-                label: 'AI fluency',
-                value: 'Compounding',
-                desc: 'Track how your team builds better prompts, better workflows, and better AI-assisted decisions over time.',
+                who: 'Small teams',
+                scenario: 'You need to ship like a bigger team without hiring like one.',
+                needs: [
+                  'Run content, ops, and marketing workflows with AI',
+                  'See time saved per workflow, not just output volume',
+                  'Get better at AI through real work, not experiments',
+                ],
                 color: '#BF9FF1',
               },
             ].map(item => (
-              <div key={item.label} className="glass-deep p-6 rounded-2xl text-center">
-                <div className="w-2 h-2 rounded-full mx-auto mb-4" style={{ background: item.color }} />
-                <p className="text-2xl font-extralight mb-1 tracking-tight" style={{ color: 'var(--text-1)' }}>{item.value}</p>
-                <p className="text-xs font-light mb-3" style={{ color: item.color, opacity: 0.7 }}>{item.label}</p>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ PROOF / CASE STUDY ═══ */}
-      <section id="proof" className="py-20 md:py-32 px-5 md:px-8">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-[10px] tracking-[0.3em] uppercase mb-6 text-center" style={{ color: 'var(--text-3)' }}>
-            What This Looks Like
-          </p>
-          <h2 className="text-3xl font-extralight tracking-tight mb-12 text-center leading-snug">
-            How a small team made<br />
-            <span style={{ color: 'var(--brand)' }}>operational chaos visible.</span>
-          </h2>
-
-          <div className="space-y-4">
-            {[
-              {
-                week: 'Week 1',
-                title: 'Map the business',
-                desc: 'Set up environments for each function. Connect existing tools. See the real state of operations for the first time — scattered, overlapping, invisible.',
-                color: 'var(--text-3)',
-              },
-              {
-                week: 'Week 2',
-                title: 'Build the first workflow',
-                desc: 'Pick the highest-friction process. Build a multi-stage workflow. Run it with Nova. Watch what the AI produces — and learn what to adjust.',
-                color: 'var(--text-2)',
-              },
-              {
-                week: 'Week 4',
-                title: 'See the pattern',
-                desc: 'Health scores show which systems need attention. Workflow execution time is dropping. The team starts designing workflows instead of doing manual ops.',
-                color: '#7193ED',
-              },
-              {
-                week: 'Week 8',
-                title: 'The compound effect',
-                desc: 'AI remembers the brand, the voice, the preferences. Workflows run faster. Signals get triaged automatically. The team focuses on decisions, not tasks.',
-                color: '#15AD70',
-              },
-            ].map(item => (
-              <div key={item.week} className="glass-deep p-6 rounded-2xl flex gap-6">
-                <div className="flex-shrink-0 w-16 text-right">
-                  <p className="text-[10px] tracking-[0.15em] uppercase" style={{ color: item.color }}>{item.week}</p>
+              <div key={item.who} className="glass-deep p-6 rounded-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: item.color, opacity: 0.3 }} />
+                <div className="w-2 h-2 rounded-full mb-4" style={{ background: item.color }} />
+                <p className="text-base font-light mb-2" style={{ color: 'var(--text-1)' }}>{item.who}</p>
+                <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-2)' }}>{item.scenario}</p>
+                <div className="space-y-2.5">
+                  {item.needs.map(need => (
+                    <div key={need} className="flex items-start gap-2">
+                      <span className="w-1 h-1 rounded-full flex-shrink-0 mt-1.5" style={{ background: item.color, opacity: 0.5 }} />
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{need}</p>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <p className="text-sm font-light mb-1" style={{ color: 'var(--text-1)' }}>{item.title}</p>
-                  <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="glass-deep p-6 rounded-2xl mt-6 text-center">
-            <p className="text-sm font-light" style={{ color: 'var(--text-2)' }}>
-              Not a faster workspace. A system that teaches you how to run better work.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ WHO THIS IS FOR ═══ */}
-      <section className="py-20 md:py-32 px-5 md:px-8">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-[10px] tracking-[0.3em] uppercase mb-6" style={{ color: 'var(--text-3)' }}>
-            Built For
-          </p>
-          <h2 className="text-3xl font-extralight tracking-tight mb-6">
-            Teams that want to understand, not just execute
-          </h2>
-          <p className="text-sm font-light leading-relaxed mb-12 max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-            GRID is for founders, operators, and small teams who want AI that works inside their business — not beside it. People who care about getting better at running work, not just getting more done.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { who: 'Founders', desc: 'See the whole business in one place. Build systems that run without you.', color: '#15AD70' },
-              { who: 'Operators', desc: 'Design workflows that improve themselves. Measure what actually changed.', color: '#7193ED' },
-              { who: 'Small teams', desc: 'Do the work of a larger team — and learn how to do it even better.', color: '#BF9FF1' },
-            ].map(item => (
-              <div key={item.who} className="glass-deep p-6 rounded-2xl">
-                <div className="w-2 h-2 rounded-full mx-auto mb-3" style={{ background: item.color }} />
-                <p className="text-sm font-light mb-2" style={{ color: 'var(--text-1)' }}>{item.who}</p>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{item.desc}</p>
               </div>
             ))}
           </div>
@@ -436,10 +589,10 @@ export default function Home() {
       <footer className="py-12 px-5 md:px-8" style={{ borderTop: '1px solid var(--glass-border)' }}>
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <svg width="16" height="21" viewBox="0 0 79 100" fill="none" style={{ opacity: 0.2 }}>
-              <rect x="2" y="2" width="75" height="96" rx="8" stroke="currentColor" strokeWidth="2"/>
-              <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="currentColor" strokeWidth="2"/>
-              <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="currentColor" strokeWidth="2"/>
+            <svg width="16" height="21" viewBox="0 0 79 100" fill="none" style={{ opacity: 0.4 }}>
+              <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2"/>
+              <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2"/>
+              <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2"/>
             </svg>
             <span className="text-xs" style={{ color: 'var(--text-3)' }}>GRID Systems Inc.</span>
           </div>

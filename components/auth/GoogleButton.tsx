@@ -10,6 +10,8 @@
  */
 'use client';
 
+import { useState, useEffect } from 'react';
+
 export default function GoogleButton({
   label = 'Continue with Google',
   next,
@@ -17,6 +19,20 @@ export default function GoogleButton({
   label?: string;
   next?: string;
 }) {
+  const [available, setAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/providers')
+      .then(r => r.json())
+      .then(data => setAvailable(Array.isArray(data.oauth) && data.oauth.includes('google')))
+      .catch(() => setAvailable(false));
+  }, []);
+
+  // Hide entirely when Google OAuth is not configured
+  if (available === false) return null;
+  // Show nothing while checking (avoid flash)
+  if (available === null) return <div className="h-[50px]" />;
+
   const href = `/api/auth/oauth/google/start${next ? `?next=${encodeURIComponent(next)}` : ''}`;
 
   return (
