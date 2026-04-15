@@ -98,10 +98,10 @@ Use markdown formatting. Be thorough but focused. Write as a senior professional
 
             // Stage-specific instructions for richer output
             const stageInstructions: Record<string, string> = {
-              'Research': 'Conduct thorough research. Deliver: key findings, target audience insights, competitive landscape, 5-8 data points or statistics, and recommended angle. Format as a structured brief.',
-              'Draft': 'Write the complete draft using insights from the Research stage. Deliver the full text — not an outline. Use clear structure with headers, engaging opening, substantive body, and strong conclusion. Target 1500-2000 words.',
-              'Review': 'Review the Draft for quality, clarity, brand alignment, and impact. Deliver: a quality score (1-10), specific strengths, specific issues to fix, suggested edits with before/after, and SEO recommendations.',
-              'Publish': 'Prepare the final publication package. Deliver: optimized title tag (60 chars), meta description (155 chars), 3 social media share variants (Twitter, LinkedIn, Instagram), suggested publish date/time, and target keywords.',
+              Research: 'Conduct thorough research. Deliver: key findings, target audience insights, competitive landscape, 5-8 data points or statistics, and recommended angle. Format as a structured brief.',
+              Draft: 'Write the complete draft using insights from the Research stage. Deliver the full text — not an outline. Use clear structure with headers, engaging opening, substantive body, and strong conclusion. Target 1500-2000 words.',
+              Review: 'Review the Draft for quality, clarity, brand alignment, and impact. Deliver: a quality score (1-10), specific strengths, specific issues to fix, suggested edits with before/after, and SEO recommendations.',
+              Publish: 'Prepare the final publication package. Deliver: optimized title tag (60 chars), meta description (155 chars), 3 social media share variants (Twitter, LinkedIn, Instagram), suggested publish date/time, and target keywords.',
               'Discovery': 'Conduct a thorough discovery analysis. Identify requirements, constraints, stakeholders, risks, and success criteria. Deliver a structured discovery document.',
               'Setup': 'Design the setup and configuration plan. Deliver: step-by-step setup checklist, resource requirements, timeline, and dependencies.',
               'Training': 'Create a training plan. Deliver: learning objectives, session outlines, key materials needed, and success metrics.',
@@ -150,7 +150,7 @@ A day-by-day schedule for the next 2 weeks showing which post goes where and whe
 
 Write all copy as final — ready to post, not drafts.`,
 
-              'Review:social': `Act as a brand manager and compliance reviewer. Review ALL content from the Assets stage:
+              ReviewSocial: `Act as a brand manager and compliance reviewer. Review ALL content from the Assets stage:
 
 ## Brand Alignment Check
 - Does each post match the tone/voice from Narrative stage? Score 1-10.
@@ -172,7 +172,7 @@ Specific before→after changes for any posts scoring below 8.
 ## Final Verdict
 "Approved for publish" or "Requires revision" with clear next steps.`,
 
-              'Publish:social': `Act as a social media scheduler. Prepare the FINAL publishing manifest:
+              PublishSocial: `Act as a social media scheduler. Prepare the FINAL publishing manifest:
 
 ## Publishing Schedule
 
@@ -215,7 +215,7 @@ For EACH post, deliver:
               /social|campaign|instagram|facebook|linkedin/i.test(workflow?.name ?? '');
             const socialStageKey =
               isSocialWorkflow && (stage === 'Review' || stage === 'Publish')
-                ? `${stage}:social`
+                ? `${stage}Social`
                 : stage;
             const specificInstruction =
               stageInstructions[socialStageKey] ??
