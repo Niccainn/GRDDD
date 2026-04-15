@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db';
+import { sendVerificationEmail } from './email-verification';
 
 const SESSION_COOKIE = 'grid_session';
 const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -74,6 +75,19 @@ export async function signUp(name: string, email: string, password: string) {
     data: { type: 'PERSON', name, email, passwordHash },
   });
 
+  // Fire the verification email. When RESEND_API_KEY is unset this
+  // auto-marks the identity verified and returns immediately, so local
+  // dev and closed-alpha signups don't block on mail infra. In prod
+  // the email is sent but we still create the session — the app
+  // surfaces a "please verify" banner rather than blocking sign-in,
+  // so the first-touch UX isn't a dead-end if the email is delayed.
+  try {
+    await sendVerificationEmail(identity.id, name, email);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[signUp] sendVerificationEmail failed:', err);
+  }
+
   return createSession(identity.id);
 }
 
@@ -107,9 +121,12 @@ export async function signOut() {
 }
 
 /**
- * Create a new session and set the cookie.
+ * Create a new session and set the cookie. Exported so OAuth
+ * callbacks (lib/auth/google.ts, future providers) can mint a
+ * session after verifying an external identity without duplicating
+ * cookie/session logic.
  */
-async function createSession(identityId: string) {
+export async function createSession(identityId: string) {
   const token = crypto.randomBytes(48).toString('base64url');
   const expiresAt = new Date(Date.now() + SESSION_DURATION);
 
@@ -118,10 +135,16 @@ async function createSession(identityId: string) {
   });
 
   const cookieStore = await cookies();
+  // sameSite=strict is our CSRF defense: a cross-origin form post or
+  // fetch cannot carry this cookie, so an attacker page cannot
+  // authenticate a state-changing request as the victim. The trade-off
+  // is that following an external link into the app won't carry the
+  // session on the first hop — the landing page will 302 through
+  // /sign-in and bounce back. Acceptable for an internal work OS.
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'strict',
     path: '/',
     expires: expiresAt,
   });

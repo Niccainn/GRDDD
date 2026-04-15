@@ -10,6 +10,7 @@ export async function GET() {
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const keys = await prisma.apiKey.findMany({
+    where: { identityId: identity.id },
     orderBy: { createdAt: 'desc' },
   });
   return Response.json(keys.map(k => ({

@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsEnvironment, assertOwnsSystem } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -15,6 +16,7 @@ export async function GET(req: NextRequest) {
 
   const signals = await prisma.signal.findMany({
     where: {
+      environment: { ownerId: identity.id, deletedAt: null },
       ...(status ? { status } : {}),
       ...(priority ? { priority } : {}),
       ...(environmentId ? { environmentId } : {}),
@@ -31,7 +33,11 @@ export async function GET(req: NextRequest) {
   });
 
   const unreadCount = await prisma.signal.count({
-    where: { status: 'UNREAD', ...(environmentId ? { environmentId } : {}) },
+    where: {
+      environment: { ownerId: identity.id, deletedAt: null },
+      status: 'UNREAD',
+      ...(environmentId ? { environmentId } : {}),
+    },
   });
 
   return Response.json({
@@ -65,6 +71,9 @@ export async function POST(req: NextRequest) {
   if (!title?.trim() || !environmentId) {
     return Response.json({ error: 'title and environmentId required' }, { status: 400 });
   }
+
+  await assertOwnsEnvironment(environmentId, identity.id);
+  if (systemId) await assertOwnsSystem(systemId, identity.id);
 
   const signal = await prisma.signal.create({
     data: {

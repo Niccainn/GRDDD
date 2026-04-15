@@ -73,14 +73,21 @@ function ToolPill({ tool }: { tool: ToolCall }) {
 }
 
 const SUGGESTIONS = [
-  'Which systems need attention?',
-  'Show me a full overview',
-  'Where are the bottlenecks?',
-  'What workflows are stalled?',
-  'Summarise org health',
+  'What needs my attention today?',
+  'Draft a social post about our latest update',
+  'Where are the bottlenecks in my business?',
+  'Give me a status update on everything',
+  'Create a task to follow up with the team',
 ];
 
-export default function GlobalNovaBar() {
+type GlobalNovaBarProps = {
+  /** When set, auto-opens and pre-fills this query (caller should clear after use) */
+  initialQuery?: string;
+  /** Callback when bar opens/closes */
+  onOpenChange?: (open: boolean) => void;
+};
+
+export default function GlobalNovaBar({ initialQuery, onOpenChange }: GlobalNovaBarProps = {}) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -88,12 +95,23 @@ export default function GlobalNovaBar() {
   const [error, setError] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const initialQueryHandled = useRef(false);
 
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [open]);
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
+
+  // Handle initialQuery prop — open bar and pre-fill
+  useEffect(() => {
+    if (initialQuery && !initialQueryHandled.current) {
+      initialQueryHandled.current = true;
+      setOpen(true);
+      setInput(initialQuery);
+    }
+  }, [initialQuery]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -250,7 +268,7 @@ export default function GlobalNovaBar() {
           </div>
           <span className="text-sm font-light flex-1 text-left transition-colors"
             style={{ color: 'rgba(255,255,255,0.3)' }}>
-            Ask Nova about your entire organisation···
+            What would you like to work on?
           </span>
           <kbd className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}>
             ⌘K
@@ -364,7 +382,7 @@ export default function GlobalNovaBar() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask Nova about any system, workflow, or pattern across the org···"
+                placeholder="Ask anything — check on a project, draft content, find bottlenecks..."
                 rows={2}
                 disabled={streaming}
                 className="w-full text-sm font-light px-4 py-3 pr-12 rounded-xl focus:outline-none resize-none transition-all"

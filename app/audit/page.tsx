@@ -120,13 +120,46 @@ export default function AuditPage() {
   }
 
   return (
-    <div className="px-10 py-10 min-h-screen max-w-3xl">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen max-w-3xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-extralight tracking-tight mb-1">Audit Log</h1>
+        <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Audit Log</h1>
         <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-          Immutable activity history · {total.toLocaleString()} events
+          Complete history of all changes and actions · {total.toLocaleString()} events
         </p>
       </div>
+
+      {/* Activity feed banner */}
+      <a
+        href="/activity"
+        className="flex items-center gap-3 rounded-2xl px-4 py-3 mb-6 transition-all group"
+        style={{
+          background: 'var(--glass)',
+          border: '1px solid var(--glass-border)',
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
+          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)';
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLElement).style.background = 'var(--glass)';
+          (e.currentTarget as HTMLElement).style.borderColor = 'var(--glass-border)';
+        }}
+      >
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: 'rgba(113,147,237,0.1)', border: '1px solid rgba(113,147,237,0.2)' }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v5l3 2.5" stroke="#7193ED" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="7" cy="7" r="5.5" stroke="#7193ED" strokeWidth="1.1" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>View the full activity feed</p>
+          <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>Timeline view with filtering, search, and infinite scroll</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 transition-transform group-hover:translate-x-0.5">
+          <path d="M5 3l4 4-4 4" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </a>
 
       {/* Filters */}
       <div className="flex gap-3 mb-6 flex-wrap">
