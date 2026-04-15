@@ -15,6 +15,10 @@ const PUBLIC_PATHS = [
   '/reset-password',
   '/privacy',
   '/terms',
+  '/pricing',
+  '/compare',
+  '/use-cases',
+  '/blog',
   '/offline',
   '/portal',
   '/api/auth/sign-in',
@@ -103,22 +107,31 @@ export function middleware(req: NextRequest) {
     return withSecurityHeaders(NextResponse.next());
   }
 
-  // Allow public paths
+  // Allow public paths — but redirect authenticated users away from
+  // marketing pages (/, /sign-in, /sign-up) into the app.
+  const session = req.cookies.get('grid_session')?.value;
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+    if (session && (pathname === '/' || pathname === '/sign-in' || pathname === '/sign-up')) {
+      return withSecurityHeaders(
+        NextResponse.redirect(new URL('/dashboard', req.url))
+      );
+    }
     return withSecurityHeaders(NextResponse.next());
   }
 
-  // Allow static files
+  // Allow static files and generated assets (icon, apple-icon, opengraph-image, etc.)
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
+    pathname.startsWith('/apple-icon') ||
+    pathname.startsWith('/opengraph-image') ||
+    pathname.startsWith('/icon') ||
     pathname.includes('.')
   ) {
     return withSecurityHeaders(NextResponse.next());
   }
 
-  // Check session cookie
-  const session = req.cookies.get('grid_session')?.value;
+  // Check session cookie (already read above for public-path redirect)
   if (!session) {
     // API routes get 401
     if (pathname.startsWith('/api/')) {
