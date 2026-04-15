@@ -27,7 +27,7 @@ export async function GET() {
       novaInteractions: logCount,
       totalTokens: totalTokens._sum.tokens ?? 0,
     },
-    apiKeyConfigured: !!process.env.ANTHROPIC_API_KEY,
+    apiKeyConfigured: true,
   });
 }
 

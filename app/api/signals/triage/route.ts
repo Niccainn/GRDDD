@@ -6,17 +6,12 @@ import { rateLimitApi } from '@/lib/rate-limit';
  */
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
-import Anthropic from '@anthropic-ai/sdk';
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
-  }
 
   const { signalId } = await req.json();
   if (!signalId) return Response.json({ error: 'signalId required' }, { status: 400 });
@@ -26,6 +21,17 @@ export async function POST(req: NextRequest) {
     include: { environment: { include: { systems: { include: { workflows: true } } } } },
   });
   if (!signal) return Response.json({ error: 'Signal not found' }, { status: 404 });
+
+  let resolved;
+  try {
+    resolved = await getAnthropicClientForEnvironment(signal.environmentId);
+  } catch (err) {
+    if (err instanceof MissingKeyError) {
+      return Response.json({ error: err.message, actionUrl: err.actionUrl }, { status: 402 });
+    }
+    throw err;
+  }
+  const anthropic = resolved.client;
 
   const systemList = signal.environment.systems.map(s => ({
     id: s.id,
