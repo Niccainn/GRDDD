@@ -222,6 +222,7 @@ export async function eraseUserData(identityId: string) {
       data: {
         name: '[Deleted User]',
         email: null,
+        emailHash: null,
         passwordHash: null,
         authId: null,
         avatar: null,

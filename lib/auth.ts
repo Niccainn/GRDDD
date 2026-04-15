@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db';
+import { hashEmail } from './crypto/email-hash';
 import { sendVerificationEmail } from './email-verification';
 
 const SESSION_COOKIE = 'grid_session';
@@ -65,7 +66,7 @@ export async function getAuthIdentity(): Promise<AuthIdentity> {
  * Sign up a new user with email + password.
  */
 export async function signUp(name: string, email: string, password: string) {
-  const existing = await prisma.identity.findUnique({ where: { email } });
+  const existing = await prisma.identity.findUnique({ where: { emailHash: hashEmail(email) } });
   if (existing) {
     throw new Error('An account with this email already exists');
   }
@@ -95,7 +96,7 @@ export async function signUp(name: string, email: string, password: string) {
  * Sign in with email + password.
  */
 export async function signIn(email: string, password: string) {
-  const identity = await prisma.identity.findUnique({ where: { email } });
+  const identity = await prisma.identity.findUnique({ where: { emailHash: hashEmail(email) } });
   if (!identity || !identity.passwordHash || identity.deletedAt) {
     throw new Error('Invalid email or password');
   }
@@ -161,6 +162,7 @@ export const createSessionForIdentity = createSession;
 /**
  * Upsert an identity from an OAuth provider. Links by email if an
  * account already exists; otherwise creates a new one.
+ * Uses emailHash for lookups when available (PII-safe).
  */
 export async function upsertOAuthIdentity(profile: {
   provider: string;
@@ -169,9 +171,9 @@ export async function upsertOAuthIdentity(profile: {
   name: string;
   avatar?: string | null;
 }) {
-  // Try to find existing identity by email
+  // Try to find existing identity by emailHash (PII-safe lookup)
   const existing = profile.email
-    ? await prisma.identity.findUnique({ where: { email: profile.email } })
+    ? await prisma.identity.findUnique({ where: { emailHash: hashEmail(profile.email) } })
     : null;
 
   if (existing) {

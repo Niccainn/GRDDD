@@ -30,6 +30,7 @@
 import crypto from 'node:crypto';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
+import { hashEmail } from '@/lib/crypto/email-hash';
 
 export const GOOGLE_STATE_COOKIE = 'grid_oauth_state';
 const STATE_TTL_SECONDS = 10 * 60; // 10 minutes — long enough for slow consent, short enough to limit replay window
@@ -202,7 +203,7 @@ export async function completeGoogleOAuth(
  * email-verified at creation since Google already verified the mailbox.
  */
 export async function upsertGoogleIdentity(user: GoogleUser): Promise<{ id: string; isNew: boolean }> {
-  const existing = await prisma.identity.findUnique({ where: { email: user.email } });
+  const existing = await prisma.identity.findUnique({ where: { emailHash: hashEmail(user.email) } });
 
   if (existing) {
     // If the account existed with a different auth provider (e.g.

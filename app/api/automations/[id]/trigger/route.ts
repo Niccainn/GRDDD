@@ -9,7 +9,18 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
 
-  const automation = await prisma.intelligence.findUnique({ where: { id } });
+  const automation = await prisma.intelligence.findFirst({
+    where: {
+      id,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
+    },
+  });
   if (!automation) return Response.json({ error: 'Not found' }, { status: 404 });
 
   let config: Record<string, unknown> = {};

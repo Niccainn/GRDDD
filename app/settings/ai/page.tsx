@@ -17,6 +17,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import SettingsNav from '@/components/SettingsNav';
 
 type Environment = {
   id: string;
@@ -126,7 +127,8 @@ export default function AiSettingsPage() {
   }
 
   return (
-    <div className="px-10 py-10 min-h-screen max-w-3xl">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen max-w-3xl">
+      <SettingsNav />
       <Link
         href="/settings"
         className="text-xs font-light mb-8 inline-flex items-center gap-1.5"

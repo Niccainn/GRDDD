@@ -214,7 +214,7 @@ body {
 
 /* ─── Stat number — bold instrument panel number ─── */
 .stat-number {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 300;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -222,11 +222,20 @@ body {
 }
 
 .stat-number-lg {
-  font-size: 2.75rem;
+  font-size: 2rem;
   font-weight: 200;
   letter-spacing: -0.03em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  .stat-number {
+    font-size: 2rem;
+  }
+  .stat-number-lg {
+    font-size: 2.75rem;
+  }
 }
 
 /* ─── Dot matrix chart ─── */

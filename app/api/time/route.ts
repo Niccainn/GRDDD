@@ -57,9 +57,16 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'duration is required' }, { status: 400 });
   }
 
-  // Verify environment ownership
+  // Verify environment ownership or membership
   const env = await prisma.environment.findFirst({
-    where: { id: environmentId, ownerId: identity.id, deletedAt: null },
+    where: {
+      id: environmentId,
+      deletedAt: null,
+      OR: [
+        { ownerId: identity.id },
+        { memberships: { some: { identityId: identity.id } } },
+      ],
+    },
   });
   if (!env) {
     return Response.json({ error: 'Environment not found' }, { status: 404 });

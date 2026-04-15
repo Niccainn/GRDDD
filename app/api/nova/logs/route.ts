@@ -10,12 +10,33 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search') ?? '';
   const systemId = searchParams.get('systemId') ?? '';
-  const limit = parseInt(searchParams.get('limit') ?? '50');
+  const limit = Math.min(100, parseInt(searchParams.get('limit') ?? '50'));
+
+  // Scope to environments the user owns or is a member of.
+  const userEnvIds = await prisma.environment.findMany({
+    where: {
+      deletedAt: null,
+      OR: [
+        { ownerId: identity.id },
+        { memberships: { some: { identityId: identity.id } } },
+      ],
+    },
+    select: { id: true },
+  }).then(envs => envs.map(e => e.id));
+
+  // If a specific systemId is provided, verify it belongs to the user's environments.
+  if (systemId) {
+    const system = await prisma.system.findFirst({
+      where: { id: systemId, environmentId: { in: userEnvIds } },
+      select: { id: true },
+    });
+    if (!system) return Response.json({ error: 'System not found' }, { status: 404 });
+  }
 
   const logs = await prisma.intelligenceLog.findMany({
     where: {
       action: 'nova_query',
-      ...(systemId ? { systemId } : {}),
+      ...(systemId ? { systemId } : { system: { environmentId: { in: userEnvIds } } }),
       ...(search
         ? {
             OR: [

@@ -89,12 +89,20 @@ export default function WelcomePage() {
     if (user && !name) setName(user.name || '');
   }, [user, name]);
 
-  // Not signed in — bounce to sign-in. Happens if someone hits
-  // /welcome directly without a session (middleware would normally
-  // block this, but defense in depth).
+  // Not signed in — bounce to sign-in. Already onboarded — bounce
+  // to dashboard (handles the case where the onboarded cookie was
+  // lost but the user already completed onboarding).
   useEffect(() => {
     if (!authLoading && !user) router.replace('/sign-in?next=/welcome');
   }, [authLoading, user, router]);
+
+  useEffect(() => {
+    if (user) {
+      fetch('/api/auth/me').then(r => r.json()).then(data => {
+        if (data?.identity?.onboardedAt) router.replace('/dashboard');
+      }).catch(() => {});
+    }
+  }, [user, router]);
 
   async function finish() {
     setError('');

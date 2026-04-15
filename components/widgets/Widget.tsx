@@ -14,8 +14,7 @@ type WidgetProps = {
 export default function Widget({ title, subtitle, action, children, className = '', span = 1 }: WidgetProps) {
   return (
     <div
-      className={`glass-deep p-5 flex flex-col animate-fade-in ${className}`}
-      style={{ gridColumn: span === 2 ? 'span 2' : undefined }}
+      className={`glass-deep p-3 md:p-5 flex flex-col animate-fade-in ${span === 2 ? 'md:col-span-2' : ''} ${className}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
