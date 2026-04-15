@@ -1720,3 +1720,13 @@ model CrossDomainInsight {
   @@index([severity])
   @@index([createdAt])
 }
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  email     String   @unique
+  source    String   @default("landing")
+  notes     String?
+
+  @@index([createdAt])
+}
