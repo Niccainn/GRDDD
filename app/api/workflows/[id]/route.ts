@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsWorkflow } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -9,6 +10,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsWorkflow(id, identity.id);
   const workflow = await prisma.workflow.findUnique({
     where: { id },
     include: { system: true, environment: true },
@@ -20,7 +22,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     name: workflow.name,
     description: workflow.description ?? null,
     status: workflow.status,
-    stages: JSON.parse(workflow.stages ?? '[]'),
+    stages: (() => { try { const parsed = JSON.parse(workflow.stages ?? '[]'); return parsed.map((s: unknown) => typeof s === 'string' ? s : (s as { name?: string }).name ?? ''); } catch { return []; } })(),
     nodes: workflow.nodes ?? null,
     edges: workflow.edges ?? null,
     systemName: workflow.system.name,
@@ -36,6 +38,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsWorkflow(id, identity.id);
   const body = await req.json();
   const existing = await prisma.workflow.findUnique({ where: { id }, select: { name: true, status: true, environmentId: true } });
   const updated = await prisma.workflow.update({
@@ -96,6 +99,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsWorkflow(id, identity.id);
   await prisma.workflow.delete({ where: { id } });
   return Response.json({ deleted: true });
 }

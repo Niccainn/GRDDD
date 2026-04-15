@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 type DailyPoint = { date: string; queries: number; tokens: number };
 type ExecPoint  = { date: string; completed: number; failed: number };
@@ -105,15 +106,47 @@ export default function AnalyticsPage() {
   const maxTokenSystem = data ? Math.max(...data.bySystem.map(s => s.tokens), 1) : 1;
 
   return (
-    <div className="px-10 py-10 min-h-screen max-w-4xl">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen max-w-4xl">
+      {/* Tab bar */}
+      <div className="mb-8" style={{ display: 'flex', gap: 2 }}>
+        <div
+          style={{
+            padding: '8px 20px',
+            borderRadius: 10,
+            fontSize: 13,
+            fontWeight: 400,
+            color: 'var(--text-1)',
+            background: 'var(--glass)',
+            border: '1px solid var(--glass-border)',
+          }}
+        >
+          Overview
+        </div>
+        <Link
+          href="/analytics/history"
+          style={{
+            padding: '8px 20px',
+            borderRadius: 10,
+            fontSize: 13,
+            fontWeight: 300,
+            color: 'var(--text-3)',
+            background: 'transparent',
+            textDecoration: 'none',
+            transition: 'all 0.2s',
+          }}
+        >
+          History
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-2xl font-extralight tracking-tight mb-1">Analytics</h1>
-        <p className="text-xs" style={{ color: 'var(--text-3)' }}>Nova activity and workflow performance · last 30 days</p>
+        <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Analytics</h1>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>AI usage, workflow performance, and operational insights · last 30 days</p>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {!data ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="rounded-xl p-4 animate-pulse" style={{ background: 'var(--glass)', height: 80 }} />
@@ -127,7 +160,7 @@ export default function AnalyticsPage() {
           ].map(stat => (
             <div key={stat.label} className="rounded-xl p-4" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
               <p className="text-xs font-light mb-2" style={{ color: 'var(--text-3)' }}>{stat.label}</p>
-              <p className="text-2xl font-extralight tabular-nums mb-1" style={{ color: stat.color }}>{stat.value}</p>
+              <p className="text-xl md:text-2xl font-extralight tabular-nums mb-1" style={{ color: stat.color }}>{stat.value}</p>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{stat.sub}</p>
             </div>
           ))

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "prisma generate && prisma migrate deploy && next build",
+  "functions": {
+    "app/api/nova/execute/route.ts": { "maxDuration": 300 },
+    "app/api/v1/run/route.ts": { "maxDuration": 300 },
+    "app/api/cron/agents/route.ts": { "maxDuration": 300 },
+    "app/api/agents/[id]/run/stream/route.ts": { "maxDuration": 300 }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/agents",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

@@ -1,25 +1,109 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuth } from './AuthProvider';
 import ThemeToggle from './ThemeToggle';
+import NotificationBell from './NotificationBell';
 import { useEnvironmentBrand } from './EnvironmentBrand';
 
-const coreNav = [
-  { href: '/dashboard', label: 'Operate', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" strokeWidth="1.1"/><path d="M7.5 4.5v3l2 2" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg> },
-  { href: '/environments', label: 'Environments', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L13 4.75V11.25L7.5 14.5L2 11.25V4.75L7.5 1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/></svg> },
-  { href: '/systems', label: 'Systems', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="4.5" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M5 4.5V3.5C5 2.95 5.45 2.5 6 2.5H9C9.55 2.5 10 2.95 10 3.5V4.5" stroke="currentColor" strokeWidth="1.1"/><circle cx="7.5" cy="8.5" r="1.25" stroke="currentColor" strokeWidth="1.1"/></svg> },
-  { href: '/workflows', label: 'Workflows', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="3" cy="3" r="1.75" stroke="currentColor" strokeWidth="1.1"/><circle cx="12" cy="7.5" r="1.75" stroke="currentColor" strokeWidth="1.1"/><circle cx="3" cy="12" r="1.75" stroke="currentColor" strokeWidth="1.1"/><path d="M4.75 3H8C9.1 3 10 3.9 10 5v1" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/><path d="M4.75 12H8C9.1 12 10 11.1 10 10V9" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg> },
-  { href: '/nova', label: 'Nova', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>, accent: true },
-];
+// ── Icons ────────────────────────────────────────────────────────────
+const icons = {
+  home: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5L7.5 2.5L12.5 7.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 6.5V12.5H6.5V9.5H8.5V12.5H11V6.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  nova: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>,
+  tasks: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M5 7.5l1.5 1.5 3.5-3.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  inbox: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 4.5C1.5 3.95 1.95 3.5 2.5 3.5H12.5C13.05 3.5 13.5 3.95 13.5 4.5V10.5C13.5 11.05 13.05 11.5 12.5 11.5H2.5C1.95 11.5 1.5 11.05 1.5 10.5V4.5Z" stroke="currentColor" strokeWidth="1.1"/><path d="M1.5 5L7.5 8.5L13.5 5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
+  goals: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" strokeWidth="1.1"/><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.1"/></svg>,
+  environments: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L13 4.75V11.25L7.5 14.5L2 11.25V4.75L7.5 1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/></svg>,
+  systems: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="4.5" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M5 4.5V3.5C5 2.95 5.45 2.5 6 2.5H9C9.55 2.5 10 2.95 10 3.5V4.5" stroke="currentColor" strokeWidth="1.1"/><circle cx="7.5" cy="8.5" r="1.25" stroke="currentColor" strokeWidth="1.1"/></svg>,
+  workflows: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="3" cy="3" r="1.75" stroke="currentColor" strokeWidth="1.1"/><circle cx="12" cy="7.5" r="1.75" stroke="currentColor" strokeWidth="1.1"/><circle cx="3" cy="12" r="1.75" stroke="currentColor" strokeWidth="1.1"/><path d="M4.75 3H8C9.1 3 10 3.9 10 5v1" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/><path d="M4.75 12H8C9.1 12 10 11.1 10 10V9" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
+  agents: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L12.5 4.5V10.5L7.5 13.5L2.5 10.5V4.5L7.5 1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/><circle cx="7.5" cy="7.5" r="1.75" stroke="currentColor" strokeWidth="1.1"/></svg>,
+  integrations: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="4.5" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.1"/><circle cx="10.5" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.1"/></svg>,
+  templates: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="4.5" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.1"/><rect x="8.5" y="2" width="4.5" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.1"/><rect x="2" y="8.5" width="4.5" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.1"/><rect x="8.5" y="8.5" width="4.5" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.1"/></svg>,
+  calendar: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M1.5 5.5h12" stroke="currentColor" strokeWidth="1.1"/><path d="M4.5 1v2.5M10.5 1v2.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
+  analytics: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 12L5.5 8L8.5 10L13 4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 13.5H13" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
+  reports: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="1.5" width="11" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
+  audit: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M4.5 5.5h6M4.5 8h4M4.5 10.5h5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
+  documents: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M4 1.5H9.5L12 4V13C12 13.28 11.78 13.5 11.5 13.5H4C3.72 13.5 3.5 13.28 3.5 13V2C3.5 1.72 3.72 1.5 4 1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/><path d="M9.5 1.5V4H12" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/><path d="M5.5 7.5h4M5.5 9.5h3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
+  activity: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 7.5H4L5.5 3.5L7.5 11.5L9.5 5.5L11 7.5H13.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  forms: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/><path d="M2.5 4.5h-1v8.5a1.5 1.5 0 001.5 1.5h8" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  views: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="0.75" stroke="currentColor" strokeWidth="1.1"/><rect x="8.5" y="1.5" width="5" height="5" rx="0.75" stroke="currentColor" strokeWidth="1.1"/><rect x="1.5" y="8.5" width="5" height="5" rx="0.75" stroke="currentColor" strokeWidth="1.1"/><rect x="8.5" y="8.5" width="5" height="5" rx="0.75" stroke="currentColor" strokeWidth="1.1"/></svg>,
+  automations: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M8.5 1.5L3.5 8.5H7L6.5 13.5L11.5 6.5H8L8.5 1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  dashboards: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="5" height="3.5" rx="0.75" stroke="currentColor" strokeWidth="1.1"/><rect x="8.5" y="1.5" width="5" height="5.5" rx="0.75" stroke="currentColor" strokeWidth="1.1"/><rect x="1.5" y="7" width="5" height="6" rx="0.75" stroke="currentColor" strokeWidth="1.1"/><rect x="8.5" y="9" width="5" height="4" rx="0.75" stroke="currentColor" strokeWidth="1.1"/></svg>,
+  finance: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 2v11" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/><path d="M10 4.5H6.25a1.75 1.75 0 000 3.5h2.5a1.75 1.75 0 010 3.5H5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  time: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" strokeWidth="1.1"/><path d="M7.5 4v3.5L10 9" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  approvals: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L3 3.5V7C3 10 5 12.5 7.5 13.5C10 12.5 12 10 12 7V3.5L7.5 1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/><path d="M5.5 7.5L7 9L9.5 6" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  assets: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M1.5 10l3-3 2 2 3-4 4 5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><circle cx="4.5" cy="5.5" r="1" stroke="currentColor" strokeWidth="1.1"/></svg>,
+  settings: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.1"/><path d="M7.5 1.5V3M7.5 12V13.5M1.5 7.5H3M12 7.5H13.5M3.25 3.25L4.3 4.3M10.7 10.7L11.75 11.75M3.25 11.75L4.3 10.7M10.7 4.3L11.75 3.25" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
+};
 
-const secondaryNav = [
-  { href: '/analytics', label: 'Analytics', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 12L5.5 8L8.5 10L13 4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 13.5H13" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg> },
-  { href: '/inbox', label: 'Inbox', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1.5 4.5C1.5 3.95 1.95 3.5 2.5 3.5H12.5C13.05 3.5 13.5 3.95 13.5 4.5V10.5C13.5 11.05 13.05 11.5 12.5 11.5H2.5C1.95 11.5 1.5 11.05 1.5 10.5V4.5Z" stroke="currentColor" strokeWidth="1.1"/><path d="M1.5 5L7.5 8.5L13.5 5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>, badge: 'inbox' },
-  { href: '/goals', label: 'Goals', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" strokeWidth="1.1"/><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.1"/></svg> },
-  { href: '/reports', label: 'Reports', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="1.5" width="11" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg> },
-  { href: '/audit', label: 'Audit', icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M4.5 5.5h6M4.5 8h4M4.5 10.5h5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg> },
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  accent?: boolean;
+  badge?: string;
+};
+
+type NavSection = {
+  label: string;
+  items: NavItem[];
+};
+
+// ── Sidebar sections ─────────────────────────────────────────────────
+// Grouped to tell a story: your command center → your work → your structure → your intelligence
+const navSections: NavSection[] = [
+  {
+    label: '',
+    items: [
+      { href: '/dashboard', label: 'Home', icon: icons.home },
+      { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
+    ],
+  },
+  {
+    label: 'WORK',
+    items: [
+      { href: '/tasks', label: 'Tasks', icon: icons.tasks },
+      { href: '/inbox', label: 'Inbox', icon: icons.inbox, badge: 'inbox' },
+      { href: '/goals', label: 'Goals', icon: icons.goals },
+      { href: '/calendar', label: 'Calendar', icon: icons.calendar },
+      { href: '/docs', label: 'Documents', icon: icons.documents },
+      { href: '/forms', label: 'Forms', icon: icons.forms },
+      { href: '/views', label: 'Views', icon: icons.views },
+    ],
+  },
+  {
+    label: 'OPERATIONS',
+    items: [
+      { href: '/finance', label: 'Finance', icon: icons.finance },
+      { href: '/time', label: 'Time Tracking', icon: icons.time },
+      { href: '/approvals', label: 'Approvals', icon: icons.approvals },
+      { href: '/assets', label: 'Assets', icon: icons.assets },
+    ],
+  },
+  {
+    label: 'STRUCTURE',
+    items: [
+      { href: '/environments', label: 'Environments', icon: icons.environments },
+      { href: '/systems', label: 'Systems', icon: icons.systems },
+      { href: '/workflows', label: 'Workflows', icon: icons.workflows },
+      { href: '/agents', label: 'Agents', icon: icons.agents },
+      { href: '/integrations', label: 'Integrations', icon: icons.integrations },
+      { href: '/templates', label: 'Templates', icon: icons.templates },
+      { href: '/automations', label: 'Automations', icon: icons.automations },
+      { href: '/dashboards', label: 'Dashboards', icon: icons.dashboards },
+    ],
+  },
+  {
+    label: 'INTELLIGENCE',
+    items: [
+      { href: '/analytics', label: 'Analytics', icon: icons.analytics },
+      { href: '/reports', label: 'Reports', icon: icons.reports },
+      { href: '/audit', label: 'Audit', icon: icons.audit },
+      { href: '/activity', label: 'Activity', icon: icons.activity },
+    ],
+  },
 ];
 
 export default function Sidebar() {
@@ -27,9 +111,64 @@ export default function Sidebar() {
   const router = useRouter();
   const { user } = useAuth();
   const { brandName, brandLogo } = useEnvironmentBrand();
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
+  // Detect environment context
+  const envMatch = pathname.match(/^\/environments\/([^/]+)/);
+  const envSlug = envMatch ? envMatch[1] : null;
+  const envDisplayName = envSlug
+    ? envSlug.charAt(0).toUpperCase() + envSlug.slice(1).replace(/-/g, ' ')
+    : null;
+
+  const isActive = (href: string) => {
+    // Exact match for environment overview
+    if (envSlug && href === `/environments/${envSlug}`) {
+      return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(href + '/');
+  };
+
+  // Environment-scoped navigation
+  const envNavSections: NavSection[] = [
+    {
+      label: '',
+      items: [
+        { href: '/dashboard', label: 'Home', icon: icons.home },
+        { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
+      ],
+    },
+    {
+      label: '',
+      items: [
+        { href: `/environments/${envSlug}`, label: 'Overview', icon: icons.dashboards },
+        { href: `/environments/${envSlug}/tasks`, label: 'Tasks', icon: icons.tasks },
+        { href: `/environments/${envSlug}/docs`, label: 'Documents', icon: icons.documents },
+        { href: `/environments/${envSlug}/goals`, label: 'Goals', icon: icons.goals },
+        { href: `/environments/${envSlug}/activity`, label: 'Activity', icon: icons.activity },
+        { href: `/environments/${envSlug}/analytics`, label: 'Analytics', icon: icons.analytics },
+        { href: `/environments/${envSlug}/calendar`, label: 'Calendar', icon: icons.calendar },
+      ],
+    },
+    {
+      label: 'GLOBAL',
+      items: [
+        { href: '/environments', label: 'All Environments', icon: icons.environments },
+        { href: '/tasks', label: 'All Tasks', icon: icons.tasks },
+        { href: '/workflows', label: 'Workflows', icon: icons.workflows },
+        { href: '/systems', label: 'Systems', icon: icons.systems },
+        { href: '/integrations', label: 'Integrations', icon: icons.integrations },
+      ],
+    },
+  ];
+
+  const activeSections = envSlug ? envNavSections : navSections;
+
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [inboxUnread, setInboxUnread] = useState(0);
+
+  // Close mobile nav on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
   useEffect(() => {
     fetch('/api/signals?limit=1').then(r => r.json()).then(d => setInboxUnread(d.unreadCount ?? 0)).catch(() => {});
     const id = setInterval(() => {
@@ -41,9 +180,30 @@ export default function Sidebar() {
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() ?? '?';
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[220px] flex flex-col z-40"
+    <>
+      {/* Mobile hamburger */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden w-9 h-9 rounded-xl flex items-center justify-center"
+        style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5">
+          <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
+        </svg>
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+    <aside className={`fixed left-0 top-0 h-screen w-[220px] flex flex-col z-50 transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       style={{
-        background: 'rgba(8, 8, 12, 0.8)',
+        background: 'rgba(8, 8, 12, 0.95)',
         backdropFilter: 'blur(60px)',
         WebkitBackdropFilter: 'blur(60px)',
         borderRight: '1px solid var(--glass-border)',
@@ -53,7 +213,7 @@ export default function Sidebar() {
       <div className="px-5 py-5" style={{ borderBottom: '1px solid var(--glass-border)' }}>
         <Link href="/" className="flex items-center gap-3 group">
           {brandLogo ? (
-            <img src={brandLogo} alt="" className="h-6 w-auto" />
+            <Image src={brandLogo} alt="" width={96} height={24} className="h-6 w-auto" />
           ) : (
             <svg width="20" height="26" viewBox="0 0 79 100" fill="none" className="flex-shrink-0" style={{ opacity: 0.3 }}>
               <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2"/>
@@ -70,6 +230,7 @@ export default function Sidebar() {
       {/* Search */}
       <div className="px-3 py-2" style={{ borderBottom: '1px solid var(--glass-border)' }}>
         <button
+          data-tour="search-button"
           onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
           className="glass-pill w-full flex items-center gap-2 px-3 py-2 text-sm">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'var(--text-3)', flexShrink: 0 }}>
@@ -81,64 +242,83 @@ export default function Sidebar() {
         </button>
       </div>
 
+      {/* Environment header */}
+      {envSlug && envDisplayName && (
+        <div className="px-3 py-2" style={{ borderBottom: '1px solid var(--glass-border)' }}>
+          <Link
+            href={`/environments/${envSlug}`}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all"
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
+          >
+            <span style={{ color: 'var(--brand)', opacity: 0.7 }}>{icons.environments}</span>
+            <span className="text-xs font-light tracking-wide truncate" style={{ color: 'var(--text-2)' }}>
+              {envDisplayName}
+            </span>
+          </Link>
+        </div>
+      )}
+
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {/* Core */}
-        {coreNav.map(item => {
-          const active = isActive(item.href);
-          const isNova = item.accent;
-          return (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all"
-              style={{
-                color: active
-                  ? isNova ? 'var(--nova)' : 'var(--text-1)'
-                  : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
-                background: active
-                  ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
-                  : 'transparent',
-                borderRadius: 'var(--radius-sm)',
-              }}>
-              <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
-              <span className="font-light tracking-wide">{item.label}</span>
-              {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
-            </Link>
-          );
-        })}
-
-        {/* Divider */}
-        <div className="my-3" style={{ borderTop: '1px solid var(--glass-border)' }} />
-
-        {/* Secondary */}
-        {secondaryNav.map(item => {
-          const active = isActive(item.href);
-          const showBadge = item.badge === 'inbox' && inboxUnread > 0;
-          return (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm transition-all"
-              style={{
-                color: active ? 'var(--text-1)' : 'var(--text-3)',
-                background: active ? 'var(--glass-active)' : 'transparent',
-                borderRadius: 'var(--radius-sm)',
-              }}>
-              <span style={{ opacity: active ? 1 : 0.4 }}>{item.icon}</span>
-              <span className="font-light tracking-wide">{item.label}</span>
-              {showBadge && (
-                <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
-                  style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
-                  {inboxUnread}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 px-3 py-3 overflow-y-auto">
+        {activeSections.map((section, si) => (
+          <div key={section.label || si} className={si > 0 ? 'mt-4' : ''}>
+            {/* Section label */}
+            {section.label && (
+              <p className="text-[10px] tracking-[0.16em] font-light px-3 mb-1.5" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+                {section.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {section.items.map(item => {
+                const active = isActive(item.href);
+                const isNova = item.accent;
+                const showBadge = item.badge === 'inbox' && inboxUnread > 0;
+                return (
+                  <Link key={item.href} href={item.href}
+                    className="flex items-center gap-3 px-3 py-2 text-sm transition-all"
+                    style={{
+                      color: active
+                        ? isNova ? 'var(--nova)' : 'var(--text-1)'
+                        : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
+                      background: active
+                        ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
+                        : 'transparent',
+                      borderRadius: 'var(--radius-sm)',
+                    }}>
+                    <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+                    <span className="font-light tracking-wide">{item.label}</span>
+                    {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
+                    {showBadge && (
+                      <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
+                        style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
+                        {inboxUnread}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Theme + User */}
       <div className="px-3 py-4" style={{ borderTop: '1px solid var(--glass-border)' }}>
         <div className="flex items-center justify-between mb-3 px-1">
           <ThemeToggle />
+          <NotificationBell />
         </div>
+        <Link href="/settings"
+          className="flex items-center gap-3 px-3 py-2 mb-3 text-sm transition-all"
+          style={{
+            color: isActive('/settings') ? 'var(--text-1)' : 'var(--text-3)',
+            background: isActive('/settings') ? 'var(--glass-active)' : 'transparent',
+            borderRadius: 'var(--radius-sm)',
+          }}>
+          <span style={{ opacity: isActive('/settings') ? 1 : 0.5 }}>{icons.settings}</span>
+          <span className="font-light tracking-wide">Settings</span>
+          {isActive('/settings') && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: 'var(--brand)', opacity: 0.5 }} />}
+        </Link>
         <div className="flex items-center gap-3">
           <Link href="/settings" className="flex items-center gap-3 flex-1 min-w-0 group">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-light flex-shrink-0"
@@ -169,5 +349,6 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }

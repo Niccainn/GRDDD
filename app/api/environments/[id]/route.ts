@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsEnvironment } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -8,6 +9,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsEnvironment(id, identity.id);
   const body = await req.json();
   const updated = await prisma.environment.update({
     where: { id },
@@ -24,6 +26,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsEnvironment(id, identity.id);
   await prisma.environment.delete({ where: { id } });
   return Response.json({ deleted: true });
 }

@@ -3,6 +3,9 @@ generator client {
 }
 
 datasource db {
+  // PostgreSQL for production (Neon, Supabase, Vercel Postgres, etc.).
+  // For local dev with SQLite, set DATABASE_URL="file:./dev.db" and
+  // change provider to "sqlite" — the schema is compatible with both.
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
@@ -26,6 +29,27 @@ model Identity {
   // Auth
   authId String? @unique // external auth provider ID
 
+  // Email verification — see lib/email-verification.ts. Null token
+  // means no pending verification. When RESEND_API_KEY is unset the
+  // auth layer auto-sets emailVerifiedAt at signup and skips this
+  // flow entirely (dev / closed alpha convenience).
+  emailVerifiedAt           DateTime?
+  emailVerifyToken          String?   @unique
+  emailVerifyTokenExpiresAt DateTime?
+
+  // Password reset — see lib/auth/password-reset.ts. Same shape as
+  // the email-verify token: single-use, hashed at rest, short expiry.
+  // A null token means there is no pending reset. Consuming the token
+  // clears both columns in the same write so replays fail.
+  passwordResetTokenHash      String?   @unique
+  passwordResetTokenExpiresAt DateTime?
+
+  // Onboarding — null until the user completes the /welcome wizard.
+  // Middleware sends authenticated users here on the next navigation
+  // whenever this is null, so closing the browser mid-onboarding is
+  // recoverable.
+  onboardedAt DateTime?
+
   // Optional Properties
   avatar      String?
   description String?
@@ -35,15 +59,32 @@ model Identity {
   deletedAt DateTime?
 
   // Relationships
+  subscription           Subscription?
+  usageRecords           UsageRecord[]
   ownedEnvironments      Environment[]
   environmentMemberships EnvironmentMembership[]
   createdSystems         System[]         @relation("SystemCreator")
   createdWorkflows       Workflow[]       @relation("WorkflowCreator")
   createdIntelligence    Intelligence[]   @relation("IntelligenceCreator")
+  createdAgents          Agent[]          @relation("AgentCreator")
   intelligenceLogs       IntelligenceLog[]
   goals                  Goal[]
   apiKeys                ApiKey[]
   sessions               Session[]
+  createdTasks           Task[]             @relation("TaskCreator")
+  assignedTasks          Task[]             @relation("TaskAssignee")
+  notifications          Notification[]
+  comments               Comment[]
+  documents              Document[]
+  automations            Automation[]
+  forms                  Form[]
+  attachments            Attachment[]
+  assets                 Asset[]
+  budgets                Budget[]
+  expenses               Expense[]
+  invoices               Invoice[]
+  approvalRequests       ApprovalRequest[] @relation("ApprovalRequester")
+  timeEntries            TimeEntry[]
 
   @@index([email])
   @@index([type])
@@ -93,10 +134,30 @@ model Environment {
   brandColor String? // Primary brand color (hex)
   brandLogo  String? // URL or base64 of brand logo
 
+  // Brand Identity Nucleus — the DNA that keeps all content on-brand
+  brandTone       String? // e.g. "Professional but approachable, warm, confident"
+  brandAudience   String? // e.g. "Health-conscious millennials, 25-40, urban professionals"
+  brandValues     String? // e.g. "Transparency, sustainability, innovation"
+  brandKeywords   String? // Comma-separated keywords/phrases to weave into content
+  brandVoiceDont  String? // What to avoid: "Never use jargon, avoid passive voice"
+  brandBio        String? // Short brand story / elevator pitch
+
   // Budget & Cost Controls
   tokenBudget  Int?               // Monthly token budget (null = unlimited)
   tokensUsed   Int      @default(0) // Tokens consumed this period
   budgetResetAt DateTime?          // When to reset tokensUsed
+
+  // BYOK — per-tenant Anthropic API key. Stored as AES-256-GCM
+  // ciphertext (see lib/crypto/key-encryption.ts). The plaintext key
+  // never lives in the DB, logs, or error messages. `preview` is a
+  // display-only suffix like "sk-ant-...a7f3" so the UI can confirm
+  // which key is connected without decrypting. `source` distinguishes
+  // tenant-supplied BYOK keys from the platform trial key used in
+  // closed beta.
+  anthropicKeyEnc     String?   // AES-256-GCM ciphertext, null = not connected
+  anthropicKeyPreview String?   // e.g. "sk-ant-...a7f3" for UI confirmation
+  anthropicKeyAddedAt DateTime? // When the current key was connected
+  anthropicKeySource  String?   // "byok" | "platform" — provenance of active key
 
   // Soft delete
   deletedAt DateTime?
@@ -113,6 +174,20 @@ model Environment {
   apiKeys      ApiKey[]
   goals        Goal[]
   signals      Signal[]
+  agents       Agent[]
+  integrations Integration[]
+  tasks        Task[]
+  portalLinks  PortalLink[]
+  documents    Document[]
+  automations  Automation[]
+  forms        Form[]
+  assets       Asset[]
+  budgets      Budget[]
+  invoices     Invoice[]
+  approvalRequests ApprovalRequest[]
+  timeEntries      TimeEntry[]
+  taskTemplates    TaskTemplate[]
+  savedViews       SavedView[]
 
   @@index([ownerId])
   @@index([slug])
@@ -170,6 +245,8 @@ model System {
   systemState      SystemState?
   goals            Goal[]
   signals          Signal[]
+  agents           Agent[]
+  tasks            Task[]
 
   @@index([environmentId])
   @@index([creatorId])
@@ -508,5 +585,1138 @@ model Signal {
   @@index([systemId])
   @@index([status])
   @@index([priority])
+  @@index([createdAt])
+}
+
+// ===============================================
+// OBJECT 6: AGENT
+// The "prompt-as-agent" primitive. An Agent is a named, durable,
+// re-runnable prompt bound to an environment. Users create an Agent
+// once, run it many times with different inputs, edit the structured
+// output in place, and (eventually) schedule it. This is the thing
+// that replaces "I'll paste a prompt into ChatGPT again" — the prompt
+// becomes a first-class object that has a URL, a history, an owner,
+// and a place to live.
+//
+// Design choices:
+//   * `promptTemplate` supports {{var}} substitution from `inputsSchema`
+//     so the same agent can be re-run with different inputs without
+//     re-typing the prompt. v1 ships with simple string replacement;
+//     we'll add type coercion + validation in v2.
+//   * Agents are environment-scoped, not system-scoped, so users can
+//     create one without first thinking about the System hierarchy.
+//     An optional `systemId` lets power users group agents under a
+//     system for analytics rollups.
+//   * Agents are intentionally NOT Executions. Execution is the old
+//     workflow-stage primitive; AgentRun is the new "one invocation of
+//     a named prompt" primitive. They may converge later but keeping
+//     them separate lets us iterate the Agent UX without breaking the
+//     existing workflow surface.
+// ===============================================
+
+model Agent {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Identity
+  name        String
+  description String?
+  emoji       String? // quick visual marker in lists
+
+  // The prompt IS the agent. When a user edits this field and re-runs,
+  // they're iterating on the agent itself — not typing a fresh prompt.
+  // That iteration loop is the whole product thesis.
+  promptTemplate String
+
+  // Typed inputs as JSON. Shape:
+  //   [{ "name": "date", "label": "Date", "type": "text", "default": "yesterday" }]
+  // Substituted into promptTemplate via {{name}} tokens at run time.
+  inputsSchema String?
+
+  // Model override. Null falls back to claude-sonnet-4-6.
+  model String?
+
+  // Scheduling. v1: "manual" only. v2: cron string like "0 9 * * *".
+  schedule String? @default("manual")
+
+  // Lifecycle
+  status    String    @default("ACTIVE") // ACTIVE | PAUSED | ARCHIVED
+  lastRunAt DateTime?
+  deletedAt DateTime?
+
+  // Relationships
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  systemId String?
+  system   System? @relation(fields: [systemId], references: [id], onDelete: SetNull)
+
+  creatorId String
+  creator   Identity @relation("AgentCreator", fields: [creatorId], references: [id])
+
+  runs AgentRun[]
+
+  // Orchestration — agents this agent can hand off to
+  canInvoke  AgentHandoff[] @relation("HandoffCaller")
+  invokedBy  AgentHandoff[] @relation("HandoffCallee")
+
+  @@index([environmentId])
+  @@index([systemId])
+  @@index([status])
+  @@index([creatorId])
+}
+
+// ===============================================
+// AgentHandoff — defines which agents can invoke which.
+// The orchestrator uses these edges to build multi-agent
+// pipelines at runtime.
+// ===============================================
+
+model AgentHandoff {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  callerId  String
+  caller    Agent @relation("HandoffCaller", fields: [callerId], references: [id], onDelete: Cascade)
+
+  calleeId  String
+  callee    Agent @relation("HandoffCallee", fields: [calleeId], references: [id], onDelete: Cascade)
+
+  // When to trigger: "always" | "on_condition" | "manual"
+  trigger   String @default("manual")
+  condition String? // Natural language condition for "on_condition" trigger
+
+  // What context to pass
+  passContext Boolean @default(true)  // Pass caller's output as callee input
+  passMemory  Boolean @default(false) // Share persistent memory
+
+  @@unique([callerId, calleeId])
+  @@index([callerId])
+  @@index([calleeId])
+}
+
+// Individual invocation of an Agent. Each run captures the exact
+// prompt that was sent (after {{var}} substitution) so history is
+// auditable even after the agent's template has been edited. Outputs
+// live as structured blocks (see AgentOutputBlock) rather than a flat
+// string so the UI can render metrics, tables, and actions — and so
+// humans can edit a single cell in place.
+model AgentRun {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  status String // QUEUED | RUNNING | SUCCESS | FAILED | CANCELLED
+
+  // The exact prompt sent to Anthropic after substitution. Stored
+  // verbatim for audit + reproducibility — if a user later edits the
+  // template, this row still shows what actually ran.
+  resolvedPrompt String
+  inputs         String? // JSON of {name: value} pairs supplied to this run
+
+  // Plaintext fallback of the response. Block-level structure lives
+  // in `blocks` — this is just for quick previews in lists.
+  outputText String?
+
+  // Accounting
+  tokens Int?
+  cost   Float?
+  error  String?
+
+  // Tool-use trace — JSON array of { toolName, input, output, error?,
+  // durationMs, integrationId }. Populated when the run invoked one
+  // or more integration tools via the Phase 3 tool layer. Null when
+  // the run was a straight prompt→response with no tool calls, so
+  // we don't pay the storage cost on agents that don't use tools.
+  toolCalls String?
+
+  // Conversation checkpoint — JSON-encoded Anthropic.MessageParam[].
+  // Set when the run pauses at AWAITING_APPROVAL waiting on a human
+  // to decide PendingActions. The resume helper loads this back into
+  // memory, appends the approved tool_results, and re-enters the
+  // tool-use loop. Null on terminal runs (SUCCESS/FAILED).
+  conversationState String?
+
+  // How many iterations of the tool-use loop the run has consumed
+  // across (possibly many) resume cycles. Phase 5 caps total iterations
+  // to prevent runaway approval loops.
+  iterationsUsed Int @default(0)
+
+  agentId String
+  agent   Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  blocks         AgentOutputBlock[]
+  pendingActions PendingAction[]
+
+  @@index([agentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Phase 5 — write-path approval gate.
+//
+// When the agent runner encounters a tool_use for a tool flagged
+// `mutating: true`, it does NOT execute. Instead it persists a
+// PendingAction row, emits an `action` AgentOutputBlock pointing at
+// it, and pauses the parent AgentRun at status AWAITING_APPROVAL.
+// The user reviews the proposed call in the UI and either approves
+// or rejects each PendingAction. Once every PendingAction tied to a
+// run has been decided, the resume helper executes the approved
+// ones, appends the tool_results to the conversation checkpoint,
+// and re-enters the tool-use loop.
+//
+// status: PENDING | APPROVED | REJECTED | EXECUTED | FAILED
+//
+// "APPROVED" means the user clicked approve but the resume hasn't
+// run the tool yet. "EXECUTED" means we actually called the upstream
+// API and got a result. "FAILED" means we tried to execute and the
+// upstream call threw — Claude sees this as a tool_result with
+// is_error: true so it can recover.
+model PendingAction {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  decidedAt DateTime?
+  executedAt DateTime?
+
+  status String @default("PENDING")
+
+  // Anthropic tool_use_id we MUST echo back in the eventual
+  // tool_result block, otherwise Claude rejects the response.
+  toolUseId String
+
+  // Tool registry name + the JSON-encoded args Claude wanted to call
+  // it with. We never let the user edit args between approval and
+  // execution — that would invalidate Claude's reasoning.
+  toolName  String
+  toolInput String
+
+  // Provider slug + integration this would run against. Cached so
+  // the UI doesn't have to re-resolve.
+  provider      String
+  integrationId String
+
+  // Human-readable summary the UI shows on the approve card. Built
+  // by the tool's summarize() helper at queue time.
+  summary String
+
+  // Result/error of the actual upstream call once we execute.
+  resultJson String?
+  error      String?
+
+  // Who clicked approve/reject. Stored as an Identity id without a
+  // formal relation to keep this lean.
+  decidedById String?
+  decisionReason String?
+
+  runId String
+  run   AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([status])
+}
+
+// Structured, in-place-editable output unit for an AgentRun. Each
+// block has a `type` that determines how the UI renders it (text,
+// metric card, table, action button, heading, chart). When a human
+// edits a block the originals are NOT destroyed — we stamp `editedAt`
+// and `editedById` so the training signal is preserved for future
+// retrieval into the next run's context ("last time you corrected
+// this metric to X, remember that").
+//
+// editedById is an opaque Identity.id string rather than a full
+// relation to keep the model lean and avoid an Identity back-relation
+// that we don't need anywhere else.
+model AgentOutputBlock {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Ordering within the run's output (0-indexed).
+  index Int
+
+  // "text" | "heading" | "metric" | "table" | "action" | "chart"
+  type String
+
+  // JSON content. Shape depends on type:
+  //   text    -> { "markdown": "..." }
+  //   heading -> { "level": 1|2|3, "text": "..." }
+  //   metric  -> { "label": "...", "value": "...", "delta": "+12%" }
+  //   table   -> { "columns": [...], "rows": [[...]] }
+  //   action  -> { "label": "Approve", "href": "/...", "variant": "primary" }
+  //   chart   -> { "series": [...], "type": "line" }
+  content String
+
+  // Human edit tracking.
+  editedAt   DateTime?
+  editedById String?
+
+  runId String
+  run   AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([runId, index])
+}
+
+// ===============================================
+// OBJECT 7: INTEGRATION
+// Third-party provider credentials, BYOK-style.
+//
+// Generalizes the same primitive we used for per-env Anthropic keys:
+// each Integration is a single connected account (one Meta Ads ad
+// account, one Cloudflare zone set, one Salesforce org). Credentials
+// are AES-256-GCM encrypted at rest via lib/crypto/key-encryption.ts.
+// The plaintext never lives in the DB, logs, or error messages; only
+// `credentialsPreview` (e.g. "…a7f3") leaks into the UI so users can
+// confirm the right account without decrypting.
+//
+// `provider` is a string (not an enum) because the canonical list lives in lib/integrations/
+// registry.ts. The pair `(environmentId, provider, accountLabel)` is
+// unique so a single environment can connect multiple ad accounts
+// under the same provider (e.g. two separate Meta Ads accounts).
+//
+// `authType` ∈ {"oauth", "api_key", "service_account"}. OAuth rows
+// additionally populate `refreshTokenEnc` and `expiresAt` so the
+// sync layer can rotate access tokens transparently. API-key rows
+// leave both null.
+// ===============================================
+
+model Integration {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Provider identity — see lib/integrations/registry.ts for the
+  // canonical list. "meta_ads", "google_ads", "cloudflare", etc.
+  provider String
+
+  // Human-readable label the user sees in lists. Defaults to the
+  // provider's display name but can be overridden ("Acme Meta Ads").
+  displayName  String
+  accountLabel String? // e.g. "Ad Account 1234567890", Cloudflare zone, Salesforce org ID
+
+  // "oauth" | "api_key" | "service_account"
+  authType String
+
+  // Encrypted credential blob (AES-256-GCM). For OAuth rows this is
+  // the access token; for api_key rows it's the raw token.
+  credentialsEnc     String
+  credentialsPreview String // "…a7f3" suffix for UI confirmation
+
+  // OAuth-only: encrypted refresh token + expiry. Null for api_key.
+  refreshTokenEnc String?
+  expiresAt       DateTime?
+
+  // Granted scopes as a JSON array string, for display + audit.
+  scopes String?
+
+  // "ACTIVE" | "EXPIRED" | "REVOKED" | "ERROR"
+  status        String    @default("ACTIVE")
+  lastSyncedAt  DateTime?
+  lastError     String?
+  lastErrorAt   DateTime?
+
+  // Soft delete so audit trails stay intact.
+  deletedAt DateTime?
+
+  // Relationships
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  createdById String
+
+  @@unique([environmentId, provider, accountLabel])
+  @@index([environmentId])
+  @@index([provider])
+  @@index([status])
+}
+
+// ===============================================
+// OBJECT 8: TASK
+// The explicit work-item primitive. This is what ClickUp calls a "task":
+// a named unit of work with an assignee, due date, priority, status,
+// and comments thread. Tasks live inside an environment and optionally
+// under a system. They are distinct from Signals (inbound items) and
+// Executions (workflow runs) — a Signal can be converted to a Task,
+// and a Task can trigger an Execution, but they're separate objects so
+// each has its own lifecycle.
+//
+// statusGroup buckets: BACKLOG | TODO | IN_PROGRESS | REVIEW | DONE | CANCELLED
+// priority: URGENT | HIGH | NORMAL | LOW
+// ===============================================
+
+model Task {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String
+  description String?
+
+  // Status and workflow
+  status      String @default("TODO")      // BACKLOG | TODO | IN_PROGRESS | REVIEW | DONE | CANCELLED
+  priority    String @default("NORMAL")     // URGENT | HIGH | NORMAL | LOW
+
+  // Dates
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  // Position for manual ordering in board/list views (lower = higher)
+  position    Int    @default(0)
+
+  // Optional labels as JSON array: ["bug","frontend","urgent"]
+  labels      String?
+
+  // Subtask support — self-referencing. Null parentId = top-level task.
+  parentId    String?
+  parent      Task?   @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks    Task[]  @relation("Subtasks")
+
+  // Relationships
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  systemId String?
+  system   System? @relation(fields: [systemId], references: [id], onDelete: SetNull)
+
+  creatorId String
+  creator   Identity @relation("TaskCreator", fields: [creatorId], references: [id])
+
+  assigneeId String?
+  assignee   Identity? @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  // Soft delete
+  deletedAt DateTime?
+
+  comments    TaskComment[]
+  timeEntries TimeEntry[]
+
+  // Dependencies
+  dependenciesFrom  TaskDependency[] @relation("DependencySource")
+  dependenciesTo    TaskDependency[] @relation("DependencyTarget")
+
+  // Recurrence
+  recurrenceRule    String?
+  recurrenceEnd     DateTime?
+  lastRecurredAt    DateTime?
+  recurringParentId String?
+
+  @@index([environmentId])
+  @@index([systemId])
+  @@index([status])
+  @@index([assigneeId])
+  @@index([creatorId])
+  @@index([parentId])
+  @@index([dueDate])
+  @@index([priority])
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  body String
+
+  taskId String
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  authorId   String
+  authorName String
+
+  @@index([taskId])
+  @@index([createdAt])
+}
+
+// ===============================================
+// TASK DEPENDENCY
+// ===============================================
+
+model TaskDependency {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  type String // "blocks" | "blocked_by" | "relates_to"
+
+  sourceTaskId String
+  sourceTask   Task @relation("DependencySource", fields: [sourceTaskId], references: [id], onDelete: Cascade)
+
+  targetTaskId String
+  targetTask   Task @relation("DependencyTarget", fields: [targetTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceTaskId, targetTaskId])
+  @@index([sourceTaskId])
+  @@index([targetTaskId])
+}
+
+// ===============================================
+// TASK TEMPLATE
+// ===============================================
+
+model TaskTemplate {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name         String
+  description  String?
+  templateData String // JSON: { title, description, priority, labels, subtasks }
+  category     String @default("general")
+  isGlobal     Boolean @default(false)
+
+  environmentId String?
+  environment   Environment? @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  creatorId String
+
+  @@index([environmentId])
+  @@index([category])
+}
+
+// ===============================================
+// SAVED VIEW
+// ===============================================
+
+model SavedView {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name       String
+  entityType String // "tasks" | "workflows" | "goals" | "executions"
+  viewType   String // "table" | "board" | "gallery" | "timeline" | "calendar"
+  config     String // JSON: filters, sort, groupBy, columns
+  isDefault  Boolean @default(false)
+  isShared   Boolean @default(false)
+
+  environmentId String?
+  environment   Environment? @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  creatorId String
+
+  @@index([environmentId])
+  @@index([creatorId])
+}
+
+// ===============================================
+// NOTIFICATION
+// In-app notification bell. Created by system events (task assigned,
+// comment added, execution completed, etc.). Each notification targets
+// a single identity and links to the relevant entity.
+// ===============================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  type    String  // task.assigned | task.commented | task.completed | execution.completed | execution.failed | signal.urgent
+  title   String
+  body    String?
+  href    String? // deep link: /tasks/cuid123
+
+  read    Boolean @default(false)
+  readAt  DateTime?
+
+  identityId String
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+  @@index([identityId, read])
+  @@index([createdAt])
+}
+
+// ===============================================
+// Comment — threaded comments on any entity
+// (system, workflow, execution, goal, etc.)
+// ===============================================
+
+model Comment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  body      String  // Markdown text, may contain @mentions
+  entityType String // "system" | "workflow" | "execution" | "goal" | "signal" | "task"
+  entityId   String // ID of the parent entity
+
+  // Threading: null = top-level, set = reply
+  parentId  String?
+  parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentThread")
+
+  authorId  String
+  author    Identity @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Soft delete
+  deletedAt DateTime?
+
+  @@index([entityType, entityId])
+  @@index([parentId])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+// ===============================================
+// PortalLink — shareable client portal link.
+// Each link exposes a read-only view of an environment
+// to external clients without authentication.
+// ===============================================
+
+model PortalLink {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  token       String  @unique // URL-safe random token
+  name        String          // "Client: Acme Corp"
+  isActive    Boolean @default(true)
+  expiresAt   DateTime?
+
+  // What to show
+  showSystems    Boolean @default(true)
+  showWorkflows  Boolean @default(true)
+  showGoals      Boolean @default(true)
+  showExecutions Boolean @default(false)
+
+  // Branding
+  customTitle String? // Override environment name for client view
+
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  creatorId String
+
+  @@index([token])
+  @@index([environmentId])
+}
+
+// ===============================================
+// SUBSCRIPTION — Stripe-backed billing
+// ===============================================
+
+model Subscription {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plan   String @default("FREE")   // FREE | PRO | TEAM
+  status String @default("ACTIVE") // ACTIVE | CANCELED | PAST_DUE | TRIALING
+
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean  @default(false)
+
+  identityId String   @unique
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@index([status])
+}
+
+// ===============================================
+// USAGE RECORD — monthly metric counters
+// ===============================================
+
+model UsageRecord {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  metric String   // 'executions' | 'nova_queries' | 'api_calls' | 'storage_mb'
+  count  Int      @default(0)
+  period DateTime // first day of the month
+
+  identityId String
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@unique([identityId, metric, period])
+  @@index([identityId])
+  @@index([period])
+}
+
+// ===============================================
+// DOCUMENT — Notion-like content workspace
+// Rich documents that live inside environments.
+// Supports nesting via self-referencing parentId.
+// ===============================================
+
+model Document {
+  id            String   @id @default(cuid())
+  title         String   @default("Untitled")
+  content       String   @default("")
+  icon          String?
+  coverImage    String?
+  isArchived    Boolean  @default(false)
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  identityId    String
+  identity      Identity @relation(fields: [identityId], references: [id])
+  parentId      String?
+  parent        Document? @relation("DocumentTree", fields: [parentId], references: [id])
+  children      Document[] @relation("DocumentTree")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([environmentId])
+  @@index([parentId])
+}
+
+// ===============================================
+// AUTOMATION — Visual workflow builder
+// Node-based automation with triggers, conditions,
+// actions, and transforms. Stores graph as JSON.
+// ===============================================
+
+model Automation {
+  id            String   @id @default(cuid())
+  name          String
+  description   String   @default("")
+  trigger       String   // 'manual' | 'schedule' | 'webhook' | 'event'
+  triggerConfig String   @default("{}") // JSON config for the trigger
+  nodes         String   @default("[]") // JSON array of automation nodes
+  edges         String   @default("[]") // JSON array of connections between nodes
+  isActive      Boolean  @default(false)
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  identityId    String
+  identity      Identity @relation(fields: [identityId], references: [id])
+  lastRunAt     DateTime?
+  runCount      Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([environmentId])
+  @@index([identityId])
+}
+
+// ===============================================
+// FORMS — public intake forms that feed data into systems
+// ===============================================
+
+model Form {
+  id            String   @id @default(cuid())
+  name          String
+  description   String   @default("")
+  fields        String   @default("[]") // JSON array of field definitions
+  settings      String   @default("{}") // JSON: submitLabel, successMessage, redirectUrl, notifyOnSubmit
+  isPublished   Boolean  @default(false)
+  slug          String   @unique
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  identityId    String
+  identity      Identity @relation(fields: [identityId], references: [id])
+  submissions   FormSubmission[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([environmentId])
+  @@index([identityId])
+  @@index([slug])
+}
+
+model FormSubmission {
+  id        String   @id @default(cuid())
+  formId    String
+  form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  data      String   @default("{}") // JSON of submitted field values
+  metadata  String   @default("{}") // JSON: ip, userAgent, referrer
+  createdAt DateTime @default(now())
+
+  @@index([formId])
+  @@index([createdAt])
+}
+
+// ===============================================
+// ATTACHMENT -- file attachments on any entity
+// Polymorphic via entityType + entityId. Supports
+// tasks, systems, documents, executions.
+// ===============================================
+
+model Attachment {
+  id         String   @id @default(cuid())
+  filename   String
+  mimeType   String
+  size       Int      // bytes
+  path       String   // storage path (local: /uploads/xxx or S3 key)
+  entityType String   // 'task' | 'system' | 'document' | 'execution'
+  entityId   String
+  identityId String
+  identity   Identity @relation(fields: [identityId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([identityId])
+}
+
+// ===============================================
+// ASSET -- Digital Asset Management
+// Creative assets with versioning, tagging, and
+// category organization for design teams.
+// ===============================================
+
+model Asset {
+  id            String   @id @default(cuid())
+  name          String
+  description   String   @default("")
+  filename      String
+  mimeType      String
+  size          Int
+  path          String
+  thumbnailPath String?
+  width         Int?
+  height        Int?
+  tags          String   @default("[]") // JSON array of tag strings
+  category      String   @default("uncategorized") // illustration, photo, icon, logo, video, document, other
+  version       Int      @default(1)
+  parentId      String?  // points to original asset for version tracking
+  parent        Asset?   @relation("AssetVersions", fields: [parentId], references: [id])
+  versions      Asset[]  @relation("AssetVersions")
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  identityId    String
+  identity      Identity @relation(fields: [identityId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([environmentId])
+  @@index([identityId])
+  @@index([parentId])
+  @@index([category])
+}
+
+// ===============================================
+// BUDGET — departmental/project budgets
+// ===============================================
+
+model Budget {
+  id            String   @id @default(cuid())
+  name          String
+  amount        Float
+  spent         Float    @default(0)
+  currency      String   @default("USD")
+  period        String   @default("monthly") // monthly, quarterly, yearly, project
+  startDate     DateTime
+  endDate       DateTime?
+  category      String   @default("general") // general, marketing, engineering, design, operations, sales
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  identityId    String
+  identity      Identity @relation(fields: [identityId], references: [id])
+  expenses      Expense[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([environmentId])
+  @@index([identityId])
+}
+
+// ===============================================
+// EXPENSE — individual expense line items
+// ===============================================
+
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amount      Float
+  currency    String   @default("USD")
+  category    String   @default("other") // software, hardware, services, travel, marketing, payroll, other
+  vendor      String?
+  date        DateTime @default(now())
+  status      String   @default("pending") // pending, approved, rejected, paid
+  receipt     String?
+  notes       String?
+  budgetId    String?
+  budget      Budget?  @relation(fields: [budgetId], references: [id])
+  identityId  String
+  identity    Identity @relation(fields: [identityId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([budgetId])
+  @@index([identityId])
+  @@index([status])
+  @@index([date])
+}
+
+// ===============================================
+// INVOICE — client invoices
+// ===============================================
+
+model Invoice {
+  id          String   @id @default(cuid())
+  number      String   @unique
+  clientName  String
+  clientEmail String?
+  items       String   @default("[]") // JSON array of { description, quantity, unitPrice, amount }
+  subtotal    Float    @default(0)
+  tax         Float    @default(0)
+  total       Float    @default(0)
+  currency    String   @default("USD")
+  status      String   @default("draft") // draft, sent, paid, overdue, cancelled
+  issueDate   DateTime @default(now())
+  dueDate     DateTime?
+  paidAt      DateTime?
+  notes       String?
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  identityId    String
+  identity      Identity @relation(fields: [identityId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([environmentId])
+  @@index([identityId])
+  @@index([status])
+}
+
+// ===============================================
+// APPROVAL REQUEST
+// Multi-step approval chains for designs, invoices,
+// expenses, documents, tasks, and custom entities.
+// ===============================================
+
+model ApprovalRequest {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  entityType  String   // 'expense' | 'invoice' | 'design' | 'document' | 'task' | 'custom'
+  entityId    String?  // ID of the related entity
+  status      String   @default("pending") // pending, approved, rejected, changes_requested
+  priority    String   @default("normal") // low, normal, high, urgent
+  requesterId String
+  requester   Identity @relation("ApprovalRequester", fields: [requesterId], references: [id])
+  steps       String   @default("[]") // JSON array of approval steps
+  currentStep Int      @default(0)
+  metadata    String   @default("{}")
+  dueDate     DateTime?
+  completedAt DateTime?
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([environmentId])
+  @@index([requesterId])
+  @@index([status])
+  @@index([entityType])
+}
+
+// ===============================================
+// TIME TRACKING
+// ===============================================
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  description String   @default("")
+  duration    Int      // minutes
+  date        DateTime @default(now())
+  startTime   DateTime?
+  endTime     DateTime?
+  billable    Boolean  @default(true)
+  hourlyRate  Float?
+  taskId      String?
+  task        Task?    @relation(fields: [taskId], references: [id])
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  identityId  String
+  identity    Identity @relation(fields: [identityId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([identityId])
+  @@index([environmentId])
+  @@index([taskId])
+  @@index([date])
+}
+
+// ===============================================
+// NOVA MEMORY — Second Brain
+// Persistent context that makes Nova smarter over time.
+// Stores brand voice, market insights, user corrections,
+// strategic context, and learned preferences. This is what
+// turns Nova from an assistant into a partner.
+// ===============================================
+
+model NovaMemory {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Memory classification
+  type      String   // "brand_context" | "market_insight" | "user_correction" | "strategic_context" | "learned_preference" | "pattern"
+  category  String?  // Sub-category for organization (e.g. "tone", "audience", "competitor", "workflow_pattern")
+
+  // Content
+  title     String   // Short label for the memory
+  content   String   // The actual knowledge/context
+  source    String?  // Where this came from: "user_input" | "nova_observation" | "execution_analysis" | "correction"
+  confidence Float   @default(0.8) // How confident Nova is in this memory (0-1)
+
+  // Scope — memories can be global, environment-scoped, or system-scoped
+  environmentId String?
+  systemId      String?
+
+  // Lifecycle
+  usageCount Int      @default(0) // How often this memory has been used in suggestions
+  lastUsedAt DateTime?
+  expiresAt  DateTime? // Optional expiry for time-sensitive insights
+  isActive   Boolean  @default(true)
+
+  @@index([type])
+  @@index([environmentId])
+  @@index([systemId])
+  @@index([isActive])
+  @@index([confidence])
+  @@index([createdAt])
+}
+
+// ===============================================
+// NOVA REFLECTION — Reflective Loop Engine
+// Periodic self-assessments where Nova analyzes its own
+// outputs, compares against outcomes, and surfaces what
+// it learned. Each reflection is scoped to an environment
+// and produces actionable insights.
+// ===============================================
+
+model NovaReflection {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // What Nova observed
+  insight     String   // The reflection/observation
+  category    String   // "performance" | "efficiency" | "risk" | "opportunity" | "pattern" | "anomaly"
+  severity    String   @default("info") // "info" | "warning" | "critical" | "positive"
+
+  // Quantitative backing
+  metric      String?  // What was measured
+  metricValue Float?   // The value
+  metricDelta Float?   // Change from previous period
+  confidence  Float    @default(0.7) // How confident Nova is
+
+  // Scope
+  environmentId String
+  systemId      String?
+  workflowId    String?
+
+  // Action taken
+  suggestion    String?  // What Nova recommends
+  acknowledged  Boolean  @default(false) // User saw this
+  actionTaken   String?  // What the user did about it
+
+  @@index([environmentId])
+  @@index([category])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+// ===============================================
+// CONSEQUENCE MAP — Domino Effect Modeling
+// Maps causal relationships between workflow stages,
+// systems, and goals. When something changes, this graph
+// shows what downstream effects ripple through the org.
+// ===============================================
+
+model ConsequenceLink {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Source of the consequence
+  sourceType String   // "workflow_stage" | "system" | "goal" | "task" | "metric"
+  sourceId   String   // ID of the source entity
+  sourceLabel String  // Human-readable label
+
+  // Target that gets affected
+  targetType String   // Same types as source
+  targetId   String
+  targetLabel String
+
+  // Relationship
+  relationship String  // "triggers" | "blocks" | "feeds_into" | "degrades" | "improves" | "requires"
+  impact       String  @default("medium") // "low" | "medium" | "high" | "critical"
+  description  String? // Explanation of the causal link
+  lagTime      String? // How long until the effect manifests: "immediate" | "hours" | "days" | "weeks"
+
+  // Scope
+  environmentId String
+  confidence    Float  @default(0.7)
+
+  @@index([sourceType, sourceId])
+  @@index([targetType, targetId])
+  @@index([environmentId])
+}
+
+// ===============================================
+// AUTONOMY CONFIG — Trust Gradient
+// Per-workflow/system autonomy level that controls how
+// much Nova can do without asking. Learns from user
+// behavior — approval rate feeds into level recommendations.
+// ===============================================
+
+model AutonomyConfig {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // What this config applies to
+  scopeType String   // "workflow" | "system" | "environment" | "task_type"
+  scopeId   String   // ID of the scoped entity
+  scopeLabel String  // Human-readable label
+
+  // Autonomy level (0-4)
+  // 0: Observe only  1: Suggest  2: Act + notify  3: Act autonomously  4: Act + self-redirect
+  level     Int      @default(1)
+
+  // Trust metrics
+  totalActions    Int @default(0)  // How many actions Nova has proposed
+  approvedActions Int @default(0)  // How many the user approved
+  overriddenActions Int @default(0) // How many the user overrode
+  approvalRate    Float @default(0) // Computed: approved / total
+
+  // Nova's recommendation
+  recommendedLevel Int?    // What Nova thinks the level should be
+  recommendReason  String? // Why Nova recommends this level
+
+  environmentId String
+
+  @@unique([scopeType, scopeId])
+  @@index([environmentId])
+  @@index([level])
+}
+
+// ===============================================
+// CROSS-DOMAIN INSIGHT — Cross-Environment Reasoning
+// Insights that span multiple environments/systems,
+// showing how changes in one area affect another.
+// The connective tissue of organizational intelligence.
+// ===============================================
+
+model CrossDomainInsight {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // The insight
+  title       String  // Short headline
+  description String  // Detailed explanation
+  category    String  // "correlation" | "causation" | "risk" | "opportunity" | "dependency"
+  severity    String  @default("info") // "info" | "warning" | "critical" | "positive"
+  confidence  Float   @default(0.6)
+
+  // Domains involved (JSON arrays of {type, id, name})
+  sourceDomains String // JSON: [{type: "environment", id: "...", name: "Marketing"}]
+  targetDomains String // JSON: [{type: "system", id: "...", name: "Revenue Ops"}]
+
+  // Evidence
+  evidence    String?  // JSON: data points supporting this insight
+  dataPoints  Int      @default(0) // Number of data points analyzed
+
+  // Lifecycle
+  acknowledged Boolean @default(false)
+  actionTaken  String?
+  resolvedAt   DateTime?
+
+  @@index([category])
+  @@index([severity])
   @@index([createdAt])
 }

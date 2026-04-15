@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Breadcrumb from './Breadcrumb';
+import ConsequenceMap from './ConsequenceMap';
 
 const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED'];
 const STATUS_COLOR: Record<string, string> = {
@@ -31,6 +32,7 @@ type WorkflowProps = {
   stages: string[];
   systemId: string;
   systemName: string;
+  environmentId: string;
   environmentName: string;
   environmentSlug: string;
   createdAt: string;
@@ -91,7 +93,7 @@ export default function WorkflowDetailClient({
       body: JSON.stringify({ name: editName.trim(), description: editDescription.trim() || null, stages: editStages }),
     });
     const updated = await res.json();
-    setWorkflow(w => ({ ...w, name: updated.name, description: updated.description, stages: JSON.parse(updated.stages ?? '[]') }));
+    setWorkflow(w => ({ ...w, name: updated.name, description: updated.description, stages: updated.stages ?? [] }));
     setSaving(false);
     setEditing(false);
   }
@@ -100,15 +102,11 @@ export default function WorkflowDetailClient({
     if (activeRun) return;
     setRunning(true);
     setShowRunModal(false);
-    const withStages = workflow.stages.length > 0;
-    const res = await fetch('/api/executions', {
+    const res = await fetch(`/api/workflows/${workflow.id}/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        workflowId: workflow.id,
-        systemId: workflow.systemId,
         input: inputText?.trim() || `Run: ${workflow.name}`,
-        withStages,
       }),
     });
     const exec = await res.json();
@@ -118,7 +116,7 @@ export default function WorkflowDetailClient({
       createdAt: exec.createdAt,
     };
     setExecutions(prev => [newExec, ...prev]);
-    if (withStages && exec.status === 'RUNNING') setActiveRun(newExec);
+    if (workflow.stages.length > 0 && exec.status === 'RUNNING') setActiveRun(newExec);
     setRunning(false);
   }
 
@@ -426,6 +424,18 @@ export default function WorkflowDetailClient({
                 </button>
               </div>
             )}
+          </div>
+
+          {/* Consequences — domino effect */}
+          <div>
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>CONSEQUENCES</p>
+            <div className="rounded-xl overflow-hidden" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(24px)' }}>
+              <ConsequenceMap
+                environmentId={workflow.environmentId}
+                sourceType="workflow"
+                sourceId={workflow.id}
+              />
+            </div>
           </div>
 
           {/* Run history */}

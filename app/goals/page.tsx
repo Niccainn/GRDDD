@@ -96,11 +96,11 @@ export default function GoalsPage() {
   }
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-extralight tracking-tight mb-1">Goals</h1>
+          <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Goals</h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {loaded
               ? `${summary.total} goal${summary.total !== 1 ? 's' : ''} across ${systems.length} system${systems.length !== 1 ? 's' : ''}`
@@ -111,7 +111,7 @@ export default function GoalsPage() {
 
       {/* Summary row */}
       {loaded && summary.total > 0 && (
-        <div className="grid grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           {[
             { label: 'On track', value: summary.onTrack,  color: '#15AD70', filter: 'ON_TRACK' },
             { label: 'At risk',  value: summary.atRisk,   color: '#F7C700', filter: 'AT_RISK' },
@@ -140,14 +140,18 @@ export default function GoalsPage() {
         </div>
       ) : goals.length === 0 ? (
         <div className="flex flex-col items-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
-          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No goals yet</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
-            Add goals to systems to track OKR-style progress
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+            style={{ background: 'rgba(113,147,237,0.08)', border: '1px solid rgba(113,147,237,0.15)' }}>
+            <svg width="18" height="18" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#7193ED" strokeWidth="1.1"/><circle cx="7.5" cy="7.5" r="2.5" stroke="#7193ED" strokeWidth="1.1"/></svg>
+          </div>
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>Set your first goal</p>
+          <p className="text-xs mb-4 max-w-xs text-center leading-relaxed" style={{ color: 'var(--text-3)' }}>
+            Track measurable outcomes across your systems — revenue targets, content output, delivery milestones. Attach goals to any system to measure progress over time.
           </p>
           <Link href="/systems"
             className="text-xs font-light px-4 py-2 rounded-lg transition-all"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
-            Go to Systems →
+            style={{ background: 'rgba(113,147,237,0.08)', border: '1px solid rgba(113,147,237,0.15)', color: '#7193ED' }}>
+            Choose a system to add a goal →
           </Link>
         </div>
       ) : (

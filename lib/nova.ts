@@ -1,8 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from './db';
 import { calculateCost, checkBudget, recordTokenUsage } from './cost';
+import {
+  getAnthropicClientForEnvironment,
+  MissingKeyError,
+  type KeySource,
+} from './nova/client-factory';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// The module-level Anthropic singleton has been removed — every Nova
+// invocation now resolves a client per environment via the factory
+// in lib/nova/client-factory.ts. This is the foundation of BYOK:
+// each tenant can plug in their own key at /settings/ai and the
+// factory picks it up without any code change here. See the factory
+// module header for the resolution rules.
 
 // ─── Event types streamed back to the client ────────────────────────────────
 export type NovaEvent =
@@ -134,6 +144,83 @@ const NOVA_TOOLS: Anthropic.Tool[] = [
       required: ['title'],
     },
   },
+  {
+    name: 'list_tasks',
+    description: 'List tasks with optional status filter and limit.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        status: { type: 'string', enum: ['BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'] },
+        limit: { type: 'number', description: 'Max tasks to return (default 20)' },
+      },
+    },
+  },
+  {
+    name: 'create_task',
+    description: 'Create a new task in the current system.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        title: { type: 'string', description: 'Task title' },
+        description: { type: 'string', description: 'Task description' },
+        priority: { type: 'string', enum: ['URGENT', 'HIGH', 'NORMAL', 'LOW'] },
+        status: { type: 'string', enum: ['BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'] },
+        dueDate: { type: 'string', description: 'ISO date string' },
+        assigneeId: { type: 'string', description: 'Identity ID to assign the task to' },
+      },
+      required: ['title'],
+    },
+  },
+  {
+    name: 'update_task',
+    description: 'Update an existing task — change status, priority, assignee, or due date.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        taskId: { type: 'string', description: 'The task ID to update' },
+        status: { type: 'string', enum: ['BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'] },
+        priority: { type: 'string', enum: ['URGENT', 'HIGH', 'NORMAL', 'LOW'] },
+        assigneeId: { type: 'string', description: 'Identity ID to reassign to' },
+        dueDate: { type: 'string', description: 'ISO date string' },
+      },
+      required: ['taskId'],
+    },
+  },
+  {
+    name: 'bulk_update_tasks',
+    description: 'Update multiple tasks at once — e.g. mark all overdue tasks as urgent, move a batch to DONE.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        taskIds: { type: 'array', items: { type: 'string' }, description: 'Array of task IDs to update' },
+        status: { type: 'string', enum: ['BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'] },
+        priority: { type: 'string', enum: ['URGENT', 'HIGH', 'NORMAL', 'LOW'] },
+      },
+      required: ['taskIds'],
+    },
+  },
+  {
+    name: 'run_workflow',
+    description: 'Trigger a workflow execution with optional input data.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        workflowId: { type: 'string', description: 'The workflow ID to run' },
+        input: { type: 'string', description: 'Input data for the workflow run' },
+      },
+      required: ['workflowId'],
+    },
+  },
+  {
+    name: 'list_team_members',
+    description: 'List all team members in the current environment — useful for task assignment suggestions.',
+    input_schema: { type: 'object' as const, properties: {} },
+  },
+  {
+    name: 'get_overdue_tasks',
+    description: 'Get all tasks past their due date that are not done or cancelled — for proactive deadline alerts.',
+    input_schema: { type: 'object' as const, properties: {} },
+  },
 ];
 
 // ─── Tool labels for UI display ───────────────────────────────────────────────
@@ -149,6 +236,13 @@ const TOOL_LABELS: Record<string, string> = {
   update_goal: 'Updating objective',
   analyse_cross_system: 'Cross-system analysis',
   create_signal: 'Routing signal',
+  list_tasks: 'Reading tasks',
+  create_task: 'Creating task',
+  update_task: 'Updating task',
+  bulk_update_tasks: 'Batch updating tasks',
+  run_workflow: 'Triggering workflow',
+  list_team_members: 'Checking team',
+  get_overdue_tasks: 'Checking deadlines',
 };
 
 // ─── Tool executor ────────────────────────────────────────────────────────────
@@ -364,6 +458,140 @@ async function executeTool(
       };
     }
 
+    case 'list_tasks': {
+      const where: Record<string, unknown> = { environmentId: ctx.environmentId };
+      if (input.status) where.status = input.status;
+      const limit = (input.limit as number) ?? 20;
+      const tasks = await prisma.task.findMany({
+        where,
+        include: { assignee: true, system: true, _count: { select: { subtasks: true } } },
+        orderBy: { updatedAt: 'desc' },
+        take: limit,
+      });
+      const result = tasks.map(t => ({
+        id: t.id,
+        title: t.title,
+        status: t.status,
+        priority: t.priority,
+        assignee: t.assignee?.name ?? null,
+        dueDate: t.dueDate?.toISOString().slice(0, 10) ?? null,
+        subtaskCount: t._count.subtasks,
+      }));
+      return { result, summary: `${result.length} task${result.length !== 1 ? 's' : ''} found` };
+    }
+
+    case 'create_task': {
+      const maxPos = await prisma.task.aggregate({
+        where: { environmentId: ctx.environmentId },
+        _max: { position: true },
+      });
+      const task = await prisma.task.create({
+        data: {
+          title: input.title as string,
+          description: (input.description as string) ?? null,
+          priority: (input.priority as string) ?? 'NORMAL',
+          status: (input.status as string) ?? 'TODO',
+          dueDate: input.dueDate ? new Date(input.dueDate as string) : null,
+          assigneeId: (input.assigneeId as string) ?? null,
+          position: (maxPos._max.position ?? 0) + 1,
+          environmentId: ctx.environmentId,
+          creatorId: ctx.identityId,
+          systemId: ctx.systemId,
+        },
+      });
+      return {
+        result: { id: task.id, title: task.title, status: task.status, priority: task.priority },
+        summary: `Created "${task.title}"`,
+      };
+    }
+
+    case 'update_task': {
+      const data: Record<string, unknown> = {};
+      if (input.status !== undefined) data.status = input.status;
+      if (input.priority !== undefined) data.priority = input.priority;
+      if (input.assigneeId !== undefined) data.assigneeId = input.assigneeId;
+      if (input.dueDate !== undefined) data.dueDate = new Date(input.dueDate as string);
+      const updated = await prisma.task.update({
+        where: { id: input.taskId as string },
+        data,
+      });
+      return {
+        result: { id: updated.id, title: updated.title, status: updated.status, priority: updated.priority },
+        summary: `Updated "${updated.title}" → ${updated.status}`,
+      };
+    }
+
+    case 'bulk_update_tasks': {
+      const data: Record<string, unknown> = {};
+      if (input.status !== undefined) data.status = input.status;
+      if (input.priority !== undefined) data.priority = input.priority;
+      const { count } = await prisma.task.updateMany({
+        where: { id: { in: input.taskIds as string[] } },
+        data,
+      });
+      return {
+        result: { updated: count },
+        summary: `${count} task${count !== 1 ? 's' : ''} updated`,
+      };
+    }
+
+    case 'run_workflow': {
+      const workflow = await prisma.workflow.findUnique({
+        where: { id: input.workflowId as string },
+      });
+      if (!workflow) return { result: { error: 'Workflow not found' }, summary: 'Workflow not found' };
+      const execution = await prisma.execution.create({
+        data: {
+          status: 'RUNNING',
+          input: (input.input as string) ?? null,
+          systemId: workflow.systemId,
+          workflowId: workflow.id,
+        },
+      });
+      return {
+        result: { executionId: execution.id, workflowId: workflow.id, workflowName: workflow.name, status: 'RUNNING' },
+        summary: `Triggered "${workflow.name}"`,
+      };
+    }
+
+    case 'list_team_members': {
+      const members = await prisma.environmentMembership.findMany({
+        where: { environmentId: ctx.environmentId },
+        include: { identity: true },
+      });
+      const result = members.map(m => ({
+        id: m.identity.id,
+        name: m.identity.name,
+        email: m.identity.email,
+        avatar: m.identity.avatar,
+        role: m.role,
+      }));
+      return { result, summary: `${result.length} team member${result.length !== 1 ? 's' : ''}` };
+    }
+
+    case 'get_overdue_tasks': {
+      const now = new Date();
+      const tasks = await prisma.task.findMany({
+        where: {
+          environmentId: ctx.environmentId,
+          dueDate: { lt: now },
+          status: { notIn: ['DONE', 'CANCELLED'] },
+        },
+        include: { assignee: true, system: true },
+        orderBy: { dueDate: 'asc' },
+      });
+      const result = tasks.map(t => ({
+        id: t.id,
+        title: t.title,
+        status: t.status,
+        priority: t.priority,
+        assignee: t.assignee?.name ?? null,
+        dueDate: t.dueDate?.toISOString().slice(0, 10) ?? null,
+        daysOverdue: t.dueDate ? Math.floor((now.getTime() - t.dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0,
+      }));
+      return { result, summary: `${result.length} overdue task${result.length !== 1 ? 's' : ''}` };
+    }
+
     default:
       return { result: { error: `Unknown tool: ${name}` }, summary: 'Tool failed' };
   }
@@ -397,6 +625,15 @@ function buildPrompt(ctx: {
   workflows: { name: string; status: string }[];
   memory?: string | null;
   contextDocs?: { title: string; body: string }[];
+  brand?: {
+    name?: string | null;
+    tone?: string | null;
+    audience?: string | null;
+    values?: string | null;
+    keywords?: string | null;
+    voiceDont?: string | null;
+    bio?: string | null;
+  } | null;
 }) {
   const wfList = ctx.workflows.length
     ? ctx.workflows.map(w => `  • ${w.name} [${w.status.toLowerCase()}]`).join('\n')
@@ -410,6 +647,20 @@ function buildPrompt(ctx: {
     ? `\n**System knowledge documents:**\n${ctx.contextDocs.map(d => `### ${d.title}\n${d.body}`).join('\n\n')}\n`
     : '';
 
+  const brandLines: string[] = [];
+  if (ctx.brand) {
+    if (ctx.brand.name) brandLines.push(`**Brand:** ${ctx.brand.name}`);
+    if (ctx.brand.bio) brandLines.push(`**Brand story:** ${ctx.brand.bio}`);
+    if (ctx.brand.tone) brandLines.push(`**Voice & tone:** ${ctx.brand.tone}`);
+    if (ctx.brand.audience) brandLines.push(`**Target audience:** ${ctx.brand.audience}`);
+    if (ctx.brand.values) brandLines.push(`**Core values:** ${ctx.brand.values}`);
+    if (ctx.brand.keywords) brandLines.push(`**Key phrases to weave in:** ${ctx.brand.keywords}`);
+    if (ctx.brand.voiceDont) brandLines.push(`**Avoid:** ${ctx.brand.voiceDont}`);
+  }
+  const brandBlock = brandLines.length
+    ? `\n**Brand identity (always stay on-brand when creating content, campaigns, or communications):**\n${brandLines.join('\n')}\n`
+    : '';
+
   return `You are Nova — the intelligence layer inside GRID, an adaptive organizational operating system that bridges human teams and AI into a unified workspace.
 
 You are NOT a chatbot. You are an embedded AGI agent with persistent memory, tools, and organizational awareness. You understand the structure of work — environments, systems, workflows, goals — and you act within it.
@@ -420,11 +671,15 @@ You are currently operating inside the **${ctx.systemName}** system in the **${c
 
 **Current workflows:**
 ${wfList}
-${memoryBlock}${contextBlock}
+${memoryBlock}${contextBlock}${brandBlock}
 **Your capabilities:**
-You have tools to observe and act on the organizational state. When a user asks you to do something — create a workflow, flag health issues, route signals, analyse cross-system patterns — **do it immediately with your tools**. Don't describe. Act.
+You have tools to observe and act on the organizational state. When a user asks you to do something — create a workflow, manage tasks, run workflows, flag health issues, route signals, analyse cross-system patterns — **do it immediately with your tools**. Don't describe. Act.
 
 You can also:
+- **Create, assign, and update tasks** — full task lifecycle from backlog to done
+- **Run workflows on demand** — trigger any workflow with input data
+- **Identify overdue work and reassign it** — proactive deadline management
+- **Batch-update task status or priority** — move groups of tasks in one operation
 - **Analyse cross-system** to identify bottlenecks, misalignment, and opportunities across all systems
 - **Create signals** to route work to the right system
 - **Persist memory** — save decisions, patterns, and context that carry forward across all future conversations
@@ -486,6 +741,26 @@ export async function runNovaAgent({
     return;
   }
 
+  // Resolve the Anthropic client for THIS environment. In closed beta
+  // this falls back to the platform key; in byok/live tiers it requires
+  // a tenant-supplied key and surfaces a MissingKeyError otherwise. The
+  // error is caught here and emitted as a user-facing Nova error event
+  // so the UI can render a "connect your Anthropic account" CTA.
+  let anthropic: Anthropic;
+  let keySource: KeySource;
+  try {
+    const resolved = await getAnthropicClientForEnvironment(system.environmentId);
+    anthropic = resolved.client;
+    keySource = resolved.source;
+  } catch (err) {
+    if (err instanceof MissingKeyError) {
+      onEvent({ type: 'error', message: err.message });
+      return;
+    }
+    throw err;
+  }
+  void keySource; // reserved for future per-source metering / UI badges
+
   const intelligence = await getOrCreateNovaIntelligence(system.id, system.environmentId, identity.id);
 
   // Resolve model
@@ -511,10 +786,11 @@ export async function runNovaAgent({
     }),
   ]);
 
+  const env = system.environment;
   const systemPrompt = buildPrompt({
     systemName: system.name,
     systemDescription: system.description,
-    environmentName: system.environment.name,
+    environmentName: env.name,
     identityName: identity.name,
     workflows: system.workflows,
     memory: memoryLog?.reasoning ?? null,
@@ -522,6 +798,15 @@ export async function runNovaAgent({
       title: d.name,
       body: (() => { try { return JSON.parse(d.metadata ?? '{}').body ?? ''; } catch { return ''; } })(),
     })).filter(d => d.body),
+    brand: {
+      name: env.brandName,
+      tone: env.brandTone,
+      audience: env.brandAudience,
+      values: env.brandValues,
+      keywords: env.brandKeywords,
+      voiceDont: env.brandVoiceDont,
+      bio: env.brandBio,
+    },
   });
 
   const history = await loadHistory(systemId);

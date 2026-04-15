@@ -9,6 +9,7 @@ import NovaMemoryPanel from '@/components/NovaMemoryPanel';
 import SystemContextDocs from '@/components/SystemContextDocs';
 import SystemGoals from '@/components/SystemGoals';
 import Breadcrumb from '@/components/Breadcrumb';
+import SystemWorkflowsView from '@/components/SystemWorkflowsView';
 
 async function createWorkflow(formData: FormData) {
   'use server';
@@ -140,23 +141,13 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>Use Nova above or create one manually</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {system.workflows.map(w => (
-                <Link key={w.id} href={`/workflows/${w.id}`}
-                  className="flex items-center justify-between px-4 py-3 rounded-lg group transition-all"
-                  style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STATUS_COLOR[w.status] ?? 'rgba(255,255,255,0.2)' }} />
-                    <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                      {w.name}
-                    </p>
-                  </div>
-                  <span className="text-xs font-light" style={{ color: STATUS_COLOR[w.status] ?? 'rgba(255,255,255,0.3)' }}>
-                    {w.status.toLowerCase()}
-                  </span>
-                </Link>
-              ))}
-            </div>
+            <SystemWorkflowsView workflows={system.workflows.map(w => ({
+              id: w.id,
+              name: w.name,
+              status: w.status,
+              updatedAt: w.updatedAt.toISOString(),
+              createdAt: w.createdAt.toISOString(),
+            }))} />
           )}
         </div>
 

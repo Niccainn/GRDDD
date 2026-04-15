@@ -1,17 +1,43 @@
 'use client';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
 import AuthProvider, { useAuth } from './AuthProvider';
 import EnvironmentBrandProvider from './EnvironmentBrand';
 import Sidebar from './Sidebar';
 import CommandPalette from './CommandPalette';
 import AlertCenter from './AlertCenter';
+import NotificationPanel from './NotificationPanel';
+import ShortcutHelp from './ShortcutHelp';
+import FeatureTour from './FeatureTour';
+import { useShortcuts } from '@/lib/hooks/use-shortcuts';
+import { useEnsureWorkspace } from '@/lib/hooks/use-ensure-workspace';
 import { ToastProvider } from './Toast';
+import ErrorBoundary from './ErrorBoundary';
+import BottomNav from './BottomNav';
+import SkipLink from './SkipLink';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, loading } = useAuth();
+  const [notifPanelOpen, setNotifPanelOpen] = useState(false);
+  const { helpOpen, setHelpOpen } = useShortcuts();
+  const workspaceReady = useEnsureWorkspace();
+
+  // Listen for toggle events from NotificationBell
+  useEffect(() => {
+    function handleToggle() {
+      setNotifPanelOpen(prev => !prev);
+    }
+    window.addEventListener('toggle-notification-panel', handleToggle);
+    return () => window.removeEventListener('toggle-notification-panel', handleToggle);
+  }, []);
+
+  // Broadcast unread count changes to the bell
+  const handleUnreadCountChange = useCallback((count: number) => {
+    window.dispatchEvent(new CustomEvent('notification-unread-update', { detail: { count } }));
+  }, []);
 
   const isAuthRoute = AUTH_ROUTES.some(r => pathname.startsWith(r));
   const isHome = pathname === '/';
@@ -32,18 +58,36 @@ function AppContent({ children }: { children: React.ReactNode }) {
   return (
     <EnvironmentBrandProvider>
       <div className="min-h-screen ambient-bg">
+        <SkipLink />
         <Sidebar />
         <CommandPalette />
         <AlertCenter />
-        <main className="pl-[220px] min-h-screen">
-          {children}
+        <NotificationPanel
+          open={notifPanelOpen}
+          onClose={() => setNotifPanelOpen(false)}
+          onUnreadCountChange={handleUnreadCountChange}
+        />
+        <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+        <FeatureTour />
+        <main id="main-content" className="md:pl-[220px] min-h-screen pt-14 md:pt-0 pb-16 md:pb-0">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
+        <BottomNav />
       </div>
     </EnvironmentBrandProvider>
   );
 }
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
+  // Register service worker for PWA
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <ToastProvider>

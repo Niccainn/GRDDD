@@ -1,0 +1,43 @@
+# Daily Postgres backup via GitHub Actions.
+#
+# Runs scripts/backup.sh at 03:17 UTC every day (offset picked so we
+# don't pile up on the :00 minute with every other cron in the world).
+# The dump is uploaded as a workflow artifact retained for 30 days —
+# no S3 or rclone setup required to get started.
+#
+# To enable, set these repo secrets:
+#   DATABASE_URL — same string the app uses
+#
+# To upgrade to real off-site storage later, add BACKUP_UPLOAD_CMD as
+# a secret (e.g. `aws s3 cp "$1" s3://grid-backups/`) and install the
+# matching CLI in the job below.
+name: backup
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install postgres client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Run backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BACKUP_DIR: ./backups
+        run: ./scripts/backup.sh
+
+      - name: Upload dump artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: grid-backup-${{ github.run_id }}
+          path: backups/*.sql.gz
+          retention-days: 30

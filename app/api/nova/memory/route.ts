@@ -3,62 +3,62 @@ import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 
-// Memory is stored as IntelligenceLog with action='memory_update'
-// reasoning field holds the plain-text memory summary
-
 export async function GET(req: NextRequest) {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
-  const { searchParams } = new URL(req.url);
-  const systemId = searchParams.get('systemId');
-  if (!systemId) return Response.json({ memory: null });
 
-  const log = await prisma.intelligenceLog.findFirst({
-    where: { systemId, action: 'memory_update' },
+  const { searchParams } = new URL(req.url);
+  const type = searchParams.get('type');
+  const environmentId = searchParams.get('environmentId');
+  const search = searchParams.get('search');
+
+  const where: Record<string, unknown> = { isActive: true };
+  if (type) where.type = type;
+  if (environmentId) where.environmentId = environmentId;
+  if (search) {
+    where.OR = [
+      { title: { contains: search } },
+      { content: { contains: search } },
+    ];
+  }
+
+  const memories = await prisma.novaMemory.findMany({
+    where,
     orderBy: { createdAt: 'desc' },
   });
 
-  return Response.json({ memory: log?.reasoning ?? null, updatedAt: log?.createdAt ?? null });
+  return Response.json({ memories, total: memories.length });
 }
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
-  const { systemId, memory } = await req.json();
-  if (!systemId || !memory) return Response.json({ error: 'Missing fields' }, { status: 400 });
 
-  const intelligence = await prisma.intelligence.findFirst({ where: { systemId, name: 'Nova' } });
-  if (!intelligence) return Response.json({ error: 'System not ready' }, { status: 404 });
+  const body = await req.json();
+  const { title, content, type, category, environmentId, source } = body;
 
-  const log = await prisma.intelligenceLog.create({
+  if (!title || !content || !type) {
+    return Response.json({ error: 'title, content, and type are required' }, { status: 400 });
+  }
+
+  const validTypes = ['brand_context', 'market_insight', 'user_correction', 'strategic_context', 'learned_preference', 'pattern'];
+  if (!validTypes.includes(type)) {
+    return Response.json({ error: `Invalid type. Must be one of: ${validTypes.join(', ')}` }, { status: 400 });
+  }
+
+  const memory = await prisma.novaMemory.create({
     data: {
-      action: 'memory_update',
-      reasoning: memory,
-      input: JSON.stringify({ updated: new Date().toISOString() }),
-      output: JSON.stringify({ chars: memory.length }),
-      success: true,
-      intelligenceId: intelligence.id,
-      systemId,
-      identityId: identity.id,
+      title,
+      content,
+      type,
+      category: category ?? null,
+      environmentId: environmentId ?? null,
+      source: source ?? 'user_input',
+      confidence: 0.9,
     },
   });
 
-  return Response.json({ id: log.id, memory, updatedAt: log.createdAt });
-}
-
-export async function DELETE(req: NextRequest) {
-  const identity = await getAuthIdentity();
-  const rl = rateLimitApi(identity.id);
-  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
-  const { systemId } = await req.json();
-  if (!systemId) return Response.json({ error: 'Missing systemId' }, { status: 400 });
-
-  // Delete all memory logs for this system
-  await prisma.intelligenceLog.deleteMany({
-    where: { systemId, action: 'memory_update' },
-  });
-
-  return Response.json({ cleared: true });
+  return Response.json({ memory }, { status: 201 });
 }

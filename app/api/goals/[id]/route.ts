@@ -1,13 +1,19 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsGoal } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
+import { createNotification } from '@/lib/notifications';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsGoal(id, identity.id);
   const body = await req.json();
 
   const goal = await prisma.goal.update({
@@ -24,6 +30,17 @@ export async function PATCH(
     },
     include: { system: { select: { id: true, name: true, color: true } } },
   });
+
+  // Notify when goal reaches 100% progress
+  if (goal.progress === 100) {
+    createNotification({
+      identityId: identity.id,
+      type: 'goal_reached',
+      title: `Goal reached: ${goal.title}`,
+      body: goal.system?.name ? `Goal in ${goal.system.name} is now 100% complete` : 'Your goal is now 100% complete',
+      href: '/goals',
+    }).catch(() => {});
+  }
 
   return Response.json({
     id: goal.id,
@@ -45,7 +62,11 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const identity = await getAuthIdentity();
+  const rl = rateLimitApi(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  await assertOwnsGoal(id, identity.id);
   await prisma.goal.delete({ where: { id } });
   return Response.json({ deleted: true });
 }

@@ -18,7 +18,10 @@ export type AuditAction =
   // Webhooks
   | 'webhook.created' | 'webhook.deleted' | 'webhook.test'
   // Alerts
-  | 'alert.fired';
+  | 'alert.fired'
+  // Agent write-path approvals (Phase 5/6)
+  | 'agent.action.approved' | 'agent.action.rejected'
+  | 'agent.action.executed' | 'agent.action.failed';
 
 type AuditParams = {
   action: AuditAction;
