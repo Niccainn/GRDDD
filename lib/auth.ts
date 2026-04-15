@@ -153,3 +153,49 @@ export async function createSession(identityId: string) {
   const identity = await prisma.identity.findUnique({ where: { id: identityId } });
   return { id: identity!.id, name: identity!.name, email: identity!.email, onboardedAt: identity!.onboardedAt };
 }
+
+/**
+ * Alias for createSession — used by OAuth and demo routes.
+ */
+export const createSessionForIdentity = createSession;
+
+/**
+ * Upsert an identity from an OAuth provider. Links by email if an
+ * account already exists; otherwise creates a new one.
+ * Uses emailHash for lookups when available (PII-safe).
+ */
+export async function upsertOAuthIdentity(profile: {
+  provider: string;
+  providerAccountId: string;
+  email: string | null;
+  name: string;
+  avatar?: string | null;
+}) {
+  // Try to find existing identity by emailHash (PII-safe lookup)
+  const existing = profile.email
+    ? await prisma.identity.findUnique({ where: { emailHash: hashEmail(profile.email) } })
+    : null;
+
+  if (existing) {
+    // Update with latest OAuth info
+    return prisma.identity.update({
+      where: { id: existing.id },
+      data: {
+        name: existing.name || profile.name,
+        avatar: profile.avatar ?? existing.avatar,
+        authId: `${profile.provider}:${profile.providerAccountId}`,
+      },
+    });
+  }
+
+  // Create new identity
+  return prisma.identity.create({
+    data: {
+      type: 'PERSON',
+      name: profile.name,
+      email: profile.email,
+      avatar: profile.avatar ?? null,
+      authId: `${profile.provider}:${profile.providerAccountId}`,
+    },
+  });
+}

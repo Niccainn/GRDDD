@@ -3,61 +3,70 @@ import { getAuthIdentity } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { saveFile, deleteFile, StorageError } from '@/lib/storage';
 
+const envOwnershipFilter = (identityId: string) => ({
+  deletedAt: null,
+  OR: [
+    { ownerId: identityId },
+    { memberships: { some: { identityId } } },
+  ],
+});
+
 /**
- * Verify the authenticated user owns (or is a member of) the environment
- * that contains the target entity. Prevents IDOR: a user can't list or
- * attach files to entities in environments they don't belong to.
+ * Verify the caller owns the entity via its parent environment.
+ * Returns true if ownership is confirmed, false otherwise.
+ * Uses 404 semantics (never 403) to avoid leaking resource existence.
  */
-async function assertEntityAccess(
-  identityId: string,
+async function assertOwnsEntity(
   entityType: string,
   entityId: string,
+  identityId: string
 ): Promise<boolean> {
-  let environmentId: string | null = null;
-
   switch (entityType) {
     case 'task': {
-      const task = await prisma.task.findUnique({ where: { id: entityId }, select: { environmentId: true } });
-      environmentId = task?.environmentId ?? null;
-      break;
+      const task = await prisma.task.findFirst({
+        where: {
+          id: entityId,
+          deletedAt: null,
+          environment: envOwnershipFilter(identityId),
+        },
+        select: { id: true },
+      });
+      return !!task;
     }
     case 'system': {
-      const system = await prisma.system.findUnique({ where: { id: entityId }, select: { environmentId: true } });
-      environmentId = system?.environmentId ?? null;
-      break;
+      const system = await prisma.system.findFirst({
+        where: {
+          id: entityId,
+          deletedAt: null,
+          environment: envOwnershipFilter(identityId),
+        },
+        select: { id: true },
+      });
+      return !!system;
     }
     case 'document': {
-      const doc = await prisma.document.findUnique({ where: { id: entityId }, select: { environmentId: true } });
-      environmentId = doc?.environmentId ?? null;
-      break;
+      const doc = await prisma.document.findFirst({
+        where: {
+          id: entityId,
+          environment: envOwnershipFilter(identityId),
+        },
+        select: { id: true },
+      });
+      return !!doc;
     }
     case 'execution': {
-      const exec = await prisma.execution.findUnique({
-        where: { id: entityId },
-        select: { system: { select: { environmentId: true } } },
+      const exec = await prisma.execution.findFirst({
+        where: {
+          id: entityId,
+          system: { environment: envOwnershipFilter(identityId) },
+        },
+        select: { id: true },
       });
-      environmentId = exec?.system?.environmentId ?? null;
-      break;
+      return !!exec;
     }
     default:
       return false;
   }
-
-  if (!environmentId) return false;
-
-  const env = await prisma.environment.findFirst({
-    where: {
-      id: environmentId,
-      deletedAt: null,
-      OR: [
-        { ownerId: identityId },
-        { memberships: { some: { identityId } } },
-      ],
-    },
-    select: { id: true },
-  });
-
-  return !!env;
 }
 
 export async function GET(request: NextRequest) {
@@ -74,9 +83,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verify the user has access to the parent entity's environment.
-    const hasAccess = await assertEntityAccess(identity.id, entityType, entityId);
-    if (!hasAccess) {
+    const owns = await assertOwnsEntity(entityType, entityId, identity.id);
+    if (!owns) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
@@ -119,9 +127,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the user has access to the parent entity's environment.
-    const hasAccess = await assertEntityAccess(identity.id, entityType, entityId);
-    if (!hasAccess) {
+    const owns = await assertOwnsEntity(entityType, entityId, identity.id);
+    if (!owns) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 

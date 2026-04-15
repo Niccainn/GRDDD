@@ -99,8 +99,8 @@ export async function findIdentityByResetToken(raw: string) {
  * Throws if the token is invalid or expired — callers should catch.
  */
 export async function consumeResetToken(raw: string, newPassword: string): Promise<void> {
-  if (newPassword.length < 8) {
-    throw new Error('Password must be at least 8 characters.');
+  if (newPassword.length < 12) {
+    throw new Error('Password must be at least 12 characters.');
   }
   const identity = await findIdentityByResetToken(raw);
   if (!identity) {
