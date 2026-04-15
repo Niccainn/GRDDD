@@ -3,18 +3,45 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import LayoutShell from "@/components/LayoutShell";
 import ConsentGatedAnalytics from "@/components/ConsentGatedAnalytics";
+import { Analytics } from "@vercel/analytics/next";
 import ConsentBanner from "@/components/ConsentBanner";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GRID",
-  description: "Adaptive Organizational Infrastructure",
+  metadataBase: new URL('https://www.grddd.com'),
+  title: {
+    default: 'GRID — The Adaptive Workspace for Modern Teams',
+    template: '%s | GRID',
+  },
+  description: 'GRID is the AI-powered adaptive workspace where teams and AI learn the business together. Automate workflows, gain operational clarity, and scale without adding headcount.',
+  keywords: ['adaptive workspace', 'AI business workspace', 'workflow automation', 'project management', 'team collaboration platform', 'business operations software', 'AI workspace', 'work management platform', 'notion alternative', 'monday alternative', 'clickup alternative'],
+  authors: [{ name: 'GRID Systems Inc.' }],
+  creator: 'GRID Systems Inc.',
   openGraph: {
-    title: 'GRID',
-    description: 'AI-powered workspace OS',
+    title: 'GRID — The Adaptive Workspace for Modern Teams',
+    description: 'GRID is the AI-powered adaptive workspace where teams and AI learn the business together. Automate workflows, gain operational clarity, and scale without adding headcount.',
+    url: 'https://www.grddd.com',
+    siteName: 'GRID',
+    locale: 'en_US',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GRID — The Adaptive Workspace for Modern Teams',
+    description: 'GRID is the AI-powered adaptive workspace where teams and AI learn the business together. Automate workflows, gain operational clarity, and scale without adding headcount.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   appleWebApp: {
     capable: true,

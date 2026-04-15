@@ -126,11 +126,10 @@ export default function AccessPage() {
         }}
       >
         <div className="flex items-center gap-2.5">
-          <svg width="22" height="28" viewBox="0 0 79 100" fill="none" style={{ opacity: 0.35 }}>
-            <rect x="2" y="2" width="75" height="96" rx="8" stroke="url(#hg)" strokeWidth="2"/>
-            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="url(#hg)" strokeWidth="2"/>
-            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="url(#hg)" strokeWidth="2"/>
-            <defs><linearGradient id="hg" x1="0" y1="0" x2="79" y2="100"><stop offset="0%" stopColor="#15AD70"/><stop offset="100%" stopColor="#7193ED"/></linearGradient></defs>
+          <svg width="24" height="31" viewBox="0 0 79 100" fill="none">
+            <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2"/>
+            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2"/>
+            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2"/>
           </svg>
           <span className="text-sm font-light tracking-[0.15em]" style={{ color: 'var(--text-2)' }}>GRID</span>
         </div>

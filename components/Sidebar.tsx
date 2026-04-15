@@ -215,7 +215,7 @@ export default function Sidebar() {
           {brandLogo ? (
             <Image src={brandLogo} alt="" width={96} height={24} className="h-6 w-auto" />
           ) : (
-            <svg width="20" height="26" viewBox="0 0 79 100" fill="none" className="flex-shrink-0" style={{ opacity: 0.3 }}>
+            <svg width="20" height="26" viewBox="0 0 79 100" fill="none" className="flex-shrink-0">
               <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2"/>
               <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2"/>
               <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2"/>
