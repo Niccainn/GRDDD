@@ -1,63 +1,54 @@
 'use client';
 /**
- * ConsentBanner — combined cookie consent + AI disclosure
+ * ConsentBanner — GDPR-compliant cookie consent with preferences panel
  *
- * One banner, two jobs:
- *   1. GDPR/ePrivacy cookie consent — the user can Accept or Decline
- *      non-essential cookies. Strictly-necessary cookies (session,
- *      OAuth state) are set regardless; only analytics would be gated.
- *   2. EU AI Act transparency — a plain-language notice that GRID uses
- *      AI (Nova) and outputs may be inaccurate. This is required once,
- *      visible, and cannot be hidden without acknowledgement.
+ * Fixed bottom banner with glassmorphism styling. Users can Accept all
+ * cookies or open Preferences to toggle analytics separately. Essential
+ * cookies (session, OAuth state) are always on.
  *
- * Persistence: we store the choice in localStorage AND set a
- * `grid_consent` cookie so server-side code (analytics, etc.) can gate
- * on it without reading the client store. The cookie is set via
- * document.cookie to stay transparent — no third-party consent SDK.
- *
- * The banner never blocks the page; it sits at the bottom, anchored,
- * dismissible, and the "Accept all" / "Essential only" buttons are
- * given equal visual weight per ePrivacy guidance (no dark patterns).
+ * Persistence: stores choice in a `grid_consent` cookie (1 year expiry)
+ * via document.cookie. No third-party consent SDK.
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const STORAGE_KEY = 'grid_consent';
 const COOKIE_NAME = 'grid_consent';
 
-type ConsentChoice = 'all' | 'essential';
+type ConsentChoice = 'accepted' | 'essential';
 
-function readStoredConsent(): ConsentChoice | null {
+function readConsentCookie(): string | null {
   if (typeof window === 'undefined') return null;
-  try {
-    const v = localStorage.getItem(STORAGE_KEY);
-    if (v === 'all' || v === 'essential') return v;
-  } catch {
-    /* ignore */
-  }
-  return null;
+  const match = document.cookie.match(
+    new RegExp('(?:^|; )' + COOKIE_NAME + '=([^;]*)')
+  );
+  return match ? match[1] : null;
 }
 
-function persistConsent(choice: ConsentChoice) {
-  try {
-    localStorage.setItem(STORAGE_KEY, choice);
-  } catch {
-    /* ignore */
-  }
-  // 6 months
-  const maxAge = 60 * 60 * 24 * 180;
+function setConsentCookie(choice: ConsentChoice) {
+  const maxAge = 60 * 60 * 24 * 365; // 1 year
   document.cookie = `${COOKIE_NAME}=${choice}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
 }
 
 export default function ConsentBanner() {
   const [visible, setVisible] = useState(false);
+  const [showPrefs, setShowPrefs] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
 
   useEffect(() => {
-    if (readStoredConsent() === null) setVisible(true);
+    if (!readConsentCookie()) {
+      // Small delay so the slide-up animation is visible
+      const t = setTimeout(() => setVisible(true), 500);
+      return () => clearTimeout(t);
+    }
   }, []);
 
-  function choose(choice: ConsentChoice) {
-    persistConsent(choice);
+  function accept() {
+    setConsentCookie('accepted');
+    setVisible(false);
+  }
+
+  function savePrefs() {
+    setConsentCookie(analyticsEnabled ? 'accepted' : 'essential');
     setVisible(false);
   }
 
@@ -67,65 +58,145 @@ export default function ConsentBanner() {
     <div
       role="dialog"
       aria-live="polite"
-      aria-label="Cookie consent and AI transparency notice"
+      aria-label="Cookie consent"
       className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50"
+      style={{
+        animation: 'consent-slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+      }}
     >
+      <style>{`
+        @keyframes consent-slide-up {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
       <div
-        className="glass-panel p-5"
+        className="p-5"
         style={{
-          background: 'var(--surface-1, rgba(10, 12, 20, 0.92))',
-          backdropFilter: 'blur(24px)',
-          border: '1px solid var(--glass-border, rgba(255,255,255,0.12))',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(40px)',
+          WebkitBackdropFilter: 'blur(40px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: 'var(--radius-lg, 24px)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
         }}
       >
         <p
           className="text-[11px] uppercase tracking-widest mb-2 font-light"
           style={{ color: 'var(--text-3)' }}
         >
-          Privacy &amp; AI transparency
+          Cookie consent
         </p>
 
         <p
           className="text-xs font-light leading-relaxed mb-4"
           style={{ color: 'var(--text-2)' }}
         >
-          GRID uses strictly-necessary cookies to keep you signed in. Optional
-          cookies help us improve the product — you can decline them. Nova is an
-          AI system; its outputs may be inaccurate and should not be used for
-          medical, legal, or financial decisions. See our{' '}
+          We use essential cookies to run GRID. By continuing, you accept our{' '}
           <Link href="/privacy" style={{ color: 'var(--brand)' }}>
             Privacy Policy
-          </Link>{' '}
-          and{' '}
-          <Link href="/terms" style={{ color: 'var(--brand)' }}>
-            Terms
           </Link>
           .
         </p>
 
+        {/* Preferences panel */}
+        {showPrefs && (
+          <div
+            className="mb-4 p-3 rounded-xl"
+            style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+            }}
+          >
+            {/* Essential toggle - always on */}
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs font-light" style={{ color: 'var(--text-1)' }}>
+                  Essential
+                </p>
+                <p className="text-[10px] font-light" style={{ color: 'var(--text-3)' }}>
+                  Always on — required for GRID to work
+                </p>
+              </div>
+              <button
+                disabled
+                aria-label="Essential cookies are always enabled"
+                className="relative w-9 h-5 rounded-full cursor-not-allowed"
+                style={{
+                  background: 'var(--brand)',
+                  opacity: 0.6,
+                }}
+              >
+                <span
+                  className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full"
+                  style={{ background: '#fff' }}
+                />
+              </button>
+            </div>
+
+            {/* Analytics toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-light" style={{ color: 'var(--text-1)' }}>
+                  Analytics
+                </p>
+                <p className="text-[10px] font-light" style={{ color: 'var(--text-3)' }}>
+                  Optional — helps us improve GRID
+                </p>
+              </div>
+              <button
+                onClick={() => setAnalyticsEnabled(!analyticsEnabled)}
+                aria-label={`Analytics cookies ${analyticsEnabled ? 'enabled' : 'disabled'}`}
+                className="relative w-9 h-5 rounded-full transition-colors"
+                style={{
+                  background: analyticsEnabled ? 'var(--brand)' : 'rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <span
+                  className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+                  style={{
+                    background: '#fff',
+                    left: analyticsEnabled ? 'calc(100% - 18px)' : '2px',
+                  }}
+                />
+              </button>
+            </div>
+
+            <button
+              onClick={savePrefs}
+              className="w-full mt-3 py-2 text-xs font-light rounded-full"
+              style={{
+                background: 'var(--brand)',
+                color: '#fff',
+              }}
+            >
+              Save preferences
+            </button>
+          </div>
+        )}
+
         <div className="flex gap-2">
           <button
-            onClick={() => choose('essential')}
-            className="flex-1 py-2 text-xs font-light rounded-full"
+            onClick={() => setShowPrefs(!showPrefs)}
+            className="flex-1 py-2 text-xs font-light rounded-full transition-colors"
             style={{
-              background: 'var(--glass-1, rgba(255,255,255,0.04))',
-              border: '1px solid var(--glass-border, rgba(255,255,255,0.1))',
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
               color: 'var(--text-1)',
             }}
           >
-            Essential only
+            Preferences
           </button>
           <button
-            onClick={() => choose('all')}
-            className="flex-1 py-2 text-xs font-light rounded-full"
+            onClick={accept}
+            className="flex-1 py-2 text-xs font-light rounded-full transition-colors"
             style={{
-              background: 'var(--brand-soft)',
-              border: '1px solid var(--brand-border)',
-              color: 'var(--brand)',
+              background: 'var(--brand)',
+              color: '#fff',
             }}
           >
-            Accept all
+            Accept
           </button>
         </div>
       </div>
