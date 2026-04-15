@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import LayoutShell from "@/components/LayoutShell";
 import { Analytics } from "@vercel/analytics/next";
+import ConsentBanner from "@/components/ConsentBanner";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="noise">
         <LayoutShell>{children}</LayoutShell>
         <Analytics />
+        <ConsentBanner />
       </body>
     </html>
   );
