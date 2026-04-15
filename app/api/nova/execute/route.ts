@@ -1,4 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
+import { assertOwnsSystem } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -24,6 +25,9 @@ export async function POST(req: NextRequest) {
   if (!executionId || !input || !systemId) {
     return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
   }
+
+  // Ownership check — ensures the caller owns this system's environment
+  await assertOwnsSystem(systemId, identity.id);
 
   const [system, workflow] = await Promise.all([
     prisma.system.findUnique({
