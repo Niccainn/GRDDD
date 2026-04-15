@@ -38,6 +38,7 @@ const PUBLIC_PATHS = [
   '/api/health',
   '/f',
   '/api/forms/submit',
+  '/api/waitlist',
 ];
 
 // Security headers applied to every response. Bare minimum for a
