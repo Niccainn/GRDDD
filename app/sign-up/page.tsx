@@ -3,9 +3,9 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
-import AuthLayout from '@/components/auth/AuthLayout';
 import GoogleButton from '@/components/auth/GoogleButton';
 import PasswordField from '@/components/auth/PasswordField';
+import AuthLayout from '@/components/auth/AuthLayout';
 
 // Client-side password strength hint. Intentionally low-friction:
 // the server enforces the actual minimum (12 chars). This is cosmetic
@@ -168,13 +168,13 @@ function SignUpInner() {
           disabled={loading}
           className="w-full py-[13px] text-sm font-light rounded-full transition-all"
           style={{
-            background: 'var(--brand-soft)',
-            border: '1px solid var(--brand-border)',
-            color: 'var(--brand)',
+            background: 'var(--brand)',
+            color: '#000',
+            fontWeight: 400,
             opacity: loading ? 0.5 : 1,
           }}
         >
-          {loading ? 'Creating workspace…' : 'Create workspace'}
+          {loading ? 'Creating workspace\u2026' : 'Create workspace'}
         </button>
 
         <p className="text-[10px] text-center font-light pt-1" style={{ color: 'var(--text-3)' }}>

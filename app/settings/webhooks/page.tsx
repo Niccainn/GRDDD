@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import SettingsNav from '@/components/SettingsNav';
 
 const ALL_EVENTS = [
   { id: 'execution.completed', label: 'Execution completed', color: '#15AD70' },
@@ -105,7 +106,8 @@ export default function WebhooksPage() {
   }
 
   return (
-    <div className="px-10 py-10 min-h-screen max-w-3xl">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen max-w-3xl">
+      <SettingsNav />
       <Link href="/settings" className="text-xs font-light mb-8 inline-flex items-center gap-1.5"
         style={{ color: 'var(--text-3)' }}>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">

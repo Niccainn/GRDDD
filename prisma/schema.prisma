@@ -23,7 +23,8 @@ model Identity {
   // Core Identity Properties
   type         String // "PERSON" | "TEAM" | "AGENT" | "CLIENT"
   name         String
-  email        String? @unique
+  email        String?           // AES-256-GCM encrypted at rest (see lib/db.ts)
+  emailHash    String? @unique   // HMAC-SHA256 for deterministic lookups
   passwordHash String? // bcrypt hash for credentials auth
 
   // Auth
@@ -86,7 +87,7 @@ model Identity {
   approvalRequests       ApprovalRequest[] @relation("ApprovalRequester")
   timeEntries            TimeEntry[]
 
-  @@index([email])
+  @@index([emailHash])
   @@index([type])
   @@index([authId])
 }
@@ -1735,6 +1736,7 @@ model WaitlistEntry {
 
   @@index([createdAt])
 }
+
 
 // ===============================================
 // KERNEL — Nova Memory & Traces

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import LayoutShell from "@/components/LayoutShell";
+import ConsentGatedAnalytics from "@/components/ConsentGatedAnalytics";
 import { Analytics } from "@vercel/analytics/next";
 import ConsentBanner from "@/components/ConsentBanner";
 
@@ -69,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="noise">
         <LayoutShell>{children}</LayoutShell>
-        <Analytics />
+        <ConsentGatedAnalytics />
         <ConsentBanner />
       </body>
     </html>

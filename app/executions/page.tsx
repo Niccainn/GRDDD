@@ -110,7 +110,7 @@ export default function ExecutionsPage() {
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>

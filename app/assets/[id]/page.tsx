@@ -216,14 +216,14 @@ export default function AssetDetailPage() {
 
   if (!asset) {
     return (
-      <div className="px-10 py-10 min-h-screen">
+      <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
         <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>Asset not found</p>
       </div>
     );
   }
 
   return (
-    <div className="px-10 py-10 min-h-screen">
+    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-6">
         <button onClick={() => router.push('/assets')} className="text-xs font-light transition-colors hover:underline" style={{ color: 'var(--text-3)' }}>

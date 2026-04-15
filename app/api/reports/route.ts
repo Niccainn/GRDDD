@@ -16,15 +16,38 @@ export async function POST(req: NextRequest) {
 
   const { type = 'weekly', environmentId } = await req.json().catch(() => ({}));
 
-  // Resolve the user's environment to get their BYOK key
+  // Resolve the user's environment to get their BYOK key.
+  // Always verify the user owns or is a member of the environment.
   let envId = environmentId;
   if (!envId) {
     const firstEnv = await prisma.environment.findFirst({
-      where: { ownerId: identity.id },
+      where: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
       select: { id: true },
     });
     if (!firstEnv) return Response.json({ error: 'No environment found' }, { status: 400 });
     envId = firstEnv.id;
+  } else {
+    // Verify access to the requested environment.
+    const envCheck = await prisma.environment.findFirst({
+      where: {
+        id: envId,
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!envCheck) {
+      return Response.json({ error: 'Environment not found' }, { status: 404 });
+    }
   }
 
   let anthropic;
@@ -38,10 +61,10 @@ export async function POST(req: NextRequest) {
     throw err;
   }
 
-  // Gather all org data
+  // Gather org data scoped to the verified environment.
   const [systems, executions, goals, workflows, signals] = await Promise.all([
     prisma.system.findMany({
-      where: environmentId ? { environmentId } : {},
+      where: { environmentId: envId },
       include: {
         environment: true,
         workflows: { orderBy: { updatedAt: 'desc' } },
@@ -54,26 +77,26 @@ export async function POST(req: NextRequest) {
     prisma.execution.findMany({
       where: {
         createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-        ...(environmentId ? { system: { environmentId } } : {}),
+        system: { environmentId: envId },
       },
       include: { system: { select: { name: true } }, validationResult: { select: { score: true } } },
       orderBy: { createdAt: 'desc' },
       take: 100,
     }),
     prisma.goal.findMany({
-      where: environmentId ? { environmentId } : {},
+      where: { environmentId: envId },
       include: { system: { select: { name: true } } },
       orderBy: { updatedAt: 'desc' },
     }),
     prisma.workflow.findMany({
-      where: environmentId ? { environmentId } : {},
+      where: { environmentId: envId },
       include: { system: { select: { name: true } } },
       orderBy: { updatedAt: 'desc' },
     }),
     prisma.signal.findMany({
       where: {
         status: { in: ['UNREAD', 'TRIAGED'] },
-        ...(environmentId ? { environmentId } : {}),
+        environmentId: envId,
       },
       take: 20,
       orderBy: { createdAt: 'desc' },
