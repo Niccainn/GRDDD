@@ -15,6 +15,7 @@ import { ToastProvider } from './Toast';
 import ErrorBoundary from './ErrorBoundary';
 import BottomNav from './BottomNav';
 import SkipLink from './SkipLink';
+import LegalFooter from './LegalFooter';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up', '/access'];
 
@@ -52,7 +53,12 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
 
   if (!showChrome) {
-    return <div className="min-h-screen ambient-bg">{children}</div>;
+    return (
+      <div className="min-h-screen ambient-bg flex flex-col">
+        <div className="flex-1">{children}</div>
+        {!isHome && <LegalFooter />}
+      </div>
+    );
   }
 
   return (
