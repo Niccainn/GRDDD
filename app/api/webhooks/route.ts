@@ -65,22 +65,10 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Select at least one event' }, { status: 400 });
   }
 
-  // Verify environment ownership if environmentId provided.
+  // Verify write access to environment (owner or ADMIN/CONTRIBUTOR)
   if (environmentId) {
-    const env = await prisma.environment.findFirst({
-      where: {
-        id: environmentId,
-        deletedAt: null,
-        OR: [
-          { ownerId: identity.id },
-          { memberships: { some: { identityId: identity.id } } },
-        ],
-      },
-      select: { id: true },
-    });
-    if (!env) {
-      return Response.json({ error: 'Environment not found' }, { status: 404 });
-    }
+    const { assertCanWriteEnvironment } = await import('@/lib/auth/ownership');
+    await assertCanWriteEnvironment(environmentId, identity.id);
   }
 
   const webhook = await prisma.webhook.create({

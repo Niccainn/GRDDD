@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
+import { assertCanWriteEnvironment } from '@/lib/auth/ownership';
 
 // GET /api/tasks — list tasks with filters
 export async function GET(req: NextRequest) {
@@ -78,20 +79,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'title and environmentId required' }, { status: 400 });
   }
 
-  // Verify access to environment
-  const env = await prisma.environment.findFirst({
-    where: {
-      id: environmentId,
-      deletedAt: null,
-      OR: [
-        { ownerId: identity.id },
-        { memberships: { some: { identityId: identity.id } } },
-      ],
-    },
-  });
-  if (!env) {
-    return NextResponse.json({ error: 'Environment not found' }, { status: 404 });
+  // Validate labels — must be an array of strings if provided
+  if (labels !== undefined && labels !== null) {
+    if (!Array.isArray(labels) || !labels.every((l: unknown) => typeof l === 'string')) {
+      return NextResponse.json({ error: 'labels must be an array of strings' }, { status: 400 });
+    }
   }
+
+  // Validate enums if provided
+  const validStatuses = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'];
+  const validPriorities = ['URGENT', 'HIGH', 'NORMAL', 'LOW'];
+  if (status && !validStatuses.includes(status)) {
+    return NextResponse.json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` }, { status: 400 });
+  }
+  if (priority && !validPriorities.includes(priority)) {
+    return NextResponse.json({ error: `Invalid priority. Must be one of: ${validPriorities.join(', ')}` }, { status: 400 });
+  }
+
+  // Verify write access to environment (owner or ADMIN/CONTRIBUTOR — VIEWERs rejected)
+  await assertCanWriteEnvironment(environmentId, identity.id);
 
   // Get max position for ordering
   const maxPos = await prisma.task.aggregate({

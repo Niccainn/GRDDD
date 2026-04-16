@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
+import { assertCanWriteEnvironment } from '@/lib/auth/ownership';
 
 // GET /api/tasks/:id — get a single task with subtasks and comments
 export async function GET(
@@ -59,6 +60,7 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
 
+  // Find the task (read access — any member)
   const task = await prisma.task.findFirst({
     where: {
       id,
@@ -76,6 +78,9 @@ export async function PATCH(
   if (!task) {
     return NextResponse.json({ error: 'Task not found' }, { status: 404 });
   }
+
+  // Verify write access (owner or ADMIN/CONTRIBUTOR — VIEWERs rejected)
+  await assertCanWriteEnvironment(task.environmentId, identity.id);
 
   const data: Record<string, unknown> = {};
   if (body.title !== undefined) data.title = body.title;
@@ -146,6 +151,9 @@ export async function DELETE(
   if (!task) {
     return NextResponse.json({ error: 'Task not found' }, { status: 404 });
   }
+
+  // Verify write access (owner or ADMIN/CONTRIBUTOR — VIEWERs rejected)
+  await assertCanWriteEnvironment(task.environmentId, identity.id);
 
   await prisma.task.update({
     where: { id },

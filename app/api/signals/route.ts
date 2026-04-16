@@ -1,5 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { assertOwnsEnvironment, assertOwnsSystem } from '@/lib/auth/ownership';
+import { assertOwnsEnvironment, assertOwnsSystem, accessibleBy } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   const signals = await prisma.signal.findMany({
     where: {
-      environment: { ownerId: identity.id, deletedAt: null },
+      ...accessibleBy(identity.id),
       ...(status ? { status } : {}),
       ...(priority ? { priority } : {}),
       ...(environmentId ? { environmentId } : {}),
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
   const unreadCount = await prisma.signal.count({
     where: {
-      environment: { ownerId: identity.id, deletedAt: null },
+      ...accessibleBy(identity.id),
       status: 'UNREAD',
       ...(environmentId ? { environmentId } : {}),
     },

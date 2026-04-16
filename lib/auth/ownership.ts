@@ -224,3 +224,53 @@ export function ownedBy(identityId: string) {
     environment: { ownerId: identityId, deletedAt: null },
   };
 }
+
+/**
+ * Assert that `identityId` can WRITE to the given environment.
+ * Write access = owner OR member with ADMIN or CONTRIBUTOR role.
+ * VIEWERs are rejected with a 404 (same as not-found, to prevent
+ * resource existence leaks).
+ *
+ * Returns the environment row on success.
+ */
+export async function assertCanWriteEnvironment(
+  environmentId: string,
+  identityId: string
+) {
+  const env = await prisma.environment.findFirst({
+    where: {
+      id: environmentId,
+      deletedAt: null,
+      OR: [
+        { ownerId: identityId },
+        {
+          memberships: {
+            some: {
+              identityId,
+              role: { in: ['ADMIN', 'CONTRIBUTOR'] },
+            },
+          },
+        },
+      ],
+    },
+  });
+  if (!env) throw UNAUTHORIZED();
+  return env;
+}
+
+/**
+ * Shared `where` fragment for list endpoints that should include
+ * resources from environments the identity owns OR is a member of
+ * (any role, including VIEWER — read access).
+ */
+export function accessibleBy(identityId: string) {
+  return {
+    environment: {
+      deletedAt: null,
+      OR: [
+        { ownerId: identityId },
+        { memberships: { some: { identityId } } },
+      ],
+    },
+  };
+}

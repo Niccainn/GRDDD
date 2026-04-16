@@ -48,7 +48,7 @@ export async function getCloudflareClient(integrationId: string, environmentId: 
     integration,
     /** List zones (domains) accessible with this token. */
     async listZones(limit = 50): Promise<{ id: string; name: string; status: string }[]> {
-      const res = await fetch(`${API_BASE}/zones?per_page=${limit}`, { headers: authHeaders });
+      const res = await fetch(`${API_BASE}/zones?per_page=${limit}`, { headers: authHeaders, signal: AbortSignal.timeout(10_000) });
       const payload = (await res.json()) as {
         success: boolean;
         result?: { id: string; name: string; status: string }[];
@@ -64,6 +64,7 @@ export async function getCloudflareClient(integrationId: string, environmentId: 
     > {
       const res = await fetch(`${API_BASE}/zones/${zoneId}/dns_records?per_page=${limit}`, {
         headers: authHeaders,
+        signal: AbortSignal.timeout(10_000),
       });
       const payload = (await res.json()) as {
         success: boolean;
@@ -85,7 +86,7 @@ export async function getCloudflareClient(integrationId: string, environmentId: 
       const until = new Date().toISOString();
       const res = await fetch(
         `${API_BASE}/zones/${zoneId}/analytics/dashboard?since=${since}&until=${until}&continuous=true`,
-        { headers: authHeaders },
+        { headers: authHeaders, signal: AbortSignal.timeout(10_000) },
       );
       const payload = (await res.json()) as {
         success: boolean;
