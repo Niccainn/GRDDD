@@ -45,6 +45,62 @@ import { LINEAR_PROVIDER } from '@/lib/integrations/oauth/linear';
 import { completeNotionOAuth } from '@/lib/integrations/oauth/notion';
 import { FIGMA_PROVIDER, getFigmaUser } from '@/lib/integrations/oauth/figma';
 import { exchangeCodeForTokens, buildRedirectUri } from '@/lib/integrations/oauth/base';
+import { completeShopifyOAuth, getShopInfo } from '@/lib/integrations/oauth/shopify';
+import { completeMailchimpOAuth } from '@/lib/integrations/oauth/mailchimp';
+import { exchangeAirtableCode, getAirtableUser } from '@/lib/integrations/oauth/airtable';
+import { TYPEFORM_PROVIDER, getTypeformUser } from '@/lib/integrations/oauth/typeform';
+import {
+  JIRA_PROVIDER,
+  CONFLUENCE_PROVIDER,
+  ASANA_PROVIDER,
+  TRELLO_PROVIDER,
+  MONDAY_PROVIDER,
+  CLICKUP_PROVIDER,
+  BASECAMP_PROVIDER,
+  WRIKE_PROVIDER,
+  TODOIST_PROVIDER,
+  MICROSOFT_TEAMS_PROVIDER,
+  DISCORD_PROVIDER,
+  ZOOM_PROVIDER,
+  CALENDLY_PROVIDER,
+  PIPEDRIVE_PROVIDER,
+  ZOHO_CRM_PROVIDER,
+  SQUARE_PROVIDER,
+  GUMROAD_PROVIDER,
+  TWITTER_PROVIDER,
+  LINKEDIN_PROVIDER,
+  INSTAGRAM_PROVIDER,
+  TIKTOK_PROVIDER,
+  BUFFER_PROVIDER,
+  YOUTUBE_PROVIDER,
+  TIKTOK_ADS_PROVIDER,
+  LINKEDIN_ADS_PROVIDER,
+  CANVA_PROVIDER,
+  MIRO_PROVIDER,
+  ADOBE_CREATIVE_CLOUD_PROVIDER,
+  SKETCH_PROVIDER,
+  GOOGLE_DRIVE_PROVIDER,
+  DROPBOX_PROVIDER,
+  ONEDRIVE_PROVIDER,
+  BOX_PROVIDER,
+  SURVEYMONKEY_PROVIDER,
+  ZENDESK_PROVIDER,
+  INTERCOM_PROVIDER,
+  HELPSCOUT_PROVIDER,
+  QUICKBOOKS_PROVIDER,
+  XERO_PROVIDER,
+  FRESHBOOKS_PROVIDER,
+  WAVE_PROVIDER,
+  GUSTO_PROVIDER,
+  RIPPLING_PROVIDER,
+  LOOM_PROVIDER,
+  VIMEO_PROVIDER,
+  GITLAB_PROVIDER,
+  BITBUCKET_PROVIDER,
+  VERCEL_PROVIDER,
+  SENTRY_PROVIDER,
+  NETLIFY_PROVIDER,
+} from '@/lib/integrations/oauth/generic';
 
 const STATE_COOKIE_PREFIX = 'grid_int_state_';
 
@@ -106,6 +162,51 @@ async function persistIntegration(args: {
   }
 }
 
+/**
+ * Generic callback handler for standard OAuth2 providers.
+ * Exchanges code for tokens and persists with a basic label.
+ */
+async function handleGenericOAuthCallback(args: {
+  provider: import('@/lib/integrations/oauth/base').OAuthProvider;
+  providerId: string;
+  providerName: string;
+  code: string;
+  environmentId: string;
+  scopes: string[];
+  createdById: string;
+  /** Optional: fetch profile info for a friendlier label. Returns { accountLabel, displayName }. */
+  fetchProfile?: (accessToken: string) => Promise<{ accountLabel: string; displayName: string }>;
+}) {
+  const { provider, providerId, providerName, code, environmentId, scopes, createdById, fetchProfile } = args;
+  const tokens = await exchangeCodeForTokens(provider, code);
+
+  let accountLabel = 'default';
+  let displayName = providerName;
+
+  if (fetchProfile) {
+    try {
+      const profile = await fetchProfile(tokens.access_token);
+      accountLabel = profile.accountLabel;
+      displayName = profile.displayName;
+    } catch {
+      // Fall through with defaults if profile fetch fails.
+    }
+  }
+
+  await persistIntegration({
+    environmentId,
+    provider: providerId,
+    accountLabel,
+    displayName,
+    credentialsObject: { accessToken: tokens.access_token },
+    refreshToken: tokens.refresh_token ?? null,
+    expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
+    scopes,
+    previewSource: tokens.access_token,
+    createdById,
+  });
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ provider: string }> },
@@ -133,7 +234,14 @@ export async function GET(
   const cookieName = `${STATE_COOKIE_PREFIX}${provider}`;
   const cookieVal = cookieStore.get(cookieName)?.value;
   if (!cookieVal) return redirectBack(null, 'error', 'State cookie missing or expired');
-  const [storedState, environmentId] = cookieVal.split('.');
+
+  // Cookie format: state.environmentId[.extra]
+  // Extra segment is used for Shopify (shop domain) and Airtable (code_verifier).
+  const cookieParts = cookieVal.split('.');
+  const storedState = cookieParts[0];
+  const environmentId = cookieParts[1];
+  const cookieExtra = cookieParts.slice(2).join('.'); // rejoin in case extra contains dots
+
   if (storedState !== returnedState) {
     return redirectBack(null, 'error', 'State mismatch — possible CSRF, aborting');
   }
@@ -143,6 +251,8 @@ export async function GET(
   if (!env) return redirectBack(null, 'error', 'Environment not found or access revoked');
 
   try {
+    // ── Original dedicated providers ──────────────────────────────
+
     if (provider === 'meta_ads') {
       const tokens = await completeMetaOAuth(code);
       const accounts = await listMetaAdAccounts(tokens.access_token);
@@ -173,9 +283,6 @@ export async function GET(
       }[provider];
       const tokens = await completeGoogleOAuth(googleProv, code);
 
-      // Fetch the user's email so we have a default accountLabel +
-      // displayName. Each surface may override the accountLabel with
-      // its own identifier below.
       const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${tokens.access_token}` },
       });
@@ -185,7 +292,6 @@ export async function GET(
       let displayName = `${def.name} · ${userInfo.email}`;
 
       if (provider === 'google_ads') {
-        // Look up the user's accessible customer ids.
         try {
           const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
           if (devToken) {
@@ -208,7 +314,6 @@ export async function GET(
           // Fall through with email label.
         }
       } else if (provider === 'google_analytics') {
-        // Fetch the first GA4 property.
         try {
           const res = await fetch('https://analyticsadmin.googleapis.com/v1beta/accountSummaries', {
             headers: { Authorization: `Bearer ${tokens.access_token}` },
@@ -225,7 +330,6 @@ export async function GET(
           }
         } catch { /* ignore */ }
       } else if (provider === 'google_search_console') {
-        // Fetch the first verified site.
         try {
           const res = await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites', {
             headers: { Authorization: `Bearer ${tokens.access_token}` },
@@ -240,7 +344,6 @@ export async function GET(
           }
         } catch { /* ignore */ }
       } else if (provider === 'google_calendar') {
-        // Fetch the user's primary calendar for a friendlier label.
         try {
           const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary', {
             headers: { Authorization: `Bearer ${tokens.access_token}` },
@@ -270,7 +373,6 @@ export async function GET(
 
     if (provider === 'salesforce') {
       const tokens = await completeSalesforceOAuth(code);
-      // Salesforce org id comes from the "id" URL: /id/<orgId>/<userId>.
       const orgId = tokens.id.split('/').slice(-2, -1)[0] ?? 'unknown';
       await persistIntegration({
         environmentId,
@@ -342,7 +444,6 @@ export async function GET(
 
     if (provider === 'linear') {
       const tokens = await exchangeCodeForTokens(LINEAR_PROVIDER, code);
-      // Fetch viewer to stamp accountLabel.
       const viewerRes = await fetch('https://api.linear.app/graphql', {
         method: 'POST',
         headers: {
@@ -420,6 +521,385 @@ export async function GET(
         expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
         scopes: def.scopes,
         previewSource: tokens.access_token,
+        createdById: identity.id,
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    // ── New dedicated providers ─────────────────────────────────
+
+    if (provider === 'shopify') {
+      const shop = cookieExtra;
+      if (!shop) return redirectBack(environmentId, 'error', 'Shop domain missing from state');
+      const tokens = await completeShopifyOAuth(shop, code);
+      let shopName = shop;
+      try {
+        const info = await getShopInfo(shop, tokens.access_token);
+        shopName = info.name || info.domain || shop;
+      } catch { /* fall through */ }
+      await persistIntegration({
+        environmentId,
+        provider: 'shopify',
+        accountLabel: shop,
+        displayName: `Shopify · ${shopName}`,
+        credentialsObject: { accessToken: tokens.access_token, shop },
+        refreshToken: null,
+        expiresAt: null,
+        scopes: def.scopes,
+        previewSource: tokens.access_token,
+        createdById: identity.id,
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'mailchimp') {
+      const { tokens, metadata } = await completeMailchimpOAuth(code);
+      await persistIntegration({
+        environmentId,
+        provider: 'mailchimp',
+        accountLabel: metadata.accountname || metadata.dc,
+        displayName: `Mailchimp · ${metadata.accountname || metadata.dc}`,
+        credentialsObject: {
+          accessToken: tokens.access_token,
+          dc: metadata.dc,
+          apiEndpoint: metadata.api_endpoint,
+        },
+        refreshToken: tokens.refresh_token ?? null,
+        expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
+        scopes: def.scopes,
+        previewSource: tokens.access_token,
+        createdById: identity.id,
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'airtable') {
+      const codeVerifier = cookieExtra;
+      if (!codeVerifier) return redirectBack(environmentId, 'error', 'PKCE code_verifier missing from state');
+      const tokens = await exchangeAirtableCode(code, codeVerifier);
+      let accountLabel = 'default';
+      let displayName = 'Airtable';
+      try {
+        const user = await getAirtableUser(tokens.access_token);
+        accountLabel = user.email || user.id;
+        displayName = `Airtable · ${user.email || user.id}`;
+      } catch { /* fall through */ }
+      await persistIntegration({
+        environmentId,
+        provider: 'airtable',
+        accountLabel,
+        displayName,
+        credentialsObject: { accessToken: tokens.access_token },
+        refreshToken: tokens.refresh_token ?? null,
+        expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
+        scopes: def.scopes,
+        previewSource: tokens.access_token,
+        createdById: identity.id,
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'typeform') {
+      const tokens = await exchangeCodeForTokens(TYPEFORM_PROVIDER, code);
+      let accountLabel = 'default';
+      let displayName = 'Typeform';
+      try {
+        const user = await getTypeformUser(tokens.access_token);
+        accountLabel = user.email || user.alias || user.user_id;
+        displayName = `Typeform · ${user.alias || user.email}`;
+      } catch { /* fall through */ }
+      await persistIntegration({
+        environmentId,
+        provider: 'typeform',
+        accountLabel,
+        displayName,
+        credentialsObject: { accessToken: tokens.access_token },
+        refreshToken: tokens.refresh_token ?? null,
+        expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
+        scopes: def.scopes,
+        previewSource: tokens.access_token,
+        createdById: identity.id,
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    // ── Generic providers with profile fetchers ──────────────────
+
+    // Atlassian (Jira + Confluence) — fetch accessible resources
+    if (provider === 'jira' || provider === 'confluence') {
+      const prov = provider === 'jira' ? JIRA_PROVIDER : CONFLUENCE_PROVIDER;
+      await handleGenericOAuthCallback({
+        provider: prov, providerId: provider, providerName: def.name, code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://api.atlassian.com/oauth/token/accessible-resources', {
+            headers: { Authorization: `Bearer ${at}`, Accept: 'application/json' },
+          });
+          if (res.ok) {
+            const sites = (await res.json()) as { id: string; name: string; url: string }[];
+            if (sites.length > 0) {
+              return { accountLabel: sites[0].id, displayName: `${def.name} · ${sites[0].name}` };
+            }
+          }
+          return { accountLabel: 'default', displayName: def.name };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'asana') {
+      await handleGenericOAuthCallback({
+        provider: ASANA_PROVIDER, providerId: 'asana', providerName: 'Asana', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://app.asana.com/api/1.0/users/me', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { data: { gid: string; name: string; email: string } };
+            return { accountLabel: data.data.email || data.data.gid, displayName: `Asana · ${data.data.name}` };
+          }
+          return { accountLabel: 'default', displayName: 'Asana' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'discord') {
+      await handleGenericOAuthCallback({
+        provider: DISCORD_PROVIDER, providerId: 'discord', providerName: 'Discord', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://discord.com/api/v10/users/@me', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { id: string; username: string; global_name?: string };
+            return { accountLabel: data.id, displayName: `Discord · ${data.global_name || data.username}` };
+          }
+          return { accountLabel: 'default', displayName: 'Discord' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'zoom') {
+      await handleGenericOAuthCallback({
+        provider: ZOOM_PROVIDER, providerId: 'zoom', providerName: 'Zoom', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://api.zoom.us/v2/users/me', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { id: string; email: string; first_name: string; last_name: string };
+            return { accountLabel: data.email, displayName: `Zoom · ${data.first_name} ${data.last_name}` };
+          }
+          return { accountLabel: 'default', displayName: 'Zoom' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'microsoft_teams') {
+      await handleGenericOAuthCallback({
+        provider: MICROSOFT_TEAMS_PROVIDER, providerId: 'microsoft_teams', providerName: 'Microsoft Teams', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://graph.microsoft.com/v1.0/me', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { id: string; displayName: string; mail?: string; userPrincipalName: string };
+            return { accountLabel: data.mail || data.userPrincipalName, displayName: `Teams · ${data.displayName}` };
+          }
+          return { accountLabel: 'default', displayName: 'Microsoft Teams' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'linkedin' || provider === 'linkedin_ads') {
+      const prov = provider === 'linkedin' ? LINKEDIN_PROVIDER : LINKEDIN_ADS_PROVIDER;
+      await handleGenericOAuthCallback({
+        provider: prov, providerId: provider, providerName: def.name, code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://api.linkedin.com/v2/userinfo', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { sub: string; name: string; email?: string };
+            return { accountLabel: data.email || data.sub, displayName: `${def.name} · ${data.name}` };
+          }
+          return { accountLabel: 'default', displayName: def.name };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'twitter') {
+      await handleGenericOAuthCallback({
+        provider: TWITTER_PROVIDER, providerId: 'twitter', providerName: 'X (Twitter)', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://api.twitter.com/2/users/me', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { data: { id: string; username: string; name: string } };
+            return { accountLabel: data.data.username, displayName: `X · @${data.data.username}` };
+          }
+          return { accountLabel: 'default', displayName: 'X (Twitter)' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'gitlab') {
+      await handleGenericOAuthCallback({
+        provider: GITLAB_PROVIDER, providerId: 'gitlab', providerName: 'GitLab', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://gitlab.com/api/v4/user', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { id: number; username: string; name: string };
+            return { accountLabel: data.username, displayName: `GitLab · ${data.username}` };
+          }
+          return { accountLabel: 'default', displayName: 'GitLab' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'bitbucket') {
+      await handleGenericOAuthCallback({
+        provider: BITBUCKET_PROVIDER, providerId: 'bitbucket', providerName: 'Bitbucket', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://api.bitbucket.org/2.0/user', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { uuid: string; username?: string; display_name: string };
+            return { accountLabel: data.username || data.uuid, displayName: `Bitbucket · ${data.display_name}` };
+          }
+          return { accountLabel: 'default', displayName: 'Bitbucket' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'dropbox') {
+      await handleGenericOAuthCallback({
+        provider: DROPBOX_PROVIDER, providerId: 'dropbox', providerName: 'Dropbox', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { account_id: string; email: string; name: { display_name: string } };
+            return { accountLabel: data.email, displayName: `Dropbox · ${data.name.display_name}` };
+          }
+          return { accountLabel: 'default', displayName: 'Dropbox' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    // Google-OAuth providers that reuse GOOGLE_CLIENT_ID
+    if (provider === 'google_drive' || provider === 'youtube') {
+      const prov = provider === 'google_drive' ? GOOGLE_DRIVE_PROVIDER : YOUTUBE_PROVIDER;
+      await handleGenericOAuthCallback({
+        provider: prov, providerId: provider, providerName: def.name, code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { email: string; name?: string };
+            return { accountLabel: data.email, displayName: `${def.name} · ${data.email}` };
+          }
+          return { accountLabel: 'default', displayName: def.name };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    // Microsoft-OAuth providers that reuse MICROSOFT_CLIENT_ID
+    if (provider === 'onedrive') {
+      await handleGenericOAuthCallback({
+        provider: ONEDRIVE_PROVIDER, providerId: 'onedrive', providerName: 'OneDrive', code,
+        environmentId, scopes: def.scopes, createdById: identity.id,
+        fetchProfile: async (at) => {
+          const res = await fetch('https://graph.microsoft.com/v1.0/me', {
+            headers: { Authorization: `Bearer ${at}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { displayName: string; mail?: string; userPrincipalName: string };
+            return { accountLabel: data.mail || data.userPrincipalName, displayName: `OneDrive · ${data.displayName}` };
+          }
+          return { accountLabel: 'default', displayName: 'OneDrive' };
+        },
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    // ── Generic providers without dedicated profile fetchers ─────
+    // For these, we persist with token only. Profile can be fetched later.
+
+    const genericProviderMap: Record<string, import('@/lib/integrations/oauth/base').OAuthProvider> = {
+      trello: TRELLO_PROVIDER,
+      monday: MONDAY_PROVIDER,
+      clickup: CLICKUP_PROVIDER,
+      basecamp: BASECAMP_PROVIDER,
+      wrike: WRIKE_PROVIDER,
+      todoist: TODOIST_PROVIDER,
+      calendly: CALENDLY_PROVIDER,
+      pipedrive: PIPEDRIVE_PROVIDER,
+      zoho_crm: ZOHO_CRM_PROVIDER,
+      square: SQUARE_PROVIDER,
+      gumroad: GUMROAD_PROVIDER,
+      instagram: INSTAGRAM_PROVIDER,
+      tiktok: TIKTOK_PROVIDER,
+      buffer: BUFFER_PROVIDER,
+      tiktok_ads: TIKTOK_ADS_PROVIDER,
+      canva: CANVA_PROVIDER,
+      miro: MIRO_PROVIDER,
+      adobe_creative_cloud: ADOBE_CREATIVE_CLOUD_PROVIDER,
+      sketch: SKETCH_PROVIDER,
+      box: BOX_PROVIDER,
+      surveymonkey: SURVEYMONKEY_PROVIDER,
+      zendesk: ZENDESK_PROVIDER,
+      intercom: INTERCOM_PROVIDER,
+      helpscout: HELPSCOUT_PROVIDER,
+      quickbooks: QUICKBOOKS_PROVIDER,
+      xero: XERO_PROVIDER,
+      freshbooks: FRESHBOOKS_PROVIDER,
+      wave: WAVE_PROVIDER,
+      gusto: GUSTO_PROVIDER,
+      rippling: RIPPLING_PROVIDER,
+      loom: LOOM_PROVIDER,
+      vimeo: VIMEO_PROVIDER,
+      vercel: VERCEL_PROVIDER,
+      sentry: SENTRY_PROVIDER,
+      netlify: NETLIFY_PROVIDER,
+    };
+
+    const genericProv = genericProviderMap[provider];
+    if (genericProv) {
+      await handleGenericOAuthCallback({
+        provider: genericProv,
+        providerId: provider,
+        providerName: def.name,
+        code,
+        environmentId,
+        scopes: def.scopes,
         createdById: identity.id,
       });
       return redirectBack(environmentId, 'success');
