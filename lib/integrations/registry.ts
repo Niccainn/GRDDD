@@ -182,11 +182,11 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     name: 'Airtable',
     tagline: 'Bases, tables, records, views',
     category: 'productivity',
-    authType: 'oauth',
+    authType: 'api_key',
     accentColor: '#18bfff',
-    scopes: ['data.records:read', 'data.records:write', 'schema.bases:read'],
-    requiredEnvVars: ['AIRTABLE_CLIENT_ID', 'AIRTABLE_CLIENT_SECRET'],
-    implemented: false,
+    scopes: [],
+    requiredEnvVars: [],
+    implemented: true,
     glyph: '⊞',
   },
   {
@@ -198,7 +198,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#1868db',
     scopes: ['read:confluence-content.all', 'read:confluence-space.summary'],
     requiredEnvVars: ['ATLASSIAN_CLIENT_ID', 'ATLASSIAN_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊡',
   },
   {
@@ -213,7 +213,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiToken', label: 'API token', type: 'password', placeholder: 'Coda API token', helper: 'Account settings → API tokens' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊟',
   },
 
@@ -227,7 +227,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0052cc',
     scopes: ['read:jira-work', 'read:jira-user'],
     requiredEnvVars: ['ATLASSIAN_CLIENT_ID', 'ATLASSIAN_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⬡',
   },
   {
@@ -239,7 +239,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#f06a6a',
     scopes: ['default'],
     requiredEnvVars: ['ASANA_CLIENT_ID', 'ASANA_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⬢',
   },
   {
@@ -263,7 +263,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0079bf',
     scopes: ['read', 'write'],
     requiredEnvVars: ['TRELLO_API_KEY', 'TRELLO_API_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '▦',
   },
   {
@@ -275,7 +275,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#ff3d57',
     scopes: ['boards:read', 'workspaces:read'],
     requiredEnvVars: ['MONDAY_CLIENT_ID', 'MONDAY_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⬣',
   },
   {
@@ -287,7 +287,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#7b68ee',
     scopes: [],
     requiredEnvVars: ['CLICKUP_CLIENT_ID', 'CLICKUP_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⬠',
   },
   {
@@ -299,7 +299,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#1d2d35',
     scopes: [],
     requiredEnvVars: ['BASECAMP_CLIENT_ID', 'BASECAMP_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '△',
   },
   {
@@ -311,7 +311,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#08cf65',
     scopes: ['wsReadOnly'],
     requiredEnvVars: ['WRIKE_CLIENT_ID', 'WRIKE_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '▽',
   },
   {
@@ -323,7 +323,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#e44332',
     scopes: ['data:read', 'data:read_write'],
     requiredEnvVars: ['TODOIST_CLIENT_ID', 'TODOIST_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '☑',
   },
 
@@ -349,7 +349,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#6264a7',
     scopes: ['Channel.ReadBasic.All', 'Chat.Read', 'User.Read'],
     requiredEnvVars: ['MICROSOFT_CLIENT_ID', 'MICROSOFT_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊕',
   },
   {
@@ -361,7 +361,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#5865f2',
     scopes: ['identify', 'guilds'],
     requiredEnvVars: ['DISCORD_CLIENT_ID', 'DISCORD_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊗',
   },
   {
@@ -373,7 +373,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#2d8cff',
     scopes: ['meeting:read', 'user:read'],
     requiredEnvVars: ['ZOOM_CLIENT_ID', 'ZOOM_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊘',
   },
   {
@@ -389,7 +389,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'authToken', label: 'Auth token', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊙',
   },
   {
@@ -404,7 +404,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'SG.xxxxxx', helper: 'Settings → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '✉',
   },
 
@@ -478,7 +478,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#006bff',
     scopes: [],
     requiredEnvVars: ['CALENDLY_CLIENT_ID', 'CALENDLY_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '◫',
   },
 
@@ -516,7 +516,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#017737',
     scopes: [],
     requiredEnvVars: ['PIPEDRIVE_CLIENT_ID', 'PIPEDRIVE_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '◗',
   },
   {
@@ -528,7 +528,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#e42527',
     scopes: ['ZohoCRM.modules.ALL'],
     requiredEnvVars: ['ZOHO_CLIENT_ID', 'ZOHO_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '◑',
   },
   {
@@ -544,7 +544,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Settings → API Settings' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '◒',
   },
   {
@@ -559,7 +559,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'api_xxxxxx', helper: 'Settings → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '◓',
   },
 
@@ -615,7 +615,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'consumerSecret', label: 'Consumer secret', type: 'password', placeholder: 'cs_xxxxxx' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊛',
   },
   {
@@ -627,7 +627,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#006aff',
     scopes: ['ITEMS_READ', 'ORDERS_READ', 'PAYMENTS_READ'],
     requiredEnvVars: ['SQUARE_CLIENT_ID', 'SQUARE_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊠',
   },
   {
@@ -643,7 +643,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'clientSecret', label: 'Client secret', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊡',
   },
   {
@@ -655,7 +655,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#ff90e8',
     scopes: [],
     requiredEnvVars: ['GUMROAD_CLIENT_ID', 'GUMROAD_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊜',
   },
   {
@@ -670,7 +670,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Settings → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊝',
   },
 
@@ -680,11 +680,11 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     name: 'Mailchimp',
     tagline: 'Lists, campaigns, automations',
     category: 'email_marketing',
-    authType: 'oauth',
+    authType: 'api_key',
     accentColor: '#ffe01b',
     scopes: [],
-    requiredEnvVars: ['MAILCHIMP_CLIENT_ID', 'MAILCHIMP_CLIENT_SECRET'],
-    implemented: false,
+    requiredEnvVars: [],
+    implemented: true,
     glyph: '✦',
   },
   {
@@ -699,7 +699,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiSecret', label: 'API secret', type: 'password', helper: 'Settings → Advanced → API' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '✧',
   },
   {
@@ -715,7 +715,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '✩',
   },
   {
@@ -730,7 +730,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Settings → Integrations → API' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '✪',
   },
   {
@@ -745,7 +745,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 're_xxxxxxxx' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊹',
   },
 
@@ -759,7 +759,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#000000',
     scopes: ['tweet.read', 'users.read', 'offline.access'],
     requiredEnvVars: ['TWITTER_CLIENT_ID', 'TWITTER_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '𝕏',
   },
   {
@@ -771,7 +771,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0a66c2',
     scopes: ['r_liteprofile', 'r_organization_social'],
     requiredEnvVars: ['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊞',
   },
   {
@@ -783,7 +783,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#e1306c',
     scopes: ['instagram_basic', 'instagram_manage_insights'],
     requiredEnvVars: ['META_APP_ID', 'META_APP_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊞',
   },
   {
@@ -795,7 +795,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#000000',
     scopes: ['user.info.basic', 'video.list'],
     requiredEnvVars: ['TIKTOK_CLIENT_KEY', 'TIKTOK_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '♪',
   },
   {
@@ -807,7 +807,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#168eea',
     scopes: [],
     requiredEnvVars: ['BUFFER_CLIENT_ID', 'BUFFER_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊓',
   },
   {
@@ -819,7 +819,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#ff0000',
     scopes: ['https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/yt-analytics.readonly'],
     requiredEnvVars: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '▷',
   },
 
@@ -857,7 +857,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#000000',
     scopes: [],
     requiredEnvVars: ['TIKTOK_ADS_APP_ID', 'TIKTOK_ADS_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '♫',
   },
   {
@@ -869,7 +869,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0a66c2',
     scopes: ['r_ads_reporting', 'r_ads'],
     requiredEnvVars: ['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊟',
   },
 
@@ -911,7 +911,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiSecret', label: 'API secret', type: 'password', helper: 'Project Settings → Management → API Secret' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊚',
   },
   {
@@ -927,7 +927,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'secretKey', label: 'Secret key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊛',
   },
   {
@@ -943,7 +943,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'Personal API key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '🦔',
   },
   {
@@ -959,7 +959,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊜',
   },
   {
@@ -974,7 +974,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'writeKey', label: 'Write key', type: 'password', helper: 'Sources → Settings → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊝',
   },
 
@@ -988,7 +988,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#00c4cc',
     scopes: ['design:read', 'asset:read', 'brand:read'],
     requiredEnvVars: ['CANVA_CLIENT_ID', 'CANVA_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '◈',
   },
   {
@@ -1000,7 +1000,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#ffd02f',
     scopes: ['boards:read', 'boards:write'],
     requiredEnvVars: ['MIRO_CLIENT_ID', 'MIRO_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '◇',
   },
   {
@@ -1012,7 +1012,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#ff0000',
     scopes: ['openid', 'creative_sdk'],
     requiredEnvVars: ['ADOBE_CLIENT_ID', 'ADOBE_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⬘',
   },
   {
@@ -1024,7 +1024,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#fdad00',
     scopes: [],
     requiredEnvVars: ['SKETCH_CLIENT_ID', 'SKETCH_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '◇',
   },
 
@@ -1038,7 +1038,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#4285f4',
     scopes: ['https://www.googleapis.com/auth/drive.readonly'],
     requiredEnvVars: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '▲',
   },
   {
@@ -1050,7 +1050,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0061ff',
     scopes: ['files.metadata.read', 'files.content.read'],
     requiredEnvVars: ['DROPBOX_CLIENT_ID', 'DROPBOX_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⬒',
   },
   {
@@ -1062,7 +1062,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0078d4',
     scopes: ['Files.Read.All', 'User.Read'],
     requiredEnvVars: ['MICROSOFT_CLIENT_ID', 'MICROSOFT_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⬓',
   },
   {
@@ -1074,7 +1074,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0061d5',
     scopes: [],
     requiredEnvVars: ['BOX_CLIENT_ID', 'BOX_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⬔',
   },
 
@@ -1084,11 +1084,11 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     name: 'Typeform',
     tagline: 'Forms, surveys, responses',
     category: 'forms',
-    authType: 'oauth',
+    authType: 'api_key',
     accentColor: '#262627',
-    scopes: ['forms:read', 'responses:read'],
-    requiredEnvVars: ['TYPEFORM_CLIENT_ID', 'TYPEFORM_CLIENT_SECRET'],
-    implemented: false,
+    scopes: [],
+    requiredEnvVars: [],
+    implemented: true,
     glyph: '⊞',
   },
   {
@@ -1103,7 +1103,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Settings → Integrations → API' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊟',
   },
   {
@@ -1118,7 +1118,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Settings → API' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊠',
   },
   {
@@ -1130,7 +1130,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#00bf6f',
     scopes: ['surveys_read', 'responses_read_detail'],
     requiredEnvVars: ['SURVEYMONKEY_CLIENT_ID', 'SURVEYMONKEY_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊡',
   },
 
@@ -1144,7 +1144,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#03363d',
     scopes: ['read', 'tickets:read'],
     requiredEnvVars: ['ZENDESK_CLIENT_ID', 'ZENDESK_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊕',
   },
   {
@@ -1156,7 +1156,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#286efa',
     scopes: [],
     requiredEnvVars: ['INTERCOM_CLIENT_ID', 'INTERCOM_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊖',
   },
   {
@@ -1172,7 +1172,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊗',
   },
   {
@@ -1184,7 +1184,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#1292ee',
     scopes: [],
     requiredEnvVars: ['HELPSCOUT_CLIENT_ID', 'HELPSCOUT_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊘',
   },
   {
@@ -1201,7 +1201,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'tokenKey', label: 'Token key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊙',
   },
 
@@ -1215,7 +1215,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#2ca01c',
     scopes: ['com.intuit.quickbooks.accounting'],
     requiredEnvVars: ['QUICKBOOKS_CLIENT_ID', 'QUICKBOOKS_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊚',
   },
   {
@@ -1227,7 +1227,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#13b5ea',
     scopes: ['accounting.transactions.read', 'accounting.contacts.read'],
     requiredEnvVars: ['XERO_CLIENT_ID', 'XERO_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊛',
   },
   {
@@ -1239,7 +1239,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0075dd',
     scopes: [],
     requiredEnvVars: ['FRESHBOOKS_CLIENT_ID', 'FRESHBOOKS_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊜',
   },
   {
@@ -1251,7 +1251,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#085078',
     scopes: [],
     requiredEnvVars: ['WAVE_CLIENT_ID', 'WAVE_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊝',
   },
 
@@ -1269,7 +1269,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊞',
   },
   {
@@ -1281,7 +1281,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#f45d48',
     scopes: ['employees:read', 'payrolls:read'],
     requiredEnvVars: ['GUSTO_CLIENT_ID', 'GUSTO_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊟',
   },
   {
@@ -1293,7 +1293,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#fedd00',
     scopes: [],
     requiredEnvVars: ['RIPPLING_CLIENT_ID', 'RIPPLING_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊠',
   },
   {
@@ -1308,7 +1308,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API token', type: 'password', helper: 'Organization Settings → Integrations → API' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊡',
   },
 
@@ -1325,7 +1325,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'sk-xxxxxx', helper: 'platform.openai.com → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⬡',
   },
   {
@@ -1340,7 +1340,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'sk-ant-xxxxxx', helper: 'console.anthropic.com → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⬢',
   },
   {
@@ -1355,7 +1355,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Profile → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⬣',
   },
   {
@@ -1370,7 +1370,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiToken', label: 'API token', type: 'password', helper: 'Account Settings → API Tokens' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⬠',
   },
 
@@ -1387,7 +1387,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'webhookUrl', label: 'Webhook URL', type: 'text', placeholder: 'https://hooks.zapier.com/hooks/catch/…', helper: 'Trigger → Webhooks by Zapier → Catch Hook' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⚡',
   },
   {
@@ -1403,7 +1403,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'region', label: 'Region', type: 'text', placeholder: 'us1 or eu1' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⚙',
   },
   {
@@ -1419,7 +1419,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⟐',
   },
 
@@ -1445,7 +1445,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#fc6d26',
     scopes: ['read_api', 'read_user'],
     requiredEnvVars: ['GITLAB_CLIENT_ID', 'GITLAB_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '◍',
   },
   {
@@ -1457,7 +1457,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#0052cc',
     scopes: ['repository', 'pullrequest'],
     requiredEnvVars: ['BITBUCKET_CLIENT_ID', 'BITBUCKET_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊜',
   },
   {
@@ -1469,7 +1469,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#000000',
     scopes: [],
     requiredEnvVars: ['VERCEL_CLIENT_ID', 'VERCEL_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '▲',
   },
   {
@@ -1481,7 +1481,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#362d59',
     scopes: ['project:read', 'event:read'],
     requiredEnvVars: ['SENTRY_CLIENT_ID', 'SENTRY_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊗',
   },
   {
@@ -1498,7 +1498,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'site', label: 'Site', type: 'text', placeholder: 'datadoghq.com' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊙',
   },
   {
@@ -1513,7 +1513,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key (v2)', type: 'password', helper: 'Integrations → API Access Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊚',
   },
 
@@ -1531,7 +1531,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'serviceKey', label: 'Service role key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊞',
   },
   {
@@ -1546,7 +1546,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'serviceAccountJson', label: 'Service account JSON', type: 'password', helper: 'Firebase Console → Project Settings → Service Accounts → Generate New Private Key' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊟',
   },
   {
@@ -1563,7 +1563,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'groupId', label: 'Project ID', type: 'text' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊠',
   },
 
@@ -1577,7 +1577,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#625df5',
     scopes: [],
     requiredEnvVars: ['LOOM_CLIENT_ID', 'LOOM_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊕',
   },
   {
@@ -1589,7 +1589,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#1ab7ea',
     scopes: ['public', 'private'],
     requiredEnvVars: ['VIMEO_CLIENT_ID', 'VIMEO_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊖',
   },
   {
@@ -1605,7 +1605,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'tokenSecret', label: 'Secret key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊗',
   },
 
@@ -1645,7 +1645,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'region', label: 'Region', type: 'text', placeholder: 'us-east-1' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊞',
   },
   {
@@ -1657,7 +1657,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#00c7b7',
     scopes: [],
     requiredEnvVars: ['NETLIFY_CLIENT_ID', 'NETLIFY_CLIENT_SECRET'],
-    implemented: false,
+    implemented: true,
     glyph: '⊟',
   },
   {
@@ -1672,7 +1672,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiToken', label: 'API token', type: 'password', helper: 'fly tokens create' },
     ],
     requiredEnvVars: [],
-    implemented: false,
+    implemented: true,
     glyph: '⊠',
   },
 ];

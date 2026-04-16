@@ -65,8 +65,11 @@ export async function getMetaAdsClient(integrationId: string, environmentId: str
     async getAccountSummary(): Promise<{ id: string; name: string; currency: string; status: number }> {
       const url = new URL(`${GRAPH_BASE}/${adAccountId}`);
       url.searchParams.set('fields', 'id,name,currency,account_status');
-      url.searchParams.set('access_token', accessToken);
-      const res = await fetch(url.toString());
+      // Use Authorization header instead of URL param to prevent token leaking in logs
+      const res = await fetch(url.toString(), {
+        headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
       if (!res.ok) throw new Error(`Meta account summary failed: ${await res.text()}`);
       const d = (await res.json()) as { id: string; name: string; currency: string; account_status: number };
       return { id: d.id, name: d.name, currency: d.currency, status: d.account_status };
@@ -96,8 +99,11 @@ export async function getMetaAdsClient(integrationId: string, environmentId: str
       } else {
         url.searchParams.set('date_preset', args.datePreset ?? 'yesterday');
       }
-      url.searchParams.set('access_token', accessToken);
-      const res = await fetch(url.toString());
+      // Use Authorization header instead of URL param to prevent token leaking in logs
+      const res = await fetch(url.toString(), {
+        headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
       if (!res.ok) throw new Error(`Meta insights failed: ${await res.text()}`);
       const payload = (await res.json()) as {
         data: (MetaInsightsRow & { campaign_id: string; campaign_name: string })[];
@@ -120,8 +126,11 @@ export async function getMetaAdsClient(integrationId: string, environmentId: str
       const url = new URL(`${GRAPH_BASE}/${adAccountId}/insights`);
       url.searchParams.set('fields', 'spend,impressions,clicks,ctr,purchase_roas');
       url.searchParams.set('date_preset', args.datePreset ?? 'yesterday');
-      url.searchParams.set('access_token', accessToken);
-      const res = await fetch(url.toString());
+      // Use Authorization header instead of URL param to prevent token leaking in logs
+      const res = await fetch(url.toString(), {
+        headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
       if (!res.ok) throw new Error(`Meta account totals failed: ${await res.text()}`);
       const payload = (await res.json()) as { data: MetaInsightsRow[] };
       const row = payload.data[0];
