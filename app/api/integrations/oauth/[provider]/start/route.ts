@@ -36,6 +36,62 @@ import { GITHUB_PROVIDER } from '@/lib/integrations/oauth/github';
 import { LINEAR_PROVIDER } from '@/lib/integrations/oauth/linear';
 import { NOTION_PROVIDER } from '@/lib/integrations/oauth/notion';
 import { FIGMA_PROVIDER } from '@/lib/integrations/oauth/figma';
+import { buildShopifyAuthorizeUrl } from '@/lib/integrations/oauth/shopify';
+import { MAILCHIMP_PROVIDER } from '@/lib/integrations/oauth/mailchimp';
+import { buildAirtableAuthorizeUrl } from '@/lib/integrations/oauth/airtable';
+import { TYPEFORM_PROVIDER } from '@/lib/integrations/oauth/typeform';
+import {
+  JIRA_PROVIDER,
+  CONFLUENCE_PROVIDER,
+  ASANA_PROVIDER,
+  TRELLO_PROVIDER,
+  MONDAY_PROVIDER,
+  CLICKUP_PROVIDER,
+  BASECAMP_PROVIDER,
+  WRIKE_PROVIDER,
+  TODOIST_PROVIDER,
+  MICROSOFT_TEAMS_PROVIDER,
+  DISCORD_PROVIDER,
+  ZOOM_PROVIDER,
+  CALENDLY_PROVIDER,
+  PIPEDRIVE_PROVIDER,
+  ZOHO_CRM_PROVIDER,
+  SQUARE_PROVIDER,
+  GUMROAD_PROVIDER,
+  TWITTER_PROVIDER,
+  LINKEDIN_PROVIDER,
+  INSTAGRAM_PROVIDER,
+  TIKTOK_PROVIDER,
+  BUFFER_PROVIDER,
+  YOUTUBE_PROVIDER,
+  TIKTOK_ADS_PROVIDER,
+  LINKEDIN_ADS_PROVIDER,
+  CANVA_PROVIDER,
+  MIRO_PROVIDER,
+  ADOBE_CREATIVE_CLOUD_PROVIDER,
+  SKETCH_PROVIDER,
+  GOOGLE_DRIVE_PROVIDER,
+  DROPBOX_PROVIDER,
+  ONEDRIVE_PROVIDER,
+  BOX_PROVIDER,
+  SURVEYMONKEY_PROVIDER,
+  ZENDESK_PROVIDER,
+  INTERCOM_PROVIDER,
+  HELPSCOUT_PROVIDER,
+  QUICKBOOKS_PROVIDER,
+  XERO_PROVIDER,
+  FRESHBOOKS_PROVIDER,
+  WAVE_PROVIDER,
+  GUSTO_PROVIDER,
+  RIPPLING_PROVIDER,
+  LOOM_PROVIDER,
+  VIMEO_PROVIDER,
+  GITLAB_PROVIDER,
+  BITBUCKET_PROVIDER,
+  VERCEL_PROVIDER,
+  SENTRY_PROVIDER,
+  NETLIFY_PROVIDER,
+} from '@/lib/integrations/oauth/generic';
 
 const STATE_COOKIE_PREFIX = 'grid_int_state_';
 
@@ -72,6 +128,10 @@ export async function GET(
   // static analysis can see which providers are actually wired.
   let authorizeUrl: string;
   const state = generateState();
+
+  // Airtable PKCE: we need to store the code_verifier in the cookie.
+  let airtableCodeVerifier: string | undefined;
+
   try {
     if (provider === 'meta_ads') {
       authorizeUrl = buildAuthorizeUrl(META_PROVIDER, def.scopes, state);
@@ -101,6 +161,155 @@ export async function GET(
       authorizeUrl = buildAuthorizeUrl(GOOGLE_CALENDAR_PROVIDER, def.scopes, state);
     } else if (provider === 'microsoft_outlook') {
       authorizeUrl = buildAuthorizeUrl(MICROSOFT_OUTLOOK_PROVIDER, def.scopes, state);
+
+    // ── New dedicated providers ─────────────────────────────────
+    } else if (provider === 'shopify') {
+      const shop = req.nextUrl.searchParams.get('shop');
+      if (!shop) {
+        return Response.json({ error: 'shop query param required for Shopify' }, { status: 400 });
+      }
+      authorizeUrl = buildShopifyAuthorizeUrl(shop, def.scopes, state);
+    } else if (provider === 'mailchimp') {
+      authorizeUrl = buildAuthorizeUrl(MAILCHIMP_PROVIDER, def.scopes, state);
+    } else if (provider === 'airtable') {
+      const result = await buildAirtableAuthorizeUrl(def.scopes, state);
+      authorizeUrl = result.authorizeUrl;
+      airtableCodeVerifier = result.codeVerifier;
+    } else if (provider === 'typeform') {
+      authorizeUrl = buildAuthorizeUrl(TYPEFORM_PROVIDER, def.scopes, state);
+
+    // ── Generic providers (standard OAuth2) ─────────────────────
+    // Project Management
+    } else if (provider === 'jira') {
+      authorizeUrl = buildAuthorizeUrl(JIRA_PROVIDER, def.scopes, state);
+    } else if (provider === 'confluence') {
+      authorizeUrl = buildAuthorizeUrl(CONFLUENCE_PROVIDER, def.scopes, state);
+    } else if (provider === 'asana') {
+      authorizeUrl = buildAuthorizeUrl(ASANA_PROVIDER, def.scopes, state);
+    } else if (provider === 'trello') {
+      authorizeUrl = buildAuthorizeUrl(TRELLO_PROVIDER, def.scopes, state);
+    } else if (provider === 'monday') {
+      authorizeUrl = buildAuthorizeUrl(MONDAY_PROVIDER, def.scopes, state);
+    } else if (provider === 'clickup') {
+      authorizeUrl = buildAuthorizeUrl(CLICKUP_PROVIDER, def.scopes, state);
+    } else if (provider === 'basecamp') {
+      authorizeUrl = buildAuthorizeUrl(BASECAMP_PROVIDER, def.scopes, state);
+    } else if (provider === 'wrike') {
+      authorizeUrl = buildAuthorizeUrl(WRIKE_PROVIDER, def.scopes, state);
+    } else if (provider === 'todoist') {
+      authorizeUrl = buildAuthorizeUrl(TODOIST_PROVIDER, def.scopes, state);
+
+    // Communication
+    } else if (provider === 'microsoft_teams') {
+      authorizeUrl = buildAuthorizeUrl(MICROSOFT_TEAMS_PROVIDER, def.scopes, state);
+    } else if (provider === 'discord') {
+      authorizeUrl = buildAuthorizeUrl(DISCORD_PROVIDER, def.scopes, state);
+    } else if (provider === 'zoom') {
+      authorizeUrl = buildAuthorizeUrl(ZOOM_PROVIDER, def.scopes, state);
+
+    // Calendar
+    } else if (provider === 'calendly') {
+      authorizeUrl = buildAuthorizeUrl(CALENDLY_PROVIDER, def.scopes, state);
+
+    // CRM
+    } else if (provider === 'pipedrive') {
+      authorizeUrl = buildAuthorizeUrl(PIPEDRIVE_PROVIDER, def.scopes, state);
+    } else if (provider === 'zoho_crm') {
+      authorizeUrl = buildAuthorizeUrl(ZOHO_CRM_PROVIDER, def.scopes, state);
+
+    // Commerce
+    } else if (provider === 'square') {
+      authorizeUrl = buildAuthorizeUrl(SQUARE_PROVIDER, def.scopes, state);
+    } else if (provider === 'gumroad') {
+      authorizeUrl = buildAuthorizeUrl(GUMROAD_PROVIDER, def.scopes, state);
+
+    // Social
+    } else if (provider === 'twitter') {
+      authorizeUrl = buildAuthorizeUrl(TWITTER_PROVIDER, def.scopes, state);
+    } else if (provider === 'linkedin') {
+      authorizeUrl = buildAuthorizeUrl(LINKEDIN_PROVIDER, def.scopes, state);
+    } else if (provider === 'instagram') {
+      authorizeUrl = buildAuthorizeUrl(INSTAGRAM_PROVIDER, def.scopes, state);
+    } else if (provider === 'tiktok') {
+      authorizeUrl = buildAuthorizeUrl(TIKTOK_PROVIDER, def.scopes, state);
+    } else if (provider === 'buffer') {
+      authorizeUrl = buildAuthorizeUrl(BUFFER_PROVIDER, def.scopes, state);
+    } else if (provider === 'youtube') {
+      authorizeUrl = buildAuthorizeUrl(YOUTUBE_PROVIDER, def.scopes, state);
+
+    // Advertising
+    } else if (provider === 'tiktok_ads') {
+      authorizeUrl = buildAuthorizeUrl(TIKTOK_ADS_PROVIDER, def.scopes, state);
+    } else if (provider === 'linkedin_ads') {
+      authorizeUrl = buildAuthorizeUrl(LINKEDIN_ADS_PROVIDER, def.scopes, state);
+
+    // Design
+    } else if (provider === 'canva') {
+      authorizeUrl = buildAuthorizeUrl(CANVA_PROVIDER, def.scopes, state);
+    } else if (provider === 'miro') {
+      authorizeUrl = buildAuthorizeUrl(MIRO_PROVIDER, def.scopes, state);
+    } else if (provider === 'adobe_creative_cloud') {
+      authorizeUrl = buildAuthorizeUrl(ADOBE_CREATIVE_CLOUD_PROVIDER, def.scopes, state);
+    } else if (provider === 'sketch') {
+      authorizeUrl = buildAuthorizeUrl(SKETCH_PROVIDER, def.scopes, state);
+
+    // Cloud Storage
+    } else if (provider === 'google_drive') {
+      authorizeUrl = buildAuthorizeUrl(GOOGLE_DRIVE_PROVIDER, def.scopes, state);
+    } else if (provider === 'dropbox') {
+      authorizeUrl = buildAuthorizeUrl(DROPBOX_PROVIDER, def.scopes, state);
+    } else if (provider === 'onedrive') {
+      authorizeUrl = buildAuthorizeUrl(ONEDRIVE_PROVIDER, def.scopes, state);
+    } else if (provider === 'box') {
+      authorizeUrl = buildAuthorizeUrl(BOX_PROVIDER, def.scopes, state);
+
+    // Forms
+    } else if (provider === 'surveymonkey') {
+      authorizeUrl = buildAuthorizeUrl(SURVEYMONKEY_PROVIDER, def.scopes, state);
+
+    // Support
+    } else if (provider === 'zendesk') {
+      authorizeUrl = buildAuthorizeUrl(ZENDESK_PROVIDER, def.scopes, state);
+    } else if (provider === 'intercom') {
+      authorizeUrl = buildAuthorizeUrl(INTERCOM_PROVIDER, def.scopes, state);
+    } else if (provider === 'helpscout') {
+      authorizeUrl = buildAuthorizeUrl(HELPSCOUT_PROVIDER, def.scopes, state);
+
+    // Finance
+    } else if (provider === 'quickbooks') {
+      authorizeUrl = buildAuthorizeUrl(QUICKBOOKS_PROVIDER, def.scopes, state);
+    } else if (provider === 'xero') {
+      authorizeUrl = buildAuthorizeUrl(XERO_PROVIDER, def.scopes, state);
+    } else if (provider === 'freshbooks') {
+      authorizeUrl = buildAuthorizeUrl(FRESHBOOKS_PROVIDER, def.scopes, state);
+    } else if (provider === 'wave') {
+      authorizeUrl = buildAuthorizeUrl(WAVE_PROVIDER, def.scopes, state);
+
+    // HR
+    } else if (provider === 'gusto') {
+      authorizeUrl = buildAuthorizeUrl(GUSTO_PROVIDER, def.scopes, state);
+    } else if (provider === 'rippling') {
+      authorizeUrl = buildAuthorizeUrl(RIPPLING_PROVIDER, def.scopes, state);
+
+    // Video
+    } else if (provider === 'loom') {
+      authorizeUrl = buildAuthorizeUrl(LOOM_PROVIDER, def.scopes, state);
+    } else if (provider === 'vimeo') {
+      authorizeUrl = buildAuthorizeUrl(VIMEO_PROVIDER, def.scopes, state);
+
+    // Developer Tools
+    } else if (provider === 'gitlab') {
+      authorizeUrl = buildAuthorizeUrl(GITLAB_PROVIDER, def.scopes, state);
+    } else if (provider === 'bitbucket') {
+      authorizeUrl = buildAuthorizeUrl(BITBUCKET_PROVIDER, def.scopes, state);
+    } else if (provider === 'vercel') {
+      authorizeUrl = buildAuthorizeUrl(VERCEL_PROVIDER, def.scopes, state);
+    } else if (provider === 'sentry') {
+      authorizeUrl = buildAuthorizeUrl(SENTRY_PROVIDER, def.scopes, state);
+
+    // Infrastructure
+    } else if (provider === 'netlify') {
+      authorizeUrl = buildAuthorizeUrl(NETLIFY_PROVIDER, def.scopes, state);
     } else {
       return Response.json(
         { error: `No OAuth start handler implemented for ${provider}` },
@@ -115,11 +324,21 @@ export async function GET(
     return Response.json({ error: message }, { status: 500 });
   }
 
-  // Cookie payload: <state>.<environmentId>. The environmentId is
+  // Cookie payload: <state>.<environmentId>[.<extra>]. The environmentId is
   // NOT confidential but binding it to the cookie prevents a
   // redirect-spoofing attack where a token gets stored under a
   // different environment than the one the user kicked off from.
-  const payload = `${state}.${environmentId}`;
+  //
+  // For Shopify: state.environmentId.shop
+  // For Airtable: state.environmentId.codeVerifier
+  let payload = `${state}.${environmentId}`;
+  if (provider === 'shopify') {
+    const shop = req.nextUrl.searchParams.get('shop')!;
+    payload = `${state}.${environmentId}.${shop}`;
+  } else if (provider === 'airtable' && airtableCodeVerifier) {
+    payload = `${state}.${environmentId}.${airtableCodeVerifier}`;
+  }
+
   const cookieStore = await cookies();
   cookieStore.set(`${STATE_COOKIE_PREFIX}${provider}`, payload, {
     httpOnly: true,
