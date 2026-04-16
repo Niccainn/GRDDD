@@ -33,8 +33,10 @@ import {
   GOOGLE_ANALYTICS_PROVIDER,
   GOOGLE_SEARCH_CONSOLE_PROVIDER,
   GOOGLE_WORKSPACE_PROVIDER,
+  GOOGLE_CALENDAR_PROVIDER,
   completeGoogleOAuth,
 } from '@/lib/integrations/oauth/google';
+import { MICROSOFT_OUTLOOK_PROVIDER, getMicrosoftUser } from '@/lib/integrations/oauth/microsoft';
 import { SALESFORCE_PROVIDER, completeSalesforceOAuth } from '@/lib/integrations/oauth/salesforce';
 import { HUBSPOT_PROVIDER, getHubSpotAccountInfo } from '@/lib/integrations/oauth/hubspot';
 import { completeSlackOAuth } from '@/lib/integrations/oauth/slack';
@@ -161,12 +163,13 @@ export async function GET(
       return redirectBack(environmentId, 'success');
     }
 
-    if (provider === 'google_ads' || provider === 'google_analytics' || provider === 'google_search_console' || provider === 'google_workspace') {
+    if (provider === 'google_ads' || provider === 'google_analytics' || provider === 'google_search_console' || provider === 'google_workspace' || provider === 'google_calendar') {
       const googleProv = {
         google_ads: GOOGLE_ADS_PROVIDER,
         google_analytics: GOOGLE_ANALYTICS_PROVIDER,
         google_search_console: GOOGLE_SEARCH_CONSOLE_PROVIDER,
         google_workspace: GOOGLE_WORKSPACE_PROVIDER,
+        google_calendar: GOOGLE_CALENDAR_PROVIDER,
       }[provider];
       const tokens = await completeGoogleOAuth(googleProv, code);
 
@@ -234,6 +237,18 @@ export async function GET(
               accountLabel = first.siteUrl;
               displayName = `Search Console · ${first.siteUrl}`;
             }
+          }
+        } catch { /* ignore */ }
+      } else if (provider === 'google_calendar') {
+        // Fetch the user's primary calendar for a friendlier label.
+        try {
+          const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary', {
+            headers: { Authorization: `Bearer ${tokens.access_token}` },
+          });
+          if (res.ok) {
+            const data = (await res.json()) as { id: string; summary: string };
+            accountLabel = data.id;
+            displayName = `Google Calendar · ${data.summary || data.id}`;
           }
         } catch { /* ignore */ }
       }
@@ -381,6 +396,25 @@ export async function GET(
         provider: 'figma',
         accountLabel: user.handle,
         displayName: `Figma · ${user.handle}`,
+        credentialsObject: { accessToken: tokens.access_token },
+        refreshToken: tokens.refresh_token ?? null,
+        expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
+        scopes: def.scopes,
+        previewSource: tokens.access_token,
+        createdById: identity.id,
+      });
+      return redirectBack(environmentId, 'success');
+    }
+
+    if (provider === 'microsoft_outlook') {
+      const tokens = await exchangeCodeForTokens(MICROSOFT_OUTLOOK_PROVIDER, code);
+      const user = await getMicrosoftUser(tokens.access_token);
+      const email = user.mail || user.userPrincipalName;
+      await persistIntegration({
+        environmentId,
+        provider: 'microsoft_outlook',
+        accountLabel: email,
+        displayName: `Outlook · ${user.displayName || email}`,
         credentialsObject: { accessToken: tokens.access_token },
         refreshToken: tokens.refresh_token ?? null,
         expiresAt: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
