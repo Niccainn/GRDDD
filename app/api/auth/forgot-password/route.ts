@@ -45,7 +45,10 @@ export async function POST(req: Request) {
       return Response.json({ ok: true });
     }
 
-    const identity = await prisma.identity.findUnique({ where: { emailHash: hashEmail(email) } });
+    const fpHash = hashEmail(email);
+    const identity = fpHash
+      ? await prisma.identity.findUnique({ where: { emailHash: fpHash } })
+      : await prisma.identity.findFirst({ where: { email } });
     let devLink: string | null = null;
     if (identity && !identity.deletedAt) {
       devLink = await sendResetEmail(identity.id, identity.name, email);

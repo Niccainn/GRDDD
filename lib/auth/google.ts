@@ -203,7 +203,10 @@ export async function completeGoogleOAuth(
  * email-verified at creation since Google already verified the mailbox.
  */
 export async function upsertGoogleIdentity(user: GoogleUser): Promise<{ id: string; isNew: boolean }> {
-  const existing = await prisma.identity.findUnique({ where: { emailHash: hashEmail(user.email) } });
+  const googleHash = hashEmail(user.email);
+  const existing = googleHash
+    ? await prisma.identity.findUnique({ where: { emailHash: googleHash } })
+    : await prisma.identity.findFirst({ where: { email: user.email } });
 
   if (existing) {
     // If the account existed with a different auth provider (e.g.
