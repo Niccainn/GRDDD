@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "prisma generate && prisma db push --skip-generate && next build",
+  "buildCommand": "prisma generate && node scripts/migrate-and-backfill.mjs && next build",
   "functions": {
     "app/api/nova/execute/route.ts": { "maxDuration": 300 },
     "app/api/v1/run/route.ts": { "maxDuration": 300 },
