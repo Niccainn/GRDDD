@@ -13,9 +13,15 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'action must be "update" or "delete"' }, { status: 400 });
   }
 
-  // Verify all tasks belong to environments the user has access to
+  // Verify all tasks belong to environments the user can WRITE to (owner or ADMIN/CONTRIBUTOR)
   const envIds = await prisma.environment.findMany({
-    where: { deletedAt: null, OR: [{ ownerId: identity.id }, { memberships: { some: { identityId: identity.id } } }] },
+    where: {
+      deletedAt: null,
+      OR: [
+        { ownerId: identity.id },
+        { memberships: { some: { identityId: identity.id, role: { in: ['ADMIN', 'CONTRIBUTOR'] } } } },
+      ],
+    },
     select: { id: true },
   }).then(envs => envs.map(e => e.id));
 

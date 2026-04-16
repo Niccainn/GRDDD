@@ -597,7 +597,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { stat: '110+', label: 'Integrations', sub: 'CRM, dev, finance, marketing' },
+              { stat: '110+', label: 'Integrations', sub: 'CRM, dev, finance, social, marketing & more' },
               { stat: '9', label: 'Core modules', sub: 'Tasks, docs, goals, forms & more' },
               { stat: '∞', label: 'Workflows', sub: 'Multi-step AI automations' },
               { stat: '1', label: 'Platform', sub: 'Replace your tool stack' },
