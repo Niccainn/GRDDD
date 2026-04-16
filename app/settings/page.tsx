@@ -24,6 +24,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<'profile' | 'autonomy'>('profile');
   const [environmentId, setEnvironmentId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch('/api/settings/profile')
@@ -316,21 +318,97 @@ export default function ProfilePage() {
         <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 13, marginBottom: 16 }}>
           Permanently delete your account and all associated data. This action cannot be undone.
         </p>
-        <button
-          disabled
-          style={{
-            padding: '10px 20px',
-            borderRadius: 12,
-            border: '1px solid rgba(255,80,60,0.2)',
-            background: 'rgba(255,80,60,0.06)',
-            color: 'rgba(255,80,60,0.4)',
-            fontWeight: 300,
-            fontSize: 13,
-            cursor: 'not-allowed',
-          }}
-        >
-          Delete account — coming soon
-        </button>
+        {!deleteConfirm && !deleting ? (
+          <button
+            onClick={() => setDeleteConfirm('pending')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: 12,
+              border: '1px solid rgba(255,80,60,0.3)',
+              background: 'rgba(255,80,60,0.08)',
+              color: '#ff5c46',
+              fontWeight: 300,
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            Delete my account
+          </button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ color: '#ff5c46', fontWeight: 300, fontSize: 13 }}>
+              Type <strong>DELETE MY DATA</strong> to confirm:
+            </p>
+            <input
+              type="text"
+              value={deleteConfirm === 'pending' ? '' : deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE MY DATA"
+              style={{
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: '1px solid rgba(255,80,60,0.2)',
+                background: 'rgba(255,80,60,0.04)',
+                color: '#ff5c46',
+                fontWeight: 300,
+                fontSize: 13,
+                width: 220,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                disabled={deleteConfirm !== 'DELETE MY DATA' || deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    const res = await fetch('/api/me', {
+                      method: 'DELETE',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ confirmation: 'DELETE MY DATA' }),
+                    });
+                    if (res.ok) {
+                      window.location.href = '/';
+                    } else {
+                      const data = await res.json();
+                      toast(data.error || 'Failed to delete account', 'error');
+                      setDeleting(false);
+                    }
+                  } catch {
+                    toast('Failed to delete account', 'error');
+                    setDeleting(false);
+                  }
+                }}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 12,
+                  border: '1px solid rgba(255,80,60,0.4)',
+                  background: deleteConfirm === 'DELETE MY DATA' ? 'rgba(255,80,60,0.15)' : 'rgba(255,80,60,0.04)',
+                  color: deleteConfirm === 'DELETE MY DATA' ? '#ff5c46' : 'rgba(255,80,60,0.3)',
+                  fontWeight: 300,
+                  fontSize: 13,
+                  cursor: deleteConfirm === 'DELETE MY DATA' ? 'pointer' : 'not-allowed',
+                }}
+              >
+                {deleting ? 'Deleting...' : 'Confirm deletion'}
+              </button>
+              <button
+                onClick={() => { setDeleteConfirm(''); setDeleting(false); }}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 12,
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--text-3)',
+                  fontWeight: 300,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       </div>
       )}

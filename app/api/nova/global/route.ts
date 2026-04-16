@@ -226,9 +226,20 @@ export async function POST(req: NextRequest) {
   const { input } = await req.json();
   if (!input) return new Response(JSON.stringify({ error: 'Missing input' }), { status: 400 });
 
-  // ── Load integration tools dynamically ──────────────────────────
+  // ── Load integration tools dynamically (tenant-scoped) ──────────
+  // Only load integrations from environments the caller owns or is a member of.
   const integrations = await prisma.integration.findMany({
-    where: { deletedAt: null, status: 'ACTIVE' },
+    where: {
+      deletedAt: null,
+      status: 'ACTIVE',
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
+    },
   });
   const { available: integrationTools, byName: integrationByName } = selectAvailableTools(integrations);
 
@@ -324,7 +335,16 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
         const messages: Anthropic.MessageParam[] = [{ role: 'user', content: input }];
         let totalTokens = 0;
 
-        for (let round = 0; round < 8; round++) {
+        const MAX_ROUNDS = 8;
+        const MAX_TOKENS_PER_REQUEST = 80_000; // ~$0.30 at Sonnet pricing — safety ceiling
+
+        for (let round = 0; round < MAX_ROUNDS; round++) {
+          // Per-round budget check — stop if token spend is excessive
+          if (totalTokens > MAX_TOKENS_PER_REQUEST) {
+            send({ type: 'text', text: '\n\n*[Nova paused: token budget reached for this request. Ask a follow-up to continue.]*' });
+            break;
+          }
+
           const response = await anthropic.messages.create({
             model: 'claude-sonnet-4-20250514',
             max_tokens: 4096,
