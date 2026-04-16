@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { parseFields, parseSettings, validateSubmission } from '@/lib/forms';
+import { rateLimit } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 
 export async function GET(
@@ -33,6 +34,13 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  // Rate limit by IP: 10 submissions per 15 minutes (public endpoint — spam target)
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const rl = rateLimit(`form-submit:${ip}`, 10, 15 * 60_000);
+  if (!rl.allowed) {
+    return Response.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 });
+  }
+
   const { slug } = await params;
 
   const form = await prisma.form.findUnique({

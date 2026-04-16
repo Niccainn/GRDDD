@@ -15,13 +15,13 @@ export const metadata: Metadata = {
     default: 'GRID — The Adaptive Workspace for Modern Teams',
     template: '%s | GRID',
   },
-  description: 'GRID is the AI-powered adaptive workspace where teams and AI learn the business together. Automate workflows, gain operational clarity, and scale without adding headcount.',
-  keywords: ['adaptive workspace', 'AI business workspace', 'workflow automation', 'project management', 'team collaboration platform', 'business operations software', 'AI workspace', 'work management platform', 'notion alternative', 'monday alternative', 'clickup alternative'],
+  description: 'I built GRID because the way businesses operate is fundamentally changing — and the tools haven\'t caught up. Processes are in demand to evolve, but the feedback loop between decision and outcome has been blurred by speed and fragmentation. GRID gives companies the time and structure to consider the outcome of every process — from manual systems to automated ones, with human input at every step.',
+  keywords: ['adaptive workspace', 'AI business workspace', 'workflow automation', 'process intelligence', 'business operations OS', 'AI workflow engine', 'operational clarity', 'feedback loop automation', 'notion alternative', 'monday alternative', 'clickup alternative'],
   authors: [{ name: 'GRID Systems Inc.' }],
   creator: 'GRID Systems Inc.',
   openGraph: {
     title: 'GRID — The Adaptive Workspace for Modern Teams',
-    description: 'GRID is the AI-powered adaptive workspace where teams and AI learn the business together. Automate workflows, gain operational clarity, and scale without adding headcount.',
+    description: 'I built GRID because the way businesses operate is fundamentally changing — and the tools haven\'t caught up. GRID gives companies the structure to consider the outcome of every process, with human input at every step.',
     url: 'https://www.grddd.com',
     siteName: 'GRID',
     locale: 'en_US',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'GRID — The Adaptive Workspace for Modern Teams',
-    description: 'GRID is the AI-powered adaptive workspace where teams and AI learn the business together. Automate workflows, gain operational clarity, and scale without adding headcount.',
+    description: 'I built GRID because the way businesses operate is fundamentally changing — and the tools haven\'t caught up. GRID gives companies the structure to consider the outcome of every process, with human input at every step.',
   },
   robots: {
     index: true,

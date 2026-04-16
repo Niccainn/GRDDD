@@ -40,6 +40,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   await assertOwnsWorkflow(id, identity.id);
   const body = await req.json();
+
+  // Validate nodes and edges structure if provided
+  if (body.nodes !== undefined && body.nodes !== null) {
+    if (typeof body.nodes !== 'string') {
+      return Response.json({ error: 'nodes must be a JSON string' }, { status: 400 });
+    }
+    try { JSON.parse(body.nodes); } catch {
+      return Response.json({ error: 'nodes must be valid JSON' }, { status: 400 });
+    }
+  }
+  if (body.edges !== undefined && body.edges !== null) {
+    if (typeof body.edges !== 'string') {
+      return Response.json({ error: 'edges must be a JSON string' }, { status: 400 });
+    }
+    try { JSON.parse(body.edges); } catch {
+      return Response.json({ error: 'edges must be valid JSON' }, { status: 400 });
+    }
+  }
+
   const existing = await prisma.workflow.findUnique({ where: { id }, select: { name: true, status: true, environmentId: true } });
   const updated = await prisma.workflow.update({
     where: { id },

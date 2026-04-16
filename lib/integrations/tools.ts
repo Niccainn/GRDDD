@@ -307,6 +307,50 @@ export const TOOLS: AgentTool[] = [
     },
   },
 
+  // ── Google Calendar (standalone) ──────────────────────────────────
+  {
+    name: 'google_calendar_list_events',
+    provider: 'google_calendar',
+    description: 'List events from the connected Google Calendar for a date range.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', description: 'How many days ahead to look. Default: 7.' },
+        limit: { type: 'number', description: 'Maximum events to return. Default: 20.' },
+      },
+    },
+    async execute(integration, args) {
+      const { getGoogleCalendarClient } = await import('./clients/google-calendar');
+      const client = await getGoogleCalendarClient(integration.id, integration.environmentId);
+      const now = new Date();
+      const days = typeof args.days === 'number' ? args.days : 7;
+      const end = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      return await client.listEvents(now, end, typeof args.limit === 'number' ? args.limit : 20);
+    },
+  },
+
+  // ── Microsoft Outlook Calendar ──────────────────────────────────
+  {
+    name: 'microsoft_outlook_list_events',
+    provider: 'microsoft_outlook',
+    description: 'List events from the connected Microsoft Outlook calendar for a date range.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', description: 'How many days ahead to look. Default: 7.' },
+        limit: { type: 'number', description: 'Maximum events to return. Default: 20.' },
+      },
+    },
+    async execute(integration, args) {
+      const { getMicrosoftOutlookClient } = await import('./clients/microsoft-outlook');
+      const client = await getMicrosoftOutlookClient(integration.id, integration.environmentId);
+      const now = new Date();
+      const days = typeof args.days === 'number' ? args.days : 7;
+      const end = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      return await client.listEvents(now, end, typeof args.limit === 'number' ? args.limit : 20);
+    },
+  },
+
   // ── Salesforce ────────────────────────────────────────────────────
   {
     name: 'salesforce_pipeline_by_stage',
@@ -1016,6 +1060,177 @@ export const TOOLS: AgentTool[] = [
       const nodeIds = Array.isArray(args.node_ids) ? args.node_ids.map(String) : [String(args.node_ids)];
       const format = (args.format === 'svg' ? 'svg' : 'png') as 'png' | 'svg';
       return await client.getImages(String(args.file_key), nodeIds, format);
+    },
+  },
+
+  // ── Mailchimp ─────────────────────────────────────────────────────
+  {
+    name: 'mailchimp_recent_campaigns',
+    provider: 'mailchimp',
+    description: 'List recent Mailchimp email campaigns with open/click rates.',
+    inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    async execute(integration, args) {
+      const { getMailchimpClient } = await import('./clients/mailchimp');
+      const client = await getMailchimpClient(integration.id, integration.environmentId);
+      return await client.getRecentCampaigns(typeof args.limit === 'number' ? args.limit : 10);
+    },
+  },
+
+  // ── Airtable ──────────────────────────────────────────────────────
+  {
+    name: 'airtable_list_bases',
+    provider: 'airtable',
+    description: 'List all Airtable bases accessible with this token.',
+    inputSchema: { type: 'object', properties: {} },
+    async execute(integration) {
+      const { getAirtableClient } = await import('./clients/airtable');
+      const client = await getAirtableClient(integration.id, integration.environmentId);
+      return await client.listBases();
+    },
+  },
+  {
+    name: 'airtable_list_records',
+    provider: 'airtable',
+    description: 'List records from an Airtable base and table.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        baseId: { type: 'string' },
+        tableId: { type: 'string' },
+        limit: { type: 'number' },
+      },
+      required: ['baseId', 'tableId'],
+    },
+    async execute(integration, args) {
+      const { getAirtableClient } = await import('./clients/airtable');
+      const client = await getAirtableClient(integration.id, integration.environmentId);
+      return await client.listRecords(String(args.baseId), String(args.tableId), typeof args.limit === 'number' ? args.limit : 20);
+    },
+  },
+
+  // ── QuickBooks ────────────────────────────────────────────────────
+  {
+    name: 'quickbooks_recent_invoices',
+    provider: 'quickbooks',
+    description: 'List recent QuickBooks invoices with amounts and status.',
+    inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    async execute(integration, args) {
+      const { getQuickBooksClient } = await import('./clients/quickbooks');
+      const client = await getQuickBooksClient(integration.id, integration.environmentId);
+      return await client.getRecentInvoices(typeof args.limit === 'number' ? args.limit : 10);
+    },
+  },
+  {
+    name: 'quickbooks_profit_and_loss',
+    provider: 'quickbooks',
+    description: 'Get the QuickBooks Profit & Loss report summary.',
+    inputSchema: { type: 'object', properties: {} },
+    async execute(integration) {
+      const { getQuickBooksClient } = await import('./clients/quickbooks');
+      const client = await getQuickBooksClient(integration.id, integration.environmentId);
+      return await client.getProfitAndLoss();
+    },
+  },
+
+  // ── X (Twitter) ───────────────────────────────────────────────────
+  {
+    name: 'twitter_recent_tweets',
+    provider: 'twitter',
+    description: 'List recent tweets from the authenticated user.',
+    inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    async execute(integration, args) {
+      const { getTwitterClient } = await import('./clients/twitter');
+      const client = await getTwitterClient(integration.id, integration.environmentId);
+      return await client.getRecentTweets(typeof args.limit === 'number' ? args.limit : 10);
+    },
+  },
+  {
+    name: 'twitter_follower_count',
+    provider: 'twitter',
+    description: 'Get the follower count for the authenticated Twitter/X user.',
+    inputSchema: { type: 'object', properties: {} },
+    async execute(integration) {
+      const { getTwitterClient } = await import('./clients/twitter');
+      const client = await getTwitterClient(integration.id, integration.environmentId);
+      return await client.getFollowerCount();
+    },
+  },
+
+  // ── LinkedIn ──────────────────────────────────────────────────────
+  {
+    name: 'linkedin_profile',
+    provider: 'linkedin',
+    description: 'Get the authenticated LinkedIn user profile.',
+    inputSchema: { type: 'object', properties: {} },
+    async execute(integration) {
+      const { getLinkedInClient } = await import('./clients/linkedin');
+      const client = await getLinkedInClient(integration.id, integration.environmentId);
+      return await client.getProfile();
+    },
+  },
+
+  // ── Instagram ─────────────────────────────────────────────────────
+  {
+    name: 'instagram_recent_media',
+    provider: 'instagram',
+    description: 'List recent Instagram posts with engagement metrics.',
+    inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    async execute(integration, args) {
+      const { getInstagramClient } = await import('./clients/instagram');
+      const client = await getInstagramClient(integration.id, integration.environmentId);
+      return await client.getRecentMedia(typeof args.limit === 'number' ? args.limit : 10);
+    },
+  },
+  {
+    name: 'instagram_profile',
+    provider: 'instagram',
+    description: 'Get the authenticated Instagram business profile with follower count.',
+    inputSchema: { type: 'object', properties: {} },
+    async execute(integration) {
+      const { getInstagramClient } = await import('./clients/instagram');
+      const client = await getInstagramClient(integration.id, integration.environmentId);
+      return await client.getProfile();
+    },
+  },
+
+  // ── Typeform ──────────────────────────────────────────────────────
+  {
+    name: 'typeform_list_forms',
+    provider: 'typeform',
+    description: 'List all Typeform forms.',
+    inputSchema: { type: 'object', properties: {} },
+    async execute(integration) {
+      const { getTypeformClient } = await import('./clients/typeform');
+      const client = await getTypeformClient(integration.id, integration.environmentId);
+      return await client.listForms();
+    },
+  },
+  {
+    name: 'typeform_get_responses',
+    provider: 'typeform',
+    description: 'Get responses for a Typeform form.',
+    inputSchema: {
+      type: 'object',
+      properties: { formId: { type: 'string' }, limit: { type: 'number' } },
+      required: ['formId'],
+    },
+    async execute(integration, args) {
+      const { getTypeformClient } = await import('./clients/typeform');
+      const client = await getTypeformClient(integration.id, integration.environmentId);
+      return await client.getFormResponses(String(args.formId), typeof args.limit === 'number' ? args.limit : 20);
+    },
+  },
+
+  // ── Zoom ──────────────────────────────────────────────────────────
+  {
+    name: 'zoom_list_meetings',
+    provider: 'zoom',
+    description: 'List upcoming and recent Zoom meetings.',
+    inputSchema: { type: 'object', properties: { limit: { type: 'number' } } },
+    async execute(integration, args) {
+      const { getZoomClient } = await import('./clients/zoom');
+      const client = await getZoomClient(integration.id, integration.environmentId);
+      return await client.listMeetings(typeof args.limit === 'number' ? args.limit : 10);
     },
   },
 ];
