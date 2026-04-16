@@ -55,6 +55,7 @@ export const GOOGLE_ADS_PROVIDER = googleProvider('google_ads');
 export const GOOGLE_ANALYTICS_PROVIDER = googleProvider('google_analytics');
 export const GOOGLE_SEARCH_CONSOLE_PROVIDER = googleProvider('google_search_console');
 export const GOOGLE_WORKSPACE_PROVIDER = googleProvider('google_workspace');
+export const GOOGLE_CALENDAR_PROVIDER = googleProvider('google_calendar');
 
 export function buildGoogleAuthorizeUrl(
   provider: OAuthProvider,

@@ -26,7 +26,9 @@ import {
   GOOGLE_ANALYTICS_PROVIDER,
   GOOGLE_SEARCH_CONSOLE_PROVIDER,
   GOOGLE_WORKSPACE_PROVIDER,
+  GOOGLE_CALENDAR_PROVIDER,
 } from '@/lib/integrations/oauth/google';
+import { MICROSOFT_OUTLOOK_PROVIDER } from '@/lib/integrations/oauth/microsoft';
 import { SALESFORCE_PROVIDER } from '@/lib/integrations/oauth/salesforce';
 import { HUBSPOT_PROVIDER } from '@/lib/integrations/oauth/hubspot';
 import { SLACK_PROVIDER } from '@/lib/integrations/oauth/slack';
@@ -95,6 +97,10 @@ export async function GET(
       authorizeUrl = buildAuthorizeUrl(NOTION_PROVIDER, def.scopes, state);
     } else if (provider === 'figma') {
       authorizeUrl = buildAuthorizeUrl(FIGMA_PROVIDER, def.scopes, state);
+    } else if (provider === 'google_calendar') {
+      authorizeUrl = buildAuthorizeUrl(GOOGLE_CALENDAR_PROVIDER, def.scopes, state);
+    } else if (provider === 'microsoft_outlook') {
+      authorizeUrl = buildAuthorizeUrl(MICROSOFT_OUTLOOK_PROVIDER, def.scopes, state);
     } else {
       return Response.json(
         { error: `No OAuth start handler implemented for ${provider}` },
