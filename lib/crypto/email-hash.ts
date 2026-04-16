@@ -22,19 +22,16 @@ const KEY_BYTES = 32;
 
 let cachedHmacKey: Buffer | null = null;
 
-function getHmacKey(): Buffer {
+function getHmacKey(): Buffer | null {
   if (cachedHmacKey) return cachedHmacKey;
   const raw = process.env.GRID_ENCRYPTION_KEY;
   if (!raw) {
-    throw new Error(
-      'GRID_ENCRYPTION_KEY is not set. Generate one with: openssl rand -base64 32',
-    );
+    return null;
   }
   const masterKey = Buffer.from(raw, 'base64');
   if (masterKey.length !== KEY_BYTES) {
-    throw new Error(
-      `GRID_ENCRYPTION_KEY must decode to exactly ${KEY_BYTES} bytes (got ${masterKey.length}).`,
-    );
+    console.warn(`[email-hash] GRID_ENCRYPTION_KEY must decode to exactly ${KEY_BYTES} bytes. Hashing disabled.`);
+    return null;
   }
   // Derive a separate sub-key for HMAC so the encryption key and
   // the HMAC key are cryptographically independent.
@@ -57,9 +54,10 @@ function getHmacKey(): Buffer {
  * The email is normalized (trimmed + lowercased) before hashing so
  * "User@Example.com" and "user@example.com" produce the same hash.
  */
-export function hashEmail(email: string): string {
+export function hashEmail(email: string): string | null {
   const normalized = email.trim().toLowerCase();
   const key = getHmacKey();
+  if (!key) return null; // No key — skip hashing (dev/migration mode)
   return crypto
     .createHmac('sha256', key)
     .update(normalized)

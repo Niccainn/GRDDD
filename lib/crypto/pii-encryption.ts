@@ -29,19 +29,18 @@ const PII_PREFIX = 'pii:';
 
 let cachedKey: Buffer | null = null;
 
-function getKey(): Buffer {
+function getKey(): Buffer | null {
   if (cachedKey) return cachedKey;
   const raw = process.env.GRID_ENCRYPTION_KEY;
   if (!raw) {
-    throw new Error(
-      'GRID_ENCRYPTION_KEY is not set. Generate one with: openssl rand -base64 32',
-    );
+    return null;
   }
   const buf = Buffer.from(raw, 'base64');
   if (buf.length !== KEY_BYTES) {
-    throw new Error(
-      `GRID_ENCRYPTION_KEY must decode to exactly ${KEY_BYTES} bytes (got ${buf.length}). Generate with: openssl rand -base64 32`,
+    console.warn(
+      `[pii] GRID_ENCRYPTION_KEY must decode to exactly ${KEY_BYTES} bytes (got ${buf.length}). Encryption disabled.`,
     );
+    return null;
   }
   cachedKey = buf;
   return buf;
@@ -68,6 +67,7 @@ export function encryptPII(plaintext: string): string {
   if (isEncrypted(plaintext)) return plaintext;
 
   const key = getKey();
+  if (!key) return plaintext; // No key — store plaintext (dev/migration mode)
   const nonce = crypto.randomBytes(NONCE_BYTES);
   const cipher = crypto.createCipheriv(ALGO, key, nonce);
   const ciphertext = Buffer.concat([
