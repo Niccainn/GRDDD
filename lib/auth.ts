@@ -142,16 +142,15 @@ export async function createSession(identityId: string) {
   });
 
   const cookieStore = await cookies();
-  // sameSite=strict is our CSRF defense: a cross-origin form post or
-  // fetch cannot carry this cookie, so an attacker page cannot
-  // authenticate a state-changing request as the victim. The trade-off
-  // is that following an external link into the app won't carry the
-  // session on the first hop — the landing page will 302 through
-  // /sign-in and bounce back. Acceptable for an internal work OS.
+  // sameSite=lax sends the cookie on top-level navigations (OAuth
+  // redirects, clicking links into the app) but blocks cross-origin
+  // POST/fetch requests, which is sufficient CSRF protection. We need
+  // lax (not strict) because OAuth callbacks redirect from external
+  // providers like Google/GitHub and strict would strip the session.
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
     expires: expiresAt,
   });

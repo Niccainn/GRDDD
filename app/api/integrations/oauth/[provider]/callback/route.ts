@@ -111,7 +111,7 @@ export async function GET(
   { params }: { params: Promise<{ provider: string }> },
 ) {
   const identity = await getAuthIdentityOrNull();
-  if (!identity) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!identity) return redirectBack(null, 'error', 'Session expired — please sign in and try again');
 
   const { provider } = await params;
   const def = findProvider(provider);
