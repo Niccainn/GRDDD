@@ -20,6 +20,7 @@ export interface RetentionReport {
   scanned: number;
   deleted: number;
   cutoff: string;
+  portalLinksDeactivated?: number;
 }
 
 /**
@@ -46,9 +47,26 @@ export async function sweepExpiredTraces(): Promise<RetentionReport> {
     where: { id: { in: expired.map((e) => e.id) } },
   });
 
+  // Also sweep expired portal links — deactivate links past their expiresAt.
+  // Does not hard-delete (has deletedAt for audit), just marks inactive.
+  let portalLinksDeactivated = 0;
+  try {
+    const expiredLinks = await prisma.portalLink.updateMany({
+      where: {
+        expiresAt: { lt: new Date() },
+        isActive: true,
+      },
+      data: { isActive: false },
+    });
+    portalLinksDeactivated = expiredLinks.count;
+  } catch {
+    // best-effort — don't block trace retention
+  }
+
   return {
     scanned: expired.length,
     deleted: result.count,
     cutoff: cutoff.toISOString(),
+    portalLinksDeactivated,
   };
 }

@@ -150,14 +150,14 @@ export async function GET(req: NextRequest) {
 
 /**
  * Fetch events from an external calendar provider.
- * This is the integration point — each provider has its own client module.
- * Returns a normalized event shape regardless of provider.
+ * Each provider has its own client module that handles OAuth token
+ * refresh and API calls. Returns a normalized event shape.
  */
 async function fetchExternalCalendarEvents(
-  _integrationId: string,
-  _provider: string,
-  _start: Date,
-  _end: Date,
+  integrationId: string,
+  provider: string,
+  start: Date,
+  end: Date,
 ): Promise<Array<{
   id: string;
   type: 'external';
@@ -169,15 +169,58 @@ async function fetchExternalCalendarEvents(
   meta: Record<string, unknown>;
   href: string;
 }>> {
-  // Provider-specific client implementations go here.
-  // For now, return empty — the UI is ready to render events
-  // as soon as a provider client (e.g., Google Calendar API)
-  // is wired up to fetch and normalize events.
-  //
-  // Example flow for Google Calendar:
-  //   1. Load integration, decrypt OAuth token
-  //   2. GET https://www.googleapis.com/calendar/v3/calendars/primary/events
-  //      ?timeMin={start}&timeMax={end}&singleEvents=true&orderBy=startTime
-  //   3. Map each event to { id, type:'external', title: event.summary, ... }
-  return [];
+  // Resolve the environmentId from the integration record
+  const integration = await prisma.integration.findUnique({
+    where: { id: integrationId },
+    select: { environmentId: true },
+  });
+  if (!integration?.environmentId) return [];
+
+  let rawEvents: Array<{
+    id: string;
+    title: string;
+    description?: string | null;
+    start: Date | null;
+    end?: Date | null;
+    location?: string | null;
+    meetLink?: string | null;
+    htmlLink?: string | null;
+    status: string;
+  }> = [];
+
+  switch (provider) {
+    case 'google_calendar': {
+      const { getGoogleCalendarClient } = await import('@/lib/integrations/clients/google-calendar');
+      const client = await getGoogleCalendarClient(integrationId, integration.environmentId);
+      rawEvents = await client.listEvents(start, end);
+      break;
+    }
+    case 'microsoft_outlook': {
+      const { getMicrosoftOutlookClient } = await import('@/lib/integrations/clients/microsoft-outlook');
+      const client = await getMicrosoftOutlookClient(integrationId, integration.environmentId);
+      rawEvents = await client.listEvents(start, end);
+      break;
+    }
+    default:
+      // apple_calendar and caldav not yet implemented — skip gracefully
+      return [];
+  }
+
+  return rawEvents
+    .filter(e => e.start !== null)
+    .map(e => ({
+      id: e.id,
+      type: 'external' as const,
+      title: e.title,
+      date: e.start!,
+      endDate: e.end ?? undefined,
+      status: e.status,
+      systemName: null,
+      meta: {
+        description: e.description,
+        location: e.location,
+        meetLink: e.meetLink,
+      },
+      href: e.htmlLink ?? '#',
+    }));
 }

@@ -272,6 +272,7 @@ model Execution {
   validationResult ValidationResult?
 
   @@index([systemId])
+  @@index([workflowId])
   @@index([status])
 }
 
@@ -754,6 +755,8 @@ model AgentRun {
   @@index([agentId])
   @@index([status])
   @@index([createdAt])
+  @@index([agentId, status])
+  @@index([agentId, createdAt])
 }
 
 // Phase 5 — write-path approval gate.
@@ -1164,9 +1167,10 @@ model Comment {
 // ===============================================
 
 model PortalLink {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   token       String  @unique // URL-safe random token
   name        String          // "Client: Acme Corp"
@@ -1541,9 +1545,10 @@ model TimeEntry {
 // ===============================================
 
 model NovaMemory {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   // Memory classification
   type      String   // "brand_context" | "market_insight" | "user_correction" | "strategic_context" | "learned_preference" | "pattern"
@@ -1582,8 +1587,9 @@ model NovaMemory {
 // ===============================================
 
 model NovaReflection {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 
   // What Nova observed
   insight     String   // The reflection/observation

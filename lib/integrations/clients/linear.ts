@@ -26,7 +26,12 @@ export async function getLinearClient(integrationId: string, environmentId: stri
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query, variables }),
+      signal: AbortSignal.timeout(10_000),
     });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Linear API error (${res.status}): ${text.slice(0, 200)}`);
+    }
     const data = (await res.json()) as { data?: T; errors?: { message: string }[] };
     if (data.errors) throw new Error(`Linear GQL error: ${data.errors[0].message}`);
     if (!data.data) throw new Error('Linear GQL returned no data');
