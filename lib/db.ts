@@ -24,7 +24,8 @@ import { hashEmail } from './crypto/email-hash'
  */
 function encryptIdentityData(data: Record<string, unknown>): void {
   if (data.email != null && typeof data.email === 'string') {
-    data.emailHash = hashEmail(data.email)
+    const h = hashEmail(data.email)
+    if (h) data.emailHash = h
     data.email = encryptPII(data.email)
   }
   if (data.name != null && typeof data.name === 'string') {

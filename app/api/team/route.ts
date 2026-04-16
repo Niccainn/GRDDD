@@ -106,7 +106,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const existing = await prisma.identity.findFirst({ where: { emailHash: hashEmail(email) } });
+  const teamHash = hashEmail(email);
+  const existing = await prisma.identity.findFirst({ where: teamHash ? { emailHash: teamHash } : { email } });
   if (existing) return Response.json({ error: 'Email already exists' }, { status: 409 });
 
   const newMember = await prisma.identity.create({
