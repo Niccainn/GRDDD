@@ -39,7 +39,7 @@ export default function Home() {
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     url: 'https://www.grddd.com',
-    description: 'GRID helps teams and AI learn the business together — so the company becomes more efficient, more adaptive, and more intelligent over time.',
+    description: 'GRID is a business operating system — tasks, docs, goals, finance, workflows, and 110+ integrations unified with AI that learns how your business runs.',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -83,6 +83,7 @@ export default function Home() {
         <div className="flex items-center gap-4 md:gap-6">
           <a href="#problem" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Why</a>
           <a href="#how" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>How</a>
+          <a href="#platform" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Platform</a>
           <a href="#use-cases" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Use Cases</a>
           <a href="#who" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Who</a>
           <a href="/sign-in" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Sign in</a>
@@ -104,8 +105,7 @@ export default function Home() {
             <span style={{ color: 'var(--brand)' }}>actually works.</span>
           </h1>
           <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-10 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
-            GRID helps teams and AI learn the business together — so the company becomes
-            more efficient, more adaptive, and more intelligent over time.
+            Tasks, docs, goals, finance, workflows, and 110+ integrations — unified with AI that learns how your business runs. One platform. No tab-switching.
           </p>
           <div className="flex items-center justify-center gap-3 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <a href="#waitlist" className="px-5 md:px-8 py-3 md:py-3.5 text-sm font-light rounded-full transition-all whitespace-nowrap"
@@ -261,6 +261,59 @@ export default function Home() {
             </div>
             <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
               The result is compounding value. You become better at running work with AI. AI becomes better at running work for you. The business gets clearer every week.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ WHAT'S INSIDE ═══ */}
+      <section id="platform" className="py-20 md:py-32 px-5 md:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Platform</p>
+            <h2 className="text-3xl font-extralight tracking-tight mb-4 leading-snug">
+              Everything you need to run a business.<br />
+              <span style={{ color: 'var(--brand)' }}>Nothing you don&apos;t.</span>
+            </h2>
+            <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
+              Tasks, docs, goals, finance, forms, integrations, and AI — in one system that learns how you work.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8">
+            {[
+              { name: 'Tasks & Projects', desc: 'Board, list, and table views with subtasks, labels, and due dates', icon: '◫', color: '#7193ED' },
+              { name: 'Documents', desc: 'A knowledge base that lives next to the work it describes', icon: '▤', color: '#BF9FF1' },
+              { name: 'Goals & OKRs', desc: 'Set targets, track progress, link goals to the workflows that drive them', icon: '◎', color: '#15AD70' },
+              { name: 'Forms', desc: 'Collect structured data from clients, leads, or your own team', icon: '▦', color: '#F7C700' },
+              { name: 'Finance', desc: 'Invoices, revenue tracking, and financial health — built in', icon: '◇', color: '#FF6B6B' },
+              { name: 'Dashboards', desc: 'Custom widget boards with real-time analytics and health scores', icon: '▣', color: '#4ECDC4' },
+              { name: 'Workflows', desc: 'Multi-step automations that execute with human or AI agents', icon: '⟡', color: '#7193ED' },
+              { name: 'Nova AI', desc: 'An AI that reads your systems, learns your patterns, and acts on your behalf', icon: '✦', color: '#BF9FF1' },
+              { name: 'Environments', desc: 'Isolated workspaces for each team, client, or business unit', icon: '⬡', color: '#15AD70' },
+            ].map(item => (
+              <div key={item.name} className="glass-deep p-4 md:p-5 rounded-xl">
+                <span className="text-lg mb-2 block" style={{ color: item.color, opacity: 0.7 }}>{item.icon}</span>
+                <p className="text-xs md:text-sm font-light mb-1" style={{ color: 'var(--text-1)' }}>{item.name}</p>
+                <p className="text-[10px] md:text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Integrations strip */}
+          <div className="glass-deep rounded-2xl p-6 md:p-8 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4 flex-wrap">
+              {['Slack', 'Notion', 'Figma', 'GitHub', 'Linear', 'Stripe', 'HubSpot', 'Salesforce', 'Google', 'Shopify'].map(name => (
+                <span key={name} className="text-[10px] px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text-3)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  {name}
+                </span>
+              ))}
+              <span className="text-[10px] px-3 py-1.5 rounded-full" style={{ background: 'var(--brand-soft)', color: 'var(--brand)', border: '1px solid var(--brand-border)' }}>
+                +100 more
+              </span>
+            </div>
+            <p className="text-sm font-light" style={{ color: 'var(--text-2)' }}>
+              Connect the tools you already use. GRID syncs with <span style={{ color: 'var(--text-1)' }}>110+ platforms</span> across CRM, marketing, dev tools, finance, and more.
             </p>
           </div>
         </div>
@@ -536,6 +589,26 @@ export default function Home() {
           <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
             Most tools optimize for speed. GRID optimizes for understanding. When teams see how their business actually operates — when AI and humans learn in parallel — the result isn&apos;t just efficiency. It&apos;s mastery.
           </p>
+        </div>
+      </section>
+
+      {/* ═══ BY THE NUMBERS ═══ */}
+      <section className="py-16 md:py-24 px-5 md:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { stat: '110+', label: 'Integrations', sub: 'CRM, dev, finance, marketing' },
+              { stat: '9', label: 'Core modules', sub: 'Tasks, docs, goals, forms & more' },
+              { stat: '∞', label: 'Workflows', sub: 'Multi-step AI automations' },
+              { stat: '1', label: 'Platform', sub: 'Replace your tool stack' },
+            ].map(item => (
+              <div key={item.label} className="glass-deep p-5 rounded-xl text-center">
+                <p className="text-2xl md:text-3xl font-extralight mb-1" style={{ color: 'var(--text-1)' }}>{item.stat}</p>
+                <p className="text-xs font-light mb-1" style={{ color: 'var(--brand)' }}>{item.label}</p>
+                <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>{item.sub}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
