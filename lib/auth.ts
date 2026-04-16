@@ -66,7 +66,10 @@ export async function getAuthIdentity(): Promise<AuthIdentity> {
  * Sign up a new user with email + password.
  */
 export async function signUp(name: string, email: string, password: string) {
-  const existing = await prisma.identity.findUnique({ where: { emailHash: hashEmail(email) } });
+  const hash = hashEmail(email);
+  const existing = hash
+    ? await prisma.identity.findUnique({ where: { emailHash: hash } })
+    : await prisma.identity.findFirst({ where: { email } });
   if (existing) {
     throw new Error('An account with this email already exists');
   }
@@ -96,7 +99,10 @@ export async function signUp(name: string, email: string, password: string) {
  * Sign in with email + password.
  */
 export async function signIn(email: string, password: string) {
-  const identity = await prisma.identity.findUnique({ where: { emailHash: hashEmail(email) } });
+  const signInHash = hashEmail(email);
+  const identity = signInHash
+    ? await prisma.identity.findUnique({ where: { emailHash: signInHash } })
+    : await prisma.identity.findFirst({ where: { email } });
   if (!identity || !identity.passwordHash || identity.deletedAt) {
     throw new Error('Invalid email or password');
   }
@@ -172,8 +178,11 @@ export async function upsertOAuthIdentity(profile: {
   avatar?: string | null;
 }) {
   // Try to find existing identity by emailHash (PII-safe lookup)
+  const oauthHash = profile.email ? hashEmail(profile.email) : null;
   const existing = profile.email
-    ? await prisma.identity.findUnique({ where: { emailHash: hashEmail(profile.email) } })
+    ? (oauthHash
+        ? await prisma.identity.findUnique({ where: { emailHash: oauthHash } })
+        : await prisma.identity.findFirst({ where: { email: profile.email } }))
     : null;
 
   if (existing) {
