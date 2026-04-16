@@ -111,6 +111,7 @@ export function decryptPII(ciphertext: string): string {
     if (tag.length !== 16) return ciphertext;
 
     const key = getKey();
+    if (!key) return ciphertext; // No key — can't decrypt
     const decipher = crypto.createDecipheriv(ALGO, key, nonce);
     decipher.setAuthTag(tag);
     const plaintext = Buffer.concat([decipher.update(ct), decipher.final()]);
