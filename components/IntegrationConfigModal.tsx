@@ -23,9 +23,10 @@ type Props = {
   integration: IntegrationData;
   isConnected: boolean;
   onToast: (toast: { kind: 'ok' | 'err'; text: string }) => void;
+  environmentId?: string | null;
 };
 
-export default function IntegrationConfigModal({ open, onClose, integration, isConnected, onToast }: Props) {
+export default function IntegrationConfigModal({ open, onClose, integration, isConnected, onToast, environmentId }: Props) {
   const [apiKeyValues, setApiKeyValues] = useState<Record<string, string>>({});
   const [webhookCopied, setWebhookCopied] = useState(false);
 
@@ -108,22 +109,39 @@ export default function IntegrationConfigModal({ open, onClose, integration, isC
         <div className="px-8 pb-8">
           {integration.authType === 'oauth' && (
             <div>
-              <div
-                className="chrome p-4 mb-4 text-center"
-                style={{ borderColor: 'rgba(255,255,255,0.06)' }}
-              >
-                <button
-                  disabled
-                  className="chrome-pill px-6 py-2.5 text-sm font-light w-full opacity-60 cursor-not-allowed"
-                  style={{ color: 'var(--text-2)' }}
-                  title="OAuth connection coming soon"
-                >
-                  Connect with {integration.name}
-                </button>
-                <p className="text-[11px] mt-3" style={{ color: 'var(--text-3)' }}>
-                  OAuth connection coming soon — we're in beta
-                </p>
-              </div>
+              {integration.implemented && integration.envReady ? (
+                <div className="chrome p-4 mb-4 text-center" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                  <button
+                    onClick={() => {
+                      if (!environmentId) {
+                        onToast({ kind: 'err', text: 'Select an environment first' });
+                        return;
+                      }
+                      window.location.href = `/api/integrations/oauth/${integration.id}/start?environmentId=${environmentId}`;
+                    }}
+                    className="chrome-pill px-6 py-2.5 text-sm font-light w-full"
+                    style={{ color: 'var(--text-1)', background: 'var(--glass-active)' }}
+                  >
+                    Connect with {integration.name}
+                  </button>
+                  <p className="text-[11px] mt-3" style={{ color: 'var(--text-3)' }}>
+                    You&apos;ll be redirected to {integration.name} to authorize access
+                  </p>
+                </div>
+              ) : (
+                <div className="chrome p-4 mb-4 text-center" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                  <button
+                    disabled
+                    className="chrome-pill px-6 py-2.5 text-sm font-light w-full opacity-60 cursor-not-allowed"
+                    style={{ color: 'var(--text-2)' }}
+                  >
+                    Connect with {integration.name}
+                  </button>
+                  <p className="text-[11px] mt-3" style={{ color: 'var(--text-3)' }}>
+                    {!integration.implemented ? 'Coming soon' : 'Not configured yet'}
+                  </p>
+                </div>
+              )}
               {!integration.envReady && integration.missingEnvVars.length > 0 && (
                 <div
                   className="text-[11px] p-3 rounded-lg"

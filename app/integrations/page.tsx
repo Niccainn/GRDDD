@@ -498,6 +498,7 @@ export default function IntegrationsPage() {
           integration={configModal}
           isConnected={connectedProviderIds.has(configModal.id)}
           onToast={setToast}
+          environmentId={environmentId}
         />
       )}
 
