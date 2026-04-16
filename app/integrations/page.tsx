@@ -24,7 +24,7 @@
  * surface them as toast errors.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import IntegrationConfigModal from '@/components/IntegrationConfigModal';
 
 type ProviderSummary = {
@@ -85,7 +85,6 @@ export default function IntegrationsPage() {
         if (envRes.ok) {
           const envs = (await envRes.json()) as Environment[];
           setEnvironments(envs);
-          // Auto-select environment from ?environmentId or first owned
           const urlEnvId = new URLSearchParams(window.location.search).get('environmentId');
           setEnvironmentId(urlEnvId ?? envs[0]?.id ?? null);
         }
@@ -99,7 +98,6 @@ export default function IntegrationsPage() {
       }
     })();
 
-    // Surface OAuth callback status
     const params = new URLSearchParams(window.location.search);
     const oauth = params.get('oauth');
     if (oauth === 'success') setToast({ kind: 'ok', text: 'Connected successfully' });
@@ -121,11 +119,47 @@ export default function IntegrationsPage() {
     if (environmentId) loadConnected(environmentId);
   }, [environmentId, loadConnected]);
 
-  const filtered = providers.filter(p => {
-    if (category !== 'all' && p.category !== category) return false;
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  // Filtered + grouped providers
+  const filtered = useMemo(() => {
+    return providers.filter(p => {
+      if (category !== 'all' && p.category !== category) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        return p.name.toLowerCase().includes(q) || p.tagline.toLowerCase().includes(q) || p.categoryLabel.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [providers, category, search]);
+
+  // Group by category when showing "All"
+  const grouped = useMemo(() => {
+    if (category !== 'all') return null;
+    const map = new Map<string, { label: string; items: ProviderSummary[] }>();
+    for (const p of filtered) {
+      if (!map.has(p.category)) {
+        map.set(p.category, { label: p.categoryLabel, items: [] });
+      }
+      map.get(p.category)!.items.push(p);
+    }
+    return map;
+  }, [filtered, category]);
+
+  // Category counts for filter pills
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const p of providers) {
+      if (search) {
+        const q = search.toLowerCase();
+        if (!p.name.toLowerCase().includes(q) && !p.tagline.toLowerCase().includes(q) && !p.categoryLabel.toLowerCase().includes(q)) continue;
+      }
+      counts[p.category] = (counts[p.category] || 0) + 1;
+    }
+    return counts;
+  }, [providers, search]);
+
+  const totalFiltered = useMemo(() => {
+    return Object.values(categoryCounts).reduce((a, b) => a + b, 0);
+  }, [categoryCounts]);
 
   const handleConnect = async (prov: ProviderSummary) => {
     if (!environmentId) {
@@ -144,7 +178,6 @@ export default function IntegrationsPage() {
       window.location.href = `/api/integrations/oauth/${prov.id}/start?environmentId=${environmentId}`;
       return;
     }
-    // api_key: open modal
     setConnectModal(prov);
     setFormValues({});
   };
@@ -201,6 +234,66 @@ export default function IntegrationsPage() {
 
   const connectedProviderIds = new Set(connected.map(c => c.provider));
 
+  const renderProviderCard = (prov: ProviderSummary) => {
+    const alreadyConnected = connectedProviderIds.has(prov.id);
+    const disabled = !prov.implemented || !prov.envReady;
+    return (
+      <div
+        key={prov.id}
+        className="chrome p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 hover:scale-[1.01] group"
+        style={{ opacity: disabled ? 0.5 : 1 }}
+        onClick={() => setConfigModal(prov)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfigModal(prov); } }}
+      >
+        <div
+          className="chrome-squircle w-11 h-11 flex items-center justify-center text-lg shrink-0"
+          style={{ color: prov.accentColor }}
+        >
+          {prov.glyph}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-light" style={{ color: 'var(--text-1)' }}>
+              {prov.name}
+            </span>
+            {!prov.implemented && (
+              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ color: 'var(--text-3)', background: 'var(--glass-bg)' }}>
+                Soon
+              </span>
+            )}
+          </div>
+          <p className="text-xs truncate" style={{ color: 'var(--text-3)' }}>
+            {prov.tagline}
+          </p>
+        </div>
+        <div className="shrink-0">
+          {alreadyConnected ? (
+            <span
+              className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full"
+              style={{
+                color: '#34d399',
+                background: 'rgba(52,211,153,0.08)',
+                border: '1px solid rgba(52,211,153,0.15)',
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Active
+            </span>
+          ) : (
+            <span
+              className="text-xs font-light opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ color: 'var(--text-3)' }}
+            >
+              Connect &rarr;
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="px-4 md:px-12 py-6 md:py-12 min-h-screen">
       <div className="max-w-6xl">
@@ -209,7 +302,7 @@ export default function IntegrationsPage() {
           <div>
             <h1 className="text-2xl font-extralight tracking-tight mb-1">Integrations</h1>
             <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-              {connected.length} connected · {providers.filter(p => p.implemented).length} available
+              {connected.length} connected · {providers.length} available
             </p>
           </div>
           {environments.length > 0 && (
@@ -311,98 +404,89 @@ export default function IntegrationsPage() {
           </section>
         )}
 
-        {/* Filter bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6 animate-fade-in">
+        {/* Search + filter bar */}
+        <div className="mb-6 animate-fade-in space-y-3">
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="glass-input px-4 py-2.5 text-sm w-full sm:w-64"
-            placeholder="Search providers..."
+            className="glass-input px-4 py-2.5 text-sm w-full"
+            placeholder="Search integrations..."
           />
-          <div className="flex items-center gap-1.5 overflow-x-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mb-1 scrollbar-hide">
             <button
               onClick={() => setCategory('all')}
-              className="chrome-pill px-3 py-1.5 text-xs font-light whitespace-nowrap"
+              className="chrome-pill px-3 py-1.5 text-xs font-light whitespace-nowrap flex items-center gap-1.5 shrink-0"
               style={{
                 color: category === 'all' ? 'var(--text-1)' : 'var(--text-3)',
                 background: category === 'all' ? 'var(--glass-active)' : undefined,
               }}
             >
               All
+              <span className="text-[10px] opacity-60">{totalFiltered}</span>
             </button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.id)}
-                className="chrome-pill px-3 py-1.5 text-xs font-light whitespace-nowrap"
-                style={{
-                  color: category === cat.id ? 'var(--text-1)' : 'var(--text-3)',
-                  background: category === cat.id ? 'var(--glass-active)' : undefined,
-                }}
-              >
-                {cat.label}
-              </button>
-            ))}
+            {categories.map(cat => {
+              const count = categoryCounts[cat.id] || 0;
+              if (count === 0 && search) return null;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategory(cat.id)}
+                  className="chrome-pill px-3 py-1.5 text-xs font-light whitespace-nowrap flex items-center gap-1.5 shrink-0"
+                  style={{
+                    color: category === cat.id ? 'var(--text-1)' : 'var(--text-3)',
+                    background: category === cat.id ? 'var(--glass-active)' : undefined,
+                  }}
+                >
+                  {cat.label}
+                  <span className="text-[10px] opacity-60">{count}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Provider grid */}
-        <h2 className="text-xs uppercase tracking-wider mb-4" style={{ color: 'var(--text-3)' }}>
-          Available
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
-          {filtered.map(prov => {
-            const alreadyConnected = connectedProviderIds.has(prov.id);
-            const disabled = !prov.implemented || !prov.envReady;
-            return (
-              <div
-                key={prov.id}
-                className="chrome p-6 flex flex-col items-center text-center relative cursor-pointer transition-all duration-200 hover:scale-[1.02]"
-                style={{ opacity: disabled ? 0.7 : 1 }}
-                onClick={() => setConfigModal(prov)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfigModal(prov); } }}
-              >
-                <div
-                  className="chrome-squircle w-16 h-16 flex items-center justify-center mb-4 text-2xl"
-                  style={{ color: prov.accentColor }}
-                >
-                  {prov.glyph}
+        {/* Provider grid — grouped by category when "All", flat when filtered */}
+        <div className="animate-fade-in">
+          {category === 'all' && grouped ? (
+            // Grouped view
+            Array.from(grouped.entries()).map(([catId, group]) => (
+              <section key={catId} className="mb-8">
+                <div className="flex items-center gap-3 mb-3">
+                  <h2 className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
+                    {group.label}
+                  </h2>
+                  <div className="flex-1 h-px" style={{ background: 'var(--border-1)' }} />
+                  <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>{group.items.length}</span>
                 </div>
-                <h3 className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
-                  {prov.name}
-                </h3>
-                <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>
-                  {prov.tagline}
-                </p>
-                <p className="text-[10px] uppercase tracking-wider mb-4" style={{ color: 'var(--text-3)' }}>
-                  {prov.categoryLabel} · {prov.authType === 'oauth' ? 'OAuth' : 'API key'}
-                </p>
-                {alreadyConnected ? (
-                  <div
-                    className="chrome-pill px-5 py-2 text-xs font-light mt-auto flex items-center gap-2"
-                    style={{
-                      color: '#34d399',
-                      background: 'rgba(52,211,153,0.08)',
-                      borderColor: 'rgba(52,211,153,0.15)',
-                    }}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                    Connected
-                  </div>
-                ) : (
-                  <span
-                    className="chrome-pill px-5 py-2 text-xs font-light mt-auto"
-                    style={{ color: 'var(--text-2)' }}
-                  >
-                    Connect &rarr;
-                  </span>
-                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {group.items.map(renderProviderCard)}
+                </div>
+              </section>
+            ))
+          ) : (
+            // Flat filtered view
+            <>
+              <div className="flex items-center gap-3 mb-3">
+                <h2 className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
+                  {category === 'all' ? 'All Integrations' : categories.find(c => c.id === category)?.label ?? 'Results'}
+                </h2>
+                <div className="flex-1 h-px" style={{ background: 'var(--border-1)' }} />
+                <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>{filtered.length}</span>
               </div>
-            );
-          })}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {filtered.map(renderProviderCard)}
+              </div>
+            </>
+          )}
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
+                No integrations match your search.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
