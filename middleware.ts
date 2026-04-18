@@ -74,6 +74,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
   'X-DNS-Prefetch-Control': 'on',
+  'X-XSS-Protection': '1; mode=block',
   'Content-Security-Policy': [
     "default-src 'self'",
     // Dev: 'unsafe-eval' required by Next.js Fast Refresh + React
