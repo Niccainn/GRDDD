@@ -56,9 +56,14 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Name and URL are required' }, { status: 400 });
   }
 
-  // Validate URL
-  try { new URL(url); } catch {
-    return Response.json({ error: 'Invalid URL' }, { status: 400 });
+  // Validate URL + block SSRF targets (private/loopback/metadata).
+  try {
+    const { assertSafeUrl } = await import('@/lib/security/ssrf');
+    assertSafeUrl(url.trim());
+  } catch (e) {
+    const { SsrfBlockedError } = await import('@/lib/security/ssrf');
+    const msg = e instanceof SsrfBlockedError ? `Webhook URL rejected: ${e.reason}` : 'Invalid URL';
+    return Response.json({ error: msg }, { status: 400 });
   }
 
   if (!Array.isArray(events) || events.length === 0) {

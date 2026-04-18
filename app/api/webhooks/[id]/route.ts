@@ -4,6 +4,7 @@ import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
+import { assertSafeUrl, resolveAndValidate, SsrfBlockedError } from '@/lib/security/ssrf';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const identity = await getAuthIdentity();
@@ -35,6 +36,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   await assertOwnsWebhook(id, identity.id);
   const body = await req.json();
+
+  // SSRF guard on update — refuse to persist a URL that points at a
+  // private/loopback/metadata address. Sync check only at write time;
+  // the DNS-aware check runs at fire time below.
+  if (body.url !== undefined) {
+    try {
+      assertSafeUrl(String(body.url).trim());
+    } catch (e) {
+      const reason = e instanceof SsrfBlockedError ? e.reason : 'invalid URL';
+      return Response.json({ error: `Webhook URL rejected: ${reason}` }, { status: 400 });
+    }
+  }
+
   const updated = await prisma.webhook.update({
     where: { id },
     data: {
@@ -80,16 +94,26 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   });
 
   try {
+    // SSRF defense in depth: block at dispatch time even if the stored
+    // URL was somehow persisted pre-hardening. DNS-resolving check
+    // catches attacker-controlled domains that point at private IPs.
+    await resolveAndValidate(webhook.url);
     const res = await fetch(webhook.url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-GRID-Event': 'test' },
       body: payload,
       signal: AbortSignal.timeout(10_000),
+      redirect: 'manual', // don't follow redirects into private space
     });
     status = res.status;
     success = res.ok;
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Connection failed';
+    if (err instanceof SsrfBlockedError) {
+      error = 'URL blocked by SSRF policy';
+      status = 0;
+    } else {
+      error = err instanceof Error ? err.message : 'Connection failed';
+    }
   }
 
   await prisma.webhookDelivery.create({

@@ -193,6 +193,7 @@ model Environment {
   executionReviews ExecutionReview[]
   masteryInsights  MasteryInsight[]
   playbook         OperationalPlaybook?
+  crossDomainInsights CrossDomainInsight[]
 
   @@index([ownerId])
   @@index([slug])
@@ -1818,6 +1819,13 @@ model CrossDomainInsight {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
+  // Tenant scope. Nullable for back-compat with demo/seed rows that
+  // predate tenant isolation — the API treats null rows as "demo"
+  // (visible to all authenticated users, read-only by design).
+  // New rows MUST set environmentId; the route enforces that.
+  environmentId String?
+  environment   Environment? @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
   // The insight
   title       String  // Short headline
   description String  // Detailed explanation
@@ -1841,6 +1849,7 @@ model CrossDomainInsight {
   @@index([category])
   @@index([severity])
   @@index([createdAt])
+  @@index([environmentId])
 }
 
 // ===============================================
