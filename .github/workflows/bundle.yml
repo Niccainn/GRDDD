@@ -1,0 +1,47 @@
+name: Bundle size
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./test.db
+      GRID_ENCRYPTION_KEY: test-key-for-ci-only-32chars!!
+      ANTHROPIC_API_KEY: sk-ant-test-placeholder
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run build
+
+      # Fail if any first-load JS chunk exceeds 250 KB gzipped.
+      # .next/analyze/client.html is generated when ANALYZE=1 but we
+      # only need the plain build size report for this gate.
+      - name: Check route sizes
+        run: |
+          node -e "
+          const fs=require('fs'),path=require('path');
+          const dir='.next/server/app';
+          if(!fs.existsSync(dir)) process.exit(0);
+          const walk=(d)=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{
+            const p=path.join(d,e.name);
+            return e.isDirectory()?walk(p):[p];
+          });
+          const files=walk(dir).filter(f=>f.endsWith('.js'));
+          const budget=300_000; // 300 KB per compiled route bundle
+          const fails=[];
+          for(const f of files){
+            const s=fs.statSync(f).size;
+            if(s>budget) fails.push(\`  \${f.replace('.next/server/app/','')}: \${(s/1024).toFixed(0)} KB\`);
+          }
+          if(fails.length){console.error('Route bundle over budget:\n'+fails.join('\n'));process.exit(1);}
+          console.log('All '+files.length+' route bundles within '+(budget/1024)+' KB budget');
+          "

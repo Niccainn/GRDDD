@@ -11,7 +11,12 @@
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "DATABASE_URL_TEST=${DATABASE_URL_TEST:-postgresql://postgres:pw@localhost:55432/postgres} vitest run __tests__/integration",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:nova-eval": "vitest run __tests__/nova-eval"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
