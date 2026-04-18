@@ -23,18 +23,28 @@ import ImportWizard from '@/components/ImportWizard';
 
 type Template = 'solo' | 'team' | 'blank';
 
+// Must mirror the seed data in app/api/onboarding/complete/route.ts so
+// the preview chips in the wizard accurately reflect what gets created.
 const TEMPLATES: Array<{
   id: Template;
   title: string;
   description: string;
   accent: string;
   icon: ReactElement;
+  preview: { name: string; color: string }[];
+  previewLabel: string;
 }> = [
   {
     id: 'solo',
     title: 'Solo builder',
-    description: 'Just you. Starter systems for capture, triage, and weekly review.',
+    description: 'Just you. Three starter systems, each with a draft workflow ready to edit.',
     accent: '#15AD70',
+    preview: [
+      { name: 'Marketing', color: '#7193ED' },
+      { name: 'Operations', color: '#15AD70' },
+      { name: 'Product', color: '#BF9FF1' },
+    ],
+    previewLabel: '3 systems · 3 draft workflows',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <circle cx="12" cy="8" r="4" />
@@ -45,8 +55,16 @@ const TEMPLATES: Array<{
   {
     id: 'team',
     title: 'Small team',
-    description: 'Up to 5 seats. Shared goals, signals, and automated handoffs.',
+    description: 'Up to 5 seats. Five systems covering the full org, plus draft workflows.',
     accent: '#7193ED',
+    preview: [
+      { name: 'Marketing', color: '#7193ED' },
+      { name: 'Sales', color: '#F7C700' },
+      { name: 'Operations', color: '#15AD70' },
+      { name: 'Product', color: '#BF9FF1' },
+      { name: 'Support', color: '#FF6B6B' },
+    ],
+    previewLabel: '5 systems · 5 draft workflows',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <circle cx="9" cy="8" r="3.5" />
@@ -60,6 +78,8 @@ const TEMPLATES: Array<{
     title: 'Start blank',
     description: 'Empty workspace. Build your own systems from scratch.',
     accent: '#BF9FF1',
+    preview: [],
+    previewLabel: 'Nothing pre-created',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <rect x="4" y="4" width="16" height="16" rx="2" />
@@ -455,6 +475,26 @@ export default function WelcomePage() {
                       <p className="text-[11px] font-light mt-1 leading-relaxed" style={{ color: 'var(--text-3)' }}>
                         {t.description}
                       </p>
+                      {/* Concrete preview so "Solo builder" isn't vague */}
+                      {t.preview.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                          {t.preview.map(sys => (
+                            <span key={sys.name}
+                              className="inline-flex items-center gap-1.5 text-[10px] font-light px-2 py-0.5 rounded-full"
+                              style={{ background: `${sys.color}10`, border: `1px solid ${sys.color}25`, color: sys.color }}>
+                              <span className="w-1 h-1 rounded-full" style={{ background: sys.color }} />
+                              {sys.name}
+                            </span>
+                          ))}
+                          <span className="text-[10px] font-light ml-0.5" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+                            {t.previewLabel}
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="text-[10px] font-light mt-2.5" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+                          {t.previewLabel}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </button>

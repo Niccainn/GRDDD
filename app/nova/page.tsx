@@ -359,8 +359,64 @@ export default function NovaPage() {
           {/* Suggestions (empty state) */}
           {messages.length === 0 && (
             <div className="px-6 pt-6 pb-2">
-              <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
-                Nova has access to all systems, workflows, and activity across your organisation. Ask anything.
+              <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>
+                Nova reads across every system, workflow, and signal in your org — then acts. Here's what it can do.
+              </p>
+
+              {/* Capability tiles with concrete example I/O */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-5">
+                {[
+                  {
+                    label: 'Diagnose',
+                    color: '#F7C700',
+                    prompt: 'Which systems need attention?',
+                    example: 'Marketing health 64% · stalled waiting on Typeform signal · suggested fix: reconnect webhook',
+                  },
+                  {
+                    label: 'Summarise',
+                    color: '#7193ED',
+                    prompt: 'Show me a full overview',
+                    example: '3 systems · 12 active workflows · 4 drifting · 8 unreviewed runs · 1 goal behind',
+                  },
+                  {
+                    label: 'Find bottlenecks',
+                    color: '#BF9FF1',
+                    prompt: 'Where are the bottlenecks?',
+                    example: 'Review stage in "Content" averages 2.4d — stage 3 of 5 is the longest tail across workflows',
+                  },
+                  {
+                    label: 'Act',
+                    color: '#15AD70',
+                    prompt: 'Create a weekly retro workflow for Operations',
+                    example: 'Drafted 4-stage workflow · linked to Operations system · ready to run or edit',
+                  },
+                ].map(cap => (
+                  <button
+                    key={cap.label}
+                    onClick={() => { setInput(cap.prompt); setTimeout(() => { const form = inputRef.current?.closest('form'); if (form) form.requestSubmit(); }, 50); }}
+                    className="text-left p-3.5 rounded-xl transition-all"
+                    style={{ background: `${cap.color}06`, border: `1px solid ${cap.color}18` }}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] tracking-[0.16em] font-light uppercase" style={{ color: cap.color }}>
+                        {cap.label}
+                      </span>
+                      <span className="text-[10px] font-light" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                        Try →
+                      </span>
+                    </div>
+                    <p className="text-xs font-light mb-2" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                      "{cap.prompt}"
+                    </p>
+                    <p className="text-[11px] font-light leading-relaxed italic" style={{ color: 'var(--text-3)' }}>
+                      → {cap.example}
+                    </p>
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[10px] tracking-[0.16em] uppercase font-light mb-2" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+                More prompts
               </p>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map(s => (
