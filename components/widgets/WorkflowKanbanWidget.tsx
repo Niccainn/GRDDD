@@ -66,7 +66,7 @@ export default function WorkflowKanbanWidget({ executions }: Props) {
                 </span>
                 <span
                   className="text-[10px] tabular-nums"
-                  style={{ color: 'var(--text-3)', opacity: 0.6 }}
+                  style={{ color: 'var(--text-3)' }}
                 >
                   {items.length}
                 </span>
@@ -77,7 +77,7 @@ export default function WorkflowKanbanWidget({ executions }: Props) {
                 {items.length === 0 && (
                   <p
                     className="text-[10px] font-light py-3 text-center"
-                    style={{ color: 'var(--text-3)', opacity: 0.5 }}
+                    style={{ color: 'var(--text-3)' }}
                   >
                     None
                   </p>
@@ -100,7 +100,7 @@ export default function WorkflowKanbanWidget({ executions }: Props) {
                     {exec.workflowName && (
                       <span
                         className="text-[9px] font-light truncate"
-                        style={{ color: 'var(--text-3)', opacity: 0.7 }}
+                        style={{ color: 'var(--text-3)' }}
                       >
                         {exec.workflowName}
                       </span>
@@ -122,7 +122,7 @@ export default function WorkflowKanbanWidget({ executions }: Props) {
                       </div>
                       <span
                         className="text-[9px] tabular-nums shrink-0"
-                        style={{ color: 'var(--text-3)', opacity: 0.6 }}
+                        style={{ color: 'var(--text-3)' }}
                       >
                         {timeAgo(exec.createdAt)}
                       </span>

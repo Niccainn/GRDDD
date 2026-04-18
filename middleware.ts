@@ -114,8 +114,11 @@ export function middleware(req: NextRequest) {
   const session = req.cookies.get('grid_session')?.value;
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
     if (session && (pathname === '/' || pathname === '/sign-in' || pathname === '/sign-up')) {
+      // Resolve final destination in one hop to avoid redirect chains
+      const onboarded = req.cookies.get('grid_onboarded')?.value;
+      const dest = onboarded ? '/dashboard' : '/welcome';
       return withSecurityHeaders(
-        NextResponse.redirect(new URL('/dashboard', req.url))
+        NextResponse.redirect(new URL(dest, req.url))
       );
     }
     return withSecurityHeaders(NextResponse.next());

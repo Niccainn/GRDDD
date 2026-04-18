@@ -23,7 +23,7 @@ export default function Widget({ title, subtitle, action, children, className = 
             {title}
           </h3>
           {subtitle && (
-            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-3)' }}>
               {subtitle}
             </p>
           )}

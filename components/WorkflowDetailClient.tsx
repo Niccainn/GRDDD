@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Breadcrumb from './Breadcrumb';
 import ConsequenceMap from './ConsequenceMap';
+import ExecutionCheckpoint from './ExecutionCheckpoint';
+import AttributionPanel from './AttributionPanel';
+import ReviewAutoNudge from './ReviewAutoNudge';
 
 const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED'];
 const STATUS_COLOR: Record<string, string> = {
@@ -68,6 +71,7 @@ export default function WorkflowDetailClient({
   const [showVersions, setShowVersions] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [savedAsTemplate, setSavedAsTemplate] = useState(false);
+  const [checkpointExecId, setCheckpointExecId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/workflows/${initial.id}/versions`)
@@ -141,6 +145,7 @@ export default function WorkflowDetailClient({
     setExecutions(prev => prev.map(e => e.id === execId ? updatedExec : e));
     if (isComplete) {
       setActiveRun(null);
+      setCheckpointExecId(execId);
       setWorkflow(w => ({ ...w, totalRuns: w.totalRuns }));
     } else {
       setActiveRun(updatedExec);
@@ -362,6 +367,21 @@ export default function WorkflowDetailClient({
         </div>
       )}
 
+      {/* Comprehension Checkpoint — shown after run completes */}
+      {checkpointExecId && (
+        <div className="mb-8 max-w-2xl">
+          <ExecutionCheckpoint
+            executionId={checkpointExecId}
+            onDismiss={() => setCheckpointExecId(null)}
+          />
+          <ReviewAutoNudge
+            executionId={checkpointExecId}
+            workflowId={workflow.id}
+            stages={workflow.stages.map((s, i) => ({ id: `stage-${i}`, name: s }))}
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-3 gap-8">
         <div className="col-span-2 space-y-8">
           {/* Stage pipeline */}
@@ -438,6 +458,12 @@ export default function WorkflowDetailClient({
             </div>
           </div>
 
+          {/* Outcome Attribution — cross-run analysis */}
+          <div>
+            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>ATTRIBUTION</p>
+            <AttributionPanel workflowId={workflow.id} />
+          </div>
+
           {/* Run history */}
           <div>
             <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>
@@ -467,7 +493,21 @@ export default function WorkflowDetailClient({
                         </p>
                       )}
                       {exec.status === 'COMPLETED' && (
-                        <p className="text-xs mt-1" style={{ color: 'rgba(191,159,241,0.5)' }}>View Nova output →</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-xs" style={{ color: 'rgba(191,159,241,0.5)' }}>View Nova output →</p>
+                          <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCheckpointExecId(exec.id); }}
+                            className="text-[10px] px-1.5 py-0.5 transition-all hover:opacity-80"
+                            style={{
+                              background: 'rgba(21,173,112,0.08)',
+                              border: '1px solid rgba(21,173,112,0.15)',
+                              borderRadius: '3px',
+                              color: 'var(--brand)',
+                            }}
+                          >
+                            Review
+                          </button>
+                        </div>
                       )}
                     </div>
                     <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-3)' }}>

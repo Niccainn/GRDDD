@@ -310,7 +310,7 @@ export default function CommandPalette() {
           {/* Empty state: nav shortcuts + quick actions */}
           {isEmpty && (
             <div className="py-1">
-              <p className="text-[10px] tracking-[0.14em] font-light px-5 pt-3 pb-1.5" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+              <p className="text-[10px] tracking-[0.14em] font-light px-5 pt-3 pb-1.5" style={{ color: 'var(--text-3)' }}>
                 NAVIGATE
               </p>
               {NAV_SHORTCUTS.map((item, i) => (
@@ -333,13 +333,13 @@ export default function CommandPalette() {
                   <span className="text-sm font-light flex-1" style={{ color: 'var(--text-2)' }}>
                     {item.label}
                   </span>
-                  <span className="text-xs font-light" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+                  <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
                     {item.hint}
                   </span>
                 </button>
               ))}
 
-              <p className="text-[10px] tracking-[0.14em] font-light px-5 pt-4 pb-1.5" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+              <p className="text-[10px] tracking-[0.14em] font-light px-5 pt-4 pb-1.5" style={{ color: 'var(--text-3)' }}>
                 QUICK ACTIONS
               </p>
               {QUICK_ACTIONS.map((item, i) => {
@@ -367,7 +367,7 @@ export default function CommandPalette() {
                     <span className="text-sm font-light flex-1" style={{ color: 'var(--text-2)' }}>
                       {item.label}
                     </span>
-                    <span className="text-xs font-light" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+                    <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
                       {item.hint}
                     </span>
                   </button>
@@ -379,7 +379,7 @@ export default function CommandPalette() {
           {/* No results */}
           {!isEmpty && !hasResults && !loading && (
             <div className="flex flex-col items-center py-12 gap-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--text-3)', opacity: 0.3 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--text-3)' }}>
                 <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
@@ -413,7 +413,7 @@ export default function CommandPalette() {
                 >
                   <p
                     className="text-[10px] tracking-[0.14em] font-light px-5 pt-2.5 pb-1"
-                    style={{ color: 'var(--text-3)', opacity: 0.6 }}
+                    style={{ color: 'var(--text-3)' }}
                   >
                     {meta?.label ?? key.toUpperCase()}
                   </p>
@@ -443,7 +443,7 @@ export default function CommandPalette() {
                           {item.title}
                         </span>
                         {item.subtitle && (
-                          <span className="text-xs font-light flex-shrink-0" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+                          <span className="text-xs font-light flex-shrink-0" style={{ color: 'var(--text-3)' }}>
                             {item.subtitle}
                           </span>
                         )}
@@ -481,7 +481,7 @@ export default function CommandPalette() {
                   {k}
                 </kbd>
               ))}
-              <span className="text-xs font-light" style={{ color: 'var(--text-3)', opacity: 0.4 }}>
+              <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
                 {label}
               </span>
             </div>
@@ -498,7 +498,7 @@ export default function CommandPalette() {
             >
               {'\u2318'}K
             </kbd>
-            <span className="text-xs font-light" style={{ color: 'var(--text-3)', opacity: 0.4 }}>
+            <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
               toggle
             </span>
           </div>

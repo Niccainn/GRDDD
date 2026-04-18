@@ -119,8 +119,12 @@ export default function WelcomePage() {
         setSubmitting(false);
         return;
       }
-      // Signal the dashboard to show the first-time welcome experience
-      try { localStorage.setItem('grid:just-onboarded', 'true'); } catch {}
+      // Track funnel event and signal dashboard
+      try {
+        localStorage.setItem('grid:just-onboarded', 'true');
+        const { trackEvent } = await import('@/lib/analytics');
+        trackEvent('funnel.onboarding_completed', { template });
+      } catch {}
       router.push('/dashboard');
     } catch {
       setError('Connection error');

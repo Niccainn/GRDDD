@@ -103,6 +103,53 @@ export async function POST(req: Request) {
       },
     });
 
+    // Seed starter systems for non-blank templates so the user
+    // lands on a dashboard with real structure to explore.
+    if (template !== 'blank') {
+      const starterSystems = template === 'solo'
+        ? [
+            { name: 'Marketing', color: '#7193ED', description: 'Content, campaigns, and audience growth' },
+            { name: 'Operations', color: '#15AD70', description: 'Processes, workflows, and internal systems' },
+            { name: 'Product', color: '#BF9FF1', description: 'Roadmap, features, and delivery' },
+          ]
+        : [
+            { name: 'Marketing', color: '#7193ED', description: 'Content, campaigns, and audience growth' },
+            { name: 'Sales', color: '#F7C700', description: 'Pipeline, outreach, and revenue' },
+            { name: 'Operations', color: '#15AD70', description: 'Processes, workflows, and internal systems' },
+            { name: 'Product', color: '#BF9FF1', description: 'Roadmap, features, and delivery' },
+            { name: 'Support', color: '#FF6B6B', description: 'Customer success and issue resolution' },
+          ];
+
+      for (const sys of starterSystems) {
+        const system = await prisma.system.create({
+          data: {
+            name: sys.name,
+            description: sys.description,
+            color: sys.color,
+            environmentId: environment.id,
+            creatorId: identity.id,
+          },
+        });
+
+        // Create one starter workflow per system
+        await prisma.workflow.create({
+          data: {
+            name: `${sys.name} Pipeline`,
+            description: `Automated ${sys.name.toLowerCase()} workflow — edit stages to customize`,
+            status: 'DRAFT',
+            stages: JSON.stringify([
+              `Research & gather inputs`,
+              `Draft & generate`,
+              `Review & refine`,
+            ]),
+            systemId: system.id,
+            environmentId: environment.id,
+            creatorId: identity.id,
+          },
+        });
+      }
+    }
+
     // Set onboarded cookie so middleware stops redirecting to /welcome
     // without a DB hit on every request.
     const res = Response.json({ ok: true, environmentId: environment.id, slug });

@@ -6,7 +6,7 @@ datasource db {
   // PostgreSQL for production (Neon, Supabase, Vercel Postgres, etc.).
   // For local dev with SQLite, set DATABASE_URL="file:./dev.db" and
   // change provider to "sqlite" — the schema is compatible with both.
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -86,6 +86,7 @@ model Identity {
   invoices               Invoice[]
   approvalRequests       ApprovalRequest[] @relation("ApprovalRequester")
   timeEntries            TimeEntry[]
+  executionReviews       ExecutionReview[]
 
   @@index([emailHash])
   @@index([type])
@@ -189,6 +190,8 @@ model Environment {
   timeEntries      TimeEntry[]
   taskTemplates    TaskTemplate[]
   savedViews       SavedView[]
+  executionReviews ExecutionReview[]
+  masteryInsights  MasteryInsight[]
 
   @@index([ownerId])
   @@index([slug])
@@ -270,6 +273,8 @@ model Execution {
   workflow   Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
 
   validationResult ValidationResult?
+  review           ExecutionReview?
+  decisionPoints   DecisionPoint[]
 
   @@index([systemId])
   @@index([workflowId])
@@ -1796,4 +1801,75 @@ model KernelTrace {
   @@index([tenantId, createdAt])
   @@index([surface])
   @@index([status])
+}
+
+// ===============================================
+// METACOGNITIVE LAYER
+// Comprehension → Evaluation → Attribution → Mastery
+// ===============================================
+
+model ExecutionReview {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  overallScore    Int       // 1-10 user quality rating
+  overallNotes    String?   // Free-form reflection
+  stageReviews    String?   // JSON: [{ stageId, score, wouldRewrite, note }]
+  criticalStageId String?   // Which stage had the most impact on quality?
+  inputQuality    Int?      // 1-5: how good was the brief/input?
+
+  executionId   String      @unique
+  execution     Execution   @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  reviewerId    String
+  reviewer      Identity    @relation(fields: [reviewerId], references: [id])
+
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+
+  @@index([environmentId])
+  @@index([executionId])
+  @@index([reviewerId])
+}
+
+model DecisionPoint {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  stageId      String   // Which workflow stage
+  stageName    String
+  decision     String   // What was decided
+  reasoning    String?  // Why (from trace)
+  impact       String   // "high" | "medium" | "low"
+  alternatives String?  // JSON: other options considered
+
+  executionId   String
+  execution     Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  workflowId    String
+  environmentId String
+
+  @@index([workflowId])
+  @@index([executionId])
+  @@index([environmentId])
+}
+
+model MasteryInsight {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  principle    String   // The learned rule
+  evidence     String   // JSON: [{ executionId, score, detail }]
+  category     String   // "input_pattern" | "stage_pattern" | "timing_pattern" | "quality_driver"
+  strength     Float    // 0-1 confidence
+  runsAnalyzed Int      // How many executions informed this
+
+  workflowId    String?  // null = cross-workflow insight
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+
+  @@index([environmentId])
+  @@index([workflowId])
+  @@index([category])
 }

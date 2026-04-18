@@ -84,7 +84,7 @@ export default function IntegrationsWidget({ environmentId }: { environmentId: s
           {availableNotConnected.length > 0 && (
             <>
               {connected.length > 0 && (
-                <p className="text-[10px] tracking-[0.12em] pt-2" style={{ color: 'var(--text-3)', opacity: 0.5 }}>AVAILABLE</p>
+                <p className="text-[10px] tracking-[0.12em] pt-2" style={{ color: 'var(--text-3)' }}>AVAILABLE</p>
               )}
               <div className="space-y-1">
                 {availableNotConnected.map(p => (
