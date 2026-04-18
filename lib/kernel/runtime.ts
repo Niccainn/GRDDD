@@ -31,10 +31,37 @@ import { Trace } from './trace';
 import { route, computeCostUsd } from './router';
 import { invokeTool, toAnthropicTools } from './tools/registry';
 import { checkBudget, recordSpend, BudgetError } from './budget';
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
 
 const DEFAULT_MAX_ITERATIONS = 8;
+
+/**
+ * Resolve the Anthropic client for this kernel invocation. Per-tenant
+ * BYOK: if the context has an environmentId we go through the factory
+ * which picks the tenant's key. Only fall back to the platform key
+ * when there is no tenant scope (dev scripts, admin-only tasks).
+ *
+ * This is the fix for the BYOK bypass that previously instantiated a
+ * module-level singleton on process.env.ANTHROPIC_API_KEY — which
+ * meant every workflow execution billed the platform regardless of
+ * tier. Now every call resolves at invocation time.
+ */
+async function resolveClient(envId?: string): Promise<Anthropic> {
+  if (envId) {
+    const resolved = await getAnthropicClientForEnvironment(envId);
+    return resolved.client;
+  }
+  // No environment scope. Only the platform can make un-scoped calls
+  // (backfill scripts, health checks). Throw MissingKey if ANTHROPIC_API_KEY
+  // is missing so we fail loudly in production rather than silently 500ing.
+  const platformKey = process.env.ANTHROPIC_API_KEY;
+  if (!platformKey) {
+    throw new MissingKeyError(
+      'No environment scope on this kernel call and no platform ANTHROPIC_API_KEY configured.',
+    );
+  }
+  return new Anthropic({ apiKey: platformKey });
+}
 
 /**
  * Streaming entry point. Yields TraceEvents as they happen.
@@ -78,6 +105,13 @@ export async function* stream(req: KernelRequest): AsyncGenerator<TraceEvent, Ke
   let toolCalls = 0;
   let finalText = '';
   let iter = 0;
+
+  // Resolve BYOK client ONCE per invocation (key rotation mid-loop
+  // would invalidate in-flight messages anyway). Routes the Anthropic
+  // call to the tenant's own key if they have one — this is the guard
+  // against the previous BYOK bypass where workflow stages billed the
+  // platform key regardless of tier.
+  const client = await resolveClient(req.context.environmentId);
 
   try {
     while (iter < maxIter) {

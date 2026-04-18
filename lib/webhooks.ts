@@ -62,16 +62,28 @@ export async function fireWebhooks(
           headers['X-GRID-Signature'] = `sha256=${sig}`;
         }
 
+        // SSRF defense in depth — validate resolution right before
+        // dispatch so DNS rebinding is caught even if the stored URL
+        // was legal at save time.
+        const { resolveAndValidate, SsrfBlockedError } = await import('@/lib/security/ssrf');
+        await resolveAndValidate(webhook.url);
         const res = await fetch(webhook.url, {
           method: 'POST',
           headers,
           body,
           signal: AbortSignal.timeout(10_000), // 10s timeout
+          redirect: 'manual', // don't let redirects chain into private space
         });
         status = res.status;
         success = res.ok;
       } catch (err) {
-        error = err instanceof Error ? err.message : 'Unknown error';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((err as any)?.name === 'SsrfBlockedError') {
+          error = 'URL blocked by SSRF policy';
+          status = 0;
+        } else {
+          error = err instanceof Error ? err.message : 'Unknown error';
+        }
       }
 
       // Log delivery (fire and forget — don't await)

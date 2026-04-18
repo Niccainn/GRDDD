@@ -12,6 +12,8 @@
  *   const data = await safeFetch<MyType>(url, { headers });
  */
 
+import { resolveAndValidate, SsrfBlockedError } from '../../security/ssrf';
+
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 export class IntegrationFetchError extends Error {
@@ -45,11 +47,24 @@ export async function safeFetch<T = unknown>(
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   fetchInit.signal = controller.signal;
 
+  // SSRF guard — DNS-resolving check before actually dispatching. All
+  // outbound integration fetches go through this wrapper so callers
+  // get SSRF protection for free.
+  const urlStr = url instanceof URL ? url.toString() : url;
+  try {
+    await resolveAndValidate(urlStr);
+  } catch (e) {
+    clearTimeout(timer);
+    if (e instanceof SsrfBlockedError) {
+      throw new IntegrationFetchError(`URL blocked by SSRF policy: ${e.reason}`, 0);
+    }
+    throw new IntegrationFetchError('Invalid URL', 0);
+  }
+
   let res: Response;
   try {
-    res = await fetch(url instanceof URL ? url.toString() : url, fetchInit);
+    res = await fetch(urlStr, { ...fetchInit, redirect: fetchInit.redirect ?? 'manual' });
   } catch (err) {
-    clearTimeout(timer);
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw new IntegrationFetchError(`Request timed out after ${timeoutMs}ms`, 408);
     }
