@@ -72,6 +72,18 @@ export default function InboxPage() {
   const [form, setForm] = useState({ title: '', body: '', priority: 'NORMAL', environmentId: '', systemId: '' });
   const [saving, setSaving] = useState(false);
 
+  // Integration-source layer toggles. Keyed on the full signal.source
+  // string ("integration:notion" etc.) so two providers that happen to
+  // share a display name don't collide.
+  const [hiddenSources, setHiddenSources] = useState<Set<string>>(new Set());
+  const toggleSource = useCallback((src: string) => {
+    setHiddenSources(prev => {
+      const next = new Set(prev);
+      if (next.has(src)) next.delete(src); else next.add(src);
+      return next;
+    });
+  }, []);
+
   const load = useCallback(() => {
     const params = new URLSearchParams({
       ...(statusFilter ? { status: statusFilter } : {}),
@@ -154,9 +166,20 @@ export default function InboxPage() {
     if (sig?.status === 'UNREAD') updateStatus(id, 'READ');
   }
 
+  // Derive integration layers from signals — source = "integration:<provider>"
+  // auto-creates a toggleable layer. No registry bookkeeping.
+  const integrationSources = Array.from(
+    new Set(
+      signals
+        .map(s => s.source)
+        .filter((src): src is string => typeof src === 'string' && src.startsWith('integration:'))
+    ),
+  ).sort();
+
   const filtered = signals.filter(s =>
     (!statusFilter || s.status === statusFilter) &&
-    (!priorityFilter || s.priority === priorityFilter)
+    (!priorityFilter || s.priority === priorityFilter) &&
+    !hiddenSources.has(s.source)
   );
 
   return (
@@ -268,6 +291,48 @@ export default function InboxPage() {
           </button>
         ))}
       </div>
+
+      {/* Integration source layers — one toggle per connected provider
+          that has produced a signal. Mirrors the Calendar page's layer
+          toggle pattern so the two surfaces stay conceptually aligned. */}
+      {integrationSources.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6 items-center">
+          <span
+            className="text-[10px] tracking-[0.16em] uppercase font-light mr-1"
+            style={{ color: 'var(--text-3)' }}
+          >
+            Integrations
+          </span>
+          {integrationSources.map(src => {
+            // "integration:google_calendar" → "google_calendar" → "Google calendar"
+            const provider = src.split(':').slice(1).join(':');
+            const pretty = provider
+              .replace(/[_-]/g, ' ')
+              .replace(/\b\w/g, c => c.toUpperCase());
+            const hidden = hiddenSources.has(src);
+            return (
+              <button
+                key={src}
+                onClick={() => toggleSource(src)}
+                title={hidden ? `Show ${pretty} signals` : `Hide ${pretty} signals`}
+                className="text-xs font-light px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5"
+                style={{
+                  background: hidden ? 'rgba(255,255,255,0.02)' : 'rgba(113,147,237,0.08)',
+                  border: `1px solid ${hidden ? 'rgba(255,255,255,0.07)' : 'rgba(113,147,237,0.2)'}`,
+                  color: hidden ? 'rgba(255,255,255,0.25)' : '#7193ED',
+                  textDecoration: hidden ? 'line-through' : 'none',
+                }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: hidden ? 'rgba(255,255,255,0.15)' : '#7193ED' }}
+                />
+                {pretty}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Signal list */}
       {!loaded ? (

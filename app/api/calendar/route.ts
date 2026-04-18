@@ -79,6 +79,7 @@ export async function GET(req: NextRequest) {
         provider: true,
         displayName: true,
         accountLabel: true,
+        environmentId: true,
       },
     }),
   ]);
@@ -123,8 +124,15 @@ export async function GET(req: NextRequest) {
   ];
 
   // Fetch external calendar events from connected providers.
-  // Each provider client returns events in a standardized shape.
-  // When a provider's client isn't implemented yet, we skip gracefully.
+  // Previously this swallowed every error silently — users saw
+  // "Google Calendar connected" and an empty calendar with zero
+  // explanation. Now we:
+  //   1. Log each failure to AppError so ops can see it
+  //   2. Return a `sourceStatus` map alongside events so the UI can
+  //      render an inline "Google Calendar: token expired" banner
+  //      per NN/g's finding on explained failure
+  const sourceStatus: Record<string, { ok: boolean; reason?: string; integrationId: string; displayName: string }> = {};
+
   for (const integration of calendarIntegrations) {
     try {
       const externalEvents = await fetchExternalCalendarEvents(
@@ -138,14 +146,34 @@ export async function GET(req: NextRequest) {
         source: integration.provider,
         color: CALENDAR_COLORS[integration.provider] ?? '#BF9FF1',
       })));
-    } catch {
-      // External calendar fetch failed — skip gracefully, don't break the page
+      sourceStatus[integration.id] = {
+        ok: true,
+        integrationId: integration.id,
+        displayName: integration.displayName,
+      };
+    } catch (err) {
+      const reason = err instanceof Error ? err.message.slice(0, 200) : 'Unknown error';
+      sourceStatus[integration.id] = {
+        ok: false,
+        reason,
+        integrationId: integration.id,
+        displayName: integration.displayName,
+      };
+      // Fire-and-forget — don't block the calendar response on logging.
+      import('@/lib/observability/errors').then(({ logError }) =>
+        logError({
+          scope: 'calendar_external_fetch',
+          environmentId: integration.environmentId,
+          message: `${integration.provider} fetch failed: ${reason}`,
+          context: { integrationId: integration.id, provider: integration.provider },
+        }),
+      ).catch(() => {});
     }
   }
 
   events.sort((a, b) => (a.date?.getTime() ?? 0) - (b.date?.getTime() ?? 0));
 
-  return Response.json({ events });
+  return Response.json({ events, sourceStatus });
 }
 
 /**

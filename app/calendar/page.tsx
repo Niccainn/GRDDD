@@ -137,13 +137,26 @@ export default function CalendarPage() {
     if (dismissed) setBannerDismissed(true);
   }, []);
 
+  // Sources with non-ok status from the API, keyed by integration id.
+  // Used to render an inline "Google Calendar: token expired" banner
+  // instead of silently showing an empty month.
+  const [sourceStatus, setSourceStatus] = useState<Record<string, {
+    ok: boolean;
+    reason?: string;
+    integrationId: string;
+    displayName: string;
+  }>>({});
+
   // Load events
   useEffect(() => {
     const start = new Date(year, month, 1).toISOString();
     const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
     fetch(`/api/calendar?start=${start}&end=${end}`)
       .then(r => r.json())
-      .then(d => setEvents(d.events ?? []))
+      .then(d => {
+        setEvents(d.events ?? []);
+        setSourceStatus(d.sourceStatus ?? {});
+      })
       .catch(() => {});
   }, [year, month]);
 
@@ -269,6 +282,18 @@ export default function CalendarPage() {
                 ? `${layers.filter(l => l.visible).length} layers active`
                 : 'Tasks, goals, and milestones'}
             </p>
+            {/* Inline source-status banner — shows if any external
+                calendar provider failed, so users no longer see an
+                empty month with zero explanation. */}
+            {Object.values(sourceStatus).filter(s => !s.ok).map(s => (
+              <p
+                key={s.integrationId}
+                className="text-[11px] font-light mt-1"
+                style={{ color: '#FF6B6B' }}
+              >
+                ⚠ {s.displayName}: {s.reason ?? 'fetch failed'} — try disconnecting and reconnecting.
+              </p>
+            ))}
           </div>
           <div className="flex items-center gap-3">
             <button onClick={prevMonth} className="w-8 h-8 rounded-lg flex items-center justify-center"
