@@ -15,7 +15,7 @@ export default function LegalFooter() {
             <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2"/>
             <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2"/>
           </svg>
-          <span className="text-[10px]" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+          <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
             GRID Systems Inc.
           </span>
         </div>
@@ -23,14 +23,14 @@ export default function LegalFooter() {
           <Link
             href="/privacy"
             className="text-[10px] transition-colors hover:text-white/60"
-            style={{ color: 'var(--text-3)', opacity: 0.5 }}
+            style={{ color: 'var(--text-3)' }}
           >
             Privacy
           </Link>
           <Link
             href="/terms"
             className="text-[10px] transition-colors hover:text-white/60"
-            style={{ color: 'var(--text-3)', opacity: 0.5 }}
+            style={{ color: 'var(--text-3)' }}
           >
             Terms
           </Link>

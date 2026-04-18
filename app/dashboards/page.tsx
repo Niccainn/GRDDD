@@ -115,8 +115,8 @@ export default function DashboardsPage() {
           <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
             No dashboards yet
           </p>
-          <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
-            Create your first custom dashboard
+          <p className="text-xs font-light max-w-sm text-center" style={{ color: 'var(--text-3)' }}>
+            Build custom widget boards to monitor your systems, workflows, and goals in real-time.
           </p>
         </div>
       ) : (

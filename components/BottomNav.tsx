@@ -116,7 +116,7 @@ export default function BottomNav() {
           >
             <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
               <div className="w-8 h-1 rounded-full mx-auto mb-2" style={{ background: 'var(--glass-border)' }} />
-              <p className="text-[10px] tracking-[0.16em] font-light" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+              <p className="text-[10px] tracking-[0.16em] font-light" style={{ color: 'var(--text-3)' }}>
                 MORE
               </p>
             </div>

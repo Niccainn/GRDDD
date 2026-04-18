@@ -1,14 +1,18 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import GlobalNovaBar from '@/components/GlobalNovaBar';
-import CrossDomainInsights from '@/components/CrossDomainInsights';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import SampleDataBanner from '@/components/SampleDataBanner';
-import ActivitySummary from '@/components/ActivitySummary';
 import OnlineIndicator from '@/components/OnlineIndicator';
 import { useOnboarding } from '@/lib/use-onboarding';
+import ReviewNudgeBanner from '@/components/ReviewNudgeBanner';
+
+// Lazy-load below-fold widgets to reduce LCP
+const CrossDomainInsights = dynamic(() => import('@/components/CrossDomainInsights'), { ssr: false });
+const ActivitySummary = dynamic(() => import('@/components/ActivitySummary'), { ssr: false });
 
 type SystemData = {
   id: string;
@@ -225,8 +229,11 @@ export default function OperatePage() {
         <GlobalNovaBar initialQuery={novaInitialQuery} />
       </div>
 
-      {/* Stat bar with sparklines */}
-      {loaded && (
+      {/* Review nudge — shown when unreviewed executions exist */}
+      <ReviewNudgeBanner />
+
+      {/* Stat bar — only show when there's actual data to display */}
+      {loaded && (systems.length > 0 || executions.length > 0) && (
         <div data-tour="stat-bar" className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <Link href="/systems" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
@@ -260,6 +267,70 @@ export default function OperatePage() {
               {wfStats?.paused ?? 0}
             </p>
           </Link>
+        </div>
+      )}
+
+      {/* Getting Started — shown when workspace is empty */}
+      {loaded && systems.length === 0 && executions.length === 0 && (
+        <div className="mb-8 glass-deep p-6">
+          <p className="text-xs tracking-[0.12em] font-light mb-4" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+            GET STARTED
+          </p>
+          <div className="space-y-2">
+            <Link href="/systems"
+              className="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group"
+              style={{ background: 'rgba(21,173,112,0.04)', border: '1px solid rgba(21,173,112,0.12)' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.2)' }}>
+                <span className="stat-number text-sm" style={{ color: 'var(--brand)' }}>1</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>Create a system</p>
+                <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+                  Map a business function — Marketing, Operations, Content
+                </p>
+              </div>
+              <span className="text-xs font-light opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--brand)' }}>
+                Start →
+              </span>
+            </Link>
+
+            <Link href="/integrations"
+              className="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group"
+              style={{ background: 'rgba(113,147,237,0.04)', border: '1px solid rgba(113,147,237,0.12)' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(113,147,237,0.1)', border: '1px solid rgba(113,147,237,0.2)' }}>
+                <span className="stat-number text-sm" style={{ color: 'var(--info)' }}>2</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>Connect an integration</p>
+                <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+                  Link Slack, Notion, Google, or 100+ other tools
+                </p>
+              </div>
+              <span className="text-xs font-light opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--info)' }}>
+                Browse →
+              </span>
+            </Link>
+
+            <Link href="/workflows"
+              className="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group"
+              style={{ background: 'rgba(191,159,241,0.04)', border: '1px solid rgba(191,159,241,0.12)' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.2)' }}>
+                <span className="stat-number text-sm" style={{ color: 'var(--nova)' }}>3</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>Run your first workflow</p>
+                <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+                  Build a multi-stage AI pipeline and see Nova in action
+                </p>
+              </div>
+              <span className="text-xs font-light opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--nova)' }}>
+                Build →
+              </span>
+            </Link>
+          </div>
         </div>
       )}
 

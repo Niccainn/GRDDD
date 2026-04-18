@@ -228,6 +228,20 @@ export default function TemplatesPage() {
           </div>
         )}
 
+        {templates.length === 0 && (
+          <div
+            className="flex flex-col items-center justify-center py-20 rounded-2xl"
+            style={{ border: '1px dashed var(--glass-border)' }}
+          >
+            <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
+              No templates yet
+            </p>
+            <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
+              Save any workflow as a template to reuse it across systems.
+            </p>
+          </div>
+        )}
+
         {/* Success toast */}
         {install.status === 'done' && (
           <div

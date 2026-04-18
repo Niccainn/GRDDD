@@ -35,8 +35,33 @@ async function getSystem(id: string) {
       environment: true,
       creator: true,
       workflows: { orderBy: { updatedAt: 'desc' } },
+      executions: {
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        include: {
+          workflow: { select: { id: true, name: true } },
+          review: { select: { overallScore: true } },
+        },
+      },
       _count: { select: { executions: true } },
     },
+  });
+}
+
+async function getSystemSignals(systemId: string) {
+  return prisma.signal.findMany({
+    where: { systemId, status: { in: ['UNREAD', 'TRIAGED'] } },
+    orderBy: { createdAt: 'desc' },
+    take: 5,
+    select: { id: true, title: true, source: true, priority: true, status: true, novaTriaged: true, createdAt: true },
+  });
+}
+
+async function getSystemIntegrations(environmentId: string) {
+  return prisma.integration.findMany({
+    where: { environmentId, status: 'ACTIVE' },
+    select: { id: true, provider: true, displayName: true, accountLabel: true },
+    take: 10,
   });
 }
 
@@ -64,6 +89,14 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const [system, novaLogs] = await Promise.all([getSystem(id), getNovaLogs(id)]);
   if (!system) notFound();
+
+  const [signals, integrations] = await Promise.all([
+    getSystemSignals(id),
+    getSystemIntegrations(system.environmentId),
+  ]);
+
+  const unreviewedRuns = system.executions.filter(e => e.status === 'COMPLETED' && !e.review);
+  const PRIORITY_COLOR: Record<string, string> = { URGENT: '#FF5757', HIGH: '#F7C700', NORMAL: 'var(--text-3)', LOW: 'rgba(255,255,255,0.2)' };
 
   // healthScore is stored as 0–100 integer
   const healthPct = system.healthScore ?? null;
@@ -120,6 +153,61 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
       <div className="mb-8 rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <NovaBar systemId={system.id} systemName={system.name} recentLogs={novaLogs} />
       </div>
+
+      {/* Signals — inbound events for this system */}
+      {signals.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>
+              SIGNALS <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px]" style={{ background: 'rgba(191,159,241,0.1)', color: 'var(--nova)' }}>{signals.length}</span>
+            </p>
+            <Link href="/inbox" className="text-[10px] font-light transition-colors hover:text-white/50" style={{ color: 'var(--text-3)' }}>View all →</Link>
+          </div>
+          <div className="space-y-1">
+            {signals.map(sig => (
+              <div key={sig.id} className="flex items-center gap-3 px-4 py-2.5 rounded-lg" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+                <span className="text-[10px]" style={{ color: 'var(--nova)' }}>&#9889;</span>
+                <span className="flex-1 text-xs font-light truncate" style={{ color: 'var(--text-2)' }}>{sig.title}</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: `${PRIORITY_COLOR[sig.priority] || 'var(--text-3)'}15`, color: PRIORITY_COLOR[sig.priority] || 'var(--text-3)' }}>{sig.priority}</span>
+                {sig.novaTriaged && <span className="text-[8px]" style={{ color: 'var(--nova)', opacity: 0.5 }}>triaged</span>}
+                <span className="text-[9px]" style={{ color: 'var(--text-3)', opacity: 0.4 }}>{sig.source}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Runs with review scores */}
+      {system.executions.length > 0 && (
+        <div className="mb-6">
+          <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>RECENT RUNS</p>
+          <div className="space-y-1">
+            {system.executions.map(exec => (
+              <Link key={exec.id} href={`/workflows/${exec.workflow?.id || ''}`}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-lg group transition-all"
+                style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: exec.status === 'COMPLETED' ? '#15AD70' : exec.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
+                <span className="text-xs font-light truncate flex-1 group-hover:text-white/80 transition-colors" style={{ color: 'var(--text-2)' }}>
+                  {exec.workflow?.name || 'Direct run'}
+                </span>
+                {exec.review ? (
+                  <span className="text-[10px] font-light tabular-nums" style={{ color: exec.review.overallScore >= 7 ? '#15AD70' : exec.review.overallScore >= 5 ? '#F7C700' : '#FF6B6B' }}>
+                    {exec.review.overallScore}/10
+                  </span>
+                ) : exec.status === 'COMPLETED' ? (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(21,173,112,0.08)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>
+                    needs review
+                  </span>
+                ) : null}
+                <span className="text-[9px]" style={{ color: 'var(--text-3)', opacity: 0.4 }}>
+                  {new Date(exec.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-6">
         {/* Workflows */}
@@ -194,6 +282,35 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
 
           {/* Execution analytics */}
           <SystemExecutionChart systemId={system.id} />
+
+          {/* Connected Integrations */}
+          <div>
+            <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>CONNECTED</p>
+            {integrations.length === 0 ? (
+              <Link href="/integrations"
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-light transition-all"
+                style={{ background: 'rgba(113,147,237,0.04)', border: '1px dashed rgba(113,147,237,0.15)', color: 'var(--info)' }}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                </svg>
+                Connect an integration
+              </Link>
+            ) : (
+              <div className="rounded-xl p-3 space-y-2" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+                {integrations.map(int => (
+                  <div key={int.id} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#15AD70' }} />
+                    <span className="text-[11px] font-light truncate" style={{ color: 'var(--text-2)' }}>
+                      {int.displayName || int.provider}
+                    </span>
+                  </div>
+                ))}
+                <Link href="/integrations" className="text-[10px] font-light transition-colors hover:text-white/50 block mt-1" style={{ color: 'var(--text-3)' }}>
+                  Manage →
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

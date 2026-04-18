@@ -85,7 +85,7 @@ export default function ActivityFeedWidget({ novaLogs, signals }: ActivityFeedWi
                         {log.systemName}
                       </span>
                     )}
-                    <span className="text-[10px]" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+                    <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
                       {timeAgo(log.createdAt)}
                     </span>
                   </div>
@@ -113,10 +113,10 @@ export default function ActivityFeedWidget({ novaLogs, signals }: ActivityFeedWi
                         {sig.systemName}
                       </span>
                     )}
-                    <span className="text-[10px]" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+                    <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
                       {sig.source}
                     </span>
-                    <span className="text-[10px]" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+                    <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
                       {timeAgo(sig.createdAt)}
                     </span>
                   </div>

@@ -10,6 +10,7 @@ import CampaignAnalyticsWidget from '@/components/widgets/CampaignAnalyticsWidge
 import IntegrationsWidget from '@/components/widgets/IntegrationsWidget';
 import ReflectiveInsightsWidget from '@/components/widgets/ReflectiveInsightsWidget';
 import ROIEffortWidget from '@/components/widgets/ROIEffortWidget';
+import MasteryWidget from '@/components/widgets/MasteryWidget';
 
 type DashboardData = {
   systems: {
@@ -115,6 +116,7 @@ export default function EnvironmentOverview() {
       {data.goals.length > 0 && <GoalsWidget goals={data.goals} />}
       <IntegrationsWidget environmentId={environmentId} />
       <ReflectiveInsightsWidget environmentId={environmentId} />
+      <MasteryWidget environmentId={environmentId} />
       <ROIEffortWidget environmentId={environmentId} />
       <CampaignAnalyticsWidget
         analytics={data.campaignAnalytics}

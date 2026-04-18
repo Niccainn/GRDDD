@@ -52,8 +52,10 @@ type NavSection = {
 };
 
 // ── Sidebar sections ─────────────────────────────────────────────────
-// Grouped to tell a story: your command center → your work → your structure → your intelligence
-const navSections: NavSection[] = [
+// System-first: your business functions → daily work → everything else
+type CollapsibleNavSection = NavSection & { collapsible?: boolean; defaultCollapsed?: boolean; id?: string };
+
+const navSections: CollapsibleNavSection[] = [
   {
     label: '',
     items: [
@@ -61,6 +63,7 @@ const navSections: NavSection[] = [
       { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
     ],
   },
+  // YOUR SYSTEMS — injected dynamically below
   {
     label: 'WORK',
     items: [
@@ -68,35 +71,44 @@ const navSections: NavSection[] = [
       { href: '/inbox', label: 'Inbox', icon: icons.inbox, badge: 'inbox' },
       { href: '/goals', label: 'Goals', icon: icons.goals },
       { href: '/calendar', label: 'Calendar', icon: icons.calendar },
-      { href: '/docs', label: 'Documents', icon: icons.documents },
-      { href: '/forms', label: 'Forms', icon: icons.forms },
-      { href: '/views', label: 'Views', icon: icons.views },
     ],
   },
   {
-    label: 'OPERATIONS',
+    label: 'EXPLORE',
+    id: 'explore',
+    collapsible: true,
+    defaultCollapsed: true,
+    items: [
+      { href: '/workflows', label: 'Workflows', icon: icons.workflows },
+      { href: '/integrations', label: 'Integrations', icon: icons.integrations },
+      { href: '/docs', label: 'Documents', icon: icons.documents },
+      { href: '/templates', label: 'Templates', icon: icons.templates },
+      { href: '/mastery', label: 'Mastery', icon: icons.analytics },
+    ],
+  },
+  {
+    label: 'MORE',
+    id: 'more',
+    collapsible: true,
+    defaultCollapsed: true,
     items: [
       { href: '/finance', label: 'Finance', icon: icons.finance },
       { href: '/time', label: 'Time Tracking', icon: icons.time },
+      { href: '/forms', label: 'Forms', icon: icons.forms },
+      { href: '/views', label: 'Views', icon: icons.views },
       { href: '/approvals', label: 'Approvals', icon: icons.approvals },
       { href: '/assets', label: 'Assets', icon: icons.assets },
-    ],
-  },
-  {
-    label: 'STRUCTURE',
-    items: [
-      { href: '/environments', label: 'Environments', icon: icons.environments },
-      { href: '/systems', label: 'Systems', icon: icons.systems },
-      { href: '/workflows', label: 'Workflows', icon: icons.workflows },
       { href: '/agents', label: 'Agents', icon: icons.agents },
-      { href: '/integrations', label: 'Integrations', icon: icons.integrations },
-      { href: '/templates', label: 'Templates', icon: icons.templates },
       { href: '/automations', label: 'Automations', icon: icons.automations },
       { href: '/dashboards', label: 'Dashboards', icon: icons.dashboards },
+      { href: '/environments', label: 'Environments', icon: icons.environments },
     ],
   },
   {
     label: 'INTELLIGENCE',
+    id: 'intelligence',
+    collapsible: true,
+    defaultCollapsed: true,
     items: [
       { href: '/analytics', label: 'Analytics', icon: icons.analytics },
       { href: '/reports', label: 'Reports', icon: icons.reports },
@@ -164,11 +176,35 @@ export default function Sidebar() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [inboxUnread, setInboxUnread] = useState(0);
+  const [systems, setSystems] = useState<{ id: string; name: string; color: string | null }[]>([]);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') return { explore: true, more: true, intelligence: true };
+    try {
+      const saved = localStorage.getItem('grid_sidebar_sections');
+      return saved ? JSON.parse(saved) : { explore: true, more: true, intelligence: true };
+    } catch { return { explore: true, more: true, intelligence: true }; }
+  });
+
+  const toggleSection = (id: string) => {
+    setCollapsedSections(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      try { localStorage.setItem('grid_sidebar_sections', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   // Close mobile nav on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  // Fetch systems for sidebar
+  useEffect(() => {
+    fetch('/api/systems').then(r => r.json()).then(d => {
+      if (Array.isArray(d)) setSystems(d);
+    }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     fetch('/api/signals?limit=1').then(r => r.json()).then(d => setInboxUnread(d.unreadCount ?? 0)).catch(() => {});
     const id = setInterval(() => {
@@ -260,46 +296,129 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-3 overflow-y-auto">
-        {activeSections.map((section, si) => (
-          <div key={section.label || si} className={si > 0 ? 'mt-4' : ''}>
-            {/* Section label */}
-            {section.label && (
-              <p className="text-[10px] tracking-[0.16em] font-light px-3 mb-1.5" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
-                {section.label}
-              </p>
-            )}
-            <div className="space-y-0.5">
-              {section.items.map(item => {
-                const active = isActive(item.href);
-                const isNova = item.accent;
-                const showBadge = item.badge === 'inbox' && inboxUnread > 0;
-                return (
-                  <Link key={item.href} href={item.href}
-                    className="flex items-center gap-3 px-3 py-2 text-sm transition-all"
-                    style={{
-                      color: active
-                        ? isNova ? 'var(--nova)' : 'var(--text-1)'
-                        : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
-                      background: active
-                        ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
-                        : 'transparent',
-                      borderRadius: 'var(--radius-sm)',
-                    }}>
-                    <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
-                    <span className="font-light tracking-wide">{item.label}</span>
-                    {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
-                    {showBadge && (
-                      <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
-                        style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
-                        {inboxUnread}
-                      </span>
+        {activeSections.map((section, si) => {
+          const cs = section as CollapsibleNavSection;
+          const sectionId = cs.id || section.label || String(si);
+          const isCollapsible = cs.collapsible;
+          const isCollapsed = isCollapsible && collapsedSections[sectionId];
+
+          return (
+            <div key={sectionId} className={si > 0 ? 'mt-4' : ''}>
+              {/* Section label — clickable if collapsible */}
+              {section.label && (
+                isCollapsible ? (
+                  <button
+                    onClick={() => toggleSection(sectionId)}
+                    className="w-full flex items-center justify-between px-3 mb-1.5 group"
+                  >
+                    <p className="text-[10px] tracking-[0.16em] font-light" style={{ color: 'var(--text-3)' }}>
+                      {section.label}
+                    </p>
+                    <svg
+                      width="8" height="8" viewBox="0 0 8 8" fill="none"
+                      className="transition-transform duration-200"
+                      style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', opacity: 0.3 }}
+                    >
+                      <path d="M1 2.5l3 3 3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" style={{ color: 'var(--text-3)' }} />
+                    </svg>
+                  </button>
+                ) : (
+                  <p className="text-[10px] tracking-[0.16em] font-light px-3 mb-1.5" style={{ color: 'var(--text-3)' }}>
+                    {section.label}
+                  </p>
+                )
+              )}
+
+              {/* Dynamic systems section — injected after the first section (Home/Nova) */}
+              {si === 0 && !envSlug && (
+                <div className="mt-4">
+                  <p className="text-[10px] tracking-[0.16em] font-light px-3 mb-1.5" style={{ color: 'var(--text-3)' }}>
+                    YOUR SYSTEMS
+                  </p>
+                  <div className="space-y-0.5">
+                    {systems.length === 0 ? (
+                      <Link href="/systems"
+                        className="flex items-center gap-3 px-3 py-2 text-sm transition-all"
+                        style={{ color: 'var(--brand)', borderRadius: 'var(--radius-sm)' }}>
+                        <span style={{ opacity: 0.6 }}>
+                          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                            <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" strokeWidth="1.1" strokeDasharray="3 2"/>
+                            <path d="M7.5 5v5M5 7.5h5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+                          </svg>
+                        </span>
+                        <span className="font-light tracking-wide text-xs">Create your first system</span>
+                      </Link>
+                    ) : (
+                      <>
+                        {systems.map(sys => {
+                          const sysActive = isActive(`/systems/${sys.id}`);
+                          return (
+                            <Link key={sys.id} href={`/systems/${sys.id}`}
+                              className="flex items-center gap-3 px-3 py-2 text-sm transition-all"
+                              style={{
+                                color: sysActive ? 'var(--text-1)' : 'var(--text-3)',
+                                background: sysActive ? 'var(--glass-active)' : 'transparent',
+                                borderRadius: 'var(--radius-sm)',
+                              }}>
+                              <span
+                                className="w-2 h-2 rounded-full flex-shrink-0"
+                                style={{ background: sys.color || 'var(--brand)', opacity: sysActive ? 1 : 0.5 }}
+                              />
+                              <span className="font-light tracking-wide truncate">{sys.name}</span>
+                              {sysActive && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: 'var(--brand)', opacity: 0.5 }} />}
+                            </Link>
+                          );
+                        })}
+                        <Link href="/systems"
+                          className="flex items-center gap-3 px-3 py-1.5 text-sm transition-all"
+                          style={{ color: 'var(--text-3)', borderRadius: 'var(--radius-sm)' }}>
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                          </svg>
+                          <span className="font-light tracking-wide text-xs">New system</span>
+                        </Link>
+                      </>
                     )}
-                  </Link>
-                );
-              })}
+                  </div>
+                </div>
+              )}
+
+              {/* Section items — hidden if collapsed */}
+              {!isCollapsed && (
+                <div className="space-y-0.5">
+                  {section.items.map(item => {
+                    const active = isActive(item.href);
+                    const isNova = item.accent;
+                    const showBadge = item.badge === 'inbox' && inboxUnread > 0;
+                    return (
+                      <Link key={item.href} href={item.href}
+                        className="flex items-center gap-3 px-3 py-2 text-sm transition-all"
+                        style={{
+                          color: active
+                            ? isNova ? 'var(--nova)' : 'var(--text-1)'
+                            : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
+                          background: active
+                            ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
+                            : 'transparent',
+                          borderRadius: 'var(--radius-sm)',
+                        }}>
+                        <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+                        <span className="font-light tracking-wide">{item.label}</span>
+                        {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
+                        {showBadge && (
+                          <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
+                            style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
+                            {inboxUnread}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Theme + User */}

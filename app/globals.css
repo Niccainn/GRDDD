@@ -31,7 +31,7 @@
   /* ─── Text hierarchy ─── */
   --text-1: rgba(255, 255, 255, 0.92);
   --text-2: rgba(255, 255, 255, 0.50);
-  --text-3: rgba(255, 255, 255, 0.22);
+  --text-3: rgba(255, 255, 255, 0.45);
 
   /* ─── Brand (overridden per-environment) ─── */
   --brand: #15AD70;
@@ -89,13 +89,15 @@
 
   --text-1: #1d1d1f; /* Apple-level crisp black */
   --text-2: #6e6e73; /* Apple secondary grey */
-  --text-3: #aeaeb2; /* Apple tertiary */
+  --text-3: #767676; /* AA compliant tertiary (4.5:1 on #f2f2f5) */
 
-  --brand-soft: rgba(21, 173, 112, 0.08);
-  --brand-glow: rgba(21, 173, 112, 0.05);
-  --brand-border: rgba(21, 173, 112, 0.15);
+  --brand: #0E8355; /* AA compliant on light bg (5.1:1) */
+  --brand-soft: rgba(14, 131, 85, 0.08);
+  --brand-glow: rgba(14, 131, 85, 0.05);
+  --brand-border: rgba(14, 131, 85, 0.15);
 
-  --nova-soft: rgba(140, 100, 220, 0.08);
+  --nova: #6B3FA0; /* AA compliant on light bg (4.8:1) */
+  --nova-soft: rgba(107, 63, 160, 0.08);
   --warning-soft: rgba(200, 160, 0, 0.08);
   --danger-soft: rgba(220, 60, 60, 0.08);
   --info-soft: rgba(80, 120, 220, 0.08);
