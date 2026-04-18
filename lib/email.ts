@@ -35,8 +35,18 @@ function fromAddress(): string {
 
 export async function sendEmail(args: SendEmailArgs): Promise<SendEmailResult> {
   if (!isEnabled()) {
+    // Previously this was a silent skip that only printed to stdout.
+    // Password-reset flows call sendEmail then the API returns 200
+    // (enumeration safety), so the user sees "check your email" and
+    // nothing arrives. Log to AppError so ops can see the backlog
+    // without breaking the enumeration property.
     // eslint-disable-next-line no-console
     console.log('[email] skipped (RESEND_API_KEY unset):', args.subject, '→', args.to);
+    await logEmailFailure({
+      reason: 'unconfigured',
+      subject: args.subject,
+      toDomain: extractDomain(args.to),
+    });
     return { ok: true, skipped: true };
   }
 
@@ -53,15 +63,56 @@ export async function sendEmail(args: SendEmailArgs): Promise<SendEmailResult> {
       text: args.text,
     });
     if (error) {
+      await logEmailFailure({
+        reason: 'resend_error',
+        subject: args.subject,
+        toDomain: extractDomain(args.to),
+        message: error.message,
+      });
       return { ok: false, error: error.message };
     }
     return { ok: true, id: data?.id };
   } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    const message = err instanceof Error ? err.message : String(err);
+    await logEmailFailure({
+      reason: 'send_threw',
+      subject: args.subject,
+      toDomain: extractDomain(args.to),
+      message,
+    });
+    return { ok: false, error: message };
   }
+}
+
+async function logEmailFailure(data: {
+  reason: 'unconfigured' | 'resend_error' | 'send_threw';
+  subject: string;
+  toDomain: string;
+  message?: string;
+}): Promise<void> {
+  // Deferred import — `logError` pulls in Prisma, and we don't want
+  // every import of lib/email to force the DB client to load. In
+  // build-time contexts (Next static generation) this keeps the
+  // module tree-shakable.
+  try {
+    const { logError } = await import('./observability/errors');
+    await logError({
+      scope: 'email',
+      level: data.reason === 'unconfigured' ? 'warn' : 'error',
+      message: data.message ?? `Email ${data.reason}: ${data.subject}`,
+      // Never log the full recipient address — only the domain, so
+      // admins can see "deliveries to gmail.com are failing" without
+      // leaking who specifically.
+      context: { reason: data.reason, subject: data.subject, toDomain: data.toDomain },
+    });
+  } catch {
+    // Observability must never fail the email send. Swallow.
+  }
+}
+
+function extractDomain(address: string): string {
+  const at = address.lastIndexOf('@');
+  return at === -1 ? 'unknown' : address.slice(at + 1).toLowerCase();
 }
 
 export function isEmailConfigured(): boolean {

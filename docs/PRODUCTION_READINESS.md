@@ -65,6 +65,78 @@ automated from inside the repo.
 - WebAuthn / passkey sign-in — designed, not shipped
 - Full Nova prompt-injection live runner — harness scaffolded in `__tests__/nova-eval`, live mode gated on `NOVA_EVAL_URL`
 
+## Compliance matrix
+
+Status against the regulations that actually apply to a pre-revenue
+SaaS operating in NA/EU. "✅" = shipped in code. "⚠️" = shipped but
+needs human action (domain verification, policy text, etc.). "❌" =
+not yet addressed.
+
+### GDPR (EU General Data Protection Regulation)
+
+| Article | Requirement | Status | Evidence |
+|---|---|---|---|
+| 5(1)(f) | Integrity & confidentiality — encryption at rest | ✅ | [lib/crypto/key-encryption.ts](../lib/crypto/key-encryption.ts) AES-256-GCM. Anthropic keys + email (via emailHash) both encrypted. |
+| 5(1)(e) | Storage limitation | ✅ | [app/api/cron/errors-cleanup/route.ts](../app/api/cron/errors-cleanup/route.ts) — 30-day default retention for AppError rows. |
+| 15 | Right of access | ⚠️ | Partial — users see their data via the app UI. Dedicated "access request" endpoint not strictly required when portability + app-level access both exist. |
+| 17 | Right to erasure | ✅ | [app/api/account/delete/route.ts](../app/api/account/delete/route.ts) — cascades through every tenant-scoped table, clears AppError rows, invalidates session cookie. |
+| 20 | Right to data portability | ✅ | [app/api/account/export/route.ts](../app/api/account/export/route.ts) — returns all tenant data as versioned JSON. |
+| 25 | Data protection by design | ✅ | Ownership guards on every `/api/*/[id]` route. [lib/auth/ownership.ts](../lib/auth/ownership.ts) + 48 unit tests. 404 instead of 403 to avoid existence leaks. |
+| 30 | Records of processing | ⚠️ | Implicit via DB schema + AppError + audit log. Not formalised as a public document. |
+| 32 | Security of processing | ✅ | CSP, HSTS, rate limiting, SSRF guards, encryption at rest — see [SECURITY.md](../SECURITY.md). |
+| 33 | Breach notification (72h) | ❌ | Human process, not a code change. Document runbook + contact list before first EU user. |
+| 7 / ePrivacy | Consent at collection | ⚠️ | Policy linked at sign-up; no explicit consent checkbox nor separate consent log. Add a `ConsentLog` table + checkbox before EU user intake. |
+
+### CCPA (California)
+
+Covered by the GDPR primitives — right-to-know is the export endpoint,
+right-to-delete is the delete endpoint. CCPA does not require explicit
+consent at collection, so we inherit compliance from the GDPR work.
+
+### PCI DSS (payment card data)
+
+**Out of scope by architecture.** All card data is tokenised by Stripe
+— Grid's servers never see a PAN, CVV, or expiry. We only store
+`stripeCustomerId` references. PCI DSS SAQ-A eligible.
+
+### HIPAA (US health information)
+
+**Not applicable.** Grid does not collect PHI. Terms will prohibit
+uploading PHI; no BAA available. Future HIPAA coverage = separate
+paid tier.
+
+### SOX / SOC 2
+
+Not applicable until public reporting obligations (SOX) or enterprise
+customers demanding SOC 2 Type II. When SOC 2 pursuit starts, existing
+security posture is ~70% of what Type I requires.
+
+### EU AI Act
+
+Grid is a "general-purpose AI system" deployer, not a provider.
+
+| Obligation | Status |
+|---|---|
+| Users know they're interacting with AI | ✅ — Nova is explicitly branded as AI |
+| Disclose AI-generated content | ⚠️ — clearly-marked in-app; no watermark on exports yet |
+| Human oversight via autonomy tiers | ✅ — [components/AutonomyBadge.tsx](../components/AutonomyBadge.tsx) surfaces tier on every agent output |
+| Log AI decision provenance | ✅ — kernel trace + Execution rows + ExecutionReview |
+| No prohibited uses (social scoring, biometric categorisation) | ✅ by product shape |
+
+## What could actually get you fined today
+
+Triaged — things most likely to cause a real regulator action against
+a 1-person pre-launch SaaS:
+
+1. **Silent cross-tenant data leak** — mitigated. Tenant isolation guards on every `/api/*/[id]` route + 48 unit tests.
+2. **Stripe live-key drift** — mitigated. `lib/billing/guardrails.ts` refuses live keys outside `live` tier.
+3. **No data export/delete when an EU user asks** — mitigated. Endpoints shipped today.
+4. **Silent email failure hiding a password-reset outage** — mitigated. Email failures now log to AppError, visible via `/api/health`.
+5. **Missing consent log** — **open gap**. EU law requires provable consent at collection. Close before wider EU intake.
+6. **Missing public subprocessors list** — **paperwork gap**. Enumerate Anthropic / Vercel / Turso-or-Neon / Resend / Stripe / OAuth providers on a `/subprocessors` page.
+7. **No cookie-consent banner** — safe today (only `grid_session` which is essential and exempt). Becomes a gap the moment non-essential cookies (analytics, tracking) are added.
+8. **Breach notification runbook** — **paperwork gap**. One-page process doc + contact list.
+
 ## Monitoring what matters
 
 With zero paid tooling, these are the four signals that must be
