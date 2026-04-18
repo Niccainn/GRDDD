@@ -101,7 +101,7 @@ export default function ReflectiveInsightsWidget({ environmentId }: ReflectiveIn
         </div>
       ) : reflections.length === 0 ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-sm font-light" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+          <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
             Nova is analyzing your environment. Insights will appear as patterns emerge.
           </p>
         </div>
@@ -169,7 +169,7 @@ export default function ReflectiveInsightsWidget({ environmentId }: ReflectiveIn
                             }}
                           />
                         </div>
-                        <span className="text-[9px]" style={{ color: 'var(--text-3)', opacity: 0.5 }}>
+                        <span className="text-[9px]" style={{ color: 'var(--text-3)' }}>
                           {Math.round(r.confidence * 100)}%
                         </span>
                       </div>
@@ -196,7 +196,7 @@ export default function ReflectiveInsightsWidget({ environmentId }: ReflectiveIn
                       )}
 
                       {r.acknowledged && (
-                        <span className="text-[10px] font-light" style={{ color: 'var(--text-3)', opacity: 0.4 }}>
+                        <span className="text-[10px] font-light" style={{ color: 'var(--text-3)' }}>
                           Acknowledged
                         </span>
                       )}

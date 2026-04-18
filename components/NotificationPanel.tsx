@@ -264,7 +264,7 @@ export default function NotificationPanel({ open, onClose, onUnreadCountChange }
                     )}
                     <p
                       className="text-xs font-light mt-1.5"
-                      style={{ color: 'var(--text-3)', opacity: 0.6 }}
+                      style={{ color: 'var(--text-3)' }}
                     >
                       {relativeTime(n.createdAt)}
                     </p>

@@ -16,6 +16,7 @@ import ErrorBoundary from './ErrorBoundary';
 import BottomNav from './BottomNav';
 import SkipLink from './SkipLink';
 import LegalFooter from './LegalFooter';
+import PersistentNovaBar from './PersistentNovaBar';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up', '/access'];
 
@@ -80,6 +81,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
             {children}
           </ErrorBoundary>
         </main>
+        <PersistentNovaBar />
         <BottomNav />
       </div>
     </EnvironmentBrandProvider>

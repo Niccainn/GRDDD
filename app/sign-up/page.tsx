@@ -6,6 +6,7 @@ import { useAuth } from '@/components/AuthProvider';
 import GoogleButton from '@/components/auth/GoogleButton';
 import PasswordField from '@/components/auth/PasswordField';
 import AuthLayout from '@/components/auth/AuthLayout';
+import { trackEvent } from '@/lib/analytics';
 
 // Client-side password strength hint. Intentionally low-friction:
 // the server enforces the actual minimum (12 chars). This is cosmetic
@@ -68,6 +69,7 @@ function SignUpInner() {
         setLoading(false);
         return;
       }
+      trackEvent('funnel.sign_up_completed');
       refresh();
       router.push(next);
     } catch {
@@ -89,6 +91,27 @@ function SignUpInner() {
         </>
       }
     >
+      {/* Value preview — what you're signing up for */}
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
+        {[
+          { label: '110+ Integrations', color: '#7193ED' },
+          { label: 'AI Workflows', color: '#BF9FF1' },
+          { label: 'Operational Intelligence', color: '#15AD70' },
+        ].map(pill => (
+          <span
+            key={pill.label}
+            className="text-[10px] font-light px-3 py-1.5 rounded-full tracking-wide"
+            style={{
+              background: `${pill.color}10`,
+              border: `1px solid ${pill.color}25`,
+              color: pill.color,
+            }}
+          >
+            {pill.label}
+          </span>
+        ))}
+      </div>
+
       <GoogleButton label="Sign up with Google" next={next} />
 
       <div className="flex items-center gap-3 my-6">

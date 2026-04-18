@@ -87,7 +87,7 @@ export default function GoalsWidget({ goals }: GoalsWidgetProps) {
                   </span>
                 </div>
                 {goal.dueDate && (
-                  <span className="text-[10px]" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+                  <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
                     {daysLeft(goal.dueDate)}
                   </span>
                 )}

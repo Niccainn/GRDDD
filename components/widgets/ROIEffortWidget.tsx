@@ -108,7 +108,7 @@ export default function ROIEffortWidget({ environmentId }: ROIEffortWidgetProps)
         <div className="h-48 rounded-lg animate-pulse" style={{ background: 'rgba(255,255,255,0.03)' }} />
       ) : systems.length === 0 ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-sm font-light" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+          <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
             Add systems to see ROI analysis.
           </p>
         </div>
@@ -124,16 +124,16 @@ export default function ROIEffortWidget({ environmentId }: ROIEffortWidgetProps)
             }}
           >
             {/* Quadrant labels */}
-            <span className="absolute text-[8px] font-light" style={{ top: '8px', left: '8px', color: 'var(--text-3)', opacity: 0.4 }}>
+            <span className="absolute text-[8px] font-light" style={{ top: '8px', left: '8px', color: 'var(--text-3)' }}>
               High Return / Low Effort
             </span>
-            <span className="absolute text-[8px] font-light" style={{ top: '8px', right: '8px', color: 'var(--text-3)', opacity: 0.4 }}>
+            <span className="absolute text-[8px] font-light" style={{ top: '8px', right: '8px', color: 'var(--text-3)' }}>
               High Return / High Effort
             </span>
-            <span className="absolute text-[8px] font-light" style={{ bottom: '8px', left: '8px', color: 'var(--text-3)', opacity: 0.4 }}>
+            <span className="absolute text-[8px] font-light" style={{ bottom: '8px', left: '8px', color: 'var(--text-3)' }}>
               Low / Low
             </span>
-            <span className="absolute text-[8px] font-light" style={{ bottom: '8px', right: '8px', color: 'var(--text-3)', opacity: 0.4 }}>
+            <span className="absolute text-[8px] font-light" style={{ bottom: '8px', right: '8px', color: 'var(--text-3)' }}>
               Low Return / High Effort
             </span>
 
@@ -150,13 +150,13 @@ export default function ROIEffortWidget({ environmentId }: ROIEffortWidgetProps)
             {/* Axis labels */}
             <span className="absolute text-[8px]" style={{
               bottom: '2px', left: '50%', transform: 'translateX(-50%)',
-              color: 'var(--text-3)', opacity: 0.4,
+              color: 'var(--text-3)',
             }}>
               Effort &rarr;
             </span>
             <span className="absolute text-[8px]" style={{
               left: '2px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)',
-              color: 'var(--text-3)', opacity: 0.4,
+              color: 'var(--text-3)',
               transformOrigin: 'left center',
             }}>
               Return &uarr;

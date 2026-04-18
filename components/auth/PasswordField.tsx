@@ -46,9 +46,7 @@ export default function PasswordField({
         onClick={() => setShow(s => !s)}
         aria-label={show ? 'Hide password' : 'Show password'}
         className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-opacity"
-        style={{ color: 'var(--text-3)', opacity: 0.7 }}
-        onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-        onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
+        style={{ color: 'var(--text-3)' }}
       >
         {show ? (
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
