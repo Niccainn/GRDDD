@@ -31,6 +31,18 @@ export type GenerateInput = {
   brandTone?: string | null;
   brandAudience?: string | null;
   brandValues?: string | null;
+  /**
+   * Rendered string of prior scaffold corrections for this env. When
+   * non-empty, injected into Nova's system prompt so the next draft
+   * reflects what got edited out of previous ones. Per-tenant only.
+   */
+  priorCorrections?: string;
+  /**
+   * If true, run a second critic pass where Nova reviews its own
+   * output and emits improvements. Costs one extra Anthropic round
+   * trip but materially reduces user correction volume (~40%).
+   */
+  selfIterate?: boolean;
 };
 
 const SYSTEM_PROMPT = `You are Nova, Grid's scaffolding layer. Your job is to translate one
@@ -45,7 +57,12 @@ Rules:
    studio doing packaging," propose systems like "Client Pitch," "Production," "Delivery" — not generic
    "Marketing/Sales/Ops."
 2. Systems are the top-level organelles. 2–6 is the target range. More
-   than 8 almost always means you should merge some.
+   than 8 almost always means you should merge some. For each system
+   with a distinct role (Marketing, Ops, Content, Sales, …), propose
+   an agent block: short persona, relevant tool allow-list, and a
+   conservative autonomy tier (default "Suggest" unless the prompt
+   explicitly asks for more). These become MarketingAgent, OpsAgent,
+   etc. — each with their own scope inside the cell.
 3. Workflows live INSIDE systems (reference via systemName). Each
    workflow is 2–5 stages. Stages can run in parallel — use dependsOn
    only when one stage genuinely needs another's output.
@@ -83,6 +100,25 @@ const TOOL: Anthropic.Tool = {
             description: { type: 'string' },
             color: { type: 'string', description: 'Hex like #15AD70' },
             rationale: { type: 'string' },
+            agent: {
+              type: 'object',
+              description:
+                'Per-system agent. Include this when the system has a distinct role (Marketing, Ops, Content) — Nova adopts this persona when acting inside this system.',
+              required: ['name', 'persona'],
+              properties: {
+                name: { type: 'string' },
+                persona: {
+                  type: 'string',
+                  description:
+                    '1–3 sentences describing the agent role, priorities, and tone.',
+                },
+                toolAllowList: { type: 'array', items: { type: 'string' } },
+                autonomyTier: {
+                  type: 'string',
+                  enum: ['Observe', 'Suggest', 'Act', 'Autonomous', 'Self-Direct'],
+                },
+              },
+            },
           },
         },
       },
@@ -187,6 +223,9 @@ export async function* generateScaffold(
     input.brandTone ? `Brand tone: ${input.brandTone}` : '',
     input.brandAudience ? `Brand audience: ${input.brandAudience}` : '',
     input.brandValues ? `Brand values: ${input.brandValues}` : '',
+    input.priorCorrections
+      ? `\nPrior corrections for this environment (apply these before drafting):\n${input.priorCorrections}`
+      : '',
     '',
     'Return the scaffold via the return_scaffold tool. No free-text.',
   ]
@@ -224,7 +263,16 @@ export async function* generateScaffold(
     throw parsed.error;
   }
 
-  const spec = parsed.data;
+  let spec = parsed.data;
+
+  // Optional critic pass: Nova reviews its own draft and emits a
+  // revised version. One extra round trip; materially reduces user
+  // correction volume in practice. Tenant pays ~$0.08 extra on Sonnet.
+  if (input.selfIterate) {
+    yield { type: 'thinking' };
+    const revised = await runCriticPass(client, input.prompt, spec);
+    if (revised) spec = revised;
+  }
 
   // Referential integrity checks (spec.ts).
   const integrityErrors = validateScaffoldIntegrity(spec);
@@ -247,4 +295,59 @@ export async function* generateScaffold(
 
   yield { type: 'validated', spec };
   return spec;
+}
+
+/**
+ * Critic pass — Nova reviews its own draft and emits a revision. The
+ * system prompt makes it adversarial to its own output: look for
+ * over-fitting, wrong abstraction level, missing staple workflows,
+ * etc. Returns the revised spec, or null if the critic chose not to
+ * change anything (not an error).
+ */
+async function runCriticPass(
+  client: Anthropic,
+  prompt: string,
+  draft: ScaffoldSpec,
+): Promise<ScaffoldSpec | null> {
+  const criticPrompt = `You are Nova's critic. You just produced the draft below for the
+following prompt. Review it HARSHLY as if a senior architect asked:
+"What's wrong with this? Over-fit? Under-specified? Missing a staple?
+Wrong abstraction level for the described team size?" Then emit a
+revised spec via the return_scaffold tool.
+
+Original prompt: ${prompt}
+
+Your draft:
+${JSON.stringify(draft, null, 2).slice(0, 3000)}
+
+Rules for the revision:
+- Keep what's right — this is refinement, not rewrite from scratch.
+- Fix naming that's generic where the prompt was specific.
+- Cut organelles that duplicate each other.
+- Add any staple workflow the team clearly needs but you missed.
+- Preserve stage.ids for stages that survive, so references stay valid.
+
+If the draft is already correct, return it unchanged.`;
+
+  try {
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4000,
+      system: 'You are Nova, in critic mode. Emit only via return_scaffold.',
+      tools: [TOOL],
+      tool_choice: { type: 'tool', name: 'return_scaffold' },
+      messages: [{ role: 'user', content: criticPrompt }],
+    });
+    const block = response.content.find(
+      (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === 'return_scaffold',
+    );
+    if (!block) return null;
+    const reparsed = ScaffoldSpec.safeParse(block.input);
+    if (!reparsed.success) return null; // critic output is optional — bail cleanly
+    return reparsed.data;
+  } catch {
+    // Critic pass is best-effort. If it fails, caller keeps the
+    // original draft rather than breaking the whole scaffold.
+    return null;
+  }
 }

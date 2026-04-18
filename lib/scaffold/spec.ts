@@ -18,6 +18,18 @@ import { z } from 'zod';
 
 // ─── Individual organelle shapes ──────────────────────────────────────
 
+const SystemAgentDraft = z.object({
+  /** e.g. "Marketing Agent", "Ops Agent". Defaults generated from system name. */
+  name: z.string().min(1).max(60),
+  /** 1–3 sentence persona: role, priorities, tone. */
+  persona: z.string().min(10).max(600),
+  /** Tools this agent may invoke. Tight allowlist is safer than broad. */
+  toolAllowList: z.array(z.string()).default([]),
+  autonomyTier: z
+    .enum(['Observe', 'Suggest', 'Act', 'Autonomous', 'Self-Direct'])
+    .default('Suggest'),
+});
+
 const SystemDraft = z.object({
   name: z.string().min(1).max(60),
   description: z.string().max(240),
@@ -27,6 +39,8 @@ const SystemDraft = z.object({
    * human reviewer decide whether to accept — surfaced in the widget.
    */
   rationale: z.string().max(200).optional(),
+  /** Optional per-system agent — enables the "MarketingAgent" model. */
+  agent: SystemAgentDraft.optional(),
 });
 
 const WorkflowStageDraft = z.object({
@@ -112,6 +126,7 @@ export const ScaffoldSpec = z.object({
 
 export type ScaffoldSpec = z.infer<typeof ScaffoldSpec>;
 export type SystemDraft = z.infer<typeof SystemDraft>;
+export type SystemAgentDraft = z.infer<typeof SystemAgentDraft>;
 export type WorkflowDraft = z.infer<typeof WorkflowDraft>;
 export type WorkflowStageDraft = z.infer<typeof WorkflowStageDraft>;
 export type SignalRuleDraft = z.infer<typeof SignalRuleDraft>;
