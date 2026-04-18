@@ -14,6 +14,7 @@ import ReviewNudgeBanner from '@/components/ReviewNudgeBanner';
 const CrossDomainInsights = dynamic(() => import('@/components/CrossDomainInsights'), { ssr: false });
 const ActivitySummary = dynamic(() => import('@/components/ActivitySummary'), { ssr: false });
 const LiveScaffoldWidget = dynamic(() => import('@/components/widgets/LiveScaffoldWidget'), { ssr: false });
+const ValueMeterWidget = dynamic(() => import('@/components/widgets/ValueMeterWidget'), { ssr: false });
 
 type SystemData = {
   id: string;
@@ -375,6 +376,11 @@ export default function OperatePage() {
             </>
           )}
         </div>
+      )}
+
+      {/* Value meter — show concrete proof of what GRID did this week */}
+      {loaded && primaryEnvId && systems.length > 0 && (
+        <ValueMeterWidget environmentId={primaryEnvId} className="mb-8" />
       )}
 
       {/* Cross-Domain Intelligence */}

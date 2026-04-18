@@ -6,12 +6,11 @@
     "app/api/nova/execute/route.ts": { "maxDuration": 300 },
     "app/api/v1/run/route.ts": { "maxDuration": 300 },
     "app/api/cron/agents/route.ts": { "maxDuration": 300 },
+    "app/api/cron/sync-integrations/route.ts": { "maxDuration": 60 },
     "app/api/agents/[id]/run/stream/route.ts": { "maxDuration": 300 }
   },
   "crons": [
-    {
-      "path": "/api/cron/agents",
-      "schedule": "0 0 * * *"
-    }
+    { "path": "/api/cron/agents", "schedule": "0 0 * * *" },
+    { "path": "/api/cron/sync-integrations", "schedule": "*/15 * * * *" }
   ]
 }
