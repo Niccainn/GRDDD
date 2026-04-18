@@ -12,16 +12,16 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.grddd.com'),
   title: {
-    default: 'GRID — The Adaptive Workspace for Modern Teams',
+    default: 'GRID — The AI Operations Layer That Learns How Your Business Works',
     template: '%s | GRID',
   },
-  description: 'I built GRID because the way businesses operate is fundamentally changing — and the tools haven\'t caught up. Processes are in demand to evolve, but the feedback loop between decision and outcome has been blurred by speed and fragmentation. GRID gives companies the time and structure to consider the outcome of every process — from manual systems to automated ones, with human input at every step.',
-  keywords: ['adaptive workspace', 'AI business workspace', 'workflow automation', 'process intelligence', 'business operations OS', 'AI workflow engine', 'operational clarity', 'feedback loop automation', 'notion alternative', 'monday alternative', 'clickup alternative'],
+  description: 'GRID maps your business as interconnected systems, runs multi-stage AI workflows, and builds an operational playbook from every execution. 110+ integrations, predictive consequence mapping, and a metacognitive feedback loop that makes your operations smarter over time.',
+  keywords: ['AI operations layer', 'operational intelligence platform', 'AI workflow automation', 'business operating system', 'metacognitive AI', 'predictive business operations', 'AI that learns', 'workflow quality scoring', 'operational playbook', 'consequence mapping', 'system health monitoring', 'Nova AI agent', 'BYOK AI platform', 'notion alternative', 'monday alternative', 'solo founder tools', 'small team operations'],
   authors: [{ name: 'GRID Systems Inc.' }],
   creator: 'GRID Systems Inc.',
   openGraph: {
-    title: 'GRID — The Adaptive Workspace for Modern Teams',
-    description: 'I built GRID because the way businesses operate is fundamentally changing — and the tools haven\'t caught up. GRID gives companies the structure to consider the outcome of every process, with human input at every step.',
+    title: 'GRID — The AI Operations Layer That Learns How Your Business Works',
+    description: 'Map your business as systems. Run AI workflows. Review output quality. Watch your operational playbook build itself. 110+ integrations, predictive consequence mapping, and AI that gets smarter with every run.',
     url: 'https://www.grddd.com',
     siteName: 'GRID',
     locale: 'en_US',
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'GRID — The Adaptive Workspace for Modern Teams',
-    description: 'I built GRID because the way businesses operate is fundamentally changing — and the tools haven\'t caught up. GRID gives companies the structure to consider the outcome of every process, with human input at every step.',
+    title: 'GRID — AI That Learns How Your Business Works',
+    description: 'Not a task tool. Not a copilot. The operations layer that maps your business, runs AI workflows, and builds an operational playbook from real execution data.',
   },
   robots: {
     index: true,
