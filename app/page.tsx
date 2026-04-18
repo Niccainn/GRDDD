@@ -37,14 +37,16 @@ export default function Home() {
     '@type': 'SoftwareApplication',
     name: 'GRID',
     applicationCategory: 'BusinessApplication',
+    applicationSubCategory: 'Operational Intelligence',
     operatingSystem: 'Web',
     url: 'https://www.grddd.com',
-    description: 'GRID is a business operating system — tasks, docs, goals, finance, workflows, and 110+ integrations unified with AI that learns how your business runs.',
+    description: 'GRID is the AI operations layer that maps your business as interconnected systems, runs multi-stage AI workflows, and builds an operational playbook from every execution. Predictive consequence mapping, metacognitive feedback loops, and 110+ integrations.',
+    featureList: 'AI Workflow Engine, Predictive Consequence Mapping, Operational Playbook Generator, Execution Review & Attribution, Autonomy Trust Gradient, 110+ OAuth Integrations, System Health Monitoring, Nova AI Agent, BYOK Anthropic API',
     offers: {
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'USD',
-      description: 'Early access',
+      description: 'Early access — bring your own Anthropic API key',
     },
     creator: {
       '@type': 'Organization',
@@ -98,15 +100,29 @@ export default function Home() {
       <section className="min-h-screen flex flex-col items-center justify-center px-5 md:px-8 pt-20 relative">
         <div className="text-center max-w-3xl">
           <p className="text-[10px] tracking-[0.4em] uppercase mb-6 animate-fade-in" style={{ color: 'var(--brand)', opacity: 0.6 }}>
-            Early Access
+            The AI Operations Layer
           </p>
           <h1 className="text-4xl md:text-6xl font-extralight tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            See how your business<br />
-            <span style={{ color: 'var(--brand)' }}>actually works.</span>
+            AI that learns how your<br />
+            <span style={{ color: 'var(--brand)' }}>business actually works.</span>
           </h1>
-          <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-10 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
-            Tasks, docs, goals, finance, workflows, and 110+ integrations — unified with AI that learns how your business runs. One platform. No tab-switching.
+          <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-8 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
+            Map your business as interconnected systems. Run multi-stage AI workflows. Review every output. Watch your operational playbook build itself.
           </p>
+          {/* Capability pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-10 animate-fade-in" style={{ animationDelay: '0.25s' }}>
+            {[
+              { label: '110+ Integrations', color: '#7193ED' },
+              { label: 'Predictive Consequences', color: '#15AD70' },
+              { label: 'Mastery Playbook', color: '#BF9FF1' },
+              { label: 'Trust Gradient AI', color: '#F7C700' },
+            ].map(pill => (
+              <span key={pill.label} className="text-[10px] font-light px-3 py-1.5 rounded-full tracking-wide"
+                style={{ background: `${pill.color}10`, border: `1px solid ${pill.color}20`, color: pill.color }}>
+                {pill.label}
+              </span>
+            ))}
+          </div>
           <div className="flex items-center justify-center gap-3 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <a href="#waitlist" className="px-5 md:px-8 py-3 md:py-3.5 text-sm font-light rounded-full transition-all whitespace-nowrap"
               style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}>
@@ -136,7 +152,7 @@ export default function Home() {
             <span style={{ color: 'var(--text-2)' }}>Your work is harder to see than ever.</span>
           </h2>
           <p className="text-sm font-light max-w-lg mx-auto text-center mb-16" style={{ color: 'var(--text-3)' }}>
-            Work is scattered across tabs, threads, and tools. Systems drift without anyone noticing. AI generates output, but nobody learns why it worked or how to repeat it.
+            AI moves faster than you can evaluate. Output velocity outpaces understanding. You have more tools than ever, but less clarity about what&apos;s actually working and why.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -156,15 +172,15 @@ export default function Home() {
                 ),
               },
               {
-                before: 'AI generates output you can\'t explain',
-                after: 'You see what AI did, why it worked, and how to improve it',
+                before: 'AI generates output you can\'t explain or improve',
+                after: 'Every run is reviewed, scored, and feeds your operational playbook',
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" /></svg>
                 ),
               },
               {
-                before: 'Adaptation requires a meeting or a hire',
-                after: 'The platform learns your patterns and evolves with you',
+                before: 'Changes cascade and nobody sees it coming',
+                after: 'Predictive consequences map how every change ripples across your systems',
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg>
                 ),
@@ -193,8 +209,8 @@ export default function Home() {
           <div className="text-center mb-16">
             <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>How It Works</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4 leading-snug">
-              You learn the system.<br />
-              <span style={{ color: 'var(--brand)' }}>The system learns you.</span>
+              Every run teaches the system.<br />
+              <span style={{ color: 'var(--brand)' }}>Every review teaches you.</span>
             </h2>
             <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
               GRID is a co-learning operating system. You build better workflows. AI adapts to your patterns. The business gets clearer, faster, and more resilient — every week.
