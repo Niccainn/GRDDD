@@ -157,6 +157,9 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     authType: 'oauth',
     accentColor: '#4285f4',
     scopes: [
+      'openid',
+      'email',
+      'profile',
       'https://www.googleapis.com/auth/gmail.readonly',
       'https://www.googleapis.com/auth/calendar.readonly',
       'https://www.googleapis.com/auth/drive.readonly',
@@ -417,6 +420,13 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     authType: 'oauth',
     accentColor: '#4285f4',
     scopes: [
+      // openid/email/profile are required so the OAuth callback can
+      // resolve userinfo.email — without them the integration saves
+      // as "Google Calendar · undefined" because the fallback display
+      // name interpolates a missing email.
+      'openid',
+      'email',
+      'profile',
       'https://www.googleapis.com/auth/calendar.readonly',
       'https://www.googleapis.com/auth/calendar.events.readonly',
     ],
@@ -839,7 +849,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     category: 'advertising',
     authType: 'oauth',
     accentColor: '#4285f4',
-    scopes: ['https://www.googleapis.com/auth/adwords'],
+    scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/adwords'],
     requiredEnvVars: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_ADS_DEVELOPER_TOKEN'],
     implemented: true,
     glyph: '◒',
@@ -877,7 +887,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     category: 'analytics',
     authType: 'oauth',
     accentColor: '#f9ab00',
-    scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
+    scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/analytics.readonly'],
     requiredEnvVars: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
     implemented: true,
     glyph: '◓',
@@ -889,7 +899,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     category: 'analytics',
     authType: 'oauth',
     accentColor: '#4285f4',
-    scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
+    scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/webmasters.readonly'],
     requiredEnvVars: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
     implemented: true,
     glyph: '◔',
@@ -1032,7 +1042,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     category: 'cloud_storage',
     authType: 'oauth',
     accentColor: '#4285f4',
-    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+    scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/drive.readonly'],
     requiredEnvVars: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
     implemented: true,
     glyph: '▲',

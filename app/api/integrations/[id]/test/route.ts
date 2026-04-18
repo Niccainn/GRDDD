@@ -72,7 +72,11 @@ export async function POST(
       integration.provider === 'google_ads' ||
       integration.provider === 'google_analytics' ||
       integration.provider === 'google_search_console' ||
-      integration.provider === 'google_workspace'
+      integration.provider === 'google_workspace' ||
+      integration.provider === 'google_calendar' ||
+      integration.provider === 'google-calendar' ||
+      integration.provider === 'google_drive' ||
+      integration.provider === 'google-drive'
     ) {
       const r = await testGoogleToken(creds.accessToken);
       summary = { email: r.email };
