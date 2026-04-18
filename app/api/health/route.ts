@@ -13,6 +13,7 @@
  *   - Optional services (AI, email, billing, monitoring, redis, storage)
  */
 import { prisma } from '@/lib/db';
+import { IMPLEMENTED_SYNC_PROVIDERS } from '@/lib/integrations/sync/dispatcher';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +54,31 @@ export async function GET() {
     checks[name] = process.env[envVar]
       ? { status: 'ok' }
       : { status: 'warn' };
+  }
+
+  // Sync coverage — report how many providers have real fetchers so
+  // monitoring can alert on drift ("we claim 110, implemented 4").
+  // Never fails the health check — informational only.
+  checks.integration_sync = {
+    status: 'ok',
+    message: `${IMPLEMENTED_SYNC_PROVIDERS.size} provider(s) with live sync`,
+  };
+
+  // Recent error volume — if the AppError table is growing fast,
+  // something is wrong even if every probe above is green.
+  try {
+    const fifteenMinAgo = new Date(Date.now() - 15 * 60_000);
+    const recentErrors = await prisma.appError.count({
+      where: { level: 'error', createdAt: { gte: fifteenMinAgo } },
+    });
+    checks.recent_errors = {
+      status: recentErrors > 50 ? 'error' : recentErrors > 10 ? 'warn' : 'ok',
+      message: `${recentErrors} error(s) in the last 15 min`,
+    };
+  } catch {
+    // AppError table might not exist yet during migration window —
+    // treat as warn, not error, so health check stays green.
+    checks.recent_errors = { status: 'warn', message: 'AppError table unreachable' };
   }
 
   // Overall status

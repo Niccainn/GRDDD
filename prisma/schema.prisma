@@ -1826,6 +1826,32 @@ model OperationalPlaybook {
 // ===============================================
 
 // ===============================================
+// APP ERROR LOG — self-hosted observability.
+// Zero external SaaS cost. Rows auto-expire after 30 days via a
+// scheduled cleanup job (see app/api/cron/errors-cleanup/route.ts
+// — or add one later if retention matters).
+// ===============================================
+
+model AppError {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  level   String // "error" | "warn" | "info"
+  scope   String // "integration_sync" | "kernel" | "auth" | …
+  message String
+
+  environmentId String?
+  identityId    String?
+
+  context String? // JSON blob — see lib/observability/errors.ts
+
+  @@index([createdAt])
+  @@index([scope])
+  @@index([level])
+  @@index([environmentId])
+}
+
+// ===============================================
 // SYSTEM AGENT — per-system Nova specialisation
 // One row per System at most. Defines the persona Nova adopts when
 // acting "inside" that system, plus the allowlist of tools it may
