@@ -26,6 +26,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import IntegrationConfigModal from '@/components/IntegrationConfigModal';
+import { capabilityTier, TIER_META } from '@/lib/integrations/capability';
 
 type ProviderSummary = {
   id: string;
@@ -254,7 +255,7 @@ export default function IntegrationsPage() {
           {prov.glyph}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-light" style={{ color: 'var(--text-1)' }}>
               {prov.name}
             </span>
@@ -263,6 +264,24 @@ export default function IntegrationsPage() {
                 Soon
               </span>
             )}
+            {/* Capability tier — computed from actual code state so the
+                chip never drifts from the truth. Honest in-advertising:
+                users see "Connect only" when the token will be stored
+                but no automatic data pull exists yet. */}
+            {prov.implemented && (() => {
+              const tier = capabilityTier(prov.id);
+              const meta = TIER_META[tier];
+              return (
+                <span
+                  title={meta.explainer}
+                  className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                  style={{ color: meta.color, background: meta.bg, border: `1px solid ${meta.border}` }}
+                >
+                  <span className="w-1 h-1 rounded-full" style={{ background: meta.color }} aria-hidden />
+                  {meta.shortLabel}
+                </span>
+              );
+            })()}
           </div>
           <p className="text-xs truncate" style={{ color: 'var(--text-3)' }}>
             {prov.tagline}
@@ -358,7 +377,7 @@ export default function IntegrationsPage() {
                       {prov?.glyph ?? '◎'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-light" style={{ color: 'var(--text-1)' }}>
                           {int.displayName}
                         </span>
@@ -369,6 +388,22 @@ export default function IntegrationsPage() {
                         <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
                           {int.status}
                         </span>
+                        {/* Tier badge so the user knows whether data is
+                            actually flowing or just that a token is stored. */}
+                        {(() => {
+                          const tier = capabilityTier(int.provider);
+                          const meta = TIER_META[tier];
+                          return (
+                            <span
+                              title={meta.explainer}
+                              className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                              style={{ color: meta.color, background: meta.bg, border: `1px solid ${meta.border}` }}
+                            >
+                              <span className="w-1 h-1 rounded-full" style={{ background: meta.color }} aria-hidden />
+                              {meta.shortLabel}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <div className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
                         {int.credentialsPreview}
