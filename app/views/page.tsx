@@ -119,8 +119,23 @@ export default function ViewsPage() {
         </div>
       )}
 
+      {/* Empty state */}
+      {!loading && !error && data.length === 0 && (
+        <div
+          className="flex flex-col items-center justify-center py-20 rounded-2xl"
+          style={{ border: '1px dashed var(--glass-border)' }}
+        >
+          <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
+            No saved views yet
+          </p>
+          <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
+            Save a filter or layout configuration from any list to create a reusable view.
+          </p>
+        </div>
+      )}
+
       {/* Data view */}
-      {!loading && !error && (
+      {!loading && !error && data.length > 0 && (
         <DataView
           entityType={entityType}
           data={data}
