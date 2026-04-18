@@ -571,9 +571,21 @@ function ListView({ tasks, onUpdate, selectedIds, onToggleSelect, onToggleSelect
         </div>
       )}
       {tasks.length === 0 ? (
-        <div className="flex flex-col items-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
+        <div className="flex flex-col items-center py-20 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No tasks yet</p>
-          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Create your first task to get started</p>
+          <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>Create your first task — or let Nova generate them from signals</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full max-w-lg text-left">
+            {[
+              { label: 'Auto-triage', copy: 'Nova reads signals from connected tools and drafts tasks with priority and system.', color: '#BF9FF1' },
+              { label: 'Link to systems', copy: 'Every task ties to a system, so Nova can see bottlenecks across the whole org.', color: '#7193ED' },
+              { label: 'Ask Nova', copy: '"What should I do next?" — Nova ranks open tasks by signal weight and deadline.', color: '#15AD70' },
+            ].map(f => (
+              <div key={f.label} className="rounded-xl p-3" style={{ background: `${f.color}06`, border: `1px solid ${f.color}18` }}>
+                <p className="text-[10px] tracking-[0.16em] uppercase font-light mb-1" style={{ color: f.color }}>{f.label}</p>
+                <p className="text-[11px] font-light leading-relaxed" style={{ color: 'var(--text-3)' }}>{f.copy}</p>
+              </div>
+            ))}
+          </div>
         </div>
       ) : tasks.map(task => (
         <div key={task.id} className="flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:scale-[1.002]"

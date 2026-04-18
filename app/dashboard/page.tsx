@@ -93,7 +93,7 @@ export default function OperatePage() {
   const [loaded, setLoaded] = useState(false);
   const [feedTab, setFeedTab] = useState<'activity' | 'runs'>('runs');
   const [novaInitialQuery, setNovaInitialQuery] = useState<string | undefined>();
-  const { complete: onboardingComplete } = useOnboarding();
+  const { complete: onboardingComplete, profile: onboardingProfile } = useOnboarding();
 
   const handleWelcomePrompt = useCallback((query: string) => {
     setNovaInitialQuery(query);
@@ -196,33 +196,47 @@ export default function OperatePage() {
       <WelcomeBanner onPromptClick={handleWelcomePrompt} />
       <SampleDataBanner />
 
-      {/* Onboarding incomplete nudge */}
-      {onboardingComplete === false && (
-        <Link
-          href="/onboarding"
-          className="flex items-center gap-3 rounded-xl px-5 py-3.5 mb-6 transition-all group"
-          style={{
-            background: 'linear-gradient(135deg, rgba(113,147,237,0.06), rgba(191,159,241,0.04))',
-            border: '1px solid rgba(191,159,241,0.15)',
-          }}
-        >
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.2)' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(191,159,241,0.7)" strokeWidth="1.8">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-light" style={{ color: 'var(--text-2)' }}>Complete your setup</p>
-            <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-              Finish onboarding to get the most out of GRID
-            </p>
-          </div>
-          <span className="text-xs font-light transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>
-            Continue
-          </span>
-        </Link>
-      )}
+      {/* Onboarding incomplete nudge — names the specific missing piece
+          rather than the generic "Complete your setup" the UX audit flagged. */}
+      {onboardingComplete === false && (() => {
+        const missing: string[] = [];
+        if (!onboardingProfile?.workType) missing.push('work type');
+        if (!onboardingProfile?.role) missing.push('role');
+        if (!onboardingProfile?.environmentName && !onboardingProfile?.environmentType) missing.push('workspace details');
+        const label = missing.length === 0
+          ? 'Tell Nova about your work'
+          : missing.length === 1
+            ? `Add your ${missing[0]}`
+            : missing.length === 2
+              ? `Add your ${missing[0]} and ${missing[1]}`
+              : `Add your ${missing.slice(0, -1).join(', ')} and ${missing[missing.length - 1]}`;
+        return (
+          <Link
+            href="/onboarding"
+            className="flex items-center gap-3 rounded-xl px-5 py-3.5 mb-6 transition-all group"
+            style={{
+              background: 'linear-gradient(135deg, rgba(113,147,237,0.06), rgba(191,159,241,0.04))',
+              border: '1px solid rgba(191,159,241,0.15)',
+            }}
+          >
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.2)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(191,159,241,0.7)" strokeWidth="1.8">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-light" style={{ color: 'var(--text-2)' }}>{label}</p>
+              <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+                Nova uses this to tailor suggestions to how you actually work — 30 seconds.
+              </p>
+            </div>
+            <span className="text-xs font-light transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>
+              Finish →
+            </span>
+          </Link>
+        );
+      })()}
 
       {/* Global Nova bar */}
       <div data-tour="nova-bar">
