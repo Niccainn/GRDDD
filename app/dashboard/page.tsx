@@ -13,6 +13,7 @@ import ReviewNudgeBanner from '@/components/ReviewNudgeBanner';
 // Lazy-load below-fold widgets to reduce LCP
 const CrossDomainInsights = dynamic(() => import('@/components/CrossDomainInsights'), { ssr: false });
 const ActivitySummary = dynamic(() => import('@/components/ActivitySummary'), { ssr: false });
+const LiveScaffoldWidget = dynamic(() => import('@/components/widgets/LiveScaffoldWidget'), { ssr: false });
 
 type SystemData = {
   id: string;
@@ -93,6 +94,7 @@ export default function OperatePage() {
   const [loaded, setLoaded] = useState(false);
   const [feedTab, setFeedTab] = useState<'activity' | 'runs'>('runs');
   const [novaInitialQuery, setNovaInitialQuery] = useState<string | undefined>();
+  const [primaryEnvId, setPrimaryEnvId] = useState<string | null>(null);
   const { complete: onboardingComplete, profile: onboardingProfile } = useOnboarding();
 
   const handleWelcomePrompt = useCallback((query: string) => {
@@ -112,6 +114,13 @@ export default function OperatePage() {
         // Default to activity tab if there's nova activity, else runs
         if ((d.activity ?? []).length > 0) setFeedTab('activity');
       });
+    // Fetch the user's primary env so the scaffold widget has a target.
+    fetch('/api/environments')
+      .then(r => r.json())
+      .then((envs: { id: string }[]) => {
+        if (Array.isArray(envs) && envs.length > 0) setPrimaryEnvId(envs[0].id);
+      })
+      .catch(() => {});
   }, []);
 
   function healthColor(score: number | null) {
@@ -345,6 +354,26 @@ export default function OperatePage() {
               </span>
             </Link>
           </div>
+
+          {/* Or — one-prompt scaffold. Only shown when an env exists. */}
+          {primaryEnvId && (
+            <>
+              <div className="flex items-center gap-3 mt-6 mb-4">
+                <div className="flex-1 h-px" style={{ background: 'var(--glass-border)' }} />
+                <span className="text-[10px] tracking-[0.16em] uppercase font-light" style={{ color: 'var(--text-3)' }}>
+                  Or skip ahead
+                </span>
+                <div className="flex-1 h-px" style={{ background: 'var(--glass-border)' }} />
+              </div>
+              <LiveScaffoldWidget
+                environmentId={primaryEnvId}
+                onCommitted={() => {
+                  // Soft refresh — easiest way to pick up new rows.
+                  if (typeof window !== 'undefined') window.location.reload();
+                }}
+              />
+            </>
+          )}
         </div>
       )}
 

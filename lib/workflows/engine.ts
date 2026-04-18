@@ -67,9 +67,15 @@ export async function execute(
   opts: ExecuteOptions = {}
 ): Promise<RunResult> {
   const startedAt = new Date();
-  const stages = topoSortStages(spec.stages);
+  // topoSortStages is still called so the DAG is validated (throws on cycles),
+  // but we execute by wavefront rather than by the linear topo order —
+  // any stage whose deps are done runs *in parallel* with its siblings.
+  topoSortStages(spec.stages);
+
+  const byId = new Map(spec.stages.map(s => [s.id, s]));
   const outputs: Record<string, { output: string }> = {};
   const results: StageResult[] = [];
+  const resultById = new Map<string, StageResult>();
 
   let totalTokens = 0;
   let totalCostUsd = 0;
@@ -77,32 +83,30 @@ export async function execute(
   let anyFailed = false;
   let halted = false;
 
-  for (const stage of stages) {
+  // Track remaining work. Each wave: pick every unblocked stage, run
+  // them concurrently, record results, repeat until empty.
+  const remaining = new Set(spec.stages.map(s => s.id));
+
+  const runStage = async (stageId: string) => {
+    const stage = byId.get(stageId)!;
+
     if (halted) {
       const skipped = skippedStage(stage, 'upstream failure halted workflow');
-      results.push(skipped);
-      opts.onStage?.(skipped);
-      continue;
+      return skipped;
     }
 
-    // ─── Skip if a dependency failed ──────────────────────────────────
     const failedDep = stage.dependsOn.find(
-      (d) => results.find((r) => r.stageId === d)?.status === 'failed'
+      d => resultById.get(d)?.status === 'failed',
     );
     if (failedDep) {
-      const skipped = skippedStage(stage, `dependency "${failedDep}" failed`);
-      results.push(skipped);
-      opts.onStage?.(skipped);
-      continue;
+      return skippedStage(stage, `dependency "${failedDep}" failed`);
     }
 
-    // ─── Interpolate instruction ──────────────────────────────────────
     const instruction = interpolateInstruction(stage.instruction, {
       input,
       stages: outputs,
     });
 
-    // ─── Call kernel ──────────────────────────────────────────────────
     const stageStart = Date.now();
     try {
       const kr = await kernelRun({
@@ -113,18 +117,14 @@ export async function execute(
         tools: stage.tools,
         maxTokens: stage.maxTokens,
       });
-
-      const result = successStage(stage, kr, Date.now() - stageStart);
-      outputs[stage.id] = { output: kr.text };
-      results.push(result);
-      opts.onStage?.(result);
-
-      totalTokens += kr.tokens.total;
-      totalCostUsd += kr.costUsd;
-      totalDurationMs += result.durationMs;
+      const r = successStage(stage, kr, Date.now() - stageStart);
+      // Capture side-effects for the caller — tokens, output, cost.
+      // These need atomic-ish updates when run concurrently but JS
+      // is single-threaded so a local accumulator in the caller is fine.
+      return { ...r, __kr: kr };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const result: StageResult = {
+      const r: StageResult & { __err: true } = {
         stageId: stage.id,
         stageName: stage.name,
         status: 'failed',
@@ -133,14 +133,58 @@ export async function execute(
         costUsd: 0,
         durationMs: Date.now() - stageStart,
         error: message,
+        __err: true,
       };
-      results.push(result);
-      opts.onStage?.(result);
-      anyFailed = true;
+      return r;
+    }
+  };
 
-      if (stage.critical || opts.failFast) {
-        halted = true;
+  while (remaining.size > 0) {
+    // A stage is ready when every dep is already in resultById.
+    const ready: string[] = [];
+    for (const id of remaining) {
+      const stage = byId.get(id)!;
+      if (stage.dependsOn.every(d => resultById.has(d))) ready.push(id);
+    }
+    if (ready.length === 0) {
+      // Defensive — topoSort should have thrown on cycles. If we land
+      // here it means data corruption; skip the rest with a clear reason.
+      for (const id of remaining) {
+        const stage = byId.get(id)!;
+        const r = skippedStage(stage, 'unresolved dependency cycle');
+        results.push(r);
+        resultById.set(stage.id, r);
+        opts.onStage?.(r);
       }
+      break;
+    }
+
+    // Run this wave in parallel. Promise.all is intentional — concurrent
+    // Anthropic calls for independent stages is the whole point.
+    const waveResults = await Promise.all(ready.map(runStage));
+
+    for (let i = 0; i < ready.length; i++) {
+      const stageId = ready[i];
+      const stage = byId.get(stageId)!;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = waveResults[i] as any;
+
+      if (w.status === 'success' && w.__kr) {
+        const kr = w.__kr as KernelResponse;
+        outputs[stage.id] = { output: kr.text };
+        totalTokens += kr.tokens.total;
+        totalCostUsd += kr.costUsd;
+        totalDurationMs += w.durationMs;
+        delete w.__kr;
+      } else if (w.status === 'failed') {
+        anyFailed = true;
+        if (stage.critical || opts.failFast) halted = true;
+      }
+
+      results.push(w);
+      resultById.set(stage.id, w);
+      opts.onStage?.(w);
+      remaining.delete(stageId);
     }
   }
 
