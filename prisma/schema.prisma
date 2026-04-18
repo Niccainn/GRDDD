@@ -168,6 +168,14 @@ model Environment {
   ownerId String
   owner   Identity @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
+  // Parent/child — multi-brand operators (one agency, many client
+  // cells). A child inherits brand DNA via the read layer; ownership
+  // and permissions remain scoped to each env independently. Nullable
+  // so flat-topology orgs keep working unchanged.
+  parentEnvironmentId String?
+  parent              Environment?  @relation("EnvironmentHierarchy", fields: [parentEnvironmentId], references: [id], onDelete: SetNull)
+  children            Environment[] @relation("EnvironmentHierarchy")
+
   memberships  EnvironmentMembership[]
   systems      System[]
   workflows    Workflow[]
@@ -197,6 +205,7 @@ model Environment {
 
   @@index([ownerId])
   @@index([slug])
+  @@index([parentEnvironmentId])
 }
 
 model EnvironmentMembership {
@@ -253,6 +262,7 @@ model System {
   signals          Signal[]
   agents           Agent[]
   tasks            Task[]
+  agent            SystemAgent?
 
   @@index([environmentId])
   @@index([creatorId])
@@ -1814,6 +1824,52 @@ model OperationalPlaybook {
 // showing how changes in one area affect another.
 // The connective tissue of organizational intelligence.
 // ===============================================
+
+// ===============================================
+// SYSTEM AGENT — per-system Nova specialisation
+// One row per System at most. Defines the persona Nova adopts when
+// acting "inside" that system, plus the allowlist of tools it may
+// call. Absence of a row = env-wide defaults.
+// ===============================================
+
+model SystemAgent {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  systemId String @unique
+  system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  name          String  // e.g. "Marketing Agent", "Ops Agent"
+  persona       String  // System-prompt fragment describing role, tone, priorities
+  toolAllowList String  // JSON array of tool names this agent may use
+  autonomyTier  String  @default("Suggest") // Observe|Suggest|Act|Autonomous|Self-Direct
+
+  @@index([systemId])
+}
+
+// ===============================================
+// SHAPE ABSTRACTION — gated cross-tenant pattern library.
+// Stores anonymised shapes ("creative_agency_small") with aggregate
+// scaffold statistics so new tenants of the same shape get better
+// first-drafts. No row-level data leaves the originating tenant.
+// `gated=true` blocks reads at the API layer until legal review.
+// ===============================================
+
+model ShapeAbstraction {
+  id                  String   @id @default(cuid())
+  createdAt           DateTime @default(now())
+
+  shape               String
+  headcount           Int?
+  medianSystems       Int?
+  commonWidgets       String   // JSON array
+  commonIntegrations  String   // JSON array
+  sampleSize          Int      @default(0)
+  gated               Boolean  @default(true)
+
+  @@index([shape])
+}
 
 model CrossDomainInsight {
   id        String   @id @default(cuid())

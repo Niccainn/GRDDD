@@ -22,6 +22,7 @@ import { rateLimitApi } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 import { generateScaffold, type ScaffoldEvent } from '@/lib/scaffold/generator';
 import { ScaffoldSpec, validateScaffoldIntegrity } from '@/lib/scaffold/spec';
+import { summarizeScaffoldFeedback, renderPriorCorrections } from '@/lib/scaffold/feedback';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -49,7 +50,8 @@ export async function POST(req: NextRequest) {
     return e instanceof Response ? e : Response.json({ error: 'Forbidden' }, { status: 404 });
   }
 
-  const { prompt } = await req.json().catch(() => ({}));
+  const postBody = await req.json().catch(() => ({}));
+  const { prompt, selfIterate } = postBody ?? {};
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length < 10) {
     return Response.json(
       { error: 'Prompt must be at least 10 characters describing the business or team.' },
@@ -57,10 +59,29 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const env = await prisma.environment.findUnique({
-    where: { id: environmentId },
-    select: { brandTone: true, brandAudience: true, brandValues: true },
+  // Resolve brand nucleus with parent-chain inheritance so child envs
+  // scaffolded under a parent get the parent's tone/audience/values.
+  const { resolveBrandNucleus } = await import('@/lib/environment/brand-inheritance');
+  const brand = await resolveBrandNucleus(environmentId);
+  const env = {
+    brandTone: brand.brandTone,
+    brandAudience: brand.brandAudience,
+    brandValues: brand.brandValues,
+  };
+
+  // Pull the top 5 scaffold corrections for this environment by
+  // strength*recency. These get injected into Nova's system prompt so
+  // prior edits shape the next draft. Per-tenant only — no leakage.
+  const priorInsights = await prisma.masteryInsight.findMany({
+    where: {
+      environmentId,
+      category: { in: ['scaffold_accepted', 'scaffold_correction'] },
+    },
+    orderBy: [{ strength: 'desc' }, { createdAt: 'desc' }],
+    take: 5,
+    select: { principle: true, strength: true, createdAt: true },
   });
+  const priorCorrections = renderPriorCorrections(priorInsights);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -72,6 +93,8 @@ export async function POST(req: NextRequest) {
           brandTone: env?.brandTone ?? null,
           brandAudience: env?.brandAudience ?? null,
           brandValues: env?.brandValues ?? null,
+          priorCorrections,
+          selfIterate: Boolean(selfIterate),
         });
         for await (const evt of gen) {
           controller.enqueue(encoder.encode(sse(evt)));
@@ -122,6 +145,11 @@ export async function PUT(req: NextRequest) {
     );
   }
   const spec = parsed.data;
+  // Optional: original draft + the prompt, if the client sends them.
+  // Used to persist a correction delta for the feedback loop. When
+  // missing we still commit the spec, we just don't learn from it.
+  const originalSpec = body?.originalSpec as typeof spec | undefined;
+  const originalPrompt = typeof body?.prompt === 'string' ? (body.prompt as string).slice(0, 500) : null;
 
   const integrityErrors = validateScaffoldIntegrity(spec);
   if (integrityErrors.length > 0) {
@@ -143,7 +171,8 @@ export async function PUT(req: NextRequest) {
     });
 
     // 2. Systems — one row each. Keep the ID map so workflows can
-    //    resolve systemName → systemId.
+    //    resolve systemName → systemId. If the draft includes a
+    //    per-system agent, create the SystemAgent row alongside.
     const systemIdByName = new Map<string, string>();
     for (const s of spec.systems) {
       const created = await tx.system.create({
@@ -156,6 +185,18 @@ export async function PUT(req: NextRequest) {
         },
       });
       systemIdByName.set(s.name, created.id);
+
+      if (s.agent) {
+        await tx.systemAgent.create({
+          data: {
+            systemId: created.id,
+            name: s.agent.name,
+            persona: s.agent.persona,
+            toolAllowList: JSON.stringify(s.agent.toolAllowList),
+            autonomyTier: s.agent.autonomyTier,
+          },
+        });
+      }
     }
 
     // 3. Workflows — one row each, with stages serialized as JSON.
@@ -186,6 +227,24 @@ export async function PUT(req: NextRequest) {
           body: sig.description,
           priority: 'NORMAL',
           source: sig.sourceHint ?? 'scaffold',
+          environmentId,
+        },
+      });
+    }
+
+    // Feedback loop: persist a MasteryInsight row capturing what the
+    // user accepted (and, when provided, how they edited the draft).
+    // Next scaffold for this environment injects the most recent N
+    // corrections so Nova gets better at this tenant's shape over time.
+    const learned = summarizeScaffoldFeedback(originalSpec, spec, originalPrompt);
+    if (learned) {
+      await tx.masteryInsight.create({
+        data: {
+          principle: learned.principle,
+          evidence: learned.evidence,
+          category: learned.strength >= 0.8 ? 'scaffold_accepted' : 'scaffold_correction',
+          strength: learned.strength,
+          runsAnalyzed: 1,
           environmentId,
         },
       });

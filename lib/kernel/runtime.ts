@@ -32,6 +32,7 @@ import { route, computeCostUsd } from './router';
 import { invokeTool, toAnthropicTools } from './tools/registry';
 import { checkBudget, recordSpend, BudgetError } from './budget';
 import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
+import { getSystemAgent, scopeToolsToAgent, composeSystemPrompt } from '@/lib/agents/system-agent';
 
 const DEFAULT_MAX_ITERATIONS = 8;
 
@@ -96,7 +97,14 @@ export async function* stream(req: KernelRequest): AsyncGenerator<TraceEvent, Ke
     content: m.content,
   }));
 
-  const anthropicTools = req.tools?.length ? toAnthropicTools(req.tools) : undefined;
+  // Per-system agent pool: when the kernel call is scoped to a
+  // system, prepend that system's agent persona and narrow the tool
+  // set to the agent's allow-list. Absence of an agent row = env
+  // defaults (same behaviour as before this feature shipped).
+  const agent = req.context.systemId ? await getSystemAgent(req.context.systemId) : null;
+  const effectivePrompt = composeSystemPrompt(req.systemPrompt, agent);
+  const effectiveTools = scopeToolsToAgent(req.tools, agent);
+  const anthropicTools = effectiveTools?.length ? toAnthropicTools(effectiveTools) : undefined;
   const maxTokens = req.maxTokens ?? decision.profile.defaultMaxTokens;
   const maxIter = req.maxIterations ?? DEFAULT_MAX_ITERATIONS;
 
@@ -133,7 +141,7 @@ export async function* stream(req: KernelRequest): AsyncGenerator<TraceEvent, Ke
       const response = await client.messages.create({
         model: decision.model,
         max_tokens: maxTokens,
-        system: req.systemPrompt,
+        system: effectivePrompt,
         messages,
         tools: anthropicTools,
       });
