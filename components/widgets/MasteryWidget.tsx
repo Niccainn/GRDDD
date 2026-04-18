@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Widget from './Widget';
+import ConfidenceChip from '@/components/ConfidenceChip';
 
 type MasteryInsight = {
   id: string;
@@ -117,21 +118,14 @@ export default function MasteryWidget({ environmentId, className = '' }: Props) 
                   </span>
                 </div>
               </div>
-              {/* Strength indicator */}
-              <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-                <div className="w-8 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${insight.strength * 100}%`,
-                      background: 'var(--brand)',
-                    }}
-                  />
-                </div>
-                <span className="text-[7px]" style={{ color: 'var(--text-3)' }}>
-                  {Math.round(insight.strength * 100)}%
-                </span>
-              </div>
+              {/* Confidence chip — uses calibrated tier bands per
+                  Hendrycks et al. (2021) so users read the score
+                  accurately rather than treating "57%" as "fine". */}
+              <ConfidenceChip
+                score={insight.strength}
+                reason={`Built from ${insight.runsAnalyzed} run${insight.runsAnalyzed === 1 ? '' : 's'} of execution data.`}
+                className="flex-shrink-0"
+              />
             </div>
           </div>
         ))}

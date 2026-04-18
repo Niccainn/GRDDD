@@ -13,6 +13,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import type { ScaffoldSpec } from '@/lib/scaffold/spec';
+import AutonomyBadge from '@/components/AutonomyBadge';
 
 type Organelle = {
   kind: 'system' | 'workflow' | 'signal' | 'widget' | 'role' | 'integration';
@@ -47,12 +48,18 @@ const KIND_COLOR: Record<Organelle['kind'], string> = {
   integration: '#FF6B6B',
 };
 
+type CriticState = {
+  status: 'started' | 'applied' | 'skipped' | 'failed';
+  note?: string;
+};
+
 export default function LiveScaffoldWidget({ environmentId, onCommitted, className }: Props) {
   const [prompt, setPrompt] = useState('');
   const [status, setStatus] = useState<'idle' | 'drafting' | 'review' | 'committing' | 'done' | 'error'>('idle');
   const [organelles, setOrganelles] = useState<Organelle[]>([]);
   const [spec, setSpec] = useState<ScaffoldSpec | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [critic, setCritic] = useState<CriticState | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const reset = useCallback(() => {
@@ -61,6 +68,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
     setOrganelles([]);
     setSpec(null);
     setError(null);
+    setCritic(null);
   }, []);
 
   const draft = useCallback(async () => {
@@ -105,6 +113,8 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
             const evt = JSON.parse(line.slice(6));
             if (evt.type === 'organelle') {
               setOrganelles(prev => [...prev, { kind: evt.kind, name: evt.name }]);
+            } else if (evt.type === 'critic') {
+              setCritic({ status: evt.status, note: evt.note });
             } else if (evt.type === 'validated') {
               setSpec(evt.spec);
               setStatus('review');
@@ -254,6 +264,54 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
           <p className="text-xs font-light" style={{ color: 'var(--text-2)' }}>
             {spec.summary}
           </p>
+
+          {/* Critic-pass visibility — show what self-iteration did, even when
+              it silently succeeded or failed. Users forgive explained
+              outcomes; they lose trust on silence. */}
+          {critic && (
+            <div
+              className="flex items-start gap-2 rounded-lg p-2.5 text-[11px] font-light"
+              style={{
+                background:
+                  critic.status === 'failed'
+                    ? 'rgba(255,107,107,0.06)'
+                    : critic.status === 'applied'
+                    ? 'rgba(21,173,112,0.06)'
+                    : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${
+                  critic.status === 'failed'
+                    ? 'rgba(255,107,107,0.2)'
+                    : critic.status === 'applied'
+                    ? 'rgba(21,173,112,0.18)'
+                    : 'var(--glass-border)'
+                }`,
+                color: 'var(--text-2)',
+              }}
+            >
+              <span
+                style={{
+                  color:
+                    critic.status === 'failed'
+                      ? '#FF6B6B'
+                      : critic.status === 'applied'
+                      ? 'var(--brand)'
+                      : 'var(--text-3)',
+                }}
+              >
+                {critic.status === 'applied' ? '↺' : critic.status === 'failed' ? '!' : '·'}
+              </span>
+              <span>
+                {critic.note ??
+                  (critic.status === 'started'
+                    ? 'Nova is reviewing its own draft…'
+                    : critic.status === 'applied'
+                    ? 'Critic applied a revision.'
+                    : critic.status === 'skipped'
+                    ? 'Critic kept the original draft.'
+                    : 'Critic failed — keeping the original draft.')}
+              </span>
+            </div>
+          )}
           <div className="grid grid-cols-3 gap-2 text-center">
             <Stat label="Systems" count={spec.systems.length} color={KIND_COLOR.system} />
             <Stat label="Workflows" count={spec.workflows.length} color={KIND_COLOR.workflow} />
@@ -264,6 +322,36 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
             <Stat label="Roles" count={spec.roles.length} color={KIND_COLOR.role} />
             <Stat label="Integrations" count={spec.integrations.length} color={KIND_COLOR.integration} />
           </div>
+
+          {/* Proposed per-system agents — visible autonomy tiers so the
+              user can see exactly what each one will be allowed to do. */}
+          {spec.systems.some(s => s.agent) && (
+            <div
+              className="rounded-lg p-3 space-y-2"
+              style={{ background: 'rgba(191,159,241,0.04)', border: '1px solid rgba(191,159,241,0.12)' }}
+            >
+              <p
+                className="text-[10px] tracking-[0.16em] uppercase font-light"
+                style={{ color: 'var(--text-3)' }}
+              >
+                Agents Nova proposes
+              </p>
+              {spec.systems
+                .filter(s => s.agent)
+                .map(s => (
+                  <div key={s.name} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="font-light" style={{ color: 'var(--text-1)' }}>
+                      {s.agent!.name}
+                    </span>
+                    <AutonomyBadge
+                      tier={s.agent!.autonomyTier ?? 'Suggest'}
+                      phrasing="natural"
+                    />
+                  </div>
+                ))}
+            </div>
+          )}
+
           <div className="flex gap-2 pt-2">
             <button
               onClick={reset}
