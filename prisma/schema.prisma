@@ -86,6 +86,7 @@ model Identity {
   invoices               Invoice[]
   approvalRequests       ApprovalRequest[] @relation("ApprovalRequester")
   timeEntries            TimeEntry[]
+  executionReviews       ExecutionReview[]
 
   @@index([emailHash])
   @@index([type])
@@ -189,6 +190,9 @@ model Environment {
   timeEntries      TimeEntry[]
   taskTemplates    TaskTemplate[]
   savedViews       SavedView[]
+  executionReviews ExecutionReview[]
+  masteryInsights  MasteryInsight[]
+  playbook         OperationalPlaybook?
 
   @@index([ownerId])
   @@index([slug])
@@ -270,6 +274,8 @@ model Execution {
   workflow   Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
 
   validationResult ValidationResult?
+  review           ExecutionReview?
+  decisionPoints   DecisionPoint[]
 
   @@index([systemId])
   @@index([workflowId])
@@ -1645,6 +1651,14 @@ model ConsequenceLink {
   description  String? // Explanation of the causal link
   lagTime      String? // How long until the effect manifests: "immediate" | "hours" | "days" | "weeks"
 
+  // ─── Predictive layer (learned from execution data) ───
+  coefficient     Float?    // Impact coefficient: 0.73 = 10% source change → 7.3% target change
+  lagDays         Float?    // Learned lag time in days (replaces qualitative lagTime over time)
+  dataPoints      Int       @default(0) // Observations informing this coefficient
+  lastObservedAt  DateTime? // When the relationship was last validated
+  anomalyFlag     Boolean   @default(false) // True when recent data diverges from historical
+  anomalyDetail   String?   // Description of the anomaly
+
   // Scope
   environmentId String
   confidence    Float  @default(0.7)
@@ -1690,6 +1704,103 @@ model AutonomyConfig {
   @@unique([scopeType, scopeId])
   @@index([environmentId])
   @@index([level])
+}
+
+model AutonomyPeriod {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Which autonomy config this period belongs to
+  scopeType  String   // "workflow" | "system" | "environment"
+  scopeId    String
+  scopeLabel String
+
+  // Period boundaries
+  periodStart DateTime
+  periodEnd   DateTime
+  periodWeek  Int       // Week number from first config creation
+
+  // Level during this period
+  level      Int
+
+  // Metrics for this period
+  actionsProposed  Int   @default(0)
+  actionsApproved  Int   @default(0)
+  actionsOverridden Int  @default(0)
+  approvalRate     Float @default(0)
+
+  // Quality correlation
+  avgQualityScore  Float?  // Average review score during this period
+  qualityTrend     String? // "improving" | "stable" | "declining"
+
+  // Override reasons aggregated
+  overrideReasons  String? // JSON: { "tone": 3, "accuracy": 2, ... }
+
+  environmentId String
+
+  @@index([scopeType, scopeId])
+  @@index([environmentId])
+  @@index([periodWeek])
+}
+
+model IntegrationIntelligence {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  integrationId String @unique
+  provider      String
+
+  // Signal patterns
+  signalVolume     Int      @default(0) // Total signals received
+  signalVolumeWeek Int      @default(0) // Signals this week
+  avgSignalsPerDay Float    @default(0) // Rolling average
+  topSources       String?  // JSON: ["#marketing", "#client-requests"]
+  priorityBreakdown String? // JSON: { "HIGH": 12, "NORMAL": 35, "LOW": 5 }
+
+  // Routing intelligence
+  routingAccuracy  Float?   // % of signals correctly triaged by Nova
+  primarySystemId  String?  // System that receives most signals from this integration
+  primarySystemName String? // Human-readable
+
+  // Operational role
+  operationalRole  String?  // "signal_source" | "data_sync" | "action_target" | "monitoring"
+  dependencyScore  Float    @default(0) // 0-1: how much the business depends on this integration
+  lastActiveAt     DateTime?
+
+  // Health correlation
+  healthImpact     String?  // JSON: description of how this integration affects system health
+
+  environmentId    String
+
+  @@index([environmentId])
+  @@index([provider])
+}
+
+model OperationalPlaybook {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // The auto-generated playbook content
+  content      String   // JSON: structured playbook with sections per system
+  version      Int      @default(1)
+  runsAnalyzed Int      @default(0) // How many total runs informed this playbook
+  insightsUsed Int      @default(0) // How many mastery insights were synthesized
+
+  // Improvement trajectory
+  firstPeriodAvg  Float?  // Average quality score in first 25% of runs
+  lastPeriodAvg   Float?  // Average quality score in last 25% of runs
+  improvementRate Float?  // Percentage improvement
+
+  // Staleness
+  lastGeneratedAt DateTime
+  stale           Boolean @default(false) // True when new reviews exist since last generation
+
+  environmentId String @unique
+  environment   Environment @relation(fields: [environmentId], references: [id])
+
+  @@index([environmentId])
 }
 
 // ===============================================
@@ -1757,12 +1868,19 @@ model KernelMemory {
   environmentId String?
   systemId      String?
 
-  kind           String // preference | pattern | outcome | caveat
+  kind           String // preference | pattern | outcome | caveat | conditional_pattern
   key            String
   value          String
   confidence     Float     @default(0.7)
   reinforcements Int       @default(1)
+  contradictions Int       @default(0) // Times this pattern was contradicted by data
   lastUsedAt     DateTime?
+  lastValidatedAt DateTime? // When this memory was last confirmed by real outcomes
+
+  // ─── Conditional context (when does this pattern apply?) ───
+  conditions     String?   // JSON: { platform: "instagram", content_type: "carousel", ... }
+  notValidWhen   String?   // JSON: conditions under which this pattern breaks
+  degrading      Boolean   @default(false) // True when recent contradictions suggest decay
 
   @@index([tenantId, kind])
   @@index([tenantId, environmentId])
@@ -1796,4 +1914,75 @@ model KernelTrace {
   @@index([tenantId, createdAt])
   @@index([surface])
   @@index([status])
+}
+
+// ===============================================
+// METACOGNITIVE LAYER
+// Comprehension → Evaluation → Attribution → Mastery
+// ===============================================
+
+model ExecutionReview {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  overallScore    Int
+  overallNotes    String?
+  stageReviews    String?
+  criticalStageId String?
+  inputQuality    Int?
+
+  executionId   String      @unique
+  execution     Execution   @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  reviewerId    String
+  reviewer      Identity    @relation(fields: [reviewerId], references: [id])
+
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+
+  @@index([environmentId])
+  @@index([executionId])
+  @@index([reviewerId])
+}
+
+model DecisionPoint {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  stageId      String
+  stageName    String
+  decision     String
+  reasoning    String?
+  impact       String
+  alternatives String?
+
+  executionId   String
+  execution     Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  workflowId    String
+  environmentId String
+
+  @@index([workflowId])
+  @@index([executionId])
+  @@index([environmentId])
+}
+
+model MasteryInsight {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  principle    String
+  evidence     String
+  category     String
+  strength     Float
+  runsAnalyzed Int
+
+  workflowId    String?
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id])
+
+  @@index([environmentId])
+  @@index([workflowId])
+  @@index([category])
 }
