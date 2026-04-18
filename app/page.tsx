@@ -258,11 +258,11 @@ export default function Home() {
           <div className="text-center mb-16">
             <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Platform</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4 leading-snug">
-              Everything you need to run a business.<br />
-              <span style={{ color: 'var(--brand)' }}>Nothing you don&apos;t.</span>
+              Your business is a living system.<br />
+              <span style={{ color: 'var(--brand)' }}>Now you can see it.</span>
             </h2>
             <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              Tasks, docs, goals, finance, forms, integrations, and AI — in one system that learns how you work.
+              Systems, workflows, goals, and integrations — connected through AI that maps how your operations actually flow.
             </p>
           </div>
 
