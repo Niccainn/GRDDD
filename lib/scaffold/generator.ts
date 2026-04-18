@@ -20,6 +20,7 @@ export type ScaffoldEvent =
   | { type: 'start'; prompt: string }
   | { type: 'thinking' }
   | { type: 'organelle'; kind: 'system' | 'workflow' | 'signal' | 'widget' | 'role' | 'integration'; name: string }
+  | { type: 'critic'; status: 'started' | 'applied' | 'skipped' | 'failed'; note?: string }
   | { type: 'validated'; spec: ScaffoldSpec }
   | { type: 'error'; message: string; recoverable: boolean };
 
@@ -268,10 +269,27 @@ export async function* generateScaffold(
   // Optional critic pass: Nova reviews its own draft and emits a
   // revised version. One extra round trip; materially reduces user
   // correction volume in practice. Tenant pays ~$0.08 extra on Sonnet.
+  //
+  // Emits an explicit `critic` event at each stage (started/applied/
+  // skipped/failed) so the UI can render "I tried X, got Y" rather
+  // than silent failure — per NN/g research on AI trust preservation.
   if (input.selfIterate) {
-    yield { type: 'thinking' };
-    const revised = await runCriticPass(client, input.prompt, spec);
-    if (revised) spec = revised;
+    yield { type: 'critic', status: 'started' };
+    try {
+      const revised = await runCriticPass(client, input.prompt, spec);
+      if (revised) {
+        spec = revised;
+        yield { type: 'critic', status: 'applied', note: 'Revision applied after second-pass review.' };
+      } else {
+        yield { type: 'critic', status: 'skipped', note: 'Critic found no improvements — keeping the original draft.' };
+      }
+    } catch (err) {
+      yield {
+        type: 'critic',
+        status: 'failed',
+        note: `Critic pass failed (${err instanceof Error ? err.name : 'unknown'}) — keeping the original draft.`,
+      };
+    }
   }
 
   // Referential integrity checks (spec.ts).

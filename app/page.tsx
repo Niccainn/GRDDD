@@ -79,13 +79,15 @@ export default function Home() {
           <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-8 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
             Map your business as interconnected systems. Run multi-stage AI workflows. Review every output. Watch your operational playbook build itself.
           </p>
-          {/* Capability pills */}
+          {/* Capability pills — reflect what's actually shipped and
+              demonstrable to a design partner today. Order is
+              roughly "biggest aha → smallest supporting claim". */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10 animate-fade-in" style={{ animationDelay: '0.25s' }}>
             {[
-              { label: '110+ Integrations', color: 'var(--info)' },
-              { label: 'Predictive Consequences', color: 'var(--brand)' },
-              { label: 'Mastery Playbook', color: 'var(--nova)' },
-              { label: 'Trust Gradient AI', color: 'var(--warning)' },
+              { label: 'One-Prompt Scaffolding', color: 'var(--brand)' },
+              { label: 'Per-System Agents', color: 'var(--nova)' },
+              { label: 'Live Integration Sync', color: 'var(--info)' },
+              { label: 'Visible AI Confidence', color: 'var(--warning)' },
             ].map(pill => (
               <span key={pill.label} className="text-[10px] font-light px-3 py-1.5 rounded-full tracking-wide"
                 style={{ background: `${pill.color}10`, border: `1px solid ${pill.color}20`, color: pill.color }}>
