@@ -75,6 +75,7 @@ export async function getAnthropicClientForEnvironment(
       id: true,
       anthropicKeyEnc: true,
       anthropicKeyPreview: true,
+      tokensUsed: true,
     },
   });
 
@@ -115,10 +116,21 @@ export async function getAnthropicClientForEnvironment(
         'No Anthropic key is configured. Contact the workspace owner to connect one.',
       );
     }
+
+    // Check trial budget: new environments get 50,000 tokens on the
+    // platform key. After exhaustion, they must BYOK.
+    const TRIAL_BUDGET = 50_000;
+    const used = env.tokensUsed ?? 0;
+    if (used >= TRIAL_BUDGET) {
+      throw new MissingKeyError(
+        `You've used your ${Math.floor(TRIAL_BUDGET / 10_000)} free trial runs. Connect your Anthropic API key to continue using Nova.`,
+      );
+    }
+
     return {
       client: new Anthropic({ apiKey: platformKey }),
       source: 'platform',
-      maskedKey: 'sk-ant-...platform',
+      maskedKey: 'sk-ant-...trial',
     };
   }
 

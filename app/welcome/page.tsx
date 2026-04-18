@@ -19,6 +19,7 @@ import { useEffect, useState, type ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { useAuth } from '@/components/AuthProvider';
+import ImportWizard from '@/components/ImportWizard';
 
 type Template = 'solo' | 'team' | 'blank';
 
@@ -71,7 +72,7 @@ const TEMPLATES: Array<{
 export default function WelcomePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 'pathway' | 3 | 4 | 'import'>(1);
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
@@ -81,6 +82,7 @@ export default function WelcomePage() {
   const [template, setTemplate] = useState<Template>('solo');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [createdEnvironmentId, setCreatedEnvironmentId] = useState<string | null>(null);
 
   // Prefill name from the auth context once it resolves. Guarded so
   // the user can overwrite it without us clobbering their input on
@@ -134,28 +136,33 @@ export default function WelcomePage() {
 
   const canStep1 = name.trim().length >= 1;
   const canStep2 = workspaceName.trim().length >= 1;
-  const stepTitles: Record<1 | 2 | 3 | 4, { title: string; subtitle: string }> = {
-    1: { title: "Let's get you set up", subtitle: 'Takes about 30 seconds.' },
-    2: { title: 'Name your workspace', subtitle: 'You can rename it later.' },
-    3: { title: 'Define your brand voice', subtitle: 'Nova will stay on-brand in everything it creates. Optional — you can set this up later.' },
-    4: { title: 'Pick a starting point', subtitle: 'Choose the closest fit. You can switch anytime.' },
+  const stepTitles: Record<string, { title: string; subtitle: string }> = {
+    '1': { title: "Let's get you set up", subtitle: 'Takes about 30 seconds.' },
+    '2': { title: 'Name your workspace', subtitle: 'You can rename it later.' },
+    'pathway': { title: 'How would you like to start?', subtitle: 'You can always import data later.' },
+    '3': { title: 'Define your brand voice', subtitle: 'Nova will stay on-brand in everything it creates. Optional — you can set this up later.' },
+    '4': { title: 'Pick a starting point', subtitle: 'Choose the closest fit. You can switch anytime.' },
+    'import': { title: 'Bring your work', subtitle: 'Import from your existing tools.' },
   };
-  const s = stepTitles[step];
+  const s = stepTitles[String(step)] || stepTitles['1'];
 
   return (
     <AuthLayout title={s.title} subtitle={s.subtitle}>
       {/* Step dots */}
       <div className="flex items-center justify-center gap-2 mb-7">
-        {[1, 2, 3, 4].map(i => (
-          <div
-            key={i}
-            className="h-[3px] rounded-full transition-all duration-500"
-            style={{
-              width: step === i ? 28 : 14,
-              background: i <= step ? 'var(--brand)' : 'rgba(255,255,255,0.12)',
-            }}
-          />
-        ))}
+        {(() => {
+          const stepNum = step === 'pathway' ? 2.5 : step === 'import' ? 2.5 : Number(step);
+          return [1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-[3px] rounded-full transition-all duration-500"
+              style={{
+                width: stepNum === i || (step === 'pathway' && i === 3) || (step === 'import' && i === 3) ? 28 : 14,
+                background: i <= stepNum ? 'var(--brand)' : 'rgba(255,255,255,0.12)',
+              }}
+            />
+          ));
+        })()}
       </div>
 
       {step === 1 && (
@@ -238,7 +245,7 @@ export default function WelcomePage() {
             </button>
             <button
               type="button"
-              onClick={() => setStep(3)}
+              onClick={() => setStep('pathway')}
               disabled={!canStep2}
               className="flex-1 py-[13px] text-sm font-light rounded-full transition-all"
               style={{
@@ -252,6 +259,88 @@ export default function WelcomePage() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* ═══ PATHWAY: Start Fresh vs Bring Your Work ═══ */}
+      {step === 'pathway' && (
+        <div className="space-y-4">
+          <div className="text-center mb-2">
+            <h2 className="text-xl font-extralight mb-1">How would you like to start?</h2>
+            <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>You can always import data later from Settings</p>
+          </div>
+
+          <button
+            onClick={() => setStep(3)}
+            className="w-full flex items-center gap-4 p-5 rounded-xl text-left transition-all"
+            style={{ background: 'rgba(21,173,112,0.04)', border: '1px solid rgba(21,173,112,0.15)' }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.2)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15AD70" strokeWidth="1.5">
+                <path d="M12 5v14M5 12h14" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>Start fresh</p>
+              <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+                Create new systems from our templates. Best if you&apos;re building from scratch.
+              </p>
+            </div>
+          </button>
+
+          <button
+            onClick={async () => {
+              // Create the environment first so ImportWizard has an environmentId
+              setSubmitting(true);
+              try {
+                const res = await fetch('/api/onboarding/complete', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name, role, workspaceName, template: 'blank', brandTone, brandAudience, brandValues }),
+                });
+                const data = await res.json();
+                if (!res.ok) { setError(data.error || 'Failed'); setSubmitting(false); return; }
+                setCreatedEnvironmentId(data.environmentId);
+                setStep('import');
+              } catch { setError('Connection error'); }
+              setSubmitting(false);
+            }}
+            disabled={submitting}
+            className="w-full flex items-center gap-4 p-5 rounded-xl text-left transition-all"
+            style={{ background: 'rgba(113,147,237,0.04)', border: '1px solid rgba(113,147,237,0.15)', opacity: submitting ? 0.5 : 1 }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(113,147,237,0.1)', border: '1px solid rgba(113,147,237,0.2)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7193ED" strokeWidth="1.5">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>Bring your work</p>
+              <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+                Import from Notion, Asana, Monday, or CSV. Pick up where you left off.
+              </p>
+            </div>
+          </button>
+
+          <button onClick={() => setStep(2)} className="w-full py-2 text-xs font-light" style={{ color: 'var(--text-3)' }}>
+            Back
+          </button>
+
+          {error && <p className="text-xs text-center" style={{ color: 'var(--danger)' }}>{error}</p>}
+        </div>
+      )}
+
+      {/* ═══ IMPORT WIZARD ═══ */}
+      {step === 'import' && createdEnvironmentId && (
+        <ImportWizard
+          environmentId={createdEnvironmentId}
+          onComplete={() => {
+            try { localStorage.setItem('grid:just-onboarded', 'true'); } catch {}
+            router.push('/dashboard');
+          }}
+          onBack={() => setStep('pathway')}
+        />
       )}
 
       {step === 3 && (

@@ -1011,6 +1011,10 @@ model Task {
   lastRecurredAt    DateTime?
   recurringParentId String?
 
+  // Import provenance — tracks where this task originated
+  sourceId       String?  // External ID from source tool (Notion page ID, Asana task ID, etc.)
+  sourceProvider String?  // "notion" | "asana" | "monday" | "csv"
+
   @@index([environmentId])
   @@index([systemId])
   @@index([status])
