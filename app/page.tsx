@@ -51,7 +51,7 @@ export default function Home() {
             <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2"/>
             <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2"/>
           </svg>
-          <span className="text-sm font-light tracking-[0.15em]" style={{ color: 'var(--text-2)' }}>GRID</span>
+          <span className="text-sm font-light tracking-[0.18em]" style={{ color: 'var(--text-2)' }}>GRID</span>
         </div>
         <div className="flex items-center gap-4 md:gap-6">
           <a href="#problem" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Why</a>
@@ -69,12 +69,12 @@ export default function Home() {
       {/* ═══ HERO ═══ */}
       <section className="min-h-screen flex flex-col items-center justify-center px-5 md:px-8 pt-20 relative">
         <div className="text-center max-w-3xl">
-          <p className="text-[10px] tracking-[0.4em] uppercase mb-6 animate-fade-in" style={{ color: 'var(--brand)', opacity: 0.6 }}>
+          <p className="text-[10px] tracking-[0.18em] uppercase mb-6 animate-fade-in" style={{ color: 'var(--brand)', opacity: 0.85 }}>
             The AI Operations Layer
           </p>
           <h1 className="text-4xl md:text-6xl font-extralight tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             AI that learns how your<br />
-            <span style={{ color: 'var(--brand)' }}>business actually works.</span>
+            <span style={{ color: 'var(--brand)' }}>business works.</span>
           </h1>
           <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-8 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
             Map your business as interconnected systems. Run multi-stage AI workflows. Review every output. Watch your operational playbook build itself.
@@ -82,10 +82,10 @@ export default function Home() {
           {/* Capability pills */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10 animate-fade-in" style={{ animationDelay: '0.25s' }}>
             {[
-              { label: '110+ Integrations', color: '#7193ED' },
-              { label: 'Predictive Consequences', color: '#15AD70' },
-              { label: 'Mastery Playbook', color: '#BF9FF1' },
-              { label: 'Trust Gradient AI', color: '#F7C700' },
+              { label: '110+ Integrations', color: 'var(--info)' },
+              { label: 'Predictive Consequences', color: 'var(--brand)' },
+              { label: 'Mastery Playbook', color: 'var(--nova)' },
+              { label: 'Trust Gradient AI', color: 'var(--warning)' },
             ].map(pill => (
               <span key={pill.label} className="text-[10px] font-light px-3 py-1.5 rounded-full tracking-wide"
                 style={{ background: `${pill.color}10`, border: `1px solid ${pill.color}20`, color: pill.color }}>
@@ -114,7 +114,7 @@ export default function Home() {
       {/* ═══ THE PROBLEM ═══ */}
       <section id="problem" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
-          <p className="text-[10px] tracking-[0.3em] uppercase mb-6 text-center" style={{ color: 'var(--text-3)' }}>
+          <p className="text-[10px] tracking-[0.16em] uppercase mb-6 text-center" style={{ color: 'var(--text-3)' }}>
             The Problem
           </p>
           <h2 className="text-3xl font-extralight tracking-tight mb-6 text-center leading-snug">
@@ -122,7 +122,7 @@ export default function Home() {
             <span style={{ color: 'var(--text-2)' }}>Your work is harder to see than ever.</span>
           </h2>
           <p className="text-sm font-light max-w-lg mx-auto text-center mb-16" style={{ color: 'var(--text-3)' }}>
-            AI moves faster than you can evaluate. Output velocity outpaces understanding. You have more tools than ever, but less clarity about what&apos;s actually working and why.
+            AI moves faster than you can evaluate. Output velocity outpaces understanding. You have more tools than ever, but less clarity about what&apos;s working and why.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -161,7 +161,7 @@ export default function Home() {
                   style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text-3)' }}>
                   {item.icon}
                 </div>
-                <p className="text-xs font-light mb-3 line-through" style={{ color: 'var(--text-3)', opacity: 0.6 }}>
+                <p className="text-xs font-light mb-3 line-through" style={{ color: 'rgba(255,255,255,0.55)' }}>
                   {item.before}
                 </p>
                 <p className="text-sm font-light leading-relaxed" style={{ color: 'var(--text-1)' }}>
@@ -177,7 +177,7 @@ export default function Home() {
       <section id="how" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>How It Works</p>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>How It Works</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4 leading-snug">
               Every run teaches the system.<br />
               <span style={{ color: 'var(--brand)' }}>Every review teaches you.</span>
@@ -191,17 +191,17 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Human side */}
             <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: '#7193ED', opacity: 0.4 }} />
-              <p className="text-[10px] tracking-[0.3em] uppercase mb-6" style={{ color: '#7193ED', opacity: 0.6 }}>You Learn</p>
+              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: 'var(--info)', opacity: 0.4 }} />
+              <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--info)', opacity: 0.85 }}>You Learn</p>
               <div className="space-y-5">
                 {[
-                  { step: 'See', desc: 'Understand how your business actually operates — not how you think it does.' },
+                  { step: 'See', desc: 'Understand how your business operates — not how you think it does.' },
                   { step: 'Design', desc: 'Build workflows that match reality. Test new approaches with real data.' },
                   { step: 'Improve', desc: 'Watch what works and what doesn\'t. Every execution teaches you something.' },
                 ].map((item, i) => (
                   <div key={item.step} className="flex gap-4">
                     <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px]"
-                      style={{ background: 'rgba(113,147,237,0.12)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.2)' }}>
+                      style={{ background: 'rgba(113,147,237,0.12)', color: 'var(--info)', border: '1px solid rgba(113,147,237,0.2)' }}>
                       {i + 1}
                     </div>
                     <div>
@@ -215,8 +215,8 @@ export default function Home() {
 
             {/* AI side */}
             <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: '#BF9FF1', opacity: 0.4 }} />
-              <p className="text-[10px] tracking-[0.3em] uppercase mb-6" style={{ color: '#BF9FF1', opacity: 0.6 }}>AI Learns</p>
+              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: 'var(--nova)', opacity: 0.4 }} />
+              <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--nova)', opacity: 0.85 }}>AI Learns</p>
               <div className="space-y-5">
                 {[
                   { step: 'Observe', desc: 'Nova reads your systems, workflows, and signals. It maps how your business runs.' },
@@ -225,7 +225,7 @@ export default function Home() {
                 ].map((item, i) => (
                   <div key={item.step} className="flex gap-4">
                     <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px]"
-                      style={{ background: 'rgba(191,159,241,0.12)', color: '#BF9FF1', border: '1px solid rgba(191,159,241,0.2)' }}>
+                      style={{ background: 'rgba(191,159,241,0.12)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
                       {i + 1}
                     </div>
                     <div>
@@ -241,9 +241,9 @@ export default function Home() {
           {/* The outcome */}
           <div className="glass-deep p-8 rounded-2xl text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-3 h-3 rounded-full" style={{ background: '#7193ED' }} />
-              <div className="w-12 h-px" style={{ background: 'linear-gradient(90deg, #7193ED, #BF9FF1)' }} />
-              <div className="w-3 h-3 rounded-full" style={{ background: '#BF9FF1' }} />
+              <div className="w-3 h-3 rounded-full" style={{ background: 'var(--info)' }} />
+              <div className="w-12 h-px" style={{ background: 'linear-gradient(90deg, var(--info), var(--nova))' }} />
+              <div className="w-3 h-3 rounded-full" style={{ background: 'var(--nova)' }} />
             </div>
             <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
               The result is compounding value. You become better at running work with AI. AI becomes better at running work for you. The business gets clearer every week.
@@ -256,27 +256,27 @@ export default function Home() {
       <section id="platform" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Platform</p>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Platform</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4 leading-snug">
               Your business is a living system.<br />
               <span style={{ color: 'var(--brand)' }}>Now you can see it.</span>
             </h2>
             <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              Systems, workflows, goals, and integrations — connected through AI that maps how your operations actually flow.
+              Systems, workflows, goals, and integrations — connected through AI that maps how your operations flow.
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8">
             {[
-              { name: 'Tasks & Projects', desc: 'Board, list, and table views with subtasks, labels, and due dates', icon: '◫', color: '#7193ED' },
-              { name: 'Documents', desc: 'A knowledge base that lives next to the work it describes', icon: '▤', color: '#BF9FF1' },
-              { name: 'Goals & OKRs', desc: 'Set targets, track progress, link goals to the workflows that drive them', icon: '◎', color: '#15AD70' },
-              { name: 'Forms', desc: 'Collect structured data from clients, leads, or your own team', icon: '▦', color: '#F7C700' },
+              { name: 'Tasks & Projects', desc: 'Board, list, and table views with subtasks, labels, and due dates', icon: '◫', color: 'var(--info)' },
+              { name: 'Documents', desc: 'A knowledge base that lives next to the work it describes', icon: '▤', color: 'var(--nova)' },
+              { name: 'Goals & OKRs', desc: 'Set targets, track progress, link goals to the workflows that drive them', icon: '◎', color: 'var(--brand)' },
+              { name: 'Forms', desc: 'Collect structured data from clients, leads, or your own team', icon: '▦', color: 'var(--warning)' },
               { name: 'Finance', desc: 'Invoices, revenue tracking, and financial health — built in', icon: '◇', color: '#FF6B6B' },
               { name: 'Dashboards', desc: 'Custom widget boards with real-time analytics and health scores', icon: '▣', color: '#4ECDC4' },
-              { name: 'Workflows', desc: 'Multi-step automations that execute with human or AI agents', icon: '⟡', color: '#7193ED' },
-              { name: 'Nova AI', desc: 'An AI that reads your systems, learns your patterns, and acts on your behalf', icon: '✦', color: '#BF9FF1' },
-              { name: 'Environments', desc: 'Isolated workspaces for each team, client, or business unit', icon: '⬡', color: '#15AD70' },
+              { name: 'Workflows', desc: 'Multi-step automations that execute with human or AI agents', icon: '⟡', color: 'var(--info)' },
+              { name: 'Nova AI', desc: 'An AI that reads your systems, learns your patterns, and acts on your behalf', icon: '✦', color: 'var(--nova)' },
+              { name: 'Environments', desc: 'Isolated workspaces for each team, client, or business unit', icon: '⬡', color: 'var(--brand)' },
             ].map(item => (
               <div key={item.name} className="glass-deep p-4 md:p-5 rounded-xl">
                 <span className="text-lg mb-2 block" style={{ color: item.color, opacity: 0.7 }}>{item.icon}</span>
@@ -309,7 +309,7 @@ export default function Home() {
       <section id="use-cases" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>Use Cases</p>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>Use Cases</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4">
               Real workflows. Real outcomes.
             </h2>
@@ -321,12 +321,12 @@ export default function Home() {
           <div className="space-y-4">
             {/* Use case 1 — Content */}
             <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: '#7193ED', opacity: 0.3 }} />
+              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: 'var(--info)', opacity: 0.3 }} />
               <div className="md:flex md:gap-8 md:items-start">
                 <div className="md:flex-1 mb-6 md:mb-0">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 rounded-full" style={{ background: '#7193ED' }} />
-                    <p className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#7193ED', opacity: 0.7 }}>Content Operations</p>
+                    <div className="w-2 h-2 rounded-full" style={{ background: 'var(--info)' }} />
+                    <p className="text-[10px] tracking-[0.16em] uppercase" style={{ color: 'var(--info)', opacity: 0.9 }}>Content Operations</p>
                   </div>
                   <h3 className="text-lg font-light mb-2" style={{ color: 'var(--text-1)' }}>
                     A blog post from brief to publish-ready in 4 minutes
@@ -335,10 +335,10 @@ export default function Home() {
                     A founder writes a one-line brief. Nova researches the topic, writes a full draft matching the brand voice, reviews it for quality, and prepares SEO metadata — all in a single workflow execution. The founder reviews the output, adjusts the brief, and the next post is even better.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.15)' }}>Research</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.15)' }}>Draft</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.15)' }}>Review</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: '#7193ED', border: '1px solid rgba(113,147,237,0.15)' }}>Publish</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: 'var(--info)', border: '1px solid rgba(113,147,237,0.15)' }}>Research</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: 'var(--info)', border: '1px solid rgba(113,147,237,0.15)' }}>Draft</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: 'var(--info)', border: '1px solid rgba(113,147,237,0.15)' }}>Review</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: 'var(--info)', border: '1px solid rgba(113,147,237,0.15)' }}>Publish</span>
                   </div>
                 </div>
                 <div className="md:w-48 flex-shrink-0 glass rounded-xl p-4 text-center">
@@ -358,7 +358,7 @@ export default function Home() {
                 <div className="md:flex-1 mb-6 md:mb-0">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-2 h-2 rounded-full" style={{ background: '#FF6B6B' }} />
-                    <p className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#FF6B6B', opacity: 0.7 }}>Marketing</p>
+                    <p className="text-[10px] tracking-[0.16em] uppercase" style={{ color: '#FF6B6B', opacity: 0.9 }}>Marketing</p>
                   </div>
                   <h3 className="text-lg font-light mb-2" style={{ color: 'var(--text-1)' }}>
                     A full social campaign across 3 platforms in one execution
@@ -385,12 +385,12 @@ export default function Home() {
 
             {/* Use case 3 — Operations */}
             <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: '#15AD70', opacity: 0.3 }} />
+              <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: 'var(--brand)', opacity: 0.3 }} />
               <div className="md:flex md:gap-8 md:items-start">
                 <div className="md:flex-1 mb-6 md:mb-0">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 rounded-full" style={{ background: '#15AD70' }} />
-                    <p className="text-[10px] tracking-[0.15em] uppercase" style={{ color: '#15AD70', opacity: 0.7 }}>Operations</p>
+                    <div className="w-2 h-2 rounded-full" style={{ background: 'var(--brand)' }} />
+                    <p className="text-[10px] tracking-[0.16em] uppercase" style={{ color: 'var(--brand)', opacity: 0.9 }}>Operations</p>
                   </div>
                   <h3 className="text-lg font-light mb-2" style={{ color: 'var(--text-1)' }}>
                     Client onboarding that self-reports and improves
@@ -399,10 +399,10 @@ export default function Home() {
                     Each new client follows a structured workflow: discovery, setup, training, handoff. Health scores track engagement at every stage. The operator sees which steps cause friction, adjusts the workflow, and every future onboarding gets smoother — without adding headcount.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>Discovery</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>Setup</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>Training</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>Handoff</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>Discovery</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>Setup</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>Training</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>Handoff</span>
                   </div>
                 </div>
                 <div className="md:w-48 flex-shrink-0 glass rounded-xl p-4 text-center">
@@ -422,7 +422,7 @@ export default function Home() {
       <section className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Impact</p>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Impact</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4">
               What changes when your team uses GRID
             </h2>
@@ -437,25 +437,25 @@ export default function Home() {
                 outcome: 'Operational clarity',
                 desc: 'Every workflow, every system, every signal — visible in real time. No more asking "what\'s the status?" in Slack.',
                 metric: 'Replace status meetings with live dashboards',
-                color: '#15AD70',
+                color: 'var(--brand)',
               },
               {
                 outcome: 'Visible efficiency gains',
                 desc: 'Track how much faster your team moves week over week. See which workflows save the most time and which need redesign.',
                 metric: 'Measure time saved per workflow, per week',
-                color: '#7193ED',
+                color: 'var(--info)',
               },
               {
                 outcome: 'AI fluency',
                 desc: 'Your team learns to work with AI through real workflows — not chat experiments. Better prompts, better setups, better judgment.',
                 metric: 'Teams improve AI output quality by 40% in 4 weeks',
-                color: '#BF9FF1',
+                color: 'var(--nova)',
               },
               {
                 outcome: 'Adaptive capacity',
                 desc: 'When something changes — a new client, a new market, a new priority — the system adapts. Workflows evolve. AI adjusts. No re-training.',
                 metric: 'Respond to change in hours, not quarters',
-                color: '#F7C700',
+                color: 'var(--warning)',
               },
             ].map(item => (
               <div key={item.outcome} className="glass-deep p-6 rounded-2xl">
@@ -477,9 +477,11 @@ export default function Home() {
           <div className="glass-deep p-6 rounded-2xl">
             <div className="flex items-center gap-6 md:gap-8 overflow-x-auto py-2">
               {[
-                { week: 'Week 1', label: 'Map your business', opacity: 0.4 },
-                { week: 'Week 2', label: 'First workflow runs', opacity: 0.5 },
-                { week: 'Week 4', label: 'Patterns emerge', opacity: 0.7 },
+                // Opacity floor set to 0.8 to clear WCAG AA (4.5:1) at 10px on #08080c.
+                // Progression is preserved via step size + dot fill below, not by sub-legible text.
+                { week: 'Week 1', label: 'Map your business', opacity: 0.8 },
+                { week: 'Week 2', label: 'First workflow runs', opacity: 0.87 },
+                { week: 'Week 4', label: 'Patterns emerge', opacity: 0.94 },
                 { week: 'Week 8', label: 'System runs itself', opacity: 1 },
               ].map((step, i) => (
                 <div key={step.week} className="flex items-center gap-4 md:gap-6 flex-shrink-0">
@@ -501,7 +503,7 @@ export default function Home() {
       <section id="who" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.3em] uppercase mb-6" style={{ color: 'var(--text-3)' }}>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--text-3)' }}>
               Built For
             </p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4">
@@ -522,17 +524,17 @@ export default function Home() {
                   'Build systems that run without you in the loop',
                   'Know where to focus before something breaks',
                 ],
-                color: '#15AD70',
+                color: 'var(--brand)',
               },
               {
                 who: 'Operators',
                 scenario: 'You manage processes across teams but can\'t measure what\'s working.',
                 needs: [
-                  'Design workflows you can actually track and improve',
+                  'Design workflows you can track and improve',
                   'Replace status meetings with real-time health scores',
                   'Learn which AI setups produce the best outcomes',
                 ],
-                color: '#7193ED',
+                color: 'var(--info)',
               },
               {
                 who: 'Small teams',
@@ -542,7 +544,7 @@ export default function Home() {
                   'See time saved per workflow, not just output volume',
                   'Get better at AI through real work, not experiments',
                 ],
-                color: '#BF9FF1',
+                color: 'var(--nova)',
               },
             ].map(item => (
               <div key={item.who} className="glass-deep p-6 rounded-2xl relative overflow-hidden">
@@ -567,13 +569,13 @@ export default function Home() {
       {/* ═══ THE LINE ═══ */}
       <section className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-[10px] tracking-[0.3em] uppercase mb-6" style={{ color: 'var(--text-3)' }}>The Thesis</p>
+          <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--text-3)' }}>The Thesis</p>
           <h2 className="text-3xl font-extralight tracking-tight leading-snug mb-8">
             AI doesn&apos;t replace how you work.<br />
             <span style={{ color: 'var(--brand)' }}>It teaches you how to work better.</span>
           </h2>
           <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-            Most tools optimize for speed. GRID optimizes for understanding. When teams see how their business actually operates — when AI and humans learn in parallel — the result isn&apos;t just efficiency. It&apos;s mastery.
+            Most tools optimize for speed. GRID optimizes for understanding. When teams see how their business operates — when AI and humans learn in parallel — the result isn&apos;t just efficiency. It&apos;s mastery.
           </p>
         </div>
       </section>
@@ -601,7 +603,7 @@ export default function Home() {
       {/* ═══ WAITLIST CTA ═══ */}
       <section id="waitlist" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-xl mx-auto text-center">
-          <p className="text-[10px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--brand)', opacity: 0.6 }}>
+          <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--brand)', opacity: 0.85 }}>
             Early Access
           </p>
           <h2 className="text-3xl font-extralight tracking-tight mb-4">

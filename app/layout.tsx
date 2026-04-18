@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.grddd.com'),
   title: {
-    default: 'GRID — The AI Operations Layer That Learns How Your Business Works',
+    default: 'GRID — AI That Learns How Your Business Works',
     template: '%s | GRID',
   },
   description: 'GRID maps your business as interconnected systems, runs multi-stage AI workflows, and builds an operational playbook from every execution. 110+ integrations, predictive consequence mapping, and a metacognitive feedback loop that makes your operations smarter over time.',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'GRID Systems Inc.' }],
   creator: 'GRID Systems Inc.',
   openGraph: {
-    title: 'GRID — The AI Operations Layer That Learns How Your Business Works',
+    title: 'GRID — AI That Learns How Your Business Works',
     description: 'Map your business as systems. Run AI workflows. Review output quality. Watch your operational playbook build itself. 110+ integrations, predictive consequence mapping, and AI that gets smarter with every run.',
     url: 'https://www.grddd.com',
     siteName: 'GRID',
