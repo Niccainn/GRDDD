@@ -288,8 +288,15 @@ export async function GET(
       });
       const userInfo = (await userInfoRes.json()) as { email: string; name?: string };
 
-      let accountLabel = userInfo.email;
-      let displayName = `${def.name} · ${userInfo.email}`;
+      // Guard against missing userInfo.email — happens when the OAuth
+      // scopes didn't include openid/email/profile. Before this guard,
+      // integrations saved as literal "Google Calendar · undefined"
+      // because of template string interpolation of an undefined value.
+      const safeEmail = userInfo.email && userInfo.email.trim().length > 0
+        ? userInfo.email
+        : null;
+      let accountLabel: string = safeEmail ?? 'connected';
+      let displayName: string = safeEmail ? `${def.name} · ${safeEmail}` : def.name;
 
       if (provider === 'google_ads') {
         try {
