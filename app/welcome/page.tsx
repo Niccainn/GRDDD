@@ -104,12 +104,42 @@ export default function WelcomePage() {
   const [error, setError] = useState('');
   const [createdEnvironmentId, setCreatedEnvironmentId] = useState<string | null>(null);
 
-  // Prefill name from the auth context once it resolves. Guarded so
-  // the user can overwrite it without us clobbering their input on
-  // the next provider re-render.
+  // Prefill name from the auth context once it resolves. Works for
+  // email signup AND OAuth — for OAuth users, user.name comes from
+  // the Google profile (set at identity creation time), so the wizard
+  // feels like "we already know who you are, confirm details."
   useEffect(() => {
     if (user && !name) setName(user.name || '');
   }, [user, name]);
+
+  // Wizard state persistence. Prior behaviour: useState only, so a
+  // mid-wizard refresh (e.g. user clicks a link, comes back) wiped
+  // every field they'd typed. Now steps 1-3 hydrate from localStorage
+  // on mount, and every keystroke/selection writes back. Cleared
+  // when the user successfully completes on step 4.
+  const WIZARD_KEY = 'grid:wizard-draft';
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(WIZARD_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.name && !name) setName(d.name);
+      if (d.role && !role) setRole(d.role);
+      if (d.workspaceName && !workspaceName) setWorkspaceName(d.workspaceName);
+      if (d.brandTone && !brandTone) setBrandTone(d.brandTone);
+      if (d.brandAudience && !brandAudience) setBrandAudience(d.brandAudience);
+      if (d.brandValues && !brandValues) setBrandValues(d.brandValues);
+      if (d.template) setTemplate(d.template as Template);
+    } catch { /* ignore malformed draft */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      const draft = { name, role, workspaceName, brandTone, brandAudience, brandValues, template };
+      localStorage.setItem(WIZARD_KEY, JSON.stringify(draft));
+    } catch { /* localStorage unavailable — fine, user just loses draft on refresh */ }
+  }, [name, role, workspaceName, brandTone, brandAudience, brandValues, template]);
 
   // Not signed in — bounce to sign-in. Already onboarded — bounce
   // to dashboard (handles the case where the onboarded cookie was
@@ -141,9 +171,19 @@ export default function WelcomePage() {
         setSubmitting(false);
         return;
       }
-      // Track funnel event and signal dashboard
+      // Track funnel event and signal dashboard. Also write the
+      // profile + complete flag to localStorage so downstream
+      // surfaces (dashboard nudge via useOnboarding) see a consistent
+      // state. Previously only the one-shot 'just-onboarded' key was
+      // set — dashboard's useOnboarding() read the complete/profile
+      // keys and always saw them missing, triggering a forever nudge.
       try {
         localStorage.setItem('grid:just-onboarded', 'true');
+        localStorage.setItem('grid:onboarding-complete', 'true');
+        localStorage.setItem('grid:onboarding-profile', JSON.stringify({
+          name, role, environmentName: workspaceName,
+        }));
+        localStorage.removeItem('grid:wizard-draft');
         const { trackEvent } = await import('@/lib/analytics');
         trackEvent('funnel.onboarding_completed', { template });
       } catch {}

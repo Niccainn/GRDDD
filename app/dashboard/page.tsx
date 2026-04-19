@@ -97,6 +97,11 @@ export default function OperatePage() {
   const [novaInitialQuery, setNovaInitialQuery] = useState<string | undefined>();
   const [primaryEnvId, setPrimaryEnvId] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  // Server-truth onboarding flag. Identity.onboardedAt is the
+  // authoritative source — prior code trusted a client-only
+  // localStorage key that the /welcome wizard never set, so every
+  // onboarded user saw the "complete your setup" nudge forever.
+  const [serverOnboardedAt, setServerOnboardedAt] = useState<string | null | undefined>(undefined);
   const { complete: onboardingComplete, profile: onboardingProfile } = useOnboarding();
 
   const handleWelcomePrompt = useCallback((query: string) => {
@@ -116,6 +121,7 @@ export default function OperatePage() {
         // the greeting below. Falls back to firstName for older API
         // responses that don't yet include displayName.
         setDisplayName(d.user?.displayName ?? d.user?.firstName ?? null);
+        setServerOnboardedAt(d.user?.onboardedAt ?? null);
         setLoaded(true);
         // Default to activity tab if there's nova activity, else runs
         if ((d.activity ?? []).length > 0) setFeedTab('activity');
@@ -213,20 +219,26 @@ export default function OperatePage() {
       <WelcomeBanner onPromptClick={handleWelcomePrompt} />
       <SampleDataBanner />
 
-      {/* Onboarding incomplete nudge — names the specific missing piece
-          rather than the generic "Complete your setup" the UX audit flagged. */}
-      {onboardingComplete === false && (() => {
+      {/* Onboarding-incomplete nudge. Only shown when the SERVER says
+          the user hasn't completed onboarding (Identity.onboardedAt
+          is null). Previously this rendered whenever a client-only
+          localStorage flag was missing — which it always was after
+          the /welcome flow, because that flow only sets the cookie
+          and DB, not the localStorage key. Result: every onboarded
+          user got nagged forever. Fixed. */}
+      {serverOnboardedAt === null && onboardingComplete !== true && (() => {
+        // Only surface fields the /welcome wizard actually collects.
+        // workType and environmentType were orphaned — the wizard
+        // never asks for them, so the nudge was always telling users
+        // to fill something they couldn't fill.
         const missing: string[] = [];
-        if (!onboardingProfile?.workType) missing.push('work type');
         if (!onboardingProfile?.role) missing.push('role');
-        if (!onboardingProfile?.environmentName && !onboardingProfile?.environmentType) missing.push('workspace details');
+        if (!onboardingProfile?.environmentName) missing.push('workspace');
         const label = missing.length === 0
-          ? 'Tell Nova about your work'
+          ? 'Finish setting up your workspace'
           : missing.length === 1
             ? `Add your ${missing[0]}`
-            : missing.length === 2
-              ? `Add your ${missing[0]} and ${missing[1]}`
-              : `Add your ${missing.slice(0, -1).join(', ')} and ${missing[missing.length - 1]}`;
+            : `Add your ${missing.join(' and ')}`;
         return (
           <Link
             href="/onboarding"

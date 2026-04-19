@@ -11,6 +11,20 @@ export async function GET() {
   // Recompute health scores from real data (best-effort, non-blocking)
   refreshAllHealthScores().catch(() => {});
 
+  // Pull onboardedAt from the DB so the dashboard can trust a single
+  // source of truth instead of a client-side localStorage flag. The
+  // prior "incomplete onboarding" nudge on the dashboard was driven
+  // by useOnboarding() reading grid:onboarding-complete — but the
+  // /welcome wizard never writes that key, it only writes DB +
+  // grid_onboarded cookie. Result: every onboarded user saw the
+  // nudge forever. Now we send onboardedAt through /api/operate-data
+  // so the client can fall back to the server when localStorage is
+  // empty.
+  const full = await prisma.identity.findUnique({
+    where: { id: identity.id },
+    select: { onboardedAt: true },
+  });
+
   const [systems, logs, workflows, recentExecutions] = await Promise.all([
     prisma.system.findMany({
       include: {
@@ -120,6 +134,7 @@ export async function GET() {
       displayName,
       firstName,
       email: identity.email,
+      onboardedAt: full?.onboardedAt?.toISOString() ?? null,
     },
   });
 }
