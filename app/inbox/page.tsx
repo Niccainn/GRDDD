@@ -469,6 +469,43 @@ export default function InboxPage() {
                       </button>
                     )}
 
+                    {/* One-click: convert this signal into a task.
+                        Closes MDL gap #1 — users no longer have to
+                        navigate to /tasks and retype. Provenance
+                        preserved via Task.sourceSignalId. */}
+                    <button
+                      onClick={async () => {
+                        const res = await fetch(`/api/signals/${signal.id}/to-task`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: '{}',
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          // Optimistic local update: flag signal triaged + dim it.
+                          setSignals(prev => prev.map(s =>
+                            s.id === signal.id
+                              ? { ...s, status: 'TRIAGED', novaTriaged: true }
+                              : s,
+                          ));
+                          // Soft confirmation; task id returned for future undo.
+                          if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('toast', {
+                              detail: { kind: 'ok', text: `Task created — "${data.task.title.slice(0, 40)}"` },
+                            }));
+                          }
+                        }
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
+                      style={{
+                        background: 'rgba(21,173,112,0.08)',
+                        border: '1px solid rgba(21,173,112,0.2)',
+                        color: '#15AD70',
+                      }}
+                    >
+                      → Task
+                    </button>
+
                     {/* Convert to workflow run */}
                     {signal.system && (
                       <Link href={`/systems/${signal.system.id}`}

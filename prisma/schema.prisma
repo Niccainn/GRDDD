@@ -600,6 +600,9 @@ model Signal {
   novaRouting   String?
   novaTriaged   Boolean  @default(false)
 
+  // Reverse: tasks converted FROM this signal. See Task.sourceSignalId.
+  tasks         Task[]   @relation("TaskFromSignal")
+
   @@index([environmentId])
   @@index([systemId])
   @@index([status])
@@ -1006,6 +1009,14 @@ model Task {
   assigneeId String?
   assignee   Identity? @relation("TaskAssignee", fields: [assigneeId], references: [id])
 
+  // Provenance — when a task was created by converting an inbox signal,
+  // this points back at the signal. Lets the inbox show "converted →"
+  // state and lets Nova correlate signal-to-task patterns over time
+  // for the MasteryInsight loop. Nullable: most tasks are still
+  // user-created from scratch.
+  sourceSignalId String?
+  sourceSignal   Signal? @relation("TaskFromSignal", fields: [sourceSignalId], references: [id], onDelete: SetNull)
+
   // Soft delete
   deletedAt DateTime?
 
@@ -1034,6 +1045,7 @@ model Task {
   @@index([parentId])
   @@index([dueDate])
   @@index([priority])
+  @@index([sourceSignalId])
 }
 
 model TaskComment {

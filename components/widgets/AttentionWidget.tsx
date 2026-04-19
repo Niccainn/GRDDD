@@ -86,11 +86,43 @@ export default function AttentionWidget({ limit = 6 }: { limit?: number }) {
     };
   }, [limit]);
 
+  // Footer actions — every widget now carries 0-3 one-click intents.
+  // AttentionWidget is the first instrumented surface because it's
+  // the closest to "decision-ready" already — each row is a signal
+  // you could triage.
+  //
+  // Rendered actions scale with the current top item:
+  //   1. Triage top signal in inbox (contextual, only when top row
+  //      is a SIGnal)
+  //   2. Clear dismissed (generic across kinds)
+  //   3. Open full triage view (escape hatch)
+  const topItem = items && items.length > 0 ? items[0] : null;
+  const widgetActions = [
+    ...(topItem?.kind === 'signal'
+      ? [{
+          label: `→ Task: "${topItem.title.slice(0, 32)}${topItem.title.length > 32 ? '…' : ''}"`,
+          intent: 'primary' as const,
+          onClick: async () => {
+            // Reuse the Signal→Task endpoint — optimistic remove from list.
+            const r = await fetch(`/api/signals/${topItem.id}/to-task`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: '{}',
+            });
+            if (r.ok) setItems(prev => prev?.filter(it => it.id !== topItem.id) ?? null);
+          },
+        }]
+      : []),
+    { label: 'Inbox', href: '/inbox', intent: 'ghost' as const },
+    { label: 'Refresh', intent: 'ghost' as const, onClick: () => setItems(null) },
+  ];
+
   return (
     <Widget
       title="ATTENTION"
       subtitle="What to focus on right now"
       action={{ label: 'Refresh', onClick: () => setItems(null) }}
+      actions={widgetActions}
     >
       {error && (
         <p className="text-xs" style={{ color: 'var(--text-3)' }}>

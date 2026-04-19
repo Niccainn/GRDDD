@@ -7,6 +7,7 @@ import {
   type IntegrationLike,
   type SyncItem,
 } from '@/lib/integrations/sync/dispatcher';
+import { detectSilentSync, median } from '@/lib/integrations/sync/silent-detector';
 import { logError } from '@/lib/observability/errors';
 
 /**
@@ -86,10 +87,26 @@ export async function GET(req: NextRequest) {
         });
         continue;
       }
-      signalsCreated += await persistItems(integration.environmentId, result.items);
+      const tickSignals = await persistItems(integration.environmentId, result.items);
+      signalsCreated += tickSignals;
       await prisma.integration.update({
         where: { id: integration.id },
         data: { lastSyncedAt: new Date() },
+      });
+
+      // Silent-sync detection. Runs per integration, per tick —
+      // cheap because both window queries are indexed on
+      // environmentId + sourceRef prefix. See
+      // lib/integrations/sync/silent-detector.ts for the decision
+      // rules; this block only supplies the inputs.
+      await maybeEmitSilentAlert(integration, tickSignals).catch(err => {
+        // Detector failures must not break the sync — log + continue.
+        void logError({
+          scope: 'silent_detector',
+          environmentId: integration.environmentId,
+          message: err instanceof Error ? err.message : 'unknown',
+          context: { integrationId: integration.id },
+        });
       });
     } catch (err) {
       failed++;
@@ -138,4 +155,91 @@ async function persistItems(environmentId: string, items: SyncItem[]): Promise<n
 function itemProvider(sourceId: string): string {
   const colon = sourceId.indexOf(':');
   return colon === -1 ? 'unknown' : sourceId.slice(0, colon);
+}
+
+/**
+ * For a single integration, compute the 7-day volume distribution
+ * and recent-tick activity, then call the pure detector. When the
+ * detector fires, persist a high-visibility Nova signal so the user
+ * sees "Notion has gone quiet" in their inbox instead of discovering
+ * it 48h later.
+ *
+ * Dedupe rule: if a `silent_sync` Nova signal was already created for
+ * this integration within the last 24h, skip — we don't want to
+ * hammer the inbox with identical alerts on every 15-min tick while
+ * the integration is still dark.
+ */
+async function maybeEmitSilentAlert(
+  integration: { id: string; provider: string; displayName: string; environmentId: string },
+  tickSignalCount: number,
+): Promise<void> {
+  const source = `integration:${integration.provider}`;
+  const now = Date.now();
+  const sevenDaysAgo = new Date(now - 7 * 86_400_000);
+
+  const [last7d, recent3Ticks, lastAlert] = await Promise.all([
+    prisma.signal.findMany({
+      where: { environmentId: integration.environmentId, source, createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true },
+    }),
+    // Last 3 ticks = last 45 minutes, give or take cron drift.
+    prisma.signal.count({
+      where: {
+        environmentId: integration.environmentId,
+        source,
+        createdAt: { gte: new Date(now - 45 * 60_000) },
+      },
+    }),
+    prisma.signal.findFirst({
+      where: {
+        environmentId: integration.environmentId,
+        source: 'nova',
+        sourceRef: `silent_sync:${integration.id}`,
+        createdAt: { gte: new Date(now - 24 * 60 * 60_000) },
+      },
+      select: { id: true },
+    }),
+  ]);
+
+  // Bucket the 7-day signals into day-level counts for a stable median.
+  const dayBuckets = new Map<string, number>();
+  for (const s of last7d) {
+    const key = s.createdAt.toISOString().slice(0, 10);
+    dayBuckets.set(key, (dayBuckets.get(key) ?? 0) + 1);
+  }
+  const dailyCounts = Array.from(dayBuckets.values());
+  const median7d = median(dailyCounts);
+
+  // Estimate consecutiveZeroTicks via the age of the most recent
+  // signal on this integration. 15-min ticks → roughly gap / 15.
+  const mostRecent = last7d
+    .map(s => s.createdAt.getTime())
+    .sort((a, b) => b - a)[0];
+  const gapMinutes = mostRecent ? Math.floor((now - mostRecent) / 60_000) : Infinity;
+  const consecutiveZeroTicks = Number.isFinite(gapMinutes) ? Math.floor(gapMinutes / 15) : 999;
+
+  const result = detectSilentSync({
+    integrationId: integration.id,
+    provider: integration.provider,
+    displayName: integration.displayName,
+    environmentId: integration.environmentId,
+    recentTickSignals: tickSignalCount > 0 ? tickSignalCount : recent3Ticks,
+    median7dDailySignals: median7d,
+    consecutiveZeroTicks,
+    alertedWithin24h: Boolean(lastAlert),
+  });
+
+  if (!result.alert) return;
+
+  await prisma.signal.create({
+    data: {
+      title: result.title,
+      body: result.body,
+      source: 'nova',
+      sourceRef: `silent_sync:${integration.id}`,
+      priority: result.severity === 'high' ? 'HIGH' : 'NORMAL',
+      status: 'UNREAD',
+      environmentId: result.environmentId,
+    },
+  });
 }
