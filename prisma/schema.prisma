@@ -87,6 +87,7 @@ model Identity {
   approvalRequests       ApprovalRequest[] @relation("ApprovalRequester")
   timeEntries            TimeEntry[]
   executionReviews       ExecutionReview[]
+  consentLogs            ConsentLog[] @relation("ConsentLog")
 
   @@index([emailHash])
   @@index([type])
@@ -1836,6 +1837,33 @@ model OperationalPlaybook {
 // showing how changes in one area affect another.
 // The connective tissue of organizational intelligence.
 // ===============================================
+
+// ===============================================
+// CONSENT LOG — GDPR Article 7 "provable consent".
+// Append-only: if a user withdraws consent, write a NEW row with
+// granted=false. Never update or delete existing rows so the audit
+// trail survives. identityId nullable so waitlist/pre-account
+// consent can still be captured.
+// ===============================================
+
+model ConsentLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  identityId String?
+  identity   Identity? @relation("ConsentLog", fields: [identityId], references: [id], onDelete: SetNull)
+
+  kind          String  // e.g. "signup_tos_privacy", "marketing_email"
+  granted       Boolean
+  policyVersion String  // The policy version string (e.g. "2026-04-19")
+  ipHash        String? // Truncated hash — never the raw IP
+  userAgent     String? // First 200 chars only
+  metadata      String? // JSON blob for referrer, variant, etc.
+
+  @@index([identityId])
+  @@index([kind])
+  @@index([createdAt])
+}
 
 // ===============================================
 // APP ERROR LOG — self-hosted observability.

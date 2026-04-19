@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { signUp } from '@/lib/auth';
 import { rateLimitSignUpByIpDistributed } from '@/lib/rate-limit';
+import { recordConsent } from '@/lib/consent/log';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 12;
@@ -35,7 +36,10 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { name, email, password } = body;
+  const { name, email, password, consentTosPrivacy, consentMarketing } = body as {
+    name?: string; email?: string; password?: string;
+    consentTosPrivacy?: boolean; consentMarketing?: boolean;
+  };
 
   if (!name || !email || !password) {
     return Response.json({ error: 'Name, email, and password are required' }, { status: 400 });
@@ -49,9 +53,39 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  // GDPR Art. 7 — consent must be affirmative, unambiguous, and provable.
+  // We reject the sign-up (rather than warn) because the audit fallout
+  // from a silently-accepted TOS is bigger than the UX friction of
+  // making the checkbox required.
+  if (consentTosPrivacy !== true) {
+    return Response.json(
+      { error: 'Please accept the Terms of Service and Privacy Policy to continue.' },
+      { status: 400 }
+    );
+  }
 
   try {
     const identity = await signUp(name, email, password);
+    // Record consent AFTER identity exists so we have identityId to
+    // link. Marketing consent is optional — default off; only log
+    // when the user actively checks the box.
+    const userAgent = req.headers.get('user-agent');
+    await recordConsent({
+      identityId: identity.id,
+      kind: 'signup_tos_privacy',
+      granted: true,
+      ip,
+      userAgent,
+    });
+    if (consentMarketing === true) {
+      await recordConsent({
+        identityId: identity.id,
+        kind: 'marketing_email',
+        granted: true,
+        ip,
+        userAgent,
+      });
+    }
     return Response.json({ success: true, identity });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Sign up failed';

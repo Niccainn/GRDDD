@@ -42,6 +42,10 @@ function SignUpInner() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // GDPR Art. 7 — the ToS/Privacy checkbox is required; marketing is
+  // strictly optional (default off) and has its own audit row.
+  const [consentTosPrivacy, setConsentTosPrivacy] = useState(false);
+  const [consentMarketing, setConsentMarketing] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -61,7 +65,7 @@ function SignUpInner() {
       const res = await fetch('/api/auth/sign-up', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, consentTosPrivacy, consentMarketing }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -186,25 +190,64 @@ function SignUpInner() {
           </p>
         )}
 
+        {/* GDPR Art. 7 consent — required for ToS/Privacy, optional
+            for marketing. "By continuing you agree…" is not enough
+            under EU law; the user must take a deliberate affirmative
+            action. We log each checkbox state independently to
+            ConsentLog so the audit trail is provable. */}
+        <div className="space-y-2 pt-1">
+          <label className="flex items-start gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={consentTosPrivacy}
+              onChange={e => setConsentTosPrivacy(e.target.checked)}
+              required
+              className="mt-0.5 w-3.5 h-3.5 rounded flex-shrink-0"
+              style={{ accentColor: 'var(--brand)' }}
+              aria-describedby="tos-consent-label"
+            />
+            <span id="tos-consent-label" className="text-[11px] font-light leading-relaxed" style={{ color: 'var(--text-2)' }}>
+              I agree to the{' '}
+              <Link href="/terms" className="underline" style={{ color: 'var(--text-1)' }}>Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="underline" style={{ color: 'var(--text-1)' }}>Privacy Policy</Link>.
+            </span>
+          </label>
+
+          <label className="flex items-start gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={consentMarketing}
+              onChange={e => setConsentMarketing(e.target.checked)}
+              className="mt-0.5 w-3.5 h-3.5 rounded flex-shrink-0"
+              style={{ accentColor: 'var(--brand)' }}
+              aria-describedby="marketing-consent-label"
+            />
+            <span id="marketing-consent-label" className="text-[11px] font-light leading-relaxed" style={{ color: 'var(--text-3)' }}>
+              Email me about product updates (optional — you can unsubscribe anytime).
+            </span>
+          </label>
+        </div>
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !consentTosPrivacy}
           className="w-full py-[13px] text-sm font-light rounded-full transition-all"
           style={{
             background: 'var(--brand)',
             color: '#000',
             fontWeight: 400,
-            opacity: loading ? 0.5 : 1,
+            opacity: loading || !consentTosPrivacy ? 0.5 : 1,
           }}
         >
           {loading ? 'Creating workspace\u2026' : 'Create workspace'}
         </button>
 
         <p className="text-[10px] text-center font-light pt-1" style={{ color: 'var(--text-3)' }}>
-          By continuing you agree to the{' '}
-          <Link href="/terms" style={{ color: 'var(--text-2)' }}>Terms</Link>
+          See our{' '}
+          <Link href="/subprocessors" style={{ color: 'var(--text-2)' }}>subprocessors</Link>
           {' '}and{' '}
-          <Link href="/privacy" style={{ color: 'var(--text-2)' }}>Privacy Policy</Link>.
+          <Link href="/security" style={{ color: 'var(--text-2)' }}>security policy</Link>.
         </p>
       </form>
     </AuthLayout>
