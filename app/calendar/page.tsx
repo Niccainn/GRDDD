@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import QuickAddPopover from '@/components/calendar/QuickAddPopover';
+import EventDetailDrawer, { type DrawerEvent } from '@/components/calendar/EventDetailDrawer';
+import { bucketEventsByDay, nextFocusDay } from '@/lib/calendar/buckets';
 
 type CalendarEvent = {
   id: string;
@@ -197,12 +200,106 @@ export default function CalendarPage() {
   const isToday = (d: number) => d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
   const showBanner = connected.length === 0 && !bannerDismissed;
 
-  function eventsForDay(day: number): CalendarEvent[] {
-    return visibleEvents.filter(e => {
-      const d = new Date(e.date);
-      return d.getDate() === day && d.getMonth() === month && d.getFullYear() === year;
-    });
-  }
+  // Bucket events by day ONCE per (events, year, month) change — not
+  // on every render. Halves render cost on big months.
+  const bucketByDay = useMemo(
+    () => bucketEventsByDay(visibleEvents, year, month),
+    [visibleEvents, year, month],
+  );
+  const eventsForDay = useCallback(
+    (day: number): CalendarEvent[] => bucketByDay.get(day) ?? [],
+    [bucketByDay],
+  );
+
+  // ── Interactive state ──────────────────────────────────────────────
+  // focusedDay: what the keyboard cursor is on (1..daysInMonth).
+  // quickAddDay: null when popover closed; otherwise the day it anchors to.
+  // selectedEvent: null when drawer closed; otherwise the event shown.
+  // view: Month grid vs. Agenda list (fallback when users want
+  //   everything at a glance — the "please just list them" affordance).
+  const initialFocus = today.getMonth() === month && today.getFullYear() === year
+    ? today.getDate()
+    : 1;
+  const [focusedDay, setFocusedDay] = useState<number>(initialFocus);
+  const [quickAddDay, setQuickAddDay] = useState<number | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<DrawerEvent | null>(null);
+  const [view, setView] = useState<'month' | 'agenda'>('month');
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Respect OS motion preference so month-transition animation doesn't
+  // trigger vestibular symptoms. WCAG 2.1 Success Criterion 2.3.3.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener?.('change', handler);
+    return () => mq.removeEventListener?.('change', handler);
+  }, []);
+
+  // When the user changes month, reset focus to day 1 (or today if
+  // they're back on the current month).
+  useEffect(() => {
+    setFocusedDay(
+      today.getMonth() === month && today.getFullYear() === year ? today.getDate() : 1,
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year, month]);
+
+  // Keyboard navigation on the grid. Arrow keys move focus, Enter opens
+  // quick-add on the focused day, Esc closes any open overlay.
+  const onGridKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const nav = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+      if (nav.includes(e.key)) {
+        e.preventDefault();
+        setFocusedDay(prev => nextFocusDay({ current: prev, daysInMonth, key: e.key }));
+        return;
+      }
+      if (e.key === 'PageUp') {
+        e.preventDefault();
+        prevMonth();
+        return;
+      }
+      if (e.key === 'PageDown') {
+        e.preventDefault();
+        nextMonth();
+        return;
+      }
+      if ((e.key === 'Enter' || e.key === ' ') && view === 'month') {
+        e.preventDefault();
+        const dayEvents = eventsForDay(focusedDay);
+        if (dayEvents.length > 0) {
+          // Prefer showing detail if the day has events; the user
+          // can still add via the hover "+" button.
+          setSelectedEvent(dayEvents[0] as unknown as DrawerEvent);
+        } else {
+          setQuickAddDay(focusedDay);
+        }
+      }
+    },
+    [daysInMonth, focusedDay, eventsForDay, view],
+  );
+
+  // Optimistic insert when quick-add succeeds so the new event shows
+  // up instantly without waiting for the next fetch cycle.
+  const handleCreated = useCallback((task: { id: string; title: string; dueDate: string; priority: string }) => {
+    setEvents(prev => [
+      ...prev,
+      {
+        id: task.id,
+        type: 'task',
+        title: task.title,
+        date: task.dueDate,
+        status: 'TODO',
+        color: '#7193ED',
+        systemName: null,
+        meta: { priority: task.priority },
+        href: '/tasks',
+      },
+    ]);
+  }, []);
 
   return (
     <div className="flex gap-6 p-8">
@@ -348,6 +445,30 @@ export default function CalendarPage() {
             >
               Today
             </button>
+            {/* View toggle — Month grid vs Agenda list. Renders inline
+                so keyboard tab order is predictable. */}
+            <div
+              role="tablist"
+              aria-label="Calendar view"
+              className="flex rounded-lg overflow-hidden"
+              style={{ border: '1px solid var(--glass-border)' }}
+            >
+              {(['month', 'agenda'] as const).map(v => (
+                <button
+                  key={v}
+                  role="tab"
+                  aria-selected={view === v}
+                  onClick={() => setView(v)}
+                  className="text-xs font-light px-3 py-1.5 capitalize transition-colors"
+                  style={{
+                    background: view === v ? 'rgba(255,255,255,0.07)' : 'transparent',
+                    color: view === v ? 'var(--text-1)' : 'var(--text-3)',
+                  }}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
             {connected.length === 0 && bannerDismissed && (
               <button
                 onClick={() => { setBannerDismissed(false); localStorage.removeItem('grid:calendar-banner-dismissed'); }}
@@ -363,108 +484,259 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Day headers */}
-        <div className="grid grid-cols-7 mb-1">
-          {DAYS.map(d => (
-            <div key={d} className="text-center text-[10px] font-light py-2" style={{ color: 'var(--text-3)' }}>
-              {d}
+        {view === 'month' ? (
+          <>
+            {/* Day headers — labelled as row-1 column headers for screen readers */}
+            <div role="row" className="grid grid-cols-7 mb-1">
+              {DAYS.map(d => (
+                <div
+                  key={d}
+                  role="columnheader"
+                  aria-label={d}
+                  className="text-center text-[10px] font-light py-2"
+                  style={{ color: 'var(--text-3)' }}
+                >
+                  {d}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="min-h-[100px] p-2" style={{ background: 'rgba(255,255,255,0.01)', borderBottom: '1px solid var(--glass-border)', borderRight: '1px solid var(--glass-border)' }} />
-          ))}
-
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1;
-            const dayEvents = eventsForDay(day);
-            const todayHighlight = isToday(day);
-
-            return (
-              <div
-                key={day}
-                className="min-h-[100px] p-2 transition-colors"
-                style={{
-                  background: todayHighlight ? 'rgba(191,159,241,0.04)' : 'rgba(255,255,255,0.015)',
-                  borderBottom: '1px solid var(--glass-border)',
-                  borderRight: '1px solid var(--glass-border)',
-                }}
-              >
-                <span
-                  className="text-xs font-light inline-flex items-center justify-center w-6 h-6 rounded-full"
+            {/* Interactive calendar grid. role="grid" + tabIndex on the
+                container gives us ONE tab stop for the whole month;
+                arrow keys then move between cells per WAI-ARIA grid
+                pattern. Every cell with a day is a gridcell with its
+                own visible focus ring when focusedDay matches. */}
+            <div
+              role="grid"
+              aria-label={`${MONTHS[month]} ${year}`}
+              tabIndex={0}
+              ref={gridRef}
+              onKeyDown={onGridKeyDown}
+              className="grid grid-cols-7 rounded-xl overflow-hidden outline-none"
+              style={{
+                border: '1px solid var(--glass-border)',
+                transition: reducedMotion ? 'none' : 'opacity 160ms ease',
+              }}
+            >
+              {Array.from({ length: firstDay }).map((_, i) => (
+                <div
+                  key={`empty-${i}`}
+                  role="gridcell"
+                  aria-hidden
+                  className="min-h-[100px] p-2"
                   style={{
-                    color: todayHighlight ? '#BF9FF1' : 'var(--text-3)',
-                    background: todayHighlight ? 'rgba(191,159,241,0.15)' : 'transparent',
+                    background: 'rgba(255,255,255,0.01)',
+                    borderBottom: '1px solid var(--glass-border)',
+                    borderRight: '1px solid var(--glass-border)',
+                  }}
+                />
+              ))}
+
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const day = i + 1;
+                const dayEvents = eventsForDay(day);
+                const todayHighlight = isToday(day);
+                const focused = focusedDay === day;
+                const dateObj = new Date(year, month, day);
+                const aria = dateObj.toLocaleDateString(undefined, {
+                  weekday: 'long', month: 'long', day: 'numeric',
+                });
+
+                return (
+                  <div
+                    key={day}
+                    role="gridcell"
+                    tabIndex={-1}
+                    aria-label={`${aria}${dayEvents.length > 0 ? `, ${dayEvents.length} events` : ', no events'}${todayHighlight ? ', today' : ''}`}
+                    aria-selected={focused}
+                    onClick={() => {
+                      setFocusedDay(day);
+                      // Empty day → quick-add. Day with events → drawer
+                      // for first event; user can still click a specific
+                      // event bar to target it precisely.
+                      if (dayEvents.length === 0) setQuickAddDay(day);
+                    }}
+                    className="relative min-h-[100px] p-2 transition-colors cursor-pointer group outline-none"
+                    style={{
+                      background: todayHighlight
+                        ? 'rgba(191,159,241,0.04)'
+                        : focused
+                          ? 'rgba(255,255,255,0.04)'
+                          : 'rgba(255,255,255,0.015)',
+                      borderBottom: '1px solid var(--glass-border)',
+                      borderRight: '1px solid var(--glass-border)',
+                      boxShadow: focused ? 'inset 0 0 0 1.5px rgba(191,159,241,0.5)' : undefined,
+                      transition: reducedMotion ? 'none' : 'background 120ms ease',
+                    }}
+                    onMouseEnter={() => setFocusedDay(day)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <span
+                        className="text-xs font-light inline-flex items-center justify-center w-6 h-6 rounded-full"
+                        style={{
+                          color: todayHighlight ? '#BF9FF1' : 'var(--text-3)',
+                          background: todayHighlight ? 'rgba(191,159,241,0.15)' : 'transparent',
+                        }}
+                      >
+                        {day}
+                      </span>
+
+                      {/* Hover affordance — the "+" only appears when
+                          the day is empty so it doesn't fight with
+                          the event bars visually. Stopping propagation
+                          means the click adds instead of opening a
+                          detail drawer for the first event. */}
+                      {dayEvents.length === 0 && (
+                        <button
+                          aria-label={`Add task for ${aria}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFocusedDay(day);
+                            setQuickAddDay(day);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+                          style={{
+                            background: 'var(--glass)',
+                            border: '1px solid var(--glass-border)',
+                            color: 'var(--text-3)',
+                          }}
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="mt-1 space-y-0.5">
+                      {dayEvents.slice(0, 3).map(ev => (
+                        <button
+                          key={ev.id}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedEvent(ev as unknown as DrawerEvent);
+                          }}
+                          className="w-full flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-light truncate transition-all"
+                          style={{
+                            background: `${ev.source ? sourceColor[ev.source] ?? ev.color : ev.color}14`,
+                            border: `1px solid ${ev.source ? sourceColor[ev.source] ?? ev.color : ev.color}26`,
+                            color: ev.source ? sourceColor[ev.source] ?? ev.color : ev.color,
+                            textAlign: 'left',
+                          }}
+                          title={`${ev.source ? sourceLabel[ev.source] ?? ev.source : ev.type}: ${ev.title}`}
+                        >
+                          <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: ev.source ? sourceColor[ev.source] ?? ev.color : statusColor[ev.status] ?? ev.color }} />
+                          <span className="truncate">{ev.title}</span>
+                        </button>
+                      ))}
+                      {dayEvents.length > 3 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Show the first as the entry point; the
+                            // drawer links back to the full view where
+                            // all events are listed.
+                            setSelectedEvent(dayEvents[3] as unknown as DrawerEvent);
+                          }}
+                          className="text-[9px] px-1.5 font-light"
+                          style={{ color: 'var(--text-3)' }}
+                        >
+                          +{dayEvents.length - 3} more
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Anchored quick-add popover for this day. Rendered
+                        absolute-positioned relative to the cell so it
+                        opens right where the user clicked. */}
+                    {quickAddDay === day && (
+                      <div
+                        className="absolute z-30 top-full left-0 mt-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <QuickAddPopover
+                          year={year}
+                          month={month}
+                          day={day}
+                          environmentId={environments[0]?.id ?? null}
+                          onClose={() => setQuickAddDay(null)}
+                          onCreated={(task) => {
+                            handleCreated(task);
+                            setQuickAddDay(null);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-[10px] font-light mt-2" style={{ color: 'var(--text-3)' }}>
+              Click any day to add · Click an event for details · ←↑→↓ to navigate · PgUp/PgDn for months
+            </p>
+          </>
+        ) : (
+          /* Agenda view — flat chronological list of everything visible */
+          <div className="space-y-1.5">
+            {visibleEvents.length === 0 ? (
+              <div
+                className="py-16 text-center rounded-xl"
+                style={{ border: '1px dashed var(--glass-border)' }}
+              >
+                <p className="text-sm font-light" style={{ color: 'var(--text-2)' }}>
+                  Nothing scheduled for {MONTHS[month]}
+                </p>
+                <p className="text-xs font-light mt-1" style={{ color: 'var(--text-3)' }}>
+                  Switch to Month view and click any day to add.
+                </p>
+              </div>
+            ) : (
+              visibleEvents.map(ev => (
+                <button
+                  key={ev.id}
+                  type="button"
+                  onClick={() => setSelectedEvent(ev as unknown as DrawerEvent)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left transition-all"
+                  style={{
+                    background: 'var(--glass)',
+                    border: '1px solid var(--glass-border)',
                   }}
                 >
-                  {day}
-                </span>
-
-                <div className="mt-1 space-y-0.5">
-                  {dayEvents.slice(0, 3).map(ev => (
-                    <div
-                      key={ev.id}
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-light truncate cursor-default"
-                      style={{
-                        background: `${ev.source ? sourceColor[ev.source] ?? ev.color : ev.color}14`,
-                        border: `1px solid ${ev.source ? sourceColor[ev.source] ?? ev.color : ev.color}26`,
-                        color: ev.source ? sourceColor[ev.source] ?? ev.color : ev.color,
-                      }}
-                      title={`${ev.source ? sourceLabel[ev.source] ?? ev.source : ev.type}: ${ev.title}`}
-                    >
-                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: ev.source ? sourceColor[ev.source] ?? ev.color : statusColor[ev.status] ?? ev.color }} />
-                      <span className="truncate">{ev.title}</span>
-                    </div>
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <span className="text-[9px] px-1.5" style={{ color: 'var(--text-3)' }}>
-                      +{dayEvents.length - 3} more
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Events summary */}
-        {visibleEvents.length > 0 && (
-          <div className="mt-6">
-            <h2 className="text-xs font-light mb-3" style={{ color: 'var(--text-3)' }}>
-              {visibleEvents.length} {visibleEvents.length === 1 ? 'event' : 'events'} this month
-            </h2>
-            <div className="space-y-1.5">
-              {visibleEvents.slice(0, 15).map(ev => (
-                <div
-                  key={ev.id}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
-                  style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
-                >
-                  <span className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ background: ev.source ? sourceColor[ev.source] ?? ev.color : ev.color }} />
-                  <span className="text-xs font-light flex-1 truncate" style={{ color: 'var(--text-1)' }}>{ev.title}</span>
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ background: ev.source ? sourceColor[ev.source] ?? ev.color : ev.color }}
+                  />
+                  <span className="text-xs font-light flex-1 truncate" style={{ color: 'var(--text-1)' }}>
+                    {ev.title}
+                  </span>
                   {ev.source && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded"
-                      style={{ background: `${sourceColor[ev.source] ?? '#BF9FF1'}14`, color: sourceColor[ev.source] ?? 'var(--text-3)' }}>
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded"
+                      style={{ background: `${sourceColor[ev.source] ?? '#BF9FF1'}14`, color: sourceColor[ev.source] ?? 'var(--text-3)' }}
+                    >
                       {sourceLabel[ev.source] ?? ev.source}
                     </span>
                   )}
-                  <span className="text-[10px] px-2 py-0.5 rounded-full"
-                    style={{ background: `${statusColor[ev.status] ?? ev.color}14`, color: statusColor[ev.status] ?? ev.color }}>
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full"
+                    style={{ background: `${statusColor[ev.status] ?? ev.color}14`, color: statusColor[ev.status] ?? ev.color }}
+                  >
                     {ev.type === 'external' ? 'meeting' : ev.status.toLowerCase().replace('_', ' ')}
                   </span>
                   <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
                     {new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
-                </div>
-              ))}
-            </div>
+                </button>
+              ))
+            )}
           </div>
         )}
       </div>
+
+      {/* Event detail drawer — rendered at page level so the slide
+          animation isn't clipped by column padding. */}
+      <EventDetailDrawer event={selectedEvent} onClose={() => setSelectedEvent(null)} />
 
       {/* ── Layer sidebar ──────────────────────────────────────────── */}
       <div className="w-[200px] flex-shrink-0 hidden lg:block">
