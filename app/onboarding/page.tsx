@@ -489,8 +489,8 @@ export default function OnboardingPage() {
                   <div className="relative mb-8 flex justify-center">
                     <div className="onboard-success-ring" />
                     <div className="relative z-10 w-16 h-16 rounded-full flex items-center justify-center"
-                      style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.3)' }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C8F26B" strokeWidth="2">
+                      style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.3)' }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#15AD70" strokeWidth="2">
                         <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" className="onboard-check-draw" />
                       </svg>
                     </div>
@@ -649,7 +649,7 @@ export default function OnboardingPage() {
           width: 80px;
           height: 80px;
           border-radius: 50%;
-          border: 1px solid rgba(200,242,107,0.3);
+          border: 1px solid rgba(21,173,112,0.3);
           animation: onboard-ring-expand 1.2s ease-out both;
         }
         @keyframes onboard-ring-expand {

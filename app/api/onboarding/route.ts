@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     Marketing: '#F7C700',
     Engineering: '#7193ED',
     Design: '#BF9FF1',
-    Operations: '#C8F26B',
+    Operations: '#15AD70',
     Custom: '#FF6B6B',
   }[environmentType || 'Custom'] || '#7193ED';
 

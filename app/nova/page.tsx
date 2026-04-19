@@ -312,14 +312,14 @@ export default function NovaPage() {
                               <span key={ti}
                                 className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-light"
                                 style={{
-                                  background: tc.status === 'done' ? 'rgba(200,242,107,0.08)' : 'rgba(255,255,255,0.05)',
-                                  border: `1px solid ${tc.status === 'done' ? 'rgba(200,242,107,0.2)' : 'rgba(255,255,255,0.1)'}`,
-                                  color: tc.status === 'done' ? '#C8F26B' : 'rgba(255,255,255,0.4)',
+                                  background: tc.status === 'done' ? 'rgba(21,173,112,0.08)' : 'rgba(255,255,255,0.05)',
+                                  border: `1px solid ${tc.status === 'done' ? 'rgba(21,173,112,0.2)' : 'rgba(255,255,255,0.1)'}`,
+                                  color: tc.status === 'done' ? '#15AD70' : 'rgba(255,255,255,0.4)',
                                 }}>
                                 {tc.status === 'running' ? (
                                   <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.4)' }} />
                                 ) : (
-                                  <span style={{ color: '#C8F26B' }}>✓</span>
+                                  <span style={{ color: '#15AD70' }}>✓</span>
                                 )}
                                 {tc.status === 'done' ? tc.summary : tc.label + '···'}
                               </span>
@@ -386,7 +386,7 @@ export default function NovaPage() {
                   },
                   {
                     label: 'Act',
-                    color: '#C8F26B',
+                    color: '#15AD70',
                     prompt: 'Create a weekly retro workflow for Operations',
                     example: 'Drafted 4-stage workflow · linked to Operations system · ready to run or edit',
                   },

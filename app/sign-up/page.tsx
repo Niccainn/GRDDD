@@ -100,7 +100,7 @@ function SignUpInner() {
         {[
           { label: '110+ Integrations', color: '#7193ED' },
           { label: 'AI Workflows', color: '#BF9FF1' },
-          { label: 'Operational Intelligence', color: '#C8F26B' },
+          { label: 'Operational Intelligence', color: '#15AD70' },
         ].map(pill => (
           <span
             key={pill.label}

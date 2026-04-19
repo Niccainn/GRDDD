@@ -14,16 +14,16 @@ type ActivityEvent = {
 };
 
 const DOT_COLORS: Record<string, string> = {
-  system: '#C8F26B',
-  workflow: '#C8F26B',
+  system: '#15AD70',
+  workflow: '#15AD70',
   execution: '#7193ED',
   goal: '#F7C700',
   nova: '#BF9FF1',
   agent: '#BF9FF1',
   member: '#FF9F43',
   automation: '#7193ED',
-  webhook: '#C8F26B',
-  environment: '#C8F26B',
+  webhook: '#15AD70',
+  environment: '#15AD70',
 };
 
 function getDotColor(action: string): string {

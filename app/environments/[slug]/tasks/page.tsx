@@ -31,7 +31,7 @@ const STATUS_COLORS: Record<string, string> = {
   TODO: 'var(--text-2)',
   IN_PROGRESS: '#F7C700',
   REVIEW: '#BF9FF1',
-  DONE: '#C8F26B',
+  DONE: '#15AD70',
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -222,7 +222,7 @@ export default function EnvironmentTasks() {
                   className="flex-shrink-0 w-4 h-4 rounded-full border transition-all flex items-center justify-center"
                   style={{
                     borderColor: STATUS_COLORS[task.status] ?? 'var(--glass-border)',
-                    background: task.status === 'DONE' ? '#C8F26B' : 'transparent',
+                    background: task.status === 'DONE' ? '#15AD70' : 'transparent',
                   }}
                 >
                   {task.status === 'DONE' && (

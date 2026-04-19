@@ -18,7 +18,7 @@ type Props = {
 
 function healthColor(score: number | null): string {
   if (score === null) return 'var(--text-3)';
-  if (score >= 80) return '#C8F26B';
+  if (score >= 80) return '#15AD70';
   if (score >= 60) return '#F7C700';
   return '#FF5757';
 }

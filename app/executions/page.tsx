@@ -16,14 +16,14 @@ type Execution = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  COMPLETED: '#C8F26B',
+  COMPLETED: '#15AD70',
   RUNNING: '#7193ED',
   FAILED: '#FF6B6B',
   CANCELLED: 'rgba(255,255,255,0.3)',
 };
 
 const STATUS_BG: Record<string, string> = {
-  COMPLETED: 'rgba(200,242,107,0.08)',
+  COMPLETED: 'rgba(21,173,112,0.08)',
   RUNNING: 'rgba(113,147,237,0.08)',
   FAILED: 'rgba(255,107,107,0.08)',
   CANCELLED: 'rgba(255,255,255,0.04)',
@@ -47,7 +47,7 @@ function duration(start: string, end: string | null) {
 
 function ScoreDot({ score }: { score: number }) {
   const pct = Math.round(score * 100);
-  const color = pct >= 80 ? '#C8F26B' : pct >= 60 ? '#F7C700' : '#FF6B6B';
+  const color = pct >= 80 ? '#15AD70' : pct >= 60 ? '#F7C700' : '#FF6B6B';
   return (
     <span className="inline-flex items-center gap-1 text-xs" style={{ color }}>
       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />

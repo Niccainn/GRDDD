@@ -20,7 +20,7 @@ type PortalData = {
 };
 
 const statusColor: Record<string, string> = {
-  ACTIVE: '#C8F26B', COMPLETED: '#C8F26B', DONE: '#C8F26B', ON_TRACK: '#C8F26B',
+  ACTIVE: '#15AD70', COMPLETED: '#15AD70', DONE: '#15AD70', ON_TRACK: '#15AD70',
   DRAFT: 'rgba(255,255,255,0.3)', PAUSED: '#F7C700', AT_RISK: '#F7C700',
   RUNNING: '#7193ED', IN_PROGRESS: '#7193ED', BEHIND: '#FF6B6B', FAILED: '#FF6B6B',
 };
@@ -87,7 +87,7 @@ export default function PortalPage() {
                   <div className="flex items-center gap-2.5 mb-2">
                     <span className="text-lg">{s.icon}</span>
                     <span className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.8)' }}>{s.name}</span>
-                    <span className="ml-auto text-xs font-light" style={{ color: s.healthScore >= 80 ? '#C8F26B' : s.healthScore >= 50 ? '#F7C700' : '#FF6B6B' }}>
+                    <span className="ml-auto text-xs font-light" style={{ color: s.healthScore >= 80 ? '#15AD70' : s.healthScore >= 50 ? '#F7C700' : '#FF6B6B' }}>
                       {s.healthScore}%
                     </span>
                   </div>

@@ -11,7 +11,7 @@ import ReviewAutoNudge from './ReviewAutoNudge';
 
 const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED'];
 const STATUS_COLOR: Record<string, string> = {
-  ACTIVE: '#C8F26B',
+  ACTIVE: '#15AD70',
   DRAFT: 'rgba(255,255,255,0.3)',
   PAUSED: '#F7C700',
   COMPLETED: '#7193ED',
@@ -234,7 +234,7 @@ export default function WorkflowDetailClient({
           <button onClick={() => { if (!activeRun && !running) setShowRunModal(true); }}
             disabled={running || !!activeRun}
             className="text-xs font-light px-4 py-1.5 rounded-lg transition-all disabled:opacity-40"
-            style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.3)', color: '#C8F26B' }}>
+            style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}>
             {running ? 'Starting···' : activeRun ? 'In progress' : '▶ Run'}
           </button>
 
@@ -321,7 +321,7 @@ export default function WorkflowDetailClient({
                 </button>
                 <button onClick={() => handleRun(runInput)}
                   className="text-xs font-light px-4 py-2 rounded-lg transition-all"
-                  style={{ background: 'rgba(200,242,107,0.12)', border: '1px solid rgba(200,242,107,0.3)', color: '#C8F26B' }}>
+                  style={{ background: 'rgba(21,173,112,0.12)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}>
                   ▶ Start run
                 </button>
               </div>
@@ -333,11 +333,11 @@ export default function WorkflowDetailClient({
       {/* Active run banner */}
       {activeRun && currentStageIdx !== null && (
         <div className="mb-8 px-5 py-4 rounded-xl flex items-center justify-between"
-          style={{ background: 'rgba(200,242,107,0.06)', border: '1px solid rgba(200,242,107,0.2)' }}>
+          style={{ background: 'rgba(21,173,112,0.06)', border: '1px solid rgba(21,173,112,0.2)' }}>
           <div className="flex items-center gap-3">
-            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#C8F26B' }} />
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#15AD70' }} />
             <div>
-              <p className="text-sm font-light" style={{ color: '#C8F26B' }}>
+              <p className="text-sm font-light" style={{ color: '#15AD70' }}>
                 Run in progress — Stage {Math.min(currentStageIdx + 1, workflow.stages.length)} of {workflow.stages.length}
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
@@ -348,7 +348,7 @@ export default function WorkflowDetailClient({
           <div className="flex items-center gap-2">
             <button onClick={() => advanceStage(activeRun.id, currentStageIdx + 1)}
               className="text-xs font-light px-4 py-2 rounded-lg transition-all"
-              style={{ background: 'rgba(200,242,107,0.15)', border: '1px solid rgba(200,242,107,0.3)', color: '#C8F26B' }}>
+              style={{ background: 'rgba(21,173,112,0.15)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}>
               {currentStageIdx + 1 >= workflow.stages.length ? 'Complete run ✓' : `Next: ${workflow.stages[currentStageIdx + 1] ?? '—'} →`}
             </button>
             <button onClick={async () => {
@@ -399,19 +399,19 @@ export default function WorkflowDetailClient({
                 {(editing ? editStages : workflow.stages).map((stage, idx) => {
                   const isDone = currentStageIdx !== null && idx < currentStageIdx;
                   const isActive = currentStageIdx === idx && activeRun;
-                  const stageColor = isDone ? '#C8F26B' : isActive ? '#F7C700' : 'rgba(255,255,255,0.2)';
+                  const stageColor = isDone ? '#15AD70' : isActive ? '#F7C700' : 'rgba(255,255,255,0.2)';
 
                   return (
                     <div key={idx} className="flex items-center">
                       <div className="flex flex-col items-center px-4 py-3 rounded-xl min-w-[110px] relative transition-all"
                         style={{
-                          background: isActive ? 'rgba(247,199,0,0.06)' : isDone ? 'rgba(200,242,107,0.06)' : 'var(--glass)',
-                          border: `1px solid ${isActive ? 'rgba(247,199,0,0.2)' : isDone ? 'rgba(200,242,107,0.2)' : 'var(--glass-border)'}`,
+                          background: isActive ? 'rgba(247,199,0,0.06)' : isDone ? 'rgba(21,173,112,0.06)' : 'var(--glass)',
+                          border: `1px solid ${isActive ? 'rgba(247,199,0,0.2)' : isDone ? 'rgba(21,173,112,0.2)' : 'var(--glass-border)'}`,
                         }}>
                         <span className="text-xs font-light mb-1.5 tabular-nums" style={{ color: stageColor }}>
                           {isDone ? '✓' : String(idx + 1).padStart(2, '0')}
                         </span>
-                        <span className="text-xs font-light text-center leading-tight" style={{ color: isActive ? '#F7C700' : isDone ? '#C8F26B' : 'rgba(255,255,255,0.7)' }}>
+                        <span className="text-xs font-light text-center leading-tight" style={{ color: isActive ? '#F7C700' : isDone ? '#15AD70' : 'rgba(255,255,255,0.7)' }}>
                           {stage}
                         </span>
                         {editing && (
@@ -422,7 +422,7 @@ export default function WorkflowDetailClient({
                       </div>
                       {idx < (editing ? editStages : workflow.stages).length - 1 && (
                         <div className="w-6 h-px flex-shrink-0 transition-all"
-                          style={{ background: idx < (currentStageIdx ?? -1) ? 'rgba(200,242,107,0.4)' : 'rgba(255,255,255,0.1)' }} />
+                          style={{ background: idx < (currentStageIdx ?? -1) ? 'rgba(21,173,112,0.4)' : 'rgba(255,255,255,0.1)' }} />
                       )}
                     </div>
                   );
@@ -482,7 +482,7 @@ export default function WorkflowDetailClient({
                     style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', display: 'flex' }}>
                     <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full"
-                        style={{ backgroundColor: exec.status === 'COMPLETED' ? '#C8F26B' : exec.status === 'RUNNING' ? '#F7C700' : '#FF7070' }} />
+                        style={{ backgroundColor: exec.status === 'COMPLETED' ? '#15AD70' : exec.status === 'RUNNING' ? '#F7C700' : '#FF7070' }} />
                       <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>{exec.status.toLowerCase()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -499,8 +499,8 @@ export default function WorkflowDetailClient({
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCheckpointExecId(exec.id); }}
                             className="text-[10px] px-1.5 py-0.5 transition-all hover:opacity-80"
                             style={{
-                              background: 'rgba(200,242,107,0.08)',
-                              border: '1px solid rgba(200,242,107,0.15)',
+                              background: 'rgba(21,173,112,0.08)',
+                              border: '1px solid rgba(21,173,112,0.15)',
                               borderRadius: '3px',
                               color: 'var(--brand)',
                             }}
@@ -568,9 +568,9 @@ export default function WorkflowDetailClient({
               }}
               className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-xs font-light transition-all"
               style={{
-                background: savedAsTemplate ? 'rgba(200,242,107,0.08)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${savedAsTemplate ? 'rgba(200,242,107,0.2)' : 'var(--glass-border)'}`,
-                color: savedAsTemplate ? '#C8F26B' : 'rgba(255,255,255,0.35)',
+                background: savedAsTemplate ? 'rgba(21,173,112,0.08)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${savedAsTemplate ? 'rgba(21,173,112,0.2)' : 'var(--glass-border)'}`,
+                color: savedAsTemplate ? '#15AD70' : 'rgba(255,255,255,0.35)',
               }}>
               <span className="flex items-center gap-2">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none">

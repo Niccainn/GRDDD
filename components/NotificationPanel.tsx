@@ -15,7 +15,7 @@ type Notification = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  execution_complete: '#C8F26B',
+  execution_complete: '#15AD70',
   execution_failed: '#FF6B6B',
   goal_reached: '#F7C700',
   mention: '#7193ED',
@@ -26,8 +26,8 @@ const TYPE_COLORS: Record<string, string> = {
   'comment.mention': '#7193ED',
   'task.assigned': '#7193ED',
   'task.commented': '#4FC1E9',
-  'task.completed': '#C8F26B',
-  'execution.completed': '#C8F26B',
+  'task.completed': '#15AD70',
+  'execution.completed': '#15AD70',
   'execution.failed': '#FF6B6B',
   'signal.urgent': '#FF9F43',
 };

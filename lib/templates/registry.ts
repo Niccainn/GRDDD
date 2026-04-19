@@ -46,7 +46,7 @@ export type TemplateCategory =
 export const CATEGORY_META: Record<TemplateCategory, { label: string; icon: string; color: string }> = {
   marketing:        { label: 'Marketing',        icon: '📣', color: '#FF6B6B' },
   operations:       { label: 'Operations',       icon: '⚙️', color: '#7193ED' },
-  sales:            { label: 'Sales',             icon: '💰', color: '#C8F26B' },
+  sales:            { label: 'Sales',             icon: '💰', color: '#15AD70' },
   product:          { label: 'Product',           icon: '🧱', color: '#BF9FF1' },
   content:          { label: 'Content',           icon: '✏️', color: '#F7C700' },
   'client-services': { label: 'Client Services',  icon: '🤝', color: '#FF9F43' },
@@ -128,7 +128,7 @@ export const TEMPLATES: SystemTemplate[] = [
     description: 'Track leads from first touch to closed deal with automated follow-ups.',
     category: 'sales',
     icon: '💰',
-    color: '#C8F26B',
+    color: '#15AD70',
     tags: ['crm', 'leads', 'pipeline', 'forecasting'],
     difficulty: 'starter',
     estimatedSetup: '2 min',

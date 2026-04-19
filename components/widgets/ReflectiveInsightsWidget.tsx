@@ -24,7 +24,7 @@ type ReflectiveInsightsWidgetProps = {
 
 function severityIcon(severity: string): { symbol: string; color: string } {
   switch (severity) {
-    case 'positive': return { symbol: '✦', color: '#C8F26B' };
+    case 'positive': return { symbol: '✦', color: '#15AD70' };
     case 'warning': return { symbol: '⚠', color: '#F7C700' };
     case 'critical': return { symbol: '◆', color: '#FF5757' };
     default: return { symbol: '○', color: '#5B9AFF' };
@@ -136,9 +136,9 @@ export default function ReflectiveInsightsWidget({ environmentId }: ReflectiveIn
                         <span
                           className="shrink-0 text-xs font-light px-2 py-0.5 rounded-full"
                           style={{
-                            background: r.metricDelta > 0 ? 'rgba(200,242,107,0.1)' : 'rgba(255,87,87,0.1)',
-                            color: r.metricDelta > 0 ? '#C8F26B' : '#FF5757',
-                            border: `1px solid ${r.metricDelta > 0 ? 'rgba(200,242,107,0.2)' : 'rgba(255,87,87,0.2)'}`,
+                            background: r.metricDelta > 0 ? 'rgba(21,173,112,0.1)' : 'rgba(255,87,87,0.1)',
+                            color: r.metricDelta > 0 ? '#15AD70' : '#FF5757',
+                            border: `1px solid ${r.metricDelta > 0 ? 'rgba(21,173,112,0.2)' : 'rgba(255,87,87,0.2)'}`,
                           }}
                         >
                           {r.metricDelta > 0 ? '\u2191' : '\u2193'} {Math.abs(r.metricDelta)}%
@@ -180,15 +180,15 @@ export default function ReflectiveInsightsWidget({ environmentId }: ReflectiveIn
                           onClick={() => handleAcknowledge(r.id)}
                           className="text-[10px] font-light px-2 py-0.5 rounded-full transition-all"
                           style={{
-                            color: '#C8F26B',
-                            background: 'rgba(200,242,107,0.06)',
-                            border: '1px solid rgba(200,242,107,0.15)',
+                            color: '#15AD70',
+                            background: 'rgba(21,173,112,0.06)',
+                            border: '1px solid rgba(21,173,112,0.15)',
                           }}
                           onMouseEnter={e => {
-                            (e.target as HTMLElement).style.background = 'rgba(200,242,107,0.12)';
+                            (e.target as HTMLElement).style.background = 'rgba(21,173,112,0.12)';
                           }}
                           onMouseLeave={e => {
-                            (e.target as HTMLElement).style.background = 'rgba(200,242,107,0.06)';
+                            (e.target as HTMLElement).style.background = 'rgba(21,173,112,0.06)';
                           }}
                         >
                           Act on this

@@ -127,14 +127,14 @@ export default function PublicFormPage() {
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
               style={{
-                background: 'rgba(200,242,107,0.1)',
-                border: '1px solid rgba(200,242,107,0.25)',
+                background: 'rgba(21,173,112,0.1)',
+                border: '1px solid rgba(21,173,112,0.25)',
               }}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M5 10l4 4 6-8"
-                  stroke="#C8F26B"
+                  stroke="#15AD70"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"

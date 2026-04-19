@@ -54,9 +54,9 @@ const TIER_META: Record<Tier, Meta> = {
   Act: {
     label: 'Act',
     naturalLabel: 'Acting on your behalf',
-    color: '#C8F26B',
-    bg: 'rgba(200,242,107,0.1)',
-    border: 'rgba(200,242,107,0.25)',
+    color: '#15AD70',
+    bg: 'rgba(21,173,112,0.1)',
+    border: 'rgba(21,173,112,0.25)',
     explainer: 'Acts within its tool allow-list. You are notified after each action.',
   },
   Autonomous: {

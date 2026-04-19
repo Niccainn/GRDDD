@@ -43,7 +43,7 @@ const CATEGORIES = [
 const CATEGORY_COLORS: Record<string, string> = {
   illustration: '#BF9FF1',
   photo: '#7193ED',
-  icon: '#C8F26B',
+  icon: '#15AD70',
   logo: '#F7C700',
   video: '#FF6B6B',
   document: '#4DB8DB',
@@ -225,7 +225,7 @@ function UploadModal({
                   <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>{formatSize(f.size)}</span>
                   {p !== undefined && p > 0 && p <= 100 && (
                     <div className="w-16 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      <div className="h-full rounded-full transition-all" style={{ width: `${p}%`, background: p === 100 ? '#C8F26B' : 'rgba(113,147,237,0.6)' }} />
+                      <div className="h-full rounded-full transition-all" style={{ width: `${p}%`, background: p === 100 ? '#15AD70' : 'rgba(113,147,237,0.6)' }} />
                     </div>
                   )}
                   {p === -1 && <span className="text-xs" style={{ color: '#FF6B6B' }}>Failed</span>}

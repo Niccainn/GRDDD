@@ -15,7 +15,7 @@ type Task = {
 
 const STATUS_COLOR: Record<string, string> = {
   BACKLOG: 'rgba(255,255,255,0.2)', TODO: '#7193ED', IN_PROGRESS: '#BF9FF1',
-  REVIEW: '#F7C700', DONE: '#C8F26B', CANCELLED: 'rgba(255,255,255,0.15)',
+  REVIEW: '#F7C700', DONE: '#15AD70', CANCELLED: 'rgba(255,255,255,0.15)',
 };
 
 const PRIORITY_COLOR: Record<string, string> = {
@@ -148,7 +148,7 @@ export default function EnvironmentCalendarPage() {
                 style={{
                   borderRight: (i + 1) % 7 !== 0 ? '1px solid var(--glass-border)' : 'none',
                   borderBottom: i < 35 ? '1px solid var(--glass-border)' : 'none',
-                  background: isToday ? 'rgba(200,242,107,0.03)' : cell.inMonth ? 'transparent' : 'rgba(0,0,0,0.15)',
+                  background: isToday ? 'rgba(21,173,112,0.03)' : cell.inMonth ? 'transparent' : 'rgba(0,0,0,0.15)',
                 }}>
                 {/* Day number */}
                 <div className="flex items-center justify-between mb-1">

@@ -322,7 +322,7 @@ export default function ReportsPage() {
                   <div className="flex items-center gap-2">
                     <button onClick={copyReport}
                       className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: copied ? '#C8F26B' : 'rgba(255,255,255,0.4)' }}>
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: copied ? '#15AD70' : 'rgba(255,255,255,0.4)' }}>
                       {copied ? '✓ Copied' : 'Copy'}
                     </button>
                     <button onClick={downloadReport}

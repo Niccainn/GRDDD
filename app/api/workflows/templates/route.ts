@@ -43,7 +43,7 @@ const WORKFLOW_TEMPLATES = [
     description: 'Two-week development sprint with review gates',
     stages: ['Planning', 'Development', 'Code Review', 'QA', 'Demo', 'Retrospective'],
     category: 'Engineering',
-    color: '#C8F26B',
+    color: '#15AD70',
   },
   {
     id: 'campaign',

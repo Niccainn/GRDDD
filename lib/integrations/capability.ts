@@ -62,9 +62,9 @@ export const TIER_META: Record<CapabilityTier, TierMeta> = {
   live_sync: {
     label: 'Live sync',
     shortLabel: 'Live',
-    color: '#C8F26B',
-    bg: 'rgba(200,242,107,0.1)',
-    border: 'rgba(200,242,107,0.25)',
+    color: '#15AD70',
+    bg: 'rgba(21,173,112,0.1)',
+    border: 'rgba(21,173,112,0.25)',
     explainer:
       'Data pulls in automatically every 15 minutes and on demand via the Sync button.',
   },

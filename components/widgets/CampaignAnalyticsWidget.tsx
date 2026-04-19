@@ -31,7 +31,7 @@ function formatMoney(n: number): string {
 }
 
 function roasColor(roas: number): string {
-  if (roas >= 2) return '#C8F26B';
+  if (roas >= 2) return '#15AD70';
   if (roas >= 1) return '#F7C700';
   return '#FF5757';
 }
@@ -90,12 +90,12 @@ export default function CampaignAnalyticsWidget({ analytics, successRate }: Camp
       <div className="flex items-center justify-between mb-4">
         <DotMatrix
           values={[analytics.impressions, analytics.reach, analytics.engagement, analytics.clicks]}
-          colors={['rgba(255,255,255,0.5)', '#7193ED', '#C8F26B', '#BF9FF1']}
+          colors={['rgba(255,255,255,0.5)', '#7193ED', '#15AD70', '#BF9FF1']}
         />
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full"
-            style={{ background: successRate >= 70 ? '#C8F26B' : successRate >= 40 ? '#F7C700' : '#FF5757' }} />
-          <span className="stat-number text-lg" style={{ color: successRate >= 70 ? '#C8F26B' : successRate >= 40 ? '#F7C700' : '#FF5757' }}>
+            style={{ background: successRate >= 70 ? '#15AD70' : successRate >= 40 ? '#F7C700' : '#FF5757' }} />
+          <span className="stat-number text-lg" style={{ color: successRate >= 70 ? '#15AD70' : successRate >= 40 ? '#F7C700' : '#FF5757' }}>
             {successRate}%
           </span>
           <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>success</span>
@@ -111,7 +111,7 @@ export default function CampaignAnalyticsWidget({ analytics, successRate }: Camp
         <StatCard label="CTR" value={`${analytics.ctr.toFixed(1)}%`} />
         <StatCard label="ROAS" value={`${analytics.roas.toFixed(1)}x`} color={roasColor(analytics.roas)} tag={analytics.roas >= 2 ? 'High' : 'Medium'} />
         <StatCard label="Spend" value={formatMoney(analytics.spend)} />
-        <StatCard label="Conversions" value={formatNumber(analytics.conversions)} color="#C8F26B" />
+        <StatCard label="Conversions" value={formatNumber(analytics.conversions)} color="#15AD70" />
       </div>
     </Widget>
   );

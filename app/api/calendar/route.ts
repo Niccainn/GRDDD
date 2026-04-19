@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
       title: g.title,
       date: g.dueDate,
       status: g.status,
-      color: g.system?.color ?? '#C8F26B',
+      color: g.system?.color ?? '#15AD70',
       systemName: g.system?.name ?? null,
       meta: { progress: g.progress },
       href: `/goals`,

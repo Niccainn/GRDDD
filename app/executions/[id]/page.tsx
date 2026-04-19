@@ -233,8 +233,8 @@ export default function ExecutionDetailPage() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <span className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: execution.status === 'COMPLETED' ? '#C8F26B' : execution.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
-                <span className="text-xs font-light" style={{ color: execution.status === 'COMPLETED' ? '#C8F26B' : execution.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }}>
+                  style={{ backgroundColor: execution.status === 'COMPLETED' ? '#15AD70' : execution.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
+                <span className="text-xs font-light" style={{ color: execution.status === 'COMPLETED' ? '#15AD70' : execution.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }}>
                   {execution.status.toLowerCase()}
                 </span>
                 <span style={{ color: 'var(--text-3)' }}>·</span>
@@ -252,7 +252,7 @@ export default function ExecutionDetailPage() {
                 <>
                   <button onClick={copyToClipboard}
                     className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: copied ? '#C8F26B' : 'rgba(255,255,255,0.4)' }}>
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: copied ? '#15AD70' : 'rgba(255,255,255,0.4)' }}>
                     {copied ? '✓ Copied' : 'Copy markdown'}
                   </button>
                   <button onClick={downloadMarkdown}
@@ -288,24 +288,24 @@ export default function ExecutionDetailPage() {
                 {stages.map((stage, idx) => {
                   const isDone = stageOutputs.some(s => s.stage === stage) || (execution.status === 'COMPLETED' && (execution.currentStage ?? 0) > idx);
                   const isActive = streamingStage?.stage === stage;
-                  const stageColor = isDone ? '#C8F26B' : isActive ? '#BF9FF1' : 'rgba(255,255,255,0.2)';
+                  const stageColor = isDone ? '#15AD70' : isActive ? '#BF9FF1' : 'rgba(255,255,255,0.2)';
                   return (
                     <div key={idx} className="flex items-center">
                       <div className="flex flex-col items-center px-3 py-2.5 rounded-lg min-w-[90px] text-center transition-all"
                         style={{
-                          background: isActive ? 'rgba(191,159,241,0.06)' : isDone ? 'rgba(200,242,107,0.06)' : 'var(--glass)',
-                          border: `1px solid ${isActive ? 'rgba(191,159,241,0.25)' : isDone ? 'rgba(200,242,107,0.2)' : 'var(--glass-border)'}`,
+                          background: isActive ? 'rgba(191,159,241,0.06)' : isDone ? 'rgba(21,173,112,0.06)' : 'var(--glass)',
+                          border: `1px solid ${isActive ? 'rgba(191,159,241,0.25)' : isDone ? 'rgba(21,173,112,0.2)' : 'var(--glass-border)'}`,
                         }}>
                         <span className="text-xs mb-1 tabular-nums" style={{ color: stageColor }}>
                           {isDone ? '✓' : isActive ? '···' : String(idx + 1).padStart(2, '0')}
                         </span>
-                        <span className="text-xs font-light leading-tight" style={{ color: isActive ? '#BF9FF1' : isDone ? '#C8F26B' : 'rgba(255,255,255,0.6)' }}>
+                        <span className="text-xs font-light leading-tight" style={{ color: isActive ? '#BF9FF1' : isDone ? '#15AD70' : 'rgba(255,255,255,0.6)' }}>
                           {stage}
                         </span>
                       </div>
                       {idx < stages.length - 1 && (
                         <div className="w-5 h-px flex-shrink-0"
-                          style={{ background: isDone ? 'rgba(200,242,107,0.35)' : 'rgba(255,255,255,0.08)' }} />
+                          style={{ background: isDone ? 'rgba(21,173,112,0.35)' : 'rgba(255,255,255,0.08)' }} />
                       )}
                     </div>
                   );
@@ -323,11 +323,11 @@ export default function ExecutionDetailPage() {
 
               {stageOutputs.map((s, i) => (
                 <div key={i} className="rounded-xl overflow-hidden"
-                  style={{ border: '1px solid rgba(200,242,107,0.15)' }}>
+                  style={{ border: '1px solid rgba(21,173,112,0.15)' }}>
                   <div className="flex items-center gap-2 px-4 py-2.5"
-                    style={{ background: 'rgba(200,242,107,0.05)', borderBottom: '1px solid rgba(200,242,107,0.1)' }}>
-                    <span style={{ color: '#C8F26B', fontSize: '11px' }}>✓</span>
-                    <span className="text-xs font-light" style={{ color: '#C8F26B' }}>{s.stage}</span>
+                    style={{ background: 'rgba(21,173,112,0.05)', borderBottom: '1px solid rgba(21,173,112,0.1)' }}>
+                    <span style={{ color: '#15AD70', fontSize: '11px' }}>✓</span>
+                    <span className="text-xs font-light" style={{ color: '#15AD70' }}>{s.stage}</span>
                   </div>
                   <div className="px-5 py-4" style={{ background: 'rgba(255,255,255,0.02)' }}>
                     <MD text={s.output} />
@@ -359,12 +359,12 @@ export default function ExecutionDetailPage() {
             <div className="mt-4 p-4 rounded-xl flex items-start gap-4"
               style={{
                 background: execution.validation.score >= 0.8
-                  ? 'rgba(200,242,107,0.05)'
+                  ? 'rgba(21,173,112,0.05)'
                   : execution.validation.score >= 0.6
                     ? 'rgba(247,199,0,0.05)'
                     : 'rgba(255,107,107,0.05)',
                 border: `1px solid ${execution.validation.score >= 0.8
-                  ? 'rgba(200,242,107,0.15)'
+                  ? 'rgba(21,173,112,0.15)'
                   : execution.validation.score >= 0.6
                     ? 'rgba(247,199,0,0.15)'
                     : 'rgba(255,107,107,0.15)'}`,
@@ -372,7 +372,7 @@ export default function ExecutionDetailPage() {
               <div className="flex-shrink-0">
                 <p className="text-xs mb-1" style={{ color: 'var(--text-3)' }}>Quality score</p>
                 <p className="text-2xl font-extralight tabular-nums"
-                  style={{ color: execution.validation.score >= 0.8 ? '#C8F26B' : execution.validation.score >= 0.6 ? '#F7C700' : '#FF6B6B' }}>
+                  style={{ color: execution.validation.score >= 0.8 ? '#15AD70' : execution.validation.score >= 0.6 ? '#F7C700' : '#FF6B6B' }}>
                   {Math.round(execution.validation.score * 100)}%
                 </p>
               </div>

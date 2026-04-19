@@ -109,13 +109,13 @@ export async function POST(req: Request) {
       const starterSystems = template === 'solo'
         ? [
             { name: 'Marketing', color: '#7193ED', description: 'Content, campaigns, and audience growth' },
-            { name: 'Operations', color: '#C8F26B', description: 'Processes, workflows, and internal systems' },
+            { name: 'Operations', color: '#15AD70', description: 'Processes, workflows, and internal systems' },
             { name: 'Product', color: '#BF9FF1', description: 'Roadmap, features, and delivery' },
           ]
         : [
             { name: 'Marketing', color: '#7193ED', description: 'Content, campaigns, and audience growth' },
             { name: 'Sales', color: '#F7C700', description: 'Pipeline, outreach, and revenue' },
-            { name: 'Operations', color: '#C8F26B', description: 'Processes, workflows, and internal systems' },
+            { name: 'Operations', color: '#15AD70', description: 'Processes, workflows, and internal systems' },
             { name: 'Product', color: '#BF9FF1', description: 'Roadmap, features, and delivery' },
             { name: 'Support', color: '#FF6B6B', description: 'Customer success and issue resolution' },
           ];

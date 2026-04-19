@@ -30,7 +30,7 @@ type Analytics = {
 function BarChart({
   data,
   height = 80,
-  color = '#C8F26B',
+  color = '#15AD70',
   colorB,
   keyA,
   keyB,
@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
           [
             { label: 'Total queries', value: fmt(data.summary.totalQueries), sub: `${fmt(data.summary.weekQueries)} this week`, color: '#BF9FF1' },
             { label: 'Tokens used', value: fmt(data.summary.totalTokens), sub: `${fmt(data.summary.weekTokens)} this week`, color: '#7193ED' },
-            { label: 'Nova success', value: `${data.summary.successRate}%`, sub: 'query success rate', color: '#C8F26B' },
+            { label: 'Nova success', value: `${data.summary.successRate}%`, sub: 'query success rate', color: '#15AD70' },
             { label: 'Executions', value: fmt(data.summary.execTotal), sub: `${data.summary.execSuccessRate}% completed`, color: '#F7C700' },
           ].map(stat => (
             <div key={stat.label} className="rounded-xl p-4" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
@@ -218,8 +218,8 @@ export default function AnalyticsPage() {
             </div>
             {data && (
               <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1.5" style={{ color: '#C8F26B' }}>
-                  <span className="w-2 h-2 rounded-sm" style={{ background: '#C8F26B', opacity: 0.7 }} />
+                <span className="flex items-center gap-1.5" style={{ color: '#15AD70' }}>
+                  <span className="w-2 h-2 rounded-sm" style={{ background: '#15AD70', opacity: 0.7 }} />
                   {data.summary.execCompleted} completed
                 </span>
                 <span className="flex items-center gap-1.5" style={{ color: '#FF6B6B' }}>
@@ -233,7 +233,7 @@ export default function AnalyticsPage() {
             <div className="h-20 animate-pulse rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
           ) : (
             <>
-              <BarChart data={data.execDaily as unknown as Record<string, number>[]} keyA="completed" keyB="failed" color="#C8F26B" colorB="#FF6B6B" height={72} />
+              <BarChart data={data.execDaily as unknown as Record<string, number>[]} keyA="completed" keyB="failed" color="#15AD70" colorB="#FF6B6B" height={72} />
               <div className="flex justify-between mt-2 text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
                 <span>{fmtDate(data.execDaily[0]?.date ?? '')}</span>
                 <span>{fmtDate(data.execDaily[data.execDaily.length - 1]?.date ?? '')}</span>

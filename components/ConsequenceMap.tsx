@@ -38,11 +38,11 @@ type ChainResponse = {
 };
 
 const RELATIONSHIP_COLORS: Record<string, string> = {
-  triggers: '#C8F26B',
+  triggers: '#15AD70',
   blocks: '#FF5757',
   feeds_into: '#7193ED',
   degrades: '#F7C700',
-  improves: '#C8F26B',
+  improves: '#15AD70',
   requires: 'rgba(255,255,255,0.3)',
 };
 
@@ -55,8 +55,8 @@ const IMPACT_BORDER: Record<string, string> = {
 
 const TYPE_ICONS: Record<string, { shape: string; color: string }> = {
   system: { shape: 'circle', color: '#7193ED' },
-  workflow: { shape: 'diamond', color: '#C8F26B' },
-  workflow_stage: { shape: 'diamond', color: '#C8F26B' },
+  workflow: { shape: 'diamond', color: '#15AD70' },
+  workflow_stage: { shape: 'diamond', color: '#15AD70' },
   goal: { shape: 'flag', color: '#F7C700' },
   task: { shape: 'checkbox', color: 'rgba(255,255,255,0.5)' },
   metric: { shape: 'chart', color: '#BF9FF1' },
@@ -162,7 +162,7 @@ function NodeCard({
         WebkitBackdropFilter: 'blur(24px)',
         cursor: 'default',
         transition: 'border-color 0.3s, box-shadow 0.3s, opacity 0.4s, transform 0.4s',
-        boxShadow: isHighlighted ? '0 0 20px rgba(200,242,107,0.15)' : 'none',
+        boxShadow: isHighlighted ? '0 0 20px rgba(21,173,112,0.15)' : 'none',
         animation: `consequenceFadeIn 0.4s ease-out ${delay}ms both`,
       }}
     >
@@ -184,7 +184,7 @@ function NodeCard({
         style={{
           fontSize: '12px',
           fontWeight: 300,
-          color: isSource ? '#C8F26B' : 'rgba(255,255,255,0.75)',
+          color: isSource ? '#15AD70' : 'rgba(255,255,255,0.75)',
           lineHeight: '1.35',
           margin: '0 0 6px 0',
         }}

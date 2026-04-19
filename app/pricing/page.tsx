@@ -108,7 +108,7 @@ export default function PricingPage() {
       {/* Ambient gradient */}
       <div className="fixed inset-0 pointer-events-none" aria-hidden>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] rounded-full opacity-[0.05]"
-          style={{ background: 'radial-gradient(ellipse, #C8F26B, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(ellipse, #15AD70, transparent 70%)' }} />
       </div>
 
       {/* Nav */}
@@ -119,7 +119,7 @@ export default function PricingPage() {
             <rect x="2" y="2" width="75" height="96" rx="8" stroke="url(#pg)" strokeWidth="2"/>
             <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="url(#pg)" strokeWidth="2"/>
             <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="url(#pg)" strokeWidth="2"/>
-            <defs><linearGradient id="pg" x1="0" y1="0" x2="79" y2="100"><stop offset="0%" stopColor="#C8F26B"/><stop offset="100%" stopColor="#7193ED"/></linearGradient></defs>
+            <defs><linearGradient id="pg" x1="0" y1="0" x2="79" y2="100"><stop offset="0%" stopColor="#15AD70"/><stop offset="100%" stopColor="#7193ED"/></linearGradient></defs>
           </svg>
           <span className="text-sm font-light tracking-[0.15em]" style={{ color: 'var(--text-2)' }}>GRID</span>
         </Link>
@@ -154,7 +154,7 @@ export default function PricingPage() {
             <div
               key={plan.name}
               style={{
-                background: plan.highlight ? 'linear-gradient(180deg, rgba(200,242,107,0.06), var(--glass))' : 'var(--glass)',
+                background: plan.highlight ? 'linear-gradient(180deg, rgba(21,173,112,0.06), var(--glass))' : 'var(--glass)',
                 border: `1px solid ${plan.highlight ? 'var(--brand-border)' : 'var(--glass-border)'}`,
                 borderRadius: 24,
                 padding: '2.25rem 2rem',
@@ -306,7 +306,7 @@ export default function PricingPage() {
       <section className="px-5 md:px-8 pb-20 md:pb-24 text-center relative">
         <div
           style={{
-            background: 'linear-gradient(135deg, rgba(200,242,107,0.08), rgba(113,147,237,0.06))',
+            background: 'linear-gradient(135deg, rgba(21,173,112,0.08), rgba(113,147,237,0.06))',
             border: '1px solid var(--brand-border)',
             borderRadius: 28,
             padding: '3.5rem 2rem',

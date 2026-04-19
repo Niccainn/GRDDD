@@ -149,8 +149,8 @@ export default function ExecutionReviewForm({ executionId, stages, onSubmit, onD
               onClick={() => setInputQuality(inputQuality === n ? null : n)}
               className="flex-1 py-1.5 text-[10px] transition-all"
               style={{
-                background: inputQuality === n ? 'rgba(200, 242, 107, 0.15)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${inputQuality === n ? 'rgba(200, 242, 107, 0.3)' : 'rgba(255,255,255,0.06)'}`,
+                background: inputQuality === n ? 'rgba(21, 173, 112, 0.15)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${inputQuality === n ? 'rgba(21, 173, 112, 0.3)' : 'rgba(255,255,255,0.06)'}`,
                 borderRadius: '4px',
                 color: inputQuality === n ? 'var(--brand)' : 'var(--text-3)',
               }}
@@ -293,8 +293,8 @@ export default function ExecutionReviewForm({ executionId, stages, onSubmit, onD
         disabled={submitting}
         className="w-full py-2 text-xs font-light transition-all"
         style={{
-          background: 'rgba(200, 242, 107, 0.12)',
-          border: '1px solid rgba(200, 242, 107, 0.25)',
+          background: 'rgba(21, 173, 112, 0.12)',
+          border: '1px solid rgba(21, 173, 112, 0.25)',
           borderRadius: '6px',
           color: 'var(--brand)',
           opacity: submitting ? 0.5 : 1,

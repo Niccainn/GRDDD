@@ -30,10 +30,10 @@ export default function EnvironmentBrandProvider({ children }: { children: React
   useEffect(() => {
     if (!environmentId) {
       // Reset to default brand
-      document.documentElement.style.setProperty('--brand', '#C8F26B');
-      document.documentElement.style.setProperty('--brand-soft', 'rgba(200, 242, 107, 0.12)');
-      document.documentElement.style.setProperty('--brand-glow', 'rgba(200, 242, 107, 0.08)');
-      document.documentElement.style.setProperty('--brand-border', 'rgba(200, 242, 107, 0.2)');
+      document.documentElement.style.setProperty('--brand', '#15AD70');
+      document.documentElement.style.setProperty('--brand-soft', 'rgba(21, 173, 112, 0.12)');
+      document.documentElement.style.setProperty('--brand-glow', 'rgba(21, 173, 112, 0.08)');
+      document.documentElement.style.setProperty('--brand-border', 'rgba(21, 173, 112, 0.2)');
       setBrand({ brandName: null, brandColor: null, brandLogo: null });
       return;
     }

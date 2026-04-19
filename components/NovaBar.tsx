@@ -68,14 +68,14 @@ function ToolPill({ tool }: { tool: ToolCall }) {
   return (
     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-light my-1"
       style={{
-        background: tool.status === 'done' ? 'rgba(200,242,107,0.08)' : 'rgba(255,255,255,0.05)',
-        border: `1px solid ${tool.status === 'done' ? 'rgba(200,242,107,0.2)' : 'rgba(255,255,255,0.1)'}`,
-        color: tool.status === 'done' ? '#C8F26B' : 'rgba(255,255,255,0.4)',
+        background: tool.status === 'done' ? 'rgba(21,173,112,0.08)' : 'rgba(255,255,255,0.05)',
+        border: `1px solid ${tool.status === 'done' ? 'rgba(21,173,112,0.2)' : 'rgba(255,255,255,0.1)'}`,
+        color: tool.status === 'done' ? '#15AD70' : 'rgba(255,255,255,0.4)',
       }}>
       {tool.status === 'running' ? (
         <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.4)' }} />
       ) : (
-        <span style={{ color: '#C8F26B' }}>✓</span>
+        <span style={{ color: '#15AD70' }}>✓</span>
       )}
       <span>{tool.status === 'done' ? tool.summary : tool.label + '···'}</span>
     </div>
@@ -110,7 +110,7 @@ export default function NovaBar({
   const MODELS = [
     { id: 'claude-opus-4-6',   label: 'Opus',   desc: 'Most capable',  color: '#BF9FF1' },
     { id: 'claude-sonnet-4-5', label: 'Sonnet', desc: 'Balanced',       color: '#7193ED' },
-    { id: 'claude-haiku-4-5',  label: 'Haiku',  desc: 'Fast & light',   color: '#C8F26B' },
+    { id: 'claude-haiku-4-5',  label: 'Haiku',  desc: 'Fast & light',   color: '#15AD70' },
   ];
 
   useEffect(() => {
