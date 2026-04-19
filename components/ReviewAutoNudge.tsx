@@ -78,9 +78,9 @@ export default function ReviewAutoNudge({ executionId, workflowId, stages }: Pro
         onClick={e => e.stopPropagation()}
       >
         <div className="w-10 h-10 rounded-full mx-auto mb-4 flex items-center justify-center"
-          style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.2)' }}>
+          style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.2)' }}>
           <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
-            <path d="M6 1L8 4.5L12 5L9 8L10 12L6 10L2 12L3 8L0 5L4 4.5L6 1Z" stroke="#15AD70" strokeWidth="1" strokeLinejoin="round" fill="none"/>
+            <path d="M6 1L8 4.5L12 5L9 8L10 12L6 10L2 12L3 8L0 5L4 4.5L6 1Z" stroke="#C8F26B" strokeWidth="1" strokeLinejoin="round" fill="none"/>
           </svg>
         </div>
         <p className="text-sm font-light mb-1" style={{ color: 'var(--text-1)' }}>
@@ -100,7 +100,7 @@ export default function ReviewAutoNudge({ executionId, workflowId, stages }: Pro
           <button
             onClick={() => setShowFullForm(true)}
             className="flex-1 py-2.5 text-xs font-light rounded-lg transition-all"
-            style={{ background: 'rgba(21,173,112,0.12)', border: '1px solid rgba(21,173,112,0.25)', color: 'var(--brand)' }}
+            style={{ background: 'rgba(200,242,107,0.12)', border: '1px solid rgba(200,242,107,0.25)', color: 'var(--brand)' }}
           >
             Rate this run
           </button>

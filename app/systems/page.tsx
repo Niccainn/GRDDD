@@ -7,7 +7,7 @@ import DeleteButton from '@/components/DeleteButton';
 export const dynamic = 'force-dynamic';
 
 const TEMPLATES = [
-  { name: 'Brand System', description: 'Visual identity, messaging, brand guidelines', color: '#15AD70' },
+  { name: 'Brand System', description: 'Visual identity, messaging, brand guidelines', color: '#C8F26B' },
   { name: 'Content System', description: 'Content creation, editorial calendar, publishing', color: '#68D0CA' },
   { name: 'Client Delivery', description: 'Project management, client communication, deliverables', color: '#7193ED' },
   { name: 'Marketing System', description: 'Campaigns, analytics, growth strategies', color: '#BF9FF1' },
@@ -87,7 +87,7 @@ export default async function SystemsPage() {
                       <div className="flex items-start justify-between mb-3">
                         {s.color && <div className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: s.color }} />}
                         {s.healthScore !== null && (
-                          <span className="text-xs font-light ml-auto" style={{ color: s.healthScore >= 80 ? '#15AD70' : s.healthScore >= 50 ? '#F7C700' : '#FF4D4D' }}>
+                          <span className="text-xs font-light ml-auto" style={{ color: s.healthScore >= 80 ? '#C8F26B' : s.healthScore >= 50 ? '#F7C700' : '#FF4D4D' }}>
                             {Math.round(s.healthScore)}%
                           </span>
                         )}

@@ -47,7 +47,7 @@ const NODE_W = 160;
 const NODE_H = 80;
 
 const TYPE_COLORS: Record<NodeType, string> = {
-  trigger:   '#15AD70',
+  trigger:   '#C8F26B',
   action:    '#7193ED',
   condition: '#F7C700',
   transform: '#BF9FF1',
@@ -526,14 +526,14 @@ export default function AutomationBuilderPage() {
 
         {/* Active toggle */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-light" style={{ color: data?.isActive ? '#15AD70' : 'var(--text-3)' }}>
+          <span className="text-xs font-light" style={{ color: data?.isActive ? '#C8F26B' : 'var(--text-3)' }}>
             {data?.isActive ? 'Active' : 'Inactive'}
           </span>
           <button onClick={toggleActive}
             className="w-8 h-4 rounded-full relative transition-all"
-            style={{ background: data?.isActive ? 'rgba(21,173,112,0.3)' : 'rgba(255,255,255,0.1)' }}>
+            style={{ background: data?.isActive ? 'rgba(200,242,107,0.3)' : 'rgba(255,255,255,0.1)' }}>
             <span className="absolute top-0.5 transition-all w-3 h-3 rounded-full"
-              style={{ left: data?.isActive ? '18px' : '2px', background: data?.isActive ? '#15AD70' : 'rgba(255,255,255,0.3)' }} />
+              style={{ left: data?.isActive ? '18px' : '2px', background: data?.isActive ? '#C8F26B' : 'rgba(255,255,255,0.3)' }} />
           </button>
         </div>
 
@@ -578,7 +578,7 @@ export default function AutomationBuilderPage() {
         {/* Run now */}
         <button onClick={() => showToast('Automation executed')}
           className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
-          style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}>
+          style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}>
           Run now
         </button>
       </div>
@@ -715,7 +715,7 @@ export default function AutomationBuilderPage() {
                         className="absolute w-3 h-3 rounded-full cursor-pointer transition-all hover:scale-150"
                         style={{
                           right: -6, top: NODE_H / 3 - 6,
-                          background: connecting?.nodeId === node.id && connecting.port === 'out-true' ? '#15AD70' : '#15AD70',
+                          background: connecting?.nodeId === node.id && connecting.port === 'out-true' ? '#C8F26B' : '#C8F26B',
                           border: '2px solid #08080C',
                         }}
                         onClick={(e) => { e.stopPropagation(); handlePortClick(node.id, 'out-true'); }}
@@ -869,8 +869,8 @@ export default function AutomationBuilderPage() {
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-xl z-[100]"
-          style={{ background: 'var(--glass-deep)', border: '1px solid rgba(21,173,112,0.3)', backdropFilter: 'blur(16px)' }}>
-          <p className="text-xs font-light" style={{ color: '#15AD70' }}>{toast}</p>
+          style={{ background: 'var(--glass-deep)', border: '1px solid rgba(200,242,107,0.3)', backdropFilter: 'blur(16px)' }}>
+          <p className="text-xs font-light" style={{ color: '#C8F26B' }}>{toast}</p>
         </div>
       )}
     </div>

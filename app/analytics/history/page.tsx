@@ -28,7 +28,7 @@ type Range = '7d' | '30d' | '90d' | 'all';
 const eventConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   goal_achieved: {
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" strokeLinecap="round" strokeLinejoin="round"/><line x1="4" y1="22" x2="4" y2="15" strokeLinecap="round"/></svg>,
-    color: '#15AD70',
+    color: '#C8F26B',
     label: 'Goal Achieved',
   },
   goal_missed: {
@@ -53,7 +53,7 @@ const eventConfig: Record<string, { icon: React.ReactNode; color: string; label:
   },
   task_milestone: {
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="3" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-    color: '#15AD70',
+    color: '#C8F26B',
     label: 'Tasks',
   },
   team_change: {
@@ -151,7 +151,7 @@ function Delta({ values }: { values: number[] }) {
     <span style={{
       fontSize: 13,
       fontWeight: 300,
-      color: up ? '#15AD70' : '#FF6B6B',
+      color: up ? '#C8F26B' : '#FF6B6B',
     }}>
       {up ? '\u2191' : '\u2193'}{Math.abs(pct)}%
     </span>
@@ -420,9 +420,9 @@ export default function AnalyticsHistoryPage() {
               borderRadius: 10,
               fontSize: 12,
               fontWeight: 300,
-              color: presentMode ? '#15AD70' : 'var(--text-3)',
-              background: presentMode ? 'rgba(21,173,112,0.1)' : 'var(--glass)',
-              border: presentMode ? '1px solid rgba(21,173,112,0.25)' : '1px solid var(--glass-border)',
+              color: presentMode ? '#C8F26B' : 'var(--text-3)',
+              background: presentMode ? 'rgba(200,242,107,0.1)' : 'var(--glass)',
+              border: presentMode ? '1px solid rgba(200,242,107,0.25)' : '1px solid var(--glass-border)',
               cursor: 'pointer',
               transition: 'all 0.2s',
               display: 'flex',
@@ -520,7 +520,7 @@ export default function AnalyticsHistoryPage() {
             <div style={{
               fontSize: presentMode ? 36 : 32,
               fontWeight: 200,
-              color: '#15AD70',
+              color: '#C8F26B',
               fontVariantNumeric: 'tabular-nums',
               marginBottom: 12,
               lineHeight: 1,
@@ -530,7 +530,7 @@ export default function AnalyticsHistoryPage() {
             </div>
             <BarChartTrend
               data={data.taskVelocity.map(d => ({ label: fmtWeek(d.week), value: d.count }))}
-              color="#15AD70"
+              color="#C8F26B"
               height={100}
             />
           </div>

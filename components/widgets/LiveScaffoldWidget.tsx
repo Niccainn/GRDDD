@@ -41,7 +41,7 @@ const KIND_LABEL: Record<Organelle['kind'], string> = {
 };
 
 const KIND_COLOR: Record<Organelle['kind'], string> = {
-  system: '#15AD70',
+  system: '#C8F26B',
   workflow: '#BF9FF1',
   signal: '#F7C700',
   widget: '#7193ED',
@@ -327,13 +327,13 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
                   critic.status === 'failed'
                     ? 'rgba(255,107,107,0.06)'
                     : critic.status === 'applied'
-                    ? 'rgba(21,173,112,0.06)'
+                    ? 'rgba(200,242,107,0.06)'
                     : 'rgba(255,255,255,0.03)',
                 border: `1px solid ${
                   critic.status === 'failed'
                     ? 'rgba(255,107,107,0.2)'
                     : critic.status === 'applied'
-                    ? 'rgba(21,173,112,0.18)'
+                    ? 'rgba(200,242,107,0.18)'
                     : 'var(--glass-border)'
                 }`,
                 color: 'var(--text-2)',

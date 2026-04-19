@@ -16,7 +16,7 @@ type ExecItem = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  COMPLETED: '#15AD70',
+  COMPLETED: '#C8F26B',
   RUNNING: '#7193ED',
   FAILED: '#FF6B6B',
   CANCELLED: 'rgba(255,255,255,0.25)',

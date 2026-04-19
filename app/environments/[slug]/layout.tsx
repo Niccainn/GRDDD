@@ -112,13 +112,13 @@ export default function EnvironmentWorkspaceLayout({ children }: { children: Rea
             {env.avgHealth !== null && (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full"
                 style={{
-                  background: env.avgHealth >= 80 ? 'rgba(21,173,112,0.08)' : env.avgHealth >= 60 ? 'rgba(247,199,0,0.08)' : 'rgba(255,87,87,0.08)',
-                  border: `1px solid ${env.avgHealth >= 80 ? 'rgba(21,173,112,0.2)' : env.avgHealth >= 60 ? 'rgba(247,199,0,0.2)' : 'rgba(255,87,87,0.2)'}`,
+                  background: env.avgHealth >= 80 ? 'rgba(200,242,107,0.08)' : env.avgHealth >= 60 ? 'rgba(247,199,0,0.08)' : 'rgba(255,87,87,0.08)',
+                  border: `1px solid ${env.avgHealth >= 80 ? 'rgba(200,242,107,0.2)' : env.avgHealth >= 60 ? 'rgba(247,199,0,0.2)' : 'rgba(255,87,87,0.2)'}`,
                 }}>
                 <span className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: env.avgHealth >= 80 ? '#15AD70' : env.avgHealth >= 60 ? '#F7C700' : '#FF5757' }} />
+                  style={{ background: env.avgHealth >= 80 ? '#C8F26B' : env.avgHealth >= 60 ? '#F7C700' : '#FF5757' }} />
                 <span className="text-xs font-light"
-                  style={{ color: env.avgHealth >= 80 ? '#15AD70' : env.avgHealth >= 60 ? '#F7C700' : '#FF5757' }}>
+                  style={{ color: env.avgHealth >= 80 ? '#C8F26B' : env.avgHealth >= 60 ? '#F7C700' : '#FF5757' }}>
                   {env.avgHealth}% health
                 </span>
               </div>

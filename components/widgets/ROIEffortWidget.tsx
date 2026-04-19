@@ -20,7 +20,7 @@ type ROIEffortWidgetProps = {
 };
 
 function quadrantColor(effort: number, returnVal: number): string {
-  if (returnVal >= 50 && effort < 50) return '#15AD70';   // High return, low effort
+  if (returnVal >= 50 && effort < 50) return '#C8F26B';   // High return, low effort
   if (returnVal >= 50 && effort >= 50) return '#5B9AFF';  // High return, high effort
   if (returnVal < 50 && effort < 50) return 'rgba(255,255,255,0.25)'; // Low/Low
   return '#F7C700'; // Low return, high effort

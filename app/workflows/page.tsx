@@ -7,13 +7,13 @@ import Link from 'next/link';
 const AUTONOMY_LEVELS = [
   { name: 'Observe', color: 'rgba(255,255,255,0.35)' },
   { name: 'Suggest', color: '#6395ff' },
-  { name: 'Act & Notify', color: '#15AD70' },
+  { name: 'Act & Notify', color: '#C8F26B' },
   { name: 'Autonomous', color: '#a878ff' },
   { name: 'Self-Direct', color: '#F7C700' },
 ];
 
 const STATUS_COLOR: Record<string, string> = {
-  ACTIVE: '#15AD70',
+  ACTIVE: '#C8F26B',
   DRAFT: 'rgba(255,255,255,0.3)',
   PAUSED: '#F7C700',
   COMPLETED: '#7193ED',
@@ -247,7 +247,7 @@ function WorkflowsContent() {
           </div>
           <button type="submit" disabled={!createName.trim() || creating}
             className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
-            style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.25)', color: '#15AD70' }}>
+            style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.25)', color: '#C8F26B' }}>
             {creating ? '···' : 'Create'}
           </button>
           <button type="button" onClick={() => setShowCreate(false)}
@@ -259,7 +259,7 @@ function WorkflowsContent() {
               <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>Available:</span>
               {envIntegrations.map(int => (
                 <span key={int.id} className="text-[10px] px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(21,173,112,0.06)', border: '1px solid rgba(21,173,112,0.15)', color: 'rgba(21,173,112,0.7)' }}>
+                  style={{ background: 'rgba(200,242,107,0.06)', border: '1px solid rgba(200,242,107,0.15)', color: 'rgba(200,242,107,0.7)' }}>
                   {int.provider.replace(/_/g, ' ')}
                 </span>
               ))}

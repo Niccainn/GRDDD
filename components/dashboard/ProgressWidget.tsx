@@ -11,7 +11,7 @@ export default function ProgressWidget({ widget }: Props) {
   const [loading, setLoading] = useState(true);
 
   const metric = widget.config.metric ?? 'goalProgress';
-  const color = widget.config.color ?? '#15AD70';
+  const color = widget.config.color ?? '#C8F26B';
   const label = widget.title || 'Progress';
 
   useEffect(() => {

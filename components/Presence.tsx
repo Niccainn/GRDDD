@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { usePresence, type OnlineUser } from '@/lib/hooks/use-presence';
 
-const AVATAR_COLORS = ['#7193ED', '#15AD70', '#BF9FF1', '#FF9F43', '#4FC1E9'];
+const AVATAR_COLORS = ['#7193ED', '#C8F26B', '#BF9FF1', '#FF9F43', '#4FC1E9'];
 
 function getColor(index: number) {
   return AVATAR_COLORS[index % AVATAR_COLORS.length];
@@ -69,7 +69,7 @@ function Avatar({
           height: 7,
           bottom: -1,
           right: -1,
-          background: '#15AD70',
+          background: '#C8F26B',
           border: '1.5px solid rgba(8, 8, 12, 0.95)',
           animation: 'pulse 2s ease-in-out infinite',
         }}

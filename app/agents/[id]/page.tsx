@@ -363,9 +363,9 @@ export default function AgentDetailPage({
             disabled={running}
             className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
             style={{
-              background: 'rgba(21,173,112,0.12)',
-              border: '1px solid rgba(21,173,112,0.3)',
-              color: '#15AD70',
+              background: 'rgba(200,242,107,0.12)',
+              border: '1px solid rgba(200,242,107,0.3)',
+              color: '#C8F26B',
             }}
           >
             {running ? (runStatus ?? 'Running…') : '▶  Run now'}
@@ -415,9 +415,9 @@ export default function AgentDetailPage({
               disabled={savingPrompt}
               className="text-xs font-light px-3 py-1 rounded-lg transition-all disabled:opacity-40"
               style={{
-                background: 'rgba(21,173,112,0.1)',
-                border: '1px solid rgba(21,173,112,0.25)',
-                color: '#15AD70',
+                background: 'rgba(200,242,107,0.1)',
+                border: '1px solid rgba(200,242,107,0.25)',
+                color: '#C8F26B',
               }}
             >
               {savingPrompt ? 'Saving…' : 'Save prompt'}
@@ -468,7 +468,7 @@ export default function AgentDetailPage({
           style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
         >
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-            No runs yet. Hit <span style={{ color: '#15AD70' }}>Run now</span> to fire the first
+            No runs yet. Hit <span style={{ color: '#C8F26B' }}>Run now</span> to fire the first
             one.
           </p>
         </div>
@@ -513,7 +513,7 @@ function RunCard({
 }) {
   const statusColor =
     run.status === 'SUCCESS'
-      ? '#15AD70'
+      ? '#C8F26B'
       : run.status === 'FAILED'
         ? '#dc6b6b'
         : run.status === 'AWAITING_APPROVAL'
@@ -740,8 +740,8 @@ function BlockView({
     <span
       className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded tracking-wider"
       style={{
-        background: 'rgba(21,173,112,0.08)',
-        color: '#15AD70',
+        background: 'rgba(200,242,107,0.08)',
+        color: '#C8F26B',
       }}
     >
       EDITED
@@ -822,7 +822,7 @@ function ActionBlock({
   const isPending = status === 'PENDING';
   const statusColor =
     status === 'EXECUTED' || status === 'APPROVED'
-      ? '#15AD70'
+      ? '#C8F26B'
       : status === 'REJECTED' || status === 'FAILED'
         ? '#dc6b6b'
         : '#F59E0B';
@@ -917,9 +917,9 @@ function ActionBlock({
                 disabled={submitting !== null}
                 className="text-xs font-light px-3 py-1.5 rounded-lg transition-all disabled:opacity-40"
                 style={{
-                  background: 'rgba(21,173,112,0.12)',
-                  border: '1px solid rgba(21,173,112,0.3)',
-                  color: '#15AD70',
+                  background: 'rgba(200,242,107,0.12)',
+                  border: '1px solid rgba(200,242,107,0.3)',
+                  color: '#C8F26B',
                 }}
               >
                 {submitting === 'approve' ? 'Approving…' : 'Approve & run'}
@@ -994,7 +994,7 @@ function EditorShell({
       className="rounded-lg p-4"
       style={{
         background: 'rgba(0,0,0,0.25)',
-        border: '1px solid rgba(21,173,112,0.3)',
+        border: '1px solid rgba(200,242,107,0.3)',
       }}
     >
       {children}
@@ -1004,9 +1004,9 @@ function EditorShell({
           disabled={saving}
           className="text-xs font-light px-3 py-1 rounded-lg transition-all disabled:opacity-40"
           style={{
-            background: 'rgba(21,173,112,0.1)',
-            border: '1px solid rgba(21,173,112,0.25)',
-            color: '#15AD70',
+            background: 'rgba(200,242,107,0.1)',
+            border: '1px solid rgba(200,242,107,0.25)',
+            color: '#C8F26B',
           }}
         >
           {saving ? 'Saving…' : 'Save edit'}
@@ -1233,7 +1233,7 @@ function MetricBlock({ block, onSave, badge }: BlockProps) {
 
   // Color the delta: leading '+' → green, '-' → red, else neutral.
   const deltaColor = initial.delta.startsWith('+')
-    ? '#15AD70'
+    ? '#C8F26B'
     : initial.delta.startsWith('-')
       ? '#dc6b6b'
       : 'var(--text-3)';

@@ -29,7 +29,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   input_pattern: '#7193ED',
   stage_pattern: '#BF9FF1',
   timing_pattern: '#F7C700',
-  quality_driver: '#15AD70',
+  quality_driver: '#C8F26B',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -115,8 +115,8 @@ export default function MasteryPage() {
           disabled={generating}
           className="text-[10px] px-3 py-1.5 font-light transition-all"
           style={{
-            background: 'rgba(21, 173, 112, 0.08)',
-            border: '1px solid rgba(21, 173, 112, 0.2)',
+            background: 'rgba(200, 242, 107, 0.08)',
+            border: '1px solid rgba(200, 242, 107, 0.2)',
             borderRadius: '6px',
             color: 'var(--brand)',
             opacity: generating ? 0.5 : 1,

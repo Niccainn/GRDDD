@@ -31,7 +31,7 @@ const NODE_H = 52;
 const DECISION_S = 72;
 
 const NODE_META: Record<NodeType, { bg: string; border: string; text: string; accent: string }> = {
-  start:    { bg: 'rgba(21,173,112,0.1)',    border: 'rgba(21,173,112,0.45)',   text: '#15AD70',              accent: '#15AD70'              },
+  start:    { bg: 'rgba(200,242,107,0.1)',    border: 'rgba(200,242,107,0.45)',   text: '#C8F26B',              accent: '#C8F26B'              },
   end:      { bg: 'rgba(255,107,107,0.1)',   border: 'rgba(255,107,107,0.45)',  text: '#FF6B6B',              accent: '#FF6B6B'              },
   task:     { bg: 'rgba(255,255,255,0.04)',  border: 'rgba(255,255,255,0.14)',  text: 'rgba(255,255,255,0.8)', accent: 'rgba(255,255,255,0.4)' },
   ai:       { bg: 'rgba(191,159,241,0.08)', border: 'rgba(191,159,241,0.35)', text: '#BF9FF1',              accent: '#BF9FF1'              },
@@ -352,8 +352,8 @@ export default function WorkflowBuilder({
         </span>
         <span className={`text-xs px-2 py-0.5 rounded-md ml-1 ${workflow.status === 'ACTIVE' ? '' : ''}`}
           style={{
-            background: workflow.status === 'ACTIVE' ? 'rgba(21,173,112,0.1)' : 'rgba(255,255,255,0.05)',
-            color: workflow.status === 'ACTIVE' ? '#15AD70' : 'rgba(255,255,255,0.35)',
+            background: workflow.status === 'ACTIVE' ? 'rgba(200,242,107,0.1)' : 'rgba(255,255,255,0.05)',
+            color: workflow.status === 'ACTIVE' ? '#C8F26B' : 'rgba(255,255,255,0.35)',
           }}>
           {workflow.status.toLowerCase()}
         </span>
@@ -370,9 +370,9 @@ export default function WorkflowBuilder({
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-1.5 text-xs font-light px-3.5 py-1.5 rounded-lg transition-all"
             style={{
-              background: saved ? 'rgba(21,173,112,0.12)' : 'rgba(255,255,255,0.06)',
-              border: `1px solid ${saved ? 'rgba(21,173,112,0.3)' : 'rgba(255,255,255,0.1)'}`,
-              color: saved ? '#15AD70' : 'rgba(255,255,255,0.7)',
+              background: saved ? 'rgba(200,242,107,0.12)' : 'rgba(255,255,255,0.06)',
+              border: `1px solid ${saved ? 'rgba(200,242,107,0.3)' : 'rgba(255,255,255,0.1)'}`,
+              color: saved ? '#C8F26B' : 'rgba(255,255,255,0.7)',
             }}>
             {saving ? '···' : saved ? '✓ Saved' : 'Save'}
             {!saving && !saved && <kbd className="text-xs" style={{ fontFamily: 'inherit', opacity: 0.4 }}>⌘S</kbd>}
@@ -452,7 +452,7 @@ export default function WorkflowBuilder({
                   <marker key={k} id={`arr-${k}`} markerWidth={9} markerHeight={9} refX={8} refY={3} orient="auto">
                     <path d="M0,0 L0,6 L9,3 z" fill={
                       k === 'sel' ? 'rgba(113,147,237,0.9)'  :
-                      k === 'yes' ? 'rgba(21,173,112,0.6)'   :
+                      k === 'yes' ? 'rgba(200,242,107,0.6)'   :
                       k === 'no'  ? 'rgba(247,199,0,0.6)'    :
                       'rgba(255,255,255,0.25)'
                     } />
@@ -468,7 +468,7 @@ export default function WorkflowBuilder({
                 const to   = inPort(tgt);
                 const isSel = selected === edge.id;
                 const arrKey = isSel ? 'sel' : edge.sourcePort === 'yes' ? 'yes' : edge.sourcePort === 'no' ? 'no' : 'dim';
-                const stroke = isSel ? 'rgba(113,147,237,0.9)' : edge.sourcePort === 'yes' ? 'rgba(21,173,112,0.5)' : edge.sourcePort === 'no' ? 'rgba(247,199,0,0.5)' : 'rgba(255,255,255,0.18)';
+                const stroke = isSel ? 'rgba(113,147,237,0.9)' : edge.sourcePort === 'yes' ? 'rgba(200,242,107,0.5)' : edge.sourcePort === 'no' ? 'rgba(247,199,0,0.5)' : 'rgba(255,255,255,0.18)';
                 const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 - 4 };
                 return (
                   <g key={edge.id} style={{ pointerEvents: 'all', cursor: 'pointer' }}>
@@ -478,7 +478,7 @@ export default function WorkflowBuilder({
                       markerEnd={`url(#arr-${arrKey})`} />
                     {edge.sourcePort !== 'out' && (
                       <text x={mid.x} y={mid.y} textAnchor="middle" fontSize={10}
-                        fill={edge.sourcePort === 'yes' ? 'rgba(21,173,112,0.7)' : 'rgba(247,199,0,0.7)'}>
+                        fill={edge.sourcePort === 'yes' ? 'rgba(200,242,107,0.7)' : 'rgba(247,199,0,0.7)'}>
                         {edge.sourcePort}
                       </text>
                     )}
@@ -531,7 +531,7 @@ export default function WorkflowBuilder({
                       onMouseUp={e => onPortMouseUp(e, node.id)} />
                     {/* Yes port — right */}
                     <div title="yes →"
-                      style={{ position: 'absolute', right: -7, top: s / 2 - 7, width: 14, height: 14, borderRadius: '50%', background: 'rgba(21,173,112,0.25)', border: '1.5px solid rgba(21,173,112,0.7)', cursor: 'crosshair', zIndex: 3 }}
+                      style={{ position: 'absolute', right: -7, top: s / 2 - 7, width: 14, height: 14, borderRadius: '50%', background: 'rgba(200,242,107,0.25)', border: '1.5px solid rgba(200,242,107,0.7)', cursor: 'crosshair', zIndex: 3 }}
                       onMouseDown={e => onPortMouseDown(e, node.id, 'yes')}
                       onMouseUp={e => onPortMouseUp(e, node.id)} />
                     {/* No port — bottom */}
@@ -692,7 +692,7 @@ export default function WorkflowBuilder({
                       {selectedEdge.sourcePort !== 'out' && (
                         <div>
                           <span style={{ color: 'rgba(255,255,255,0.3)' }}>Branch</span>
-                          <p className="mt-0.5" style={{ color: selectedEdge.sourcePort === 'yes' ? '#15AD70' : '#F7C700' }}>
+                          <p className="mt-0.5" style={{ color: selectedEdge.sourcePort === 'yes' ? '#C8F26B' : '#F7C700' }}>
                             {selectedEdge.sourcePort}
                           </p>
                         </div>
