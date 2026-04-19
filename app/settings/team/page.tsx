@@ -82,25 +82,29 @@ export default function TeamPage() {
             Manage your team members and roles.
           </p>
         </div>
-        {!showInvite && (
-          <button
-            onClick={() => setShowInvite(true)}
-            style={{
-              padding: '10px 20px',
-              borderRadius: 12,
-              border: 'none',
-              background: 'linear-gradient(135deg, rgba(99,149,255,0.25), rgba(99,149,255,0.1))',
-              color: '#6395ff',
-              fontWeight: 400,
-              fontSize: 13,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Invite member
-          </button>
-        )}
+        {/* Invite is not yet implemented end-to-end — the old button
+            showed a "coming soon" toast after a form submission, which
+            looked like a successful invite. Until we ship real email
+            delivery + team onboarding, the button is honestly disabled. */}
+        <button
+          disabled
+          aria-disabled
+          title="Team invites ship after public launch — single-user mode for now"
+          style={{
+            padding: '10px 20px',
+            borderRadius: 12,
+            border: '1px solid var(--glass-border)',
+            background: 'transparent',
+            color: 'var(--text-3)',
+            fontWeight: 400,
+            fontSize: 13,
+            cursor: 'not-allowed',
+            whiteSpace: 'nowrap',
+            opacity: 0.5,
+          }}
+        >
+          Invite member · coming soon
+        </button>
       </div>
 
       {/* Invite form */}

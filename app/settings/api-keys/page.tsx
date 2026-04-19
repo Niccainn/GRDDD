@@ -224,7 +224,7 @@ export default function ApiKeysPage() {
         <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-3)' }}>USAGE</p>
         <pre className="text-xs font-light leading-relaxed overflow-x-auto"
           style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'monospace' }}>
-{`curl -X POST https://your-grid.app/api/v1/run \\
+{`curl -X POST https://grddd.com/api/v1/run \\
   -H "Authorization: Bearer grd_your_key" \\
   -H "Content-Type: application/json" \\
   -d '{

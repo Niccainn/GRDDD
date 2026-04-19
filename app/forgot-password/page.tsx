@@ -25,7 +25,16 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json().catch(() => ({}));
-      if (data?.devResetLink) setDevLink(data.devResetLink);
+      // Only trust the dev-mode reset link when the user is actually on
+      // localhost. A staging or preview deploy should never render this
+      // banner (it would be a security leak — the reset token is in the
+      // URL). The backend might still send the field for debugging, but
+      // we refuse to render it outside local.
+      const isLocalHost =
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1');
+      if (data?.devResetLink && isLocalHost) setDevLink(data.devResetLink);
     } catch {}
     setLoading(false);
     setSent(true);
