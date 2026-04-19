@@ -6,16 +6,36 @@
  *
  * This runs as part of the Vercel build command. Once all rows are backfilled,
  * subsequent deploys can switch back to plain `prisma db push --skip-generate`.
+ *
+ * BUILD-RESILIENCE CONTRACT: neither step may halt the build. Schema
+ * drift is strictly preferable to a 12-commit deploy backlog — the
+ * previous behaviour (throw on db push failure) made a DB hiccup
+ * silently freeze every live deploy. Now both steps log loudly and
+ * exit 0; the app's /api/health endpoint surfaces schema mismatches
+ * separately.
  */
 import { execSync } from 'child_process';
 import { PrismaClient } from '@prisma/client';
 import { createHmac } from 'crypto';
 import { hkdfSync } from 'crypto';
 
-// --- Step 1: Push schema ---
+// --- Step 1: Push schema (non-blocking) ---
 console.log('[migrate] Pushing schema changes...');
-execSync('npx prisma db push --skip-generate --accept-data-loss', { stdio: 'inherit' });
-console.log('[migrate] Schema pushed successfully.');
+try {
+  execSync('npx prisma db push --skip-generate --accept-data-loss', { stdio: 'inherit' });
+  console.log('[migrate] Schema pushed successfully.');
+} catch (err) {
+  // LOG LOUDLY but don't throw. If the prod DB is unreachable, the
+  // schema is locked, or the migration conflicts with existing data,
+  // the build must still complete so the NEW application code can
+  // deploy — otherwise every bug fix waits behind one DB hiccup.
+  console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.error('[migrate] ⚠ prisma db push FAILED — proceeding anyway.');
+  console.error('[migrate] Error:', err.message);
+  console.error('[migrate] ACTION: run `npx prisma db push` manually');
+  console.error('[migrate] against DATABASE_URL once the build lands.');
+  console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+}
 
 // --- Step 2: Backfill emailHash ---
 const prisma = new PrismaClient();
