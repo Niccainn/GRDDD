@@ -11,7 +11,7 @@
   },
   "crons": [
     { "path": "/api/cron/agents", "schedule": "0 0 * * *" },
-    { "path": "/api/cron/sync-integrations", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/sync-integrations", "schedule": "0 2 * * *" },
     { "path": "/api/cron/errors-cleanup", "schedule": "17 3 * * *" }
   ]
 }
