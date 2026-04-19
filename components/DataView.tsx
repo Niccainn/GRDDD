@@ -99,9 +99,16 @@ type DataViewProps = {
   data: Record<string, unknown>[];
   defaultView?: ViewType;
   compact?: boolean;
+  /**
+   * Optional bulk-delete handler. When provided, a "Delete N" action
+   * appears in the footer once rows are selected. The caller is
+   * responsible for confirming + calling the DELETE endpoints; we
+   * just hand back the selected ids.
+   */
+  onBulkDelete?: (ids: string[]) => Promise<void> | void;
 };
 
-export default function DataView({ entityType, data, defaultView = 'table', compact = false }: DataViewProps) {
+export default function DataView({ entityType, data, defaultView = 'table', compact = false, onBulkDelete }: DataViewProps) {
   const allColumnDefs = getColumnDefs(entityType);
   const groupableFields = getGroupableFields(entityType);
 
@@ -619,13 +626,37 @@ export default function DataView({ entityType, data, defaultView = 'table', comp
         <TimelineView data={filteredData} timeScale={timeScale} setTimeScale={setTimeScale} titleField={titleField} />
       )}
 
-      {/* Row count */}
+      {/* Row count + bulk actions */}
       {filteredData.length > 0 && (
         <div className="flex items-center justify-between mt-3 px-1">
           <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
             {filteredData.length} record{filteredData.length !== 1 ? 's' : ''}
             {selectedRows.size > 0 ? ` / ${selectedRows.size} selected` : ''}
           </p>
+          {selectedRows.size > 0 && onBulkDelete && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelectedRows(new Set())}
+                className="text-xs font-light px-2.5 py-1 rounded-lg transition-all"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}
+              >
+                Clear
+              </button>
+              <button
+                onClick={async () => {
+                  const ids = Array.from(selectedRows);
+                  const label = ids.length === 1 ? 'this row' : `${ids.length} rows`;
+                  if (!confirm(`Delete ${label}? This can't be undone.`)) return;
+                  await onBulkDelete(ids);
+                  setSelectedRows(new Set());
+                }}
+                className="text-xs font-light px-2.5 py-1 rounded-lg transition-all"
+                style={{ background: 'rgba(255,70,70,0.1)', border: '1px solid rgba(255,70,70,0.25)', color: '#FF8080' }}
+              >
+                Delete {selectedRows.size}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

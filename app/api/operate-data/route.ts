@@ -94,5 +94,23 @@ export async function GET() {
     validationScore: e.validationResult?.score ?? null,
   }));
 
-  return Response.json({ systems: systemData, activity: activityFeed, workflows: wfStats, avgHealth, executions });
+  // First name for greeting. Falls back to email prefix if the user
+  // never filled out `name`; falls back to null so the dashboard
+  // shows an un-personalized greeting rather than "Good afternoon, ".
+  const firstName = (() => {
+    const fullName = identity.name?.trim();
+    if (fullName) return fullName.split(/\s+/)[0];
+    const email = identity.email?.trim();
+    if (email && email.includes('@')) return email.split('@')[0];
+    return null;
+  })();
+
+  return Response.json({
+    systems: systemData,
+    activity: activityFeed,
+    workflows: wfStats,
+    avgHealth,
+    executions,
+    user: { id: identity.id, name: identity.name, firstName, email: identity.email },
+  });
 }

@@ -102,16 +102,25 @@ export default function BillingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       });
-      const { url, error } = await res.json();
-      if (url) {
-        window.location.href = url;
-      } else {
-        setToast(error ?? 'Failed to start checkout');
-        setTimeout(() => setToast(null), 4000);
+      // Be defensive about JSON parsing — if the route 500s with an
+      // HTML error page, res.json() throws and we used to swallow
+      // the status code. Fall back to the text body + status so the
+      // user sees something actionable rather than a generic toast.
+      let parsed: { url?: string; error?: string } = {};
+      try {
+        parsed = await res.json();
+      } catch {
+        parsed = { error: `Checkout unavailable (status ${res.status})` };
       }
-    } catch {
-      setToast('Failed to start checkout');
-      setTimeout(() => setToast(null), 4000);
+      if (parsed.url) {
+        window.location.href = parsed.url;
+      } else {
+        setToast(parsed.error ?? `Checkout unavailable (status ${res.status})`);
+        setTimeout(() => setToast(null), 5000);
+      }
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : 'Network error — check your connection');
+      setTimeout(() => setToast(null), 5000);
     } finally {
       setUpgrading(null);
     }
