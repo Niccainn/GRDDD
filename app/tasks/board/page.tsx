@@ -33,10 +33,10 @@ const STATUS_LABEL: Record<string, string> = {
   BACKLOG: 'Backlog', TODO: 'To Do', IN_PROGRESS: 'In Progress', REVIEW: 'Review', DONE: 'Done', CANCELLED: 'Cancelled',
 };
 const STATUS_COLOR: Record<string, string> = {
-  BACKLOG: 'rgba(255,255,255,0.2)', TODO: '#7193ED', IN_PROGRESS: '#BF9FF1', REVIEW: '#F7C700', DONE: '#C8F26B', CANCELLED: 'rgba(255,255,255,0.15)',
+  BACKLOG: 'rgba(255,255,255,0.2)', TODO: '#7193ED', IN_PROGRESS: '#BF9FF1', REVIEW: '#F7C700', DONE: '#15AD70', CANCELLED: 'rgba(255,255,255,0.15)',
 };
 const PRIORITY_COLOR: Record<string, string> = {
-  URGENT: '#FF5757', HIGH: '#F7C700', NORMAL: 'rgba(255,255,255,0.3)', LOW: '#C8F26B',
+  URGENT: '#FF5757', HIGH: '#F7C700', NORMAL: 'rgba(255,255,255,0.3)', LOW: '#15AD70',
 };
 const PRIORITY_LABEL: Record<string, string> = {
   URGENT: 'Urgent', HIGH: 'High', NORMAL: 'Normal', LOW: 'Low',

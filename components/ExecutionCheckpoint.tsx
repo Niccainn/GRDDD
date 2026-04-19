@@ -229,8 +229,8 @@ export default function ExecutionCheckpoint({ executionId, onDismiss }: Props) {
         onClick={() => setShowReview(true)}
         className="w-full py-2.5 text-xs font-light transition-all"
         style={{
-          background: 'rgba(200, 242, 107, 0.08)',
-          border: '1px solid rgba(200, 242, 107, 0.2)',
+          background: 'rgba(21, 173, 112, 0.08)',
+          border: '1px solid rgba(21, 173, 112, 0.2)',
           borderRadius: '6px',
           color: 'var(--brand)',
         }}

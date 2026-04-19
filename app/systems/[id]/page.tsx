@@ -81,7 +81,7 @@ async function getNovaLogs(systemId: string) {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  ACTIVE: '#C8F26B', DRAFT: 'rgba(255,255,255,0.3)',
+  ACTIVE: '#15AD70', DRAFT: 'rgba(255,255,255,0.3)',
   PAUSED: '#F7C700', COMPLETED: '#7193ED', ARCHIVED: 'rgba(255,255,255,0.15)',
 };
 
@@ -102,7 +102,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
   const healthPct = system.healthScore ?? null;
   const healthColor = healthPct === null
     ? 'rgba(255,255,255,0.3)'
-    : healthPct >= 80 ? '#C8F26B' : healthPct >= 50 ? '#F7C700' : '#FF4D4D';
+    : healthPct >= 80 ? '#15AD70' : healthPct >= 50 ? '#F7C700' : '#FF4D4D';
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
@@ -187,16 +187,16 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
                 className="flex items-center gap-3 px-4 py-2.5 rounded-lg group transition-all"
                 style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                 <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ background: exec.status === 'COMPLETED' ? '#C8F26B' : exec.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
+                  style={{ background: exec.status === 'COMPLETED' ? '#15AD70' : exec.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
                 <span className="text-xs font-light truncate flex-1 group-hover:text-white/80 transition-colors" style={{ color: 'var(--text-2)' }}>
                   {exec.workflow?.name || 'Direct run'}
                 </span>
                 {exec.review ? (
-                  <span className="text-[10px] font-light tabular-nums" style={{ color: exec.review.overallScore >= 7 ? '#C8F26B' : exec.review.overallScore >= 5 ? '#F7C700' : '#FF6B6B' }}>
+                  <span className="text-[10px] font-light tabular-nums" style={{ color: exec.review.overallScore >= 7 ? '#15AD70' : exec.review.overallScore >= 5 ? '#F7C700' : '#FF6B6B' }}>
                     {exec.review.overallScore}/10
                   </span>
                 ) : exec.status === 'COMPLETED' ? (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(200,242,107,0.08)', color: 'var(--brand)', border: '1px solid rgba(200,242,107,0.15)' }}>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(21,173,112,0.08)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>
                     needs review
                   </span>
                 ) : null}
@@ -299,7 +299,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
               <div className="rounded-xl p-3 space-y-2" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                 {integrations.map(int => (
                   <div key={int.id} className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#15AD70' }} />
                     <span className="text-[11px] font-light truncate" style={{ color: 'var(--text-2)' }}>
                       {int.displayName || int.provider}
                     </span>

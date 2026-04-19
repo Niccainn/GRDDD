@@ -5,12 +5,12 @@ import Link from 'next/link';
 import SettingsNav from '@/components/SettingsNav';
 
 const ALL_EVENTS = [
-  { id: 'execution.completed', label: 'Execution completed', color: '#C8F26B' },
+  { id: 'execution.completed', label: 'Execution completed', color: '#15AD70' },
   { id: 'execution.failed',    label: 'Execution failed',    color: '#FF6B6B' },
   { id: 'automation.run',      label: 'Automation run',      color: '#7193ED' },
   { id: 'alert.critical',      label: 'Alert — critical',    color: '#FF6B6B' },
   { id: 'alert.warning',       label: 'Alert — warning',     color: '#F7C700' },
-  { id: 'workflow.activated',  label: 'Workflow activated',  color: '#C8F26B' },
+  { id: 'workflow.activated',  label: 'Workflow activated',  color: '#15AD70' },
   { id: 'workflow.paused',     label: 'Workflow paused',     color: '#F7C700' },
 ];
 
@@ -188,7 +188,7 @@ export default function WebhooksPage() {
           <div className="flex items-center gap-3">
             <button type="submit" disabled={!form.name || !form.url || !form.events.length || saving}
               className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
-              style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.25)', color: '#C8F26B' }}>
+              style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.25)', color: '#15AD70' }}>
               {saving ? '···' : 'Create webhook'}
             </button>
             <button type="button" onClick={() => { setShowCreate(false); setError(''); }}
@@ -224,13 +224,13 @@ export default function WebhooksPage() {
                     <button onClick={() => toggleActive(wh.id, wh.isActive)}
                       className="flex-shrink-0 w-8 h-4.5 rounded-full transition-colors relative"
                       style={{
-                        background: wh.isActive ? 'rgba(200,242,107,0.35)' : 'rgba(255,255,255,0.1)',
+                        background: wh.isActive ? 'rgba(21,173,112,0.35)' : 'rgba(255,255,255,0.1)',
                         width: 32, height: 18,
                       }}>
                       <span style={{
                         position: 'absolute', top: 2, left: wh.isActive ? 14 : 2,
                         width: 14, height: 14, borderRadius: '50%', transition: 'left 0.15s',
-                        background: wh.isActive ? '#C8F26B' : 'rgba(255,255,255,0.4)',
+                        background: wh.isActive ? '#15AD70' : 'rgba(255,255,255,0.4)',
                       }} />
                     </button>
                     <div className="min-w-0">
@@ -242,8 +242,8 @@ export default function WebhooksPage() {
                     {tr && (
                       <span className="text-xs px-2 py-0.5 rounded-md"
                         style={{
-                          background: tr.success ? 'rgba(200,242,107,0.1)' : 'rgba(255,107,107,0.1)',
-                          color: tr.success ? '#C8F26B' : '#FF6B6B',
+                          background: tr.success ? 'rgba(21,173,112,0.1)' : 'rgba(255,107,107,0.1)',
+                          color: tr.success ? '#15AD70' : '#FF6B6B',
                         }}>
                         {tr.success ? `✓ ${tr.status}` : tr.error ?? `✗ ${tr.status ?? 'err'}`}
                       </span>
@@ -286,7 +286,7 @@ export default function WebhooksPage() {
                       <span>·</span>
                       <span className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full"
-                          style={{ background: wh.lastDelivery.success ? '#C8F26B' : '#FF6B6B' }} />
+                          style={{ background: wh.lastDelivery.success ? '#15AD70' : '#FF6B6B' }} />
                         last {timeAgo(wh.lastDelivery.createdAt)}
                         {wh.lastDelivery.status && <span style={{ color: 'rgba(255,255,255,0.15)' }}>· {wh.lastDelivery.status}</span>}
                       </span>

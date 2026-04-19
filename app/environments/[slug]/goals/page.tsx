@@ -18,7 +18,7 @@ type Goal = {
 };
 
 const STATUS_META: Record<string, { color: string; label: string; bg: string }> = {
-  ON_TRACK:  { color: '#C8F26B', label: 'On track',  bg: 'rgba(200,242,107,0.08)' },
+  ON_TRACK:  { color: '#15AD70', label: 'On track',  bg: 'rgba(21,173,112,0.08)' },
   AT_RISK:   { color: '#F7C700', label: 'At risk',   bg: 'rgba(247,199,0,0.08)' },
   BEHIND:    { color: '#FF6B6B', label: 'Behind',    bg: 'rgba(255,107,107,0.08)' },
   ACHIEVED:  { color: '#7193ED', label: 'Achieved',  bg: 'rgba(113,147,237,0.08)' },
@@ -27,7 +27,7 @@ const STATUS_META: Record<string, { color: string; label: string; bg: string }> 
 
 function ProgressBar({ progress, status }: { progress: number | null; status: string }) {
   if (progress === null || progress === undefined) return null;
-  const color = STATUS_META[status]?.color ?? '#C8F26B';
+  const color = STATUS_META[status]?.color ?? '#15AD70';
   return (
     <div className="h-0.5 rounded-full overflow-hidden mt-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
       <div className="h-full rounded-full transition-all duration-500"
@@ -99,7 +99,7 @@ export default function EnvironmentGoals() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {[
-          { label: 'On track', value: summary.onTrack, color: '#C8F26B', filter: 'ON_TRACK' },
+          { label: 'On track', value: summary.onTrack, color: '#15AD70', filter: 'ON_TRACK' },
           { label: 'At risk', value: summary.atRisk, color: '#F7C700', filter: 'AT_RISK' },
           { label: 'Behind', value: summary.behind, color: '#FF6B6B', filter: 'BEHIND' },
           { label: 'Achieved', value: summary.achieved, color: '#7193ED', filter: 'ACHIEVED' },

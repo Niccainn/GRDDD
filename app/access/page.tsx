@@ -25,7 +25,7 @@ const CAPABILITIES = [
     ),
     title: 'Task Management',
     desc: 'Board, list, and calendar views. Subtasks, dependencies, bulk actions, and templates.',
-    accent: '#C8F26B',
+    accent: '#15AD70',
   },
   {
     icon: (
@@ -109,7 +109,7 @@ export default function AccessPage() {
       {/* Ambient gradients */}
       <div className="fixed inset-0 pointer-events-none" aria-hidden>
         <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[1000px] h-[700px] rounded-full opacity-[0.04]"
-          style={{ background: 'radial-gradient(ellipse, #C8F26B, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(ellipse, #15AD70, transparent 70%)' }} />
         <div className="absolute top-[60%] left-[20%] w-[600px] h-[400px] rounded-full opacity-[0.03]"
           style={{ background: 'radial-gradient(ellipse, #7193ED, transparent 70%)' }} />
         <div className="absolute top-[40%] right-[10%] w-[500px] h-[400px] rounded-full opacity-[0.025]"
@@ -150,8 +150,8 @@ export default function AccessPage() {
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8"
-            style={{ background: 'rgba(200,242,107,0.06)', border: '1px solid rgba(200,242,107,0.12)' }}>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
+            style={{ background: 'rgba(21,173,112,0.06)', border: '1px solid rgba(21,173,112,0.12)' }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#15AD70' }} />
             <span className="text-[11px] font-light tracking-wide" style={{ color: 'var(--brand)' }}>
               Now live — start building for free
             </span>

@@ -38,10 +38,10 @@ const TEMPLATES: Array<{
     id: 'solo',
     title: 'Solo builder',
     description: 'Just you. Three starter systems, each with a draft workflow ready to edit.',
-    accent: '#C8F26B',
+    accent: '#15AD70',
     preview: [
       { name: 'Marketing', color: '#7193ED' },
-      { name: 'Operations', color: '#C8F26B' },
+      { name: 'Operations', color: '#15AD70' },
       { name: 'Product', color: '#BF9FF1' },
     ],
     previewLabel: '3 systems · 3 draft workflows',
@@ -60,7 +60,7 @@ const TEMPLATES: Array<{
     preview: [
       { name: 'Marketing', color: '#7193ED' },
       { name: 'Sales', color: '#F7C700' },
-      { name: 'Operations', color: '#C8F26B' },
+      { name: 'Operations', color: '#15AD70' },
       { name: 'Product', color: '#BF9FF1' },
       { name: 'Support', color: '#FF6B6B' },
     ],
@@ -292,11 +292,11 @@ export default function WelcomePage() {
           <button
             onClick={() => setStep(3)}
             className="w-full flex items-center gap-4 p-5 rounded-xl text-left transition-all"
-            style={{ background: 'rgba(200,242,107,0.04)', border: '1px solid rgba(200,242,107,0.15)' }}
+            style={{ background: 'rgba(21,173,112,0.04)', border: '1px solid rgba(21,173,112,0.15)' }}
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.2)' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8F26B" strokeWidth="1.5">
+              style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.2)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15AD70" strokeWidth="1.5">
                 <path d="M12 5v14M5 12h14" strokeLinecap="round"/>
               </svg>
             </div>
@@ -446,7 +446,7 @@ export default function WelcomePage() {
                   onClick={() => setTemplate(t.id)}
                   className="w-full text-left p-4 rounded-2xl transition-all"
                   style={{
-                    background: selected ? 'rgba(200,242,107,0.06)' : 'rgba(255,255,255,0.025)',
+                    background: selected ? 'rgba(21,173,112,0.06)' : 'rgba(255,255,255,0.025)',
                     border: `1px solid ${selected ? 'var(--brand-border)' : 'rgba(255,255,255,0.08)'}`,
                   }}
                 >

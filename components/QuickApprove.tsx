@@ -21,7 +21,7 @@ type ApprovalData = {
 
 const STATUS_STYLES: Record<string, { bg: string; border: string; text: string; label: string }> = {
   pending:            { bg: 'rgba(113,147,237,0.08)', border: 'rgba(113,147,237,0.2)', text: '#7193ED', label: 'Pending' },
-  approved:           { bg: 'rgba(200,242,107,0.08)',  border: 'rgba(200,242,107,0.2)',  text: '#C8F26B', label: 'Approved' },
+  approved:           { bg: 'rgba(21,173,112,0.08)',  border: 'rgba(21,173,112,0.2)',  text: '#15AD70', label: 'Approved' },
   rejected:           { bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)',   text: '#EF4444', label: 'Rejected' },
   changes_requested:  { bg: 'rgba(234,179,8,0.08)',   border: 'rgba(234,179,8,0.2)',   text: '#EAB308', label: 'Changes Requested' },
 };
@@ -123,7 +123,7 @@ export default function QuickApprove({
             onClick={() => handleAction('approved')}
             disabled={acting}
             className="text-[10px] font-light px-2 py-0.5 rounded-full transition-all disabled:opacity-40"
-            style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}
+            style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}
           >
             Approve
           </button>
@@ -150,7 +150,7 @@ export default function QuickApprove({
               onClick={() => handleAction('approved')}
               disabled={acting}
               className="text-xs font-light px-2.5 py-1 rounded-lg transition-all disabled:opacity-40"
-              style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}
+              style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}
             >
               Approve
             </button>

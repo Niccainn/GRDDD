@@ -16,7 +16,7 @@ type TaskItem = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  COMPLETED: '#C8F26B',
+  COMPLETED: '#15AD70',
   RUNNING: '#7193ED',
   FAILED: '#FF6B6B',
   CANCELLED: 'rgba(255,255,255,0.25)',

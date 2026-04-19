@@ -69,12 +69,12 @@ export default function IntegrationsWidget({ environmentId }: { environmentId: s
             <div className="space-y-1.5">
               {connected.map(int => (
                 <div key={int.id} className="flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 rounded-lg min-w-0"
-                  style={{ background: 'rgba(200,242,107,0.04)', border: '1px solid rgba(200,242,107,0.1)' }}>
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#C8F26B' }} />
+                  style={{ background: 'rgba(21,173,112,0.04)', border: '1px solid rgba(21,173,112,0.1)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#15AD70' }} />
                   <span className="flex-1 text-xs font-light truncate min-w-0" style={{ color: 'rgba(255,255,255,0.7)' }}>
                     {int.displayName}
                   </span>
-                  <span className="text-[10px] flex-shrink-0 hidden md:inline" style={{ color: 'rgba(200,242,107,0.6)' }}>Connected</span>
+                  <span className="text-[10px] flex-shrink-0 hidden md:inline" style={{ color: 'rgba(21,173,112,0.6)' }}>Connected</span>
                 </div>
               ))}
             </div>

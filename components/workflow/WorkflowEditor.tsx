@@ -43,7 +43,7 @@ export default function WorkflowEditor({ workflow, updateWorkflow }: any) {
           </div>
           <div className="flex items-center gap-3">
             <span className={`text-xs px-3 py-1 rounded-full ${
-              workflow.status === 'ACTIVE' ? 'bg-[#C8F26B]/20 text-[#C8F26B]' :
+              workflow.status === 'ACTIVE' ? 'bg-[#15AD70]/20 text-[#15AD70]' :
               workflow.status === 'DRAFT' ? 'bg-white/10 text-white/60' :
               'bg-white/10 text-white/40'
             }`}>
@@ -59,7 +59,7 @@ export default function WorkflowEditor({ workflow, updateWorkflow }: any) {
             {workflow.status !== 'ACTIVE' && (
               <button
                 onClick={activateWorkflow}
-                className="bg-gradient-to-r from-[#C8F26B] to-[#68D0CA] text-white px-4 py-2 rounded-lg text-sm font-light hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-[#15AD70] to-[#68D0CA] text-white px-4 py-2 rounded-lg text-sm font-light hover:opacity-90 transition-opacity"
               >
                 Activate Workflow
               </button>

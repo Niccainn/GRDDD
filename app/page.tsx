@@ -35,7 +35,7 @@ export default function Home() {
       {/* Ambient gradient field */}
       <div className="fixed inset-0 pointer-events-none" aria-hidden>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] rounded-full opacity-[0.06]"
-          style={{ background: 'radial-gradient(ellipse, #C8F26B, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(ellipse, #15AD70, transparent 70%)' }} />
         <div className="absolute top-[40%] left-[20%] w-[600px] h-[500px] rounded-full opacity-[0.04]"
           style={{ background: 'radial-gradient(ellipse, #7193ED, transparent 70%)' }} />
         <div className="absolute top-[60%] right-[15%] w-[500px] h-[400px] rounded-full opacity-[0.04]"
@@ -401,10 +401,10 @@ export default function Home() {
                     Each new client follows a structured workflow: discovery, setup, training, handoff. Health scores track engagement at every stage. The operator sees which steps cause friction, adjusts the workflow, and every future onboarding gets smoother — without adding headcount.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(200,242,107,0.1)', color: 'var(--brand)', border: '1px solid rgba(200,242,107,0.15)' }}>Discovery</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(200,242,107,0.1)', color: 'var(--brand)', border: '1px solid rgba(200,242,107,0.15)' }}>Setup</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(200,242,107,0.1)', color: 'var(--brand)', border: '1px solid rgba(200,242,107,0.15)' }}>Training</span>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(200,242,107,0.1)', color: 'var(--brand)', border: '1px solid rgba(200,242,107,0.15)' }}>Handoff</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>Discovery</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>Setup</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>Training</span>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)', border: '1px solid rgba(21,173,112,0.15)' }}>Handoff</span>
                   </div>
                 </div>
                 <div className="md:w-48 flex-shrink-0 glass rounded-xl p-4 text-center">

@@ -104,7 +104,7 @@ export default function TaskTimeLog({ taskId, environmentId }: { taskId: string;
           <button
             onClick={submit}
             className="px-3 py-1.5 rounded-lg text-xs font-light transition-all"
-            style={{ background: '#C8F26B', color: '#fff' }}
+            style={{ background: '#15AD70', color: '#fff' }}
           >
             Save
           </button>

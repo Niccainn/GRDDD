@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePresence, type OnlineUser } from '@/lib/hooks/use-presence';
 
-const AVATAR_COLORS = ['#7193ED', '#C8F26B', '#BF9FF1', '#FF9F43', '#4FC1E9'];
+const AVATAR_COLORS = ['#7193ED', '#15AD70', '#BF9FF1', '#FF9F43', '#4FC1E9'];
 
 function getColor(index: number) {
   return AVATAR_COLORS[index % AVATAR_COLORS.length];
@@ -51,8 +51,8 @@ export default function OnlineIndicator() {
         <span
           className="w-1.5 h-1.5 rounded-full flex-shrink-0"
           style={{
-            background: isConnected ? '#C8F26B' : 'rgba(255,255,255,0.2)',
-            boxShadow: isConnected ? '0 0 6px rgba(200,242,107,0.4)' : 'none',
+            background: isConnected ? '#15AD70' : 'rgba(255,255,255,0.2)',
+            boxShadow: isConnected ? '0 0 6px rgba(21,173,112,0.4)' : 'none',
           }}
         />
         <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
@@ -131,7 +131,7 @@ export default function OnlineIndicator() {
                 </div>
                 <span
                   className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ background: '#C8F26B' }}
+                  style={{ background: '#15AD70' }}
                 />
               </div>
             ))}

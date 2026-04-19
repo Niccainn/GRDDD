@@ -24,11 +24,11 @@ type ActivityEvent = {
 // ── Event metadata ──────────────────────────────────────────────────
 
 const DOT_COLORS: Record<string, string> = {
-  'system.created': '#C8F26B',
-  'system.updated': '#C8F26B',
+  'system.created': '#15AD70',
+  'system.updated': '#15AD70',
   'system.deleted': '#FF6B6B',
-  'workflow.created': '#C8F26B',
-  'workflow.updated': '#C8F26B',
+  'workflow.created': '#15AD70',
+  'workflow.updated': '#15AD70',
   'workflow.deleted': '#FF6B6B',
   'workflow.status_changed': '#F7C700',
   'execution.started': '#7193ED',
@@ -43,20 +43,20 @@ const DOT_COLORS: Record<string, string> = {
   'member.added': '#FF9F43',
   'member.removed': '#FF9F43',
   'member.role_changed': '#FF9F43',
-  'automation.created': '#C8F26B',
+  'automation.created': '#15AD70',
   'automation.toggled': '#F7C700',
   'automation.run': '#7193ED',
-  'webhook.created': '#C8F26B',
+  'webhook.created': '#15AD70',
   'webhook.deleted': '#FF6B6B',
   'webhook.test': '#7193ED',
-  'environment.created': '#C8F26B',
+  'environment.created': '#15AD70',
   'environment.updated': '#7193ED',
 };
 
 function getDotColor(action: string): string {
   if (DOT_COLORS[action]) return DOT_COLORS[action];
   // Fallback by prefix
-  if (action.startsWith('system.') || action.startsWith('workflow.')) return '#C8F26B';
+  if (action.startsWith('system.') || action.startsWith('workflow.')) return '#15AD70';
   if (action.startsWith('execution.')) return '#7193ED';
   if (action.startsWith('goal.')) return '#F7C700';
   if (action.startsWith('nova.') || action.startsWith('agent.')) return '#BF9FF1';

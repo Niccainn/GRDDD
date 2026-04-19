@@ -54,7 +54,7 @@ const STATUS_LABEL: Record<string, string> = {
   BACKLOG: 'Backlog', TODO: 'To Do', IN_PROGRESS: 'In Progress', REVIEW: 'Review', DONE: 'Done', CANCELLED: 'Cancelled',
 };
 const STATUS_COLOR: Record<string, string> = {
-  BACKLOG: 'rgba(255,255,255,0.2)', TODO: '#7193ED', IN_PROGRESS: '#BF9FF1', REVIEW: '#F7C700', DONE: '#C8F26B', CANCELLED: 'rgba(255,255,255,0.15)',
+  BACKLOG: 'rgba(255,255,255,0.2)', TODO: '#7193ED', IN_PROGRESS: '#BF9FF1', REVIEW: '#F7C700', DONE: '#15AD70', CANCELLED: 'rgba(255,255,255,0.15)',
 };
 const PRIORITY_COLOR: Record<string, string> = {
   URGENT: '#FF5757', HIGH: '#F7C700', NORMAL: 'rgba(255,255,255,0.3)', LOW: 'rgba(255,255,255,0.15)',
@@ -451,7 +451,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             {task.completedAt && (
               <div className="flex justify-between">
                 <span className="text-xs" style={{ color: 'var(--text-3)' }}>Completed</span>
-                <span className="text-xs" style={{ color: '#C8F26B' }}>{timeAgo(task.completedAt)}</span>
+                <span className="text-xs" style={{ color: '#15AD70' }}>{timeAgo(task.completedAt)}</span>
               </div>
             )}
           </div>

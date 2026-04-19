@@ -28,7 +28,7 @@ const ICON: Record<ToastType, string> = {
 };
 
 const COLOR: Record<ToastType, string> = {
-  success: '#C8F26B',
+  success: '#15AD70',
   error: '#FF5757',
   info: '#7193ED',
 };

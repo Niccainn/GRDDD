@@ -68,7 +68,7 @@ export async function notifyApprovalNeeded(params: {
               ${actionListHtml}
             </ul>
           </div>
-          <a href="${agentUrl}" style="display:inline-block;padding:10px 20px;background:rgba(200,242,107,0.15);border:1px solid rgba(200,242,107,0.4);border-radius:8px;color:#C8F26B;text-decoration:none;font-size:14px;">
+          <a href="${agentUrl}" style="display:inline-block;padding:10px 20px;background:rgba(21,173,112,0.15);border:1px solid rgba(21,173,112,0.4);border-radius:8px;color:#15AD70;text-decoration:none;font-size:14px;">
             Review &amp; decide
           </a>
         </div>
