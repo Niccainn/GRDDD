@@ -73,11 +73,31 @@ All twelve providers below are now wired end-to-end (OAuth/API-key flow, decrypt
 All four share one OAuth app with per-API scopes.
 
 1. Register an OAuth 2.0 Client ID at https://console.cloud.google.com/apis/credentials.
-2. Authorized redirect URIs:
+2. Authorized redirect URIs (add **all five** — each Google surface
+   uses its own callback, so a missing one fails with `redirect_uri_mismatch`):
    - `{NEXT_PUBLIC_APP_URL}/api/integrations/oauth/google_ads/callback`
    - `{NEXT_PUBLIC_APP_URL}/api/integrations/oauth/google_analytics/callback`
    - `{NEXT_PUBLIC_APP_URL}/api/integrations/oauth/google_search_console/callback`
    - `{NEXT_PUBLIC_APP_URL}/api/integrations/oauth/google_workspace/callback`
+   - `{NEXT_PUBLIC_APP_URL}/api/integrations/oauth/google_calendar/callback`
+3. **Enable each API you actually use** in the Google Cloud API
+   Library. OAuth alone lets users consent; each API must be
+   separately enabled on the project, or calls return 403 "API has
+   not been used in project X before." For Calendar:
+   - https://console.cloud.google.com/apis/library/calendar-json.googleapis.com
+   - Click ENABLE, wait ~60 seconds for propagation.
+4. **OAuth consent screen — Testing vs Production mode:**
+   - **Testing (default):** only users on the Test-users list can
+     connect. Max 100. Add via
+     https://console.cloud.google.com/auth/audience → Test users →
+     **+ ADD USERS**. Good for closed beta.
+   - **Production:** any Google user can connect, but Google requires
+     **verification** for sensitive scopes (Calendar counts). Submit
+     via **PUBLISH APP → SUBMIT FOR VERIFICATION**. Google reviews in
+     3–7 days; they may request a short demo video of the scope in
+     use. Required before a broad public launch — otherwise
+     non-test-list users see an "App is being tested" / "unverified"
+     warning screen.
 
 ```
 GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com
