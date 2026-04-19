@@ -6,10 +6,10 @@
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* ─── Mode: Dark (default) ─── */
-  --bg: #08080c;
-  --bg-subtle: #0c0c12;
-  --bg-elevated: #111118;
+  /* ─── Mode: Dark (default) — crisp black ─── */
+  --bg: #000000;
+  --bg-subtle: #060608;
+  --bg-elevated: #0b0b0e;
 
   /* ─── Glass system ─── */
   --glass: rgba(255, 255, 255, 0.025);
@@ -159,44 +159,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background var(--duration-slow) var(--ease), color var(--duration-slow) var(--ease);
-  /* Environmental layer — a slow-breathing aurora behind every page.
-     No particles, no JS, no perf cost. Pure CSS radial gradients
-     drifting with a very long keyframe cycle. Honors reduced-motion
-     below. The whole app sits in weather, not on a void. */
-  position: relative;
-  isolation: isolate;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: -10%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(60% 40% at 18% 12%, rgba(200, 242, 107, 0.10), transparent 70%),
-    radial-gradient(50% 35% at 82% 78%, rgba(200, 242, 107, 0.06), transparent 70%),
-    radial-gradient(40% 30% at 50% 50%, rgba(200, 242, 107, 0.03), transparent 70%);
-  filter: blur(60px) saturate(1.1);
-  animation: aurora-drift 42s ease-in-out infinite alternate;
-}
-
-[data-theme="light"] body::before {
-  background:
-    radial-gradient(60% 40% at 18% 12%, rgba(200, 242, 107, 0.22), transparent 70%),
-    radial-gradient(50% 35% at 82% 78%, rgba(200, 242, 107, 0.14), transparent 70%);
-  filter: blur(80px);
-}
-
-@keyframes aurora-drift {
-  0%   { transform: translate(0, 0)     scale(1);    opacity: 0.9; }
-  33%  { transform: translate(2%, -1%)  scale(1.04); opacity: 1;   }
-  66%  { transform: translate(-1%, 2%)  scale(0.98); opacity: 0.85; }
-  100% { transform: translate(1%, -2%)  scale(1.02); opacity: 0.95; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
 }
 
 ::selection {
@@ -671,22 +633,16 @@ body::before {
   }
 }
 
-/* ─── Ambient background gradient ───
-   Explicit utility for surfaces that want a stronger aurora than
-   body::before. Brand green only — no blue, no coral, no secondary
-   accents. Keeps the whole product reading as one environment. */
+/* ─── Ambient background — crisp black, no tint ───
+   Previous versions tinted pages with a green radial gradient. User
+   wants crisp black; the lime lives in chrome and accents, not the
+   page surface itself. */
 .ambient-bg {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, var(--brand-glow), transparent),
-    radial-gradient(ellipse 50% 35% at 85% 60%, rgba(200, 242, 107, 0.04), transparent),
-    var(--bg);
+  background: var(--bg);
 }
 
 [data-theme="light"] .ambient-bg {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 131, 85, 0.06), transparent),
-    radial-gradient(ellipse 50% 35% at 85% 60%, rgba(14, 131, 85, 0.03), transparent),
-    var(--bg);
+  background: var(--bg);
   color: var(--text-1);
 }
 
