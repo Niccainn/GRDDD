@@ -336,14 +336,18 @@ export default function ProfilePage() {
           </button>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Confirmation phrase binds to the user's email so a
+                session hijacker can't wipe an account without also
+                knowing whose it is. Matches the server contract at
+                /api/account/delete which expects {confirm: "DELETE <email>"}. */}
             <p style={{ color: '#ff5c46', fontWeight: 300, fontSize: 13 }}>
-              Type <strong>DELETE MY DATA</strong> to confirm:
+              Type <strong>DELETE {profile?.email ?? 'your-email'}</strong> to confirm:
             </p>
             <input
               type="text"
               value={deleteConfirm === 'pending' ? '' : deleteConfirm}
               onChange={(e) => setDeleteConfirm(e.target.value)}
-              placeholder="DELETE MY DATA"
+              placeholder={`DELETE ${profile?.email ?? 'your-email'}`}
               style={{
                 padding: '10px 14px',
                 borderRadius: 10,
@@ -352,24 +356,29 @@ export default function ProfilePage() {
                 color: '#ff5c46',
                 fontWeight: 300,
                 fontSize: 13,
-                width: 220,
+                width: 320,
               }}
             />
             <div style={{ display: 'flex', gap: 8 }}>
               <button
-                disabled={deleteConfirm !== 'DELETE MY DATA' || deleting}
+                disabled={
+                  !profile?.email ||
+                  deleteConfirm !== `DELETE ${profile.email}` ||
+                  deleting
+                }
                 onClick={async () => {
+                  if (!profile?.email) return;
                   setDeleting(true);
                   try {
-                    const res = await fetch('/api/me', {
-                      method: 'DELETE',
+                    const res = await fetch('/api/account/delete', {
+                      method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ confirmation: 'DELETE MY DATA' }),
+                      body: JSON.stringify({ confirm: `DELETE ${profile.email}` }),
                     });
                     if (res.ok) {
                       window.location.href = '/';
                     } else {
-                      const data = await res.json();
+                      const data = await res.json().catch(() => ({}));
                       toast(data.error || 'Failed to delete account', 'error');
                       setDeleting(false);
                     }
@@ -382,11 +391,20 @@ export default function ProfilePage() {
                   padding: '10px 20px',
                   borderRadius: 12,
                   border: '1px solid rgba(255,80,60,0.4)',
-                  background: deleteConfirm === 'DELETE MY DATA' ? 'rgba(255,80,60,0.15)' : 'rgba(255,80,60,0.04)',
-                  color: deleteConfirm === 'DELETE MY DATA' ? '#ff5c46' : 'rgba(255,80,60,0.3)',
+                  background:
+                    profile?.email && deleteConfirm === `DELETE ${profile.email}`
+                      ? 'rgba(255,80,60,0.15)'
+                      : 'rgba(255,80,60,0.04)',
+                  color:
+                    profile?.email && deleteConfirm === `DELETE ${profile.email}`
+                      ? '#ff5c46'
+                      : 'rgba(255,80,60,0.3)',
                   fontWeight: 300,
                   fontSize: 13,
-                  cursor: deleteConfirm === 'DELETE MY DATA' ? 'pointer' : 'not-allowed',
+                  cursor:
+                    profile?.email && deleteConfirm === `DELETE ${profile.email}`
+                      ? 'pointer'
+                      : 'not-allowed',
                 }}
               >
                 {deleting ? 'Deleting...' : 'Confirm deletion'}

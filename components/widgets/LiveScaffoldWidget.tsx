@@ -11,7 +11,8 @@
  * — the welcome wizard already does that.
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import type { ScaffoldSpec } from '@/lib/scaffold/spec';
 import AutonomyBadge from '@/components/AutonomyBadge';
 
@@ -60,7 +61,24 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
   const [spec, setSpec] = useState<ScaffoldSpec | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [critic, setCritic] = useState<CriticState | null>(null);
+  // BYOK precondition. Scaffold calls Nova, which calls Anthropic —
+  // without a key the API just returns an error we can't recover
+  // from. Pre-flight the check so new users see a helpful CTA
+  // instead of hitting an unhelpful 400 after they've typed a prompt.
+  const [keyStatus, setKeyStatus] = useState<'checking' | 'missing' | 'connected'>('checking');
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/settings/anthropic-key?environmentId=${environmentId}`)
+      .then(r => r.ok ? r.json() : { connected: false })
+      .then(d => {
+        if (cancelled) return;
+        setKeyStatus(d.connected ? 'connected' : 'missing');
+      })
+      .catch(() => { if (!cancelled) setKeyStatus('missing'); });
+    return () => { cancelled = true; };
+  }, [environmentId]);
 
   const reset = useCallback(() => {
     abortRef.current?.abort();
@@ -190,15 +208,48 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
         )}
       </div>
 
-      {/* Prompt input — visible while idle or after error */}
-      {(status === 'idle' || status === 'error') && (
+      {/* BYOK gate — shown on idle/error when no Anthropic key is
+          connected. Without this the user types a prompt, clicks
+          Build, and gets a 400 "no key" with no recovery path. */}
+      {(status === 'idle' || status === 'error') && keyStatus === 'missing' && (
+        <div
+          className="rounded-xl p-4 text-xs font-light"
+          style={{
+            background: 'rgba(247,199,0,0.06)',
+            border: '1px solid rgba(247,199,0,0.2)',
+            color: 'var(--text-2)',
+          }}
+        >
+          <p className="mb-3">
+            Scaffolding uses Nova, which needs your Anthropic API key.
+            Connect yours to keep requests on your own billing — GRID
+            never sees it in plaintext.
+          </p>
+          <Link
+            href="/settings/ai"
+            className="inline-block px-3 py-1.5 rounded-full text-xs font-light transition-all"
+            style={{
+              background: 'rgba(247,199,0,0.12)',
+              border: '1px solid rgba(247,199,0,0.3)',
+              color: '#F7C700',
+            }}
+          >
+            Connect Anthropic key →
+          </Link>
+        </div>
+      )}
+
+      {/* Prompt input — visible while idle or after error, gated on a
+          connected key so we never let the user type into a dead end. */}
+      {(status === 'idle' || status === 'error') && keyStatus !== 'missing' && (
         <>
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             placeholder='e.g. "6-person creative studio doing brand identity + packaging. Marco runs content, Lea runs production ops."'
             rows={3}
-            className="w-full text-sm font-light px-3 py-2.5 rounded-xl focus:outline-none resize-none"
+            disabled={keyStatus === 'checking'}
+            className="w-full text-sm font-light px-3 py-2.5 rounded-xl focus:outline-none resize-none disabled:opacity-50"
             style={{
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid var(--glass-border)',
@@ -212,7 +263,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
           )}
           <button
             onClick={draft}
-            disabled={prompt.trim().length < 10}
+            disabled={prompt.trim().length < 10 || keyStatus === 'checking'}
             className="w-full mt-3 py-2.5 text-sm font-light rounded-full transition-all disabled:opacity-40"
             style={{
               background: 'var(--brand-soft)',
@@ -220,7 +271,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
               color: 'var(--brand)',
             }}
           >
-            Build this cell →
+            {keyStatus === 'checking' ? 'Checking…' : 'Build this cell →'}
           </button>
         </>
       )}
