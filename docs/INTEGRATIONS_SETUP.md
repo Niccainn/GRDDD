@@ -2,7 +2,33 @@
 
 Internal ops doc. How to register the OAuth apps and set the env vars that light up each integration provider in `/integrations`.
 
-The registry lives at `lib/integrations/registry.ts` — adding a provider there without its env vars just greys out the card with a "Not configured" tooltip, so it's safe to add stubs before wiring the OAuth app.
+The registry lives at `lib/integrations/registry.ts` — adding a provider there without its env vars just greys out the card with a "Setup required" badge, so it's safe to add stubs before wiring the OAuth app.
+
+## Quick reference
+
+| Provider | Where to register | Env vars needed |
+|---|---|---|
+| Figma | https://www.figma.com/developers/apps → Create app | `FIGMA_CLIENT_ID`, `FIGMA_CLIENT_SECRET` |
+| GitHub | https://github.com/settings/developers → OAuth Apps → New | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` |
+| Google (Calendar / Drive / Workspace) | https://console.cloud.google.com/apis/credentials → Create credentials → OAuth client ID | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (shared across Google products) |
+| HubSpot | https://app.hubspot.com/developer → Apps → Create app | `HUBSPOT_CLIENT_ID`, `HUBSPOT_CLIENT_SECRET` |
+| Linear | https://linear.app/settings/api/applications → New | `LINEAR_CLIENT_ID`, `LINEAR_CLIENT_SECRET` |
+| Meta Ads | https://developers.facebook.com/ → Create app → Marketing API | `META_ADS_CLIENT_ID`, `META_ADS_CLIENT_SECRET` |
+| Microsoft (Outlook / Teams) | https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps → New registration | `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET` |
+| Notion | https://www.notion.so/my-integrations → New integration (public) | `NOTION_CLIENT_ID`, `NOTION_CLIENT_SECRET` |
+| Salesforce | https://help.salesforce.com → Connected Apps → New | `SALESFORCE_CLIENT_ID`, `SALESFORCE_CLIENT_SECRET` |
+| Shopify | https://partners.shopify.com → Apps → Create app | `SHOPIFY_CLIENT_ID`, `SHOPIFY_CLIENT_SECRET` |
+| Slack | https://api.slack.com/apps → Create New App | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_SIGNING_SECRET` |
+| Stripe | https://dashboard.stripe.com/apikeys (user-provided API key, no OAuth app) | (per-user API key, no env vars) |
+
+For every OAuth provider, the redirect URI is:
+```
+{NEXT_PUBLIC_APP_URL}/api/integrations/oauth/<provider>/callback
+```
+
+e.g. `https://grddd.com/api/integrations/oauth/figma/callback` for production, `http://localhost:3000/api/integrations/oauth/figma/callback` for local dev.
+
+Env vars are set in Vercel → Project → Settings → Environment Variables. They take effect on the next deploy (or redeploy current). Missing vars are safe: the card shows "Setup required" instead of letting users hit a broken OAuth flow.
 
 ---
 
