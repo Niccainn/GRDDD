@@ -398,14 +398,46 @@ export default function CalendarPage() {
                 }).catch(() => {});
                 window.location.href = `/api/integrations/oauth/${conn.provider}/start?environmentId=${envId}`;
               };
+
+              // Google's "API not enabled" 403 is a Cloud Console
+              // config issue, not a reconnect issue. Detecting it
+              // lets us deep-link straight to the Enable button
+              // with the project id baked into the URL — users go
+              // from error → fix in one click.
+              const reasonText = s.reason ?? 'fetch failed';
+              const apiDisabledMatch = reasonText.match(/project (\d+) before or it is disabled/);
+              const isApiDisabled = !!apiDisabledMatch;
+              const enableUrl = apiDisabledMatch
+                ? `https://console.cloud.google.com/apis/library/calendar-json.googleapis.com?project=${apiDisabledMatch[1]}`
+                : null;
+
               return (
                 <div
                   key={s.integrationId}
-                  className="flex items-center gap-2 mt-1 text-[11px] font-light flex-wrap"
+                  className="flex items-start gap-2 mt-1 text-[11px] font-light flex-wrap"
                   style={{ color: '#FF6B6B' }}
                 >
-                  <span>⚠ {s.displayName}: {s.reason ?? 'fetch failed'}</span>
-                  {conn && envId && (
+                  <span className="max-w-2xl">
+                    ⚠ {s.displayName}:{' '}
+                    {isApiDisabled
+                      ? 'Google Calendar API is not enabled in your Google Cloud project. Enable it and refresh this page.'
+                      : reasonText}
+                  </span>
+                  {isApiDisabled && enableUrl ? (
+                    <a
+                      href={enableUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2 py-0.5 rounded-full"
+                      style={{
+                        background: 'rgba(255,107,107,0.1)',
+                        border: '1px solid rgba(255,107,107,0.3)',
+                        color: '#FF6B6B',
+                      }}
+                    >
+                      Enable Calendar API →
+                    </a>
+                  ) : conn && envId ? (
                     <button
                       onClick={reconnect}
                       className="px-2 py-0.5 rounded-full"
@@ -417,7 +449,7 @@ export default function CalendarPage() {
                     >
                       Reconnect →
                     </button>
-                  )}
+                  ) : null}
                 </div>
               );
             })}
