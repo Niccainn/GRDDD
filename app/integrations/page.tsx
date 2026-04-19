@@ -264,6 +264,28 @@ export default function IntegrationsPage() {
                 Soon
               </span>
             )}
+            {/* Operator-setup badge. Previously envReady=false providers
+                were only marked via opacity (too subtle) — users clicked
+                Figma, saw the modal message, and assumed "broken". This
+                badge says "the operator needs to configure this" before
+                the click, and the card action below changes accordingly. */}
+            {prov.implemented && !prov.envReady && (
+              <span
+                title={`Requires: ${prov.missingEnvVars.join(', ')}`}
+                className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                style={{
+                  color: '#F7C700',
+                  background: 'rgba(247,199,0,0.08)',
+                  border: '1px solid rgba(247,199,0,0.25)',
+                }}
+              >
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+                  <circle cx="5" cy="5" r="1.5" />
+                  <path d="M5 0.5v2M5 7.5v2M9.5 5h-2M2.5 5h-2M8 2l-1.4 1.4M3.4 6.6L2 8M8 8l-1.4-1.4M3.4 3.4L2 2" strokeLinecap="round" />
+                </svg>
+                Setup required
+              </span>
+            )}
             {/* Capability tier — computed from actual code state so the
                 chip never drifts from the truth. Honest in-advertising:
                 users see "Connect only" when the token will be stored
@@ -321,7 +343,7 @@ export default function IntegrationsPage() {
           <div>
             <h1 className="text-2xl font-extralight tracking-tight mb-1">Integrations</h1>
             <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-              {connected.length} connected · {providers.length} available
+              {connected.length} connected · {providers.filter(p => p.envReady && p.implemented).length} ready · {providers.filter(p => p.implemented && !p.envReady).length} need setup
             </p>
           </div>
           {environments.length > 0 && (
@@ -339,6 +361,39 @@ export default function IntegrationsPage() {
             </div>
           )}
         </div>
+
+        {/* Setup-required banner. Only shows when at least one
+            implemented provider is missing its env vars, so it's
+            invisible on fully-configured deployments. Deep-link
+            straight to the setup guide so admins know exactly what to
+            register and where. */}
+        {providers.filter(p => p.implemented && !p.envReady).length > 0 && (
+          <div
+            className="mb-6 rounded-xl p-4 flex items-start gap-3"
+            style={{
+              background: 'rgba(247,199,0,0.05)',
+              border: '1px solid rgba(247,199,0,0.2)',
+            }}
+          >
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              style={{ background: 'rgba(247,199,0,0.1)', border: '1px solid rgba(247,199,0,0.25)' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#F7C700" strokeWidth="1.5" aria-hidden>
+                <circle cx="7" cy="7" r="2" />
+                <path d="M7 1.5v2M7 10.5v2M12.5 7h-2M3.5 7h-2M10.8 3.2l-1.4 1.4M4.6 9.4L3.2 10.8M10.8 10.8l-1.4-1.4M4.6 4.6L3.2 3.2" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-light mb-1" style={{ color: 'var(--text-1)' }}>
+                {providers.filter(p => p.implemented && !p.envReady).length} integrations need operator setup
+              </p>
+              <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-3)' }}>
+                OAuth providers like Figma, GitHub, and Linear need an OAuth app registered once per Grid deployment. See <a href="/docs/INTEGRATIONS_SETUP.md" className="underline" style={{ color: '#F7C700' }}>docs/INTEGRATIONS_SETUP.md</a> for where to register each provider and which env vars to paste into Vercel.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Toast */}
         {toast && (
