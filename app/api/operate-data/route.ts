@@ -94,16 +94,19 @@ export async function GET() {
     validationScore: e.validationResult?.score ?? null,
   }));
 
-  // First name for greeting. Falls back to email prefix if the user
-  // never filled out `name`; falls back to null so the dashboard
-  // shows an un-personalized greeting rather than "Good afternoon, ".
-  const firstName = (() => {
-    const fullName = identity.name?.trim();
-    if (fullName) return fullName.split(/\s+/)[0];
+  // Greeting name — pulls the Display name field users set on the
+  // /settings/profile page (Identity.name). If they never set one we
+  // fall back to the email prefix so the greeting isn't awkwardly
+  // cut off. `firstName` kept for backward-compat with older bundles
+  // in-flight at deploy time.
+  const displayName = (() => {
+    const full = identity.name?.trim();
+    if (full) return full;
     const email = identity.email?.trim();
     if (email && email.includes('@')) return email.split('@')[0];
     return null;
   })();
+  const firstName = displayName ? displayName.split(/\s+/)[0] : null;
 
   return Response.json({
     systems: systemData,
@@ -111,6 +114,12 @@ export async function GET() {
     workflows: wfStats,
     avgHealth,
     executions,
-    user: { id: identity.id, name: identity.name, firstName, email: identity.email },
+    user: {
+      id: identity.id,
+      name: identity.name,
+      displayName,
+      firstName,
+      email: identity.email,
+    },
   });
 }
