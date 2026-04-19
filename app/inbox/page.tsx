@@ -176,14 +176,60 @@ export default function InboxPage() {
     ),
   ).sort();
 
-  const filtered = signals.filter(s =>
-    (!statusFilter || s.status === statusFilter) &&
-    (!priorityFilter || s.priority === priorityFilter) &&
-    !hiddenSources.has(s.source)
-  );
+  // Resolve which internal-layer id (if any) this signal belongs to,
+  // so a "Manual" hidden toggle filters every user-created signal at
+  // once, not just the one whose raw source string matches.
+  function internalLayerOf(source: string): string | null {
+    if (source.startsWith('integration:')) return null;
+    for (const layer of INTERNAL_SOURCES) if (layer.match(source)) return layer.id;
+    return null;
+  }
+
+  const filtered = signals.filter(s => {
+    if (statusFilter && s.status !== statusFilter) return false;
+    if (priorityFilter && s.priority !== priorityFilter) return false;
+    // External integrations are keyed by their full source string
+    // ("integration:notion"); internal signals are keyed by layer id
+    // ("internal:manual", …) so the sidebar can toggle a whole class.
+    if (s.source.startsWith('integration:')) {
+      if (hiddenSources.has(s.source)) return false;
+    } else {
+      const layerId = internalLayerOf(s.source);
+      if (layerId && hiddenSources.has(layerId)) return false;
+    }
+    return true;
+  });
+
+  // Internal source categories. Each one is a toggleable layer in
+  // the sidebar — hiding "manual" hides all user-created signals,
+  // hiding "nova" hides everything Nova produced, etc. The key is
+  // matched loosely against signal.source to survive naming drift.
+  const INTERNAL_SOURCES: { id: string; label: string; match: (src: string) => boolean; color: string }[] = [
+    { id: 'internal:manual', label: 'Manual', match: s => s === 'manual', color: '#7193ED' },
+    { id: 'internal:nova', label: 'Nova', match: s => s === 'nova', color: '#BF9FF1' },
+    { id: 'internal:workflow', label: 'Workflows', match: s => s === 'workflow' || s === 'scheduler', color: '#15AD70' },
+    { id: 'internal:system', label: 'System', match: s => !['manual', 'nova', 'workflow', 'scheduler'].includes(s) && !s.startsWith('integration:'), color: 'rgba(255,255,255,0.4)' },
+  ];
+
+  // Count signals per layer so the sidebar can show "Manual · 12".
+  // Done once per signal list change; cheap O(n × layers).
+  const sourceCounts = signals.reduce<Record<string, number>>((acc, s) => {
+    for (const layer of INTERNAL_SOURCES) {
+      if (layer.match(s.source)) {
+        acc[layer.id] = (acc[layer.id] ?? 0) + 1;
+        break;
+      }
+    }
+    if (s.source.startsWith('integration:')) {
+      acc[s.source] = (acc[s.source] ?? 0) + 1;
+    }
+    return acc;
+  }, {});
 
   return (
-    <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
+    <div className="flex gap-6 px-4 md:px-10 py-6 md:py-10 min-h-screen">
+      {/* ── Main inbox column ──────────────────────────────────────── */}
+      <div className="flex-1 min-w-0">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
@@ -292,49 +338,9 @@ export default function InboxPage() {
         ))}
       </div>
 
-      {/* Integration source layers — one toggle per connected provider
-          that has produced a signal. Mirrors the Calendar page's layer
-          toggle pattern so the two surfaces stay conceptually aligned. */}
-      {integrationSources.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6 items-center">
-          <span
-            className="text-[10px] tracking-[0.16em] uppercase font-light mr-1"
-            style={{ color: 'var(--text-3)' }}
-          >
-            Integrations
-          </span>
-          {integrationSources.map(src => {
-            // "integration:google_calendar" → "google_calendar" → "Google calendar"
-            const provider = src.split(':').slice(1).join(':');
-            const pretty = provider
-              .replace(/[_-]/g, ' ')
-              .replace(/\b\w/g, c => c.toUpperCase());
-            const hidden = hiddenSources.has(src);
-            return (
-              <button
-                key={src}
-                onClick={() => toggleSource(src)}
-                title={hidden ? `Show ${pretty} signals` : `Hide ${pretty} signals`}
-                className="text-xs font-light px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5"
-                style={{
-                  background: hidden ? 'rgba(255,255,255,0.02)' : 'rgba(113,147,237,0.08)',
-                  border: `1px solid ${hidden ? 'rgba(255,255,255,0.07)' : 'rgba(113,147,237,0.2)'}`,
-                  color: hidden ? 'rgba(255,255,255,0.25)' : '#7193ED',
-                  textDecoration: hidden ? 'line-through' : 'none',
-                }}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: hidden ? 'rgba(255,255,255,0.15)' : '#7193ED' }}
-                />
-                {pretty}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Signal list */}
+      {/* Signal list — integration toggles moved to the sidebar on the right,
+          mirroring the Calendar's layer panel so the two surfaces stay
+          conceptually aligned. */}
       {!loaded ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -491,6 +497,121 @@ export default function InboxPage() {
           ))}
         </div>
       )}
+      </div>
+
+      {/* ── Layer sidebar ──────────────────────────────────────────
+          Same pattern as /calendar. "Sources" toggles the four
+          internal categories (Manual / Nova / Workflows / System).
+          "Synced" lists every connected integration that has
+          produced a signal so the user can hide/show them as a
+          unit. Counts update live as signals arrive.
+          ──────────────────────────────────────────────────────── */}
+      <aside className="w-[220px] flex-shrink-0 hidden lg:block">
+        <div
+          className="sticky top-8 rounded-2xl p-4"
+          style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
+          role="region"
+          aria-label="Inbox sources"
+        >
+          <h3 className="text-[10px] font-light tracking-[0.16em] uppercase mb-3" style={{ color: 'var(--text-3)' }}>
+            Sources
+          </h3>
+          <div className="space-y-1 mb-4">
+            {INTERNAL_SOURCES.map(layer => {
+              const hidden = hiddenSources.has(layer.id);
+              const count = sourceCounts[layer.id] ?? 0;
+              return (
+                <button
+                  key={layer.id}
+                  onClick={() => toggleSource(layer.id)}
+                  className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-all text-left"
+                  aria-pressed={!hidden}
+                  style={{ opacity: hidden ? 0.35 : 1 }}
+                >
+                  <div
+                    className="w-3 h-3 rounded flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: hidden ? 'transparent' : layer.color,
+                      border: `1.5px solid ${layer.color}`,
+                    }}
+                  >
+                    {!hidden && (
+                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="1.5">
+                        <path d="M1.5 4l2 2 3-3.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-xs font-light flex-1" style={{ color: 'var(--text-2)' }}>{layer.label}</span>
+                  {count > 0 && (
+                    <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-3)' }}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {integrationSources.length > 0 && (
+            <>
+              <h3 className="text-[10px] font-light tracking-[0.16em] uppercase mb-2 mt-4" style={{ color: 'var(--text-3)' }}>
+                Synced
+              </h3>
+              <div className="space-y-1 mb-4">
+                {integrationSources.map(src => {
+                  const provider = src.split(':').slice(1).join(':');
+                  const pretty = provider
+                    .replace(/[_-]/g, ' ')
+                    .replace(/\b\w/g, c => c.toUpperCase());
+                  const hidden = hiddenSources.has(src);
+                  const count = sourceCounts[src] ?? 0;
+                  const color = '#7193ED';
+                  return (
+                    <button
+                      key={src}
+                      onClick={() => toggleSource(src)}
+                      aria-pressed={!hidden}
+                      className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-all text-left"
+                      style={{ opacity: hidden ? 0.35 : 1 }}
+                    >
+                      <div
+                        className="w-3 h-3 rounded flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: hidden ? 'transparent' : color,
+                          border: `1.5px solid ${color}`,
+                        }}
+                      >
+                        {!hidden && (
+                          <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="1.5">
+                            <path d="M1.5 4l2 2 3-3.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="text-xs font-light truncate flex-1" style={{ color: 'var(--text-2)' }}>{pretty}</span>
+                      {count > 0 && (
+                        <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-3)' }}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          <a
+            href="/integrations"
+            className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-all text-left mt-2"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5">
+              <path d="M6 1v10M1 6h10" strokeLinecap="round" />
+            </svg>
+            <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>Add integration</span>
+          </a>
+        </div>
+      </aside>
     </div>
   );
 }
