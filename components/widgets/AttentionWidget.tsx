@@ -51,7 +51,7 @@ function scoreColor(score: number): string {
   if (score >= 80) return '#FF6B6B';
   if (score >= 60) return '#F7C700';
   if (score >= 40) return '#BF9FF1';
-  return '#15AD70';
+  return '#C8F26B';
 }
 
 function timeAgo(iso: string): string {

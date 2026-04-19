@@ -287,7 +287,7 @@ export default function AiSettingsPage() {
           </p>
         )}
         {success && (
-          <p className="text-xs" style={{ color: '#15AD70' }}>
+          <p className="text-xs" style={{ color: '#C8F26B' }}>
             ✓ {success}
           </p>
         )}
@@ -298,9 +298,9 @@ export default function AiSettingsPage() {
             disabled={!rawKey.trim() || !activeEnvId || saving}
             className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
             style={{
-              background: 'rgba(21,173,112,0.1)',
-              border: '1px solid rgba(21,173,112,0.25)',
-              color: '#15AD70',
+              background: 'rgba(200,242,107,0.1)',
+              border: '1px solid rgba(200,242,107,0.25)',
+              color: '#C8F26B',
             }}
           >
             {saving ? 'Validating…' : status?.connected ? 'Replace key' : 'Connect'}

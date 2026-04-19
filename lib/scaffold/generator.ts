@@ -99,7 +99,7 @@ const TOOL: Anthropic.Tool = {
           properties: {
             name: { type: 'string' },
             description: { type: 'string' },
-            color: { type: 'string', description: 'Hex like #15AD70' },
+            color: { type: 'string', description: 'Hex like #C8F26B' },
             rationale: { type: 'string' },
             agent: {
               type: 'object',

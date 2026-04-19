@@ -378,7 +378,7 @@ function TimesheetTab({
                           setRows(updated);
                         }}
                         className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ background: row.billable ? '#15AD70' : 'rgba(255,255,255,0.2)' }}
+                        style={{ background: row.billable ? '#C8F26B' : 'rgba(255,255,255,0.2)' }}
                         title={row.billable ? 'Billable' : 'Non-billable'}
                       />
                       <div>
@@ -461,7 +461,7 @@ function TimesheetTab({
             <button
               onClick={addRow}
               className="px-3 py-1.5 rounded-lg text-sm font-light transition-all"
-              style={{ background: '#15AD70', color: '#fff' }}
+              style={{ background: '#C8F26B', color: '#fff' }}
             >
               Add
             </button>
@@ -647,7 +647,7 @@ function TimerTab({
             <button
               onClick={start}
               className="px-6 py-2.5 rounded-xl text-sm font-light transition-all hover:scale-105"
-              style={{ background: '#15AD70', color: '#fff' }}
+              style={{ background: '#C8F26B', color: '#fff' }}
             >
               Start
             </button>
@@ -785,7 +785,7 @@ function ReportsTab() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Total Hours" value={summary.totalHours.toFixed(1)} suffix="h" />
-        <StatCard label="Billable Hours" value={summary.billableHours.toFixed(1)} suffix="h" color="#15AD70" />
+        <StatCard label="Billable Hours" value={summary.billableHours.toFixed(1)} suffix="h" color="#C8F26B" />
         <StatCard label="Non-billable" value={summary.nonBillableHours.toFixed(1)} suffix="h" color="var(--text-3)" />
         <StatCard label="Revenue" value={`$${summary.totalRevenue.toFixed(0)}`} />
       </div>
@@ -808,7 +808,7 @@ function ReportsTab() {
                       className="w-full max-w-[32px] rounded-t-md transition-all"
                       style={{
                         height: `${Math.max(2, (d.hours / maxDayHours) * 120)}px`,
-                        background: 'linear-gradient(180deg, #15AD70, rgba(21,173,112,0.3))',
+                        background: 'linear-gradient(180deg, #C8F26B, rgba(200,242,107,0.3))',
                       }}
                     />
                   </div>
@@ -888,7 +888,7 @@ function ReportsTab() {
                         className="h-full rounded-full transition-all"
                         style={{
                           width: `${(t.hours / maxTaskH) * 100}%`,
-                          background: 'linear-gradient(90deg, #15AD70, rgba(21,173,112,0.4))',
+                          background: 'linear-gradient(90deg, #C8F26B, rgba(200,242,107,0.4))',
                         }}
                       />
                     </div>
@@ -921,7 +921,7 @@ function UtilizationRing({ rate }: { rate: number }) {
   const r = 60;
   const circumference = 2 * Math.PI * r;
   const offset = circumference - (rate / 100) * circumference;
-  const color = rate >= 80 ? '#15AD70' : rate >= 50 ? '#F7C700' : '#FF6B6B';
+  const color = rate >= 80 ? '#C8F26B' : rate >= 50 ? '#F7C700' : '#FF6B6B';
 
   return (
     <div className="relative w-36 h-36">

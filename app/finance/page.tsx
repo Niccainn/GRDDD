@@ -71,7 +71,7 @@ function fmt(amount: number, currency = 'USD') {
 function statusColor(status: string): { bg: string; border: string; text: string } {
   const map: Record<string, { bg: string; border: string; text: string }> = {
     pending: { bg: 'rgba(247,199,0,0.08)', border: 'rgba(247,199,0,0.2)', text: '#F7C700' },
-    approved: { bg: 'rgba(21,173,112,0.08)', border: 'rgba(21,173,112,0.2)', text: '#15AD70' },
+    approved: { bg: 'rgba(200,242,107,0.08)', border: 'rgba(200,242,107,0.2)', text: '#C8F26B' },
     rejected: { bg: 'rgba(255,107,107,0.08)', border: 'rgba(255,107,107,0.2)', text: '#FF6B6B' },
     paid: { bg: 'rgba(113,147,237,0.08)', border: 'rgba(113,147,237,0.2)', text: '#7193ED' },
     draft: { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.4)' },
@@ -85,7 +85,7 @@ function statusColor(status: string): { bg: string; border: string; text: string
 function utilizationColor(pct: number): string {
   if (pct >= 90) return '#FF6B6B';
   if (pct >= 70) return '#F7C700';
-  return '#15AD70';
+  return '#C8F26B';
 }
 
 export default function FinancePage() {
@@ -341,7 +341,7 @@ export default function FinancePage() {
           <div className="grid grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Total Budget', value: fmt(totalBudget), color: 'rgba(255,255,255,0.6)' },
-              { label: 'Total Spent', value: fmt(totalSpent), color: totalSpent > totalBudget * 0.9 ? '#FF6B6B' : '#15AD70' },
+              { label: 'Total Spent', value: fmt(totalSpent), color: totalSpent > totalBudget * 0.9 ? '#FF6B6B' : '#C8F26B' },
               { label: 'Total Invoiced', value: fmt(totalInvoiced), color: '#7193ED' },
               { label: 'Outstanding', value: fmt(outstanding), color: outstanding > 0 ? '#F7C700' : 'rgba(255,255,255,0.3)' },
             ].map(stat => (
@@ -480,9 +480,9 @@ export default function FinancePage() {
               onClick={() => setShowBudgetForm(!showBudgetForm)}
               className="text-xs font-light px-4 py-2 rounded-full transition-all"
               style={{
-                background: 'rgba(21,173,112,0.08)',
-                border: '1px solid rgba(21,173,112,0.2)',
-                color: '#15AD70',
+                background: 'rgba(200,242,107,0.08)',
+                border: '1px solid rgba(200,242,107,0.2)',
+                color: '#C8F26B',
               }}
             >
               {showBudgetForm ? 'Cancel' : 'Create budget'}
@@ -536,7 +536,7 @@ export default function FinancePage() {
               <button
                 type="submit"
                 className="text-xs font-light px-5 py-2 rounded-full transition-all"
-                style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}
+                style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.3)', color: '#C8F26B' }}
               >
                 Create
               </button>
@@ -645,7 +645,7 @@ export default function FinancePage() {
             <button
               onClick={() => setShowExpenseForm(!showExpenseForm)}
               className="text-xs font-light px-4 py-2 rounded-full transition-all"
-              style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}
+              style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}
             >
               {showExpenseForm ? 'Cancel' : 'Add expense'}
             </button>
@@ -692,7 +692,7 @@ export default function FinancePage() {
               <button
                 type="submit"
                 className="text-xs font-light px-5 py-2 rounded-full transition-all"
-                style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}
+                style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.3)', color: '#C8F26B' }}
               >
                 Add
               </button>
@@ -749,7 +749,7 @@ export default function FinancePage() {
                           <button
                             onClick={() => updateExpenseStatus(e.id, 'approved')}
                             className="text-[10px] font-light px-2 py-0.5 rounded-full transition-all"
-                            style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}
+                            style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}
                           >
                             Approve
                           </button>
@@ -786,7 +786,7 @@ export default function FinancePage() {
             <button
               onClick={() => setShowInvoiceForm(!showInvoiceForm)}
               className="text-xs font-light px-4 py-2 rounded-full transition-all"
-              style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}
+              style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}
             >
               {showInvoiceForm ? 'Cancel' : 'Create invoice'}
             </button>
@@ -905,7 +905,7 @@ export default function FinancePage() {
               <button
                 type="submit"
                 className="text-xs font-light px-5 py-2 rounded-full transition-all"
-                style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}
+                style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.3)', color: '#C8F26B' }}
               >
                 Create invoice
               </button>

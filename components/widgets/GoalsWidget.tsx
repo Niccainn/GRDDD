@@ -21,7 +21,7 @@ type GoalsWidgetProps = {
 
 function statusColor(status: string): string {
   switch (status) {
-    case 'ON_TRACK': return '#15AD70';
+    case 'ON_TRACK': return '#C8F26B';
     case 'AT_RISK': return '#F7C700';
     case 'BEHIND': return '#FF5757';
     default: return 'var(--text-3)';

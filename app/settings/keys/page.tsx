@@ -148,14 +148,14 @@ export default function ApiKeysPage() {
       {revealedKey && (
         <div
           style={{
-            background: 'rgba(21,173,112,0.08)',
-            border: '1px solid rgba(21,173,112,0.2)',
+            background: 'rgba(200,242,107,0.08)',
+            border: '1px solid rgba(200,242,107,0.2)',
             borderRadius: 16,
             padding: '1.25rem 1.5rem',
             marginBottom: '1.5rem',
           }}
         >
-          <p style={{ color: '#15AD70', fontWeight: 400, fontSize: 13, marginBottom: 8 }}>
+          <p style={{ color: '#C8F26B', fontWeight: 400, fontSize: 13, marginBottom: 8 }}>
             Your new API key -- copy it now. It will not be shown again.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -178,9 +178,9 @@ export default function ApiKeysPage() {
               style={{
                 padding: '8px 16px',
                 borderRadius: 8,
-                border: '1px solid rgba(21,173,112,0.3)',
+                border: '1px solid rgba(200,242,107,0.3)',
                 background: 'transparent',
-                color: '#15AD70',
+                color: '#C8F26B',
                 fontWeight: 300,
                 fontSize: 12,
                 cursor: 'pointer',

@@ -17,12 +17,12 @@ type ActivityItem = {
 
 const TYPE_META: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   execution: {
-    color: '#15AD70',
+    color: '#C8F26B',
     label: 'Execution',
     icon: (
       <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
-        <circle cx="7.5" cy="7.5" r="6" stroke="#15AD70" strokeWidth="1.1" />
-        <path d="M6 5l4 2.5-4 2.5V5z" fill="#15AD70" />
+        <circle cx="7.5" cy="7.5" r="6" stroke="#C8F26B" strokeWidth="1.1" />
+        <path d="M6 5l4 2.5-4 2.5V5z" fill="#C8F26B" />
       </svg>
     ),
   },
@@ -221,9 +221,9 @@ export default function EnvironmentActivity() {
                     {item.status && (
                       <span className="text-xs px-1.5 py-0.5 rounded"
                         style={{
-                          background: item.status === 'SUCCESS' ? 'rgba(21,173,112,0.08)' : item.status === 'FAILED' ? 'rgba(255,87,87,0.08)' : 'var(--glass)',
-                          color: item.status === 'SUCCESS' ? '#15AD70' : item.status === 'FAILED' ? '#FF5757' : 'var(--text-3)',
-                          border: `1px solid ${item.status === 'SUCCESS' ? 'rgba(21,173,112,0.2)' : item.status === 'FAILED' ? 'rgba(255,87,87,0.2)' : 'var(--glass-border)'}`,
+                          background: item.status === 'SUCCESS' ? 'rgba(200,242,107,0.08)' : item.status === 'FAILED' ? 'rgba(255,87,87,0.08)' : 'var(--glass)',
+                          color: item.status === 'SUCCESS' ? '#C8F26B' : item.status === 'FAILED' ? '#FF5757' : 'var(--text-3)',
+                          border: `1px solid ${item.status === 'SUCCESS' ? 'rgba(200,242,107,0.2)' : item.status === 'FAILED' ? 'rgba(255,87,87,0.2)' : 'var(--glass-border)'}`,
                         }}>
                         {item.status.toLowerCase()}
                       </span>

@@ -55,7 +55,7 @@ export default function SystemExecutionChart({ systemId }: { systemId: string })
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: 'Total runs', value: loaded ? total : '—', color: 'rgba(255,255,255,0.6)' },
-          { label: 'Success rate', value: loaded ? (successRate !== null ? `${successRate}%` : '—') : '—', color: successRate !== null && successRate >= 80 ? '#15AD70' : successRate !== null && successRate >= 60 ? '#F7C700' : 'rgba(255,255,255,0.3)' },
+          { label: 'Success rate', value: loaded ? (successRate !== null ? `${successRate}%` : '—') : '—', color: successRate !== null && successRate >= 80 ? '#C8F26B' : successRate !== null && successRate >= 60 ? '#F7C700' : 'rgba(255,255,255,0.3)' },
           { label: 'Running', value: loaded ? recent.filter(e => e.status === 'RUNNING').length : '—', color: '#F7C700' },
         ].map(s => (
           <div key={s.label} className="px-4 py-3 rounded-xl text-center"
@@ -95,8 +95,8 @@ export default function SystemExecutionChart({ systemId }: { systemId: string })
                       background: total === 0
                         ? 'rgba(255,255,255,0.05)'
                         : day.failed > 0
-                          ? `linear-gradient(to top, #FF6B6B ${(day.failed / total) * 100}%, #15AD70 0%)`
-                          : '#15AD70',
+                          ? `linear-gradient(to top, #FF6B6B ${(day.failed / total) * 100}%, #C8F26B 0%)`
+                          : '#C8F26B',
                       opacity: isHovered ? 1 : 0.7,
                     }}
                   />
@@ -135,7 +135,7 @@ export default function SystemExecutionChart({ systemId }: { systemId: string })
                 className="flex items-center gap-3 px-4 py-2.5 rounded-lg"
                 style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
                 <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: exec.status === 'COMPLETED' ? '#15AD70' : exec.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
+                  style={{ backgroundColor: exec.status === 'COMPLETED' ? '#C8F26B' : exec.status === 'RUNNING' ? '#F7C700' : '#FF6B6B' }} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-light truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>
                     {exec.workflowName ?? exec.input}

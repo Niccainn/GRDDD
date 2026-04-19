@@ -43,15 +43,15 @@ export default function ReviewNudgeBanner({ environmentId }: { environmentId?: s
     <div
       className="mb-6 px-5 py-4 rounded-xl animate-fade-in"
       style={{
-        background: 'linear-gradient(135deg, rgba(21,173,112,0.04), rgba(191,159,241,0.03))',
-        border: '1px solid rgba(21,173,112,0.12)',
+        background: 'linear-gradient(135deg, rgba(200,242,107,0.04), rgba(191,159,241,0.03))',
+        border: '1px solid rgba(200,242,107,0.12)',
       }}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(21,173,112,0.1)' }}>
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(200,242,107,0.1)' }}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M6 1L8 4.5L12 5L9 8L10 12L6 10L2 12L3 8L0 5L4 4.5L6 1Z" stroke="#15AD70" strokeWidth="1" strokeLinejoin="round" fill="none"/>
+              <path d="M6 1L8 4.5L12 5L9 8L10 12L6 10L2 12L3 8L0 5L4 4.5L6 1Z" stroke="#C8F26B" strokeWidth="1" strokeLinejoin="round" fill="none"/>
             </svg>
           </div>
           <div>
@@ -80,7 +80,7 @@ export default function ReviewNudgeBanner({ environmentId }: { environmentId?: s
               {exec.workflowName || exec.inputPreview}
             </span>
             <span className="text-[9px]" style={{ color: 'var(--text-3)' }}>{exec.systemName}</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'rgba(21,173,112,0.1)', color: 'var(--brand)' }}>
+            <span className="text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'rgba(200,242,107,0.1)', color: 'var(--brand)' }}>
               Review →
             </span>
           </Link>

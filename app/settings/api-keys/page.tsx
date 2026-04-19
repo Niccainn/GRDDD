@@ -113,8 +113,8 @@ export default function ApiKeysPage() {
 
       {/* New key banner */}
       {newKey && (
-        <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.25)' }}>
-          <p className="text-xs mb-2" style={{ color: '#15AD70' }}>
+        <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.25)' }}>
+          <p className="text-xs mb-2" style={{ color: '#C8F26B' }}>
             ✓ Key created — copy it now, it won&apos;t be shown again
           </p>
           <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function ApiKeysPage() {
             </code>
             <button onClick={copyKey}
               className="flex-shrink-0 text-xs px-3 py-2 rounded-lg transition-all"
-              style={{ background: copied ? 'rgba(21,173,112,0.1)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: copied ? '#15AD70' : 'rgba(255,255,255,0.5)' }}>
+              style={{ background: copied ? 'rgba(200,242,107,0.1)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: copied ? '#C8F26B' : 'rgba(255,255,255,0.5)' }}>
               {copied ? '✓ Copied' : 'Copy'}
             </button>
             <button onClick={() => setNewKey(null)} className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>✕</button>
@@ -157,7 +157,7 @@ export default function ApiKeysPage() {
           <div className="flex items-center gap-3">
             <button type="submit" disabled={!name.trim() || creating}
               className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
-              style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.25)', color: '#15AD70' }}>
+              style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.25)', color: '#C8F26B' }}>
               {creating ? '···' : 'Generate key'}
             </button>
             <button type="button" onClick={() => setShowCreate(false)}
@@ -185,11 +185,11 @@ export default function ApiKeysPage() {
               style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
               <button onClick={() => toggleKey(k.id, k.isActive)}
                 className="flex-shrink-0 rounded-full transition-colors relative"
-                style={{ width: 32, height: 18, background: k.isActive ? 'rgba(21,173,112,0.35)' : 'rgba(255,255,255,0.1)' }}>
+                style={{ width: 32, height: 18, background: k.isActive ? 'rgba(200,242,107,0.35)' : 'rgba(255,255,255,0.1)' }}>
                 <span style={{
                   position: 'absolute', top: 2, left: k.isActive ? 14 : 2,
                   width: 14, height: 14, borderRadius: '50%', transition: 'left 0.15s',
-                  background: k.isActive ? '#15AD70' : 'rgba(255,255,255,0.4)',
+                  background: k.isActive ? '#C8F26B' : 'rgba(255,255,255,0.4)',
                 }} />
               </button>
 
