@@ -153,7 +153,7 @@ export async function sendResetEmail(identityId: string, name: string, email: st
         Hi ${escapeHtml(name)}, someone asked to reset the password for this account. If that was you, click below. If it wasn't, you can ignore this email — your password stays the same.
       </p>
       <div style="text-align: center; margin: 32px 0;">
-        <a href="${link}" style="display: inline-block; padding: 14px 32px; background: rgba(21, 173, 112, 0.12); border: 1px solid rgba(21, 173, 112, 0.3); border-radius: 999px; color: #15AD70; text-decoration: none; font-size: 14px; font-weight: 300;">
+        <a href="${link}" style="display: inline-block; padding: 14px 32px; background: rgba(200, 242, 107, 0.12); border: 1px solid rgba(200, 242, 107, 0.3); border-radius: 999px; color: #C8F26B; text-decoration: none; font-size: 14px; font-weight: 300;">
           Reset password
         </a>
       </div>

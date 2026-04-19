@@ -187,11 +187,11 @@ export default function OperateCommand({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 {phase === 'done' ? (
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#15AD70' }} />
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
                 ) : (
                   <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C7F700' }} />
                 )}
-                <span className="text-xs font-light" style={{ color: phase === 'done' ? '#15AD70' : '#C7F700' }}>
+                <span className="text-xs font-light" style={{ color: phase === 'done' ? '#C8F26B' : '#C7F700' }}>
                   {phase === 'done' ? 'Execution complete' : 'Executing'}
                 </span>
               </div>
@@ -210,7 +210,7 @@ export default function OperateCommand({
                   <div key={i} className="flex items-center gap-1.5">
                     {done ? (
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                        <path d="M2 5l2 2 4-4" stroke="#15AD70" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 5l2 2 4-4" stroke="#C8F26B" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     ) : (
                       <div className="w-1 h-1 rounded-full flex-shrink-0"

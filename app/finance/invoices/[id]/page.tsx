@@ -104,7 +104,7 @@ export default function InvoicePreviewPage() {
             <button
               onClick={() => updateStatus('paid')}
               className="text-xs font-light px-4 py-2 rounded-full transition-all"
-              style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}
+              style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}
             >
               Mark as paid
             </button>
@@ -168,8 +168,8 @@ export default function InvoicePreviewPage() {
             )}
             {invoice.paidAt && (
               <div className="mt-2">
-                <p className="text-[10px] tracking-[0.12em]" style={{ color: '#15AD70' }}>PAID</p>
-                <p className="text-xs font-light tabular-nums" style={{ color: '#15AD70' }}>
+                <p className="text-[10px] tracking-[0.12em]" style={{ color: '#C8F26B' }}>PAID</p>
+                <p className="text-xs font-light tabular-nums" style={{ color: '#C8F26B' }}>
                   {new Date(invoice.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </div>

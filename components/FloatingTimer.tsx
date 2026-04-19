@@ -93,7 +93,7 @@ export default function FloatingTimer() {
         border: '1px solid var(--glass-border)',
       }}
     >
-      <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#15AD70' }} />
+      <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#C8F26B' }} />
       <span
         className="text-sm font-light tabular-nums"
         style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', color: 'var(--text-1)' }}

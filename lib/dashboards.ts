@@ -113,7 +113,7 @@ export function getDefaultDashboard(): CustomDashboard {
         id: genWidgetId(),
         type: 'stat',
         title: 'Active Workflows',
-        config: { metric: 'activeWorkflows', color: '#15AD70' },
+        config: { metric: 'activeWorkflows', color: '#C8F26B' },
         position: { x: 3, y: 0, w: 3, h: 2 },
       },
       {

@@ -62,8 +62,8 @@ function getFirstDayOfMonth(year: number, month: number) {
 }
 
 const statusColor: Record<string, string> = {
-  DONE: '#15AD70', COMPLETED: '#15AD70', IN_PROGRESS: '#7193ED',
-  TODO: 'rgba(255,255,255,0.3)', ON_TRACK: '#15AD70',
+  DONE: '#C8F26B', COMPLETED: '#C8F26B', IN_PROGRESS: '#7193ED',
+  TODO: 'rgba(255,255,255,0.3)', ON_TRACK: '#C8F26B',
   AT_RISK: '#F7C700', BEHIND: '#FF6B6B', RUNNING: '#7193ED',
   external: '#BF9FF1',
 };
@@ -94,7 +94,7 @@ export default function CalendarPage() {
   // Layers — toggleable calendar views
   const [layers, setLayers] = useState<CalendarLayer[]>([
     { id: 'tasks', label: 'Tasks', color: '#7193ED', visible: true, type: 'internal', icon: '#' },
-    { id: 'goals', label: 'Goals & Milestones', color: '#15AD70', visible: true, type: 'internal', icon: '*' },
+    { id: 'goals', label: 'Goals & Milestones', color: '#C8F26B', visible: true, type: 'internal', icon: '*' },
     { id: 'nova', label: 'Nova Checkpoints', color: '#BF9FF1', visible: true, type: 'internal', icon: '~' },
   ]);
 

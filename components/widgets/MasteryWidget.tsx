@@ -22,7 +22,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   input_pattern: '#7193ED',
   stage_pattern: '#BF9FF1',
   timing_pattern: '#F7C700',
-  quality_driver: '#15AD70',
+  quality_driver: '#C8F26B',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {

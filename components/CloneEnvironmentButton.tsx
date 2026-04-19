@@ -101,9 +101,9 @@ export default function CloneEnvironmentButton({
                   disabled={!name.trim() || cloning}
                   className="flex-1 text-sm font-light py-2.5 rounded-xl transition-all disabled:opacity-40"
                   style={{
-                    background: 'rgba(21,173,112,0.12)',
-                    border: '1px solid rgba(21,173,112,0.25)',
-                    color: '#15AD70',
+                    background: 'rgba(200,242,107,0.12)',
+                    border: '1px solid rgba(200,242,107,0.25)',
+                    color: '#C8F26B',
                   }}
                 >
                   {cloning ? (

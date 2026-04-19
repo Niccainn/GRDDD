@@ -16,7 +16,7 @@ type Goal = {
 };
 
 const STATUS_META: Record<string, { color: string; label: string; bg: string }> = {
-  ON_TRACK:  { color: '#15AD70', label: 'On track',  bg: 'rgba(21,173,112,0.08)' },
+  ON_TRACK:  { color: '#C8F26B', label: 'On track',  bg: 'rgba(200,242,107,0.08)' },
   AT_RISK:   { color: '#F7C700', label: 'At risk',   bg: 'rgba(247,199,0,0.08)' },
   BEHIND:    { color: '#FF6B6B', label: 'Behind',    bg: 'rgba(255,107,107,0.08)' },
   ACHIEVED:  { color: '#7193ED', label: 'Achieved',  bg: 'rgba(113,147,237,0.08)' },
@@ -27,7 +27,7 @@ const STATUSES = ['ON_TRACK', 'AT_RISK', 'BEHIND', 'ACHIEVED', 'CANCELLED'];
 
 function ProgressBar({ progress, status }: { progress: number | null; status: string }) {
   if (progress === null) return null;
-  const color = STATUS_META[status]?.color ?? '#15AD70';
+  const color = STATUS_META[status]?.color ?? '#C8F26B';
   return (
     <div className="h-0.5 rounded-full overflow-hidden mt-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
       <div className="h-full rounded-full transition-all duration-500"

@@ -72,10 +72,10 @@ export default function EnvironmentAnalytics() {
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {[
-          { label: 'Health Score', value: data.avgHealth !== null ? `${data.avgHealth}%` : '--', color: data.avgHealth && data.avgHealth >= 80 ? '#15AD70' : data.avgHealth && data.avgHealth >= 60 ? '#F7C700' : '#FF5757' },
-          { label: 'Success Rate', value: `${data.successRate}%`, color: data.successRate >= 90 ? '#15AD70' : data.successRate >= 70 ? '#F7C700' : '#FF5757' },
+          { label: 'Health Score', value: data.avgHealth !== null ? `${data.avgHealth}%` : '--', color: data.avgHealth && data.avgHealth >= 80 ? '#C8F26B' : data.avgHealth && data.avgHealth >= 60 ? '#F7C700' : '#FF5757' },
+          { label: 'Success Rate', value: `${data.successRate}%`, color: data.successRate >= 90 ? '#C8F26B' : data.successRate >= 70 ? '#F7C700' : '#FF5757' },
           { label: 'Total Executions', value: totalExecutions.toString(), color: 'var(--text-1)' },
-          { label: 'Failed', value: failedCount.toString(), color: failedCount > 0 ? '#FF5757' : '#15AD70' },
+          { label: 'Failed', value: failedCount.toString(), color: failedCount > 0 ? '#FF5757' : '#C8F26B' },
         ].map(stat => (
           <div
             key={stat.label}
@@ -107,12 +107,12 @@ export default function EnvironmentAnalytics() {
                   className="h-full rounded-full transition-all duration-500"
                   style={{
                     width: `${sys.healthScore ?? 0}%`,
-                    background: (sys.healthScore ?? 0) >= 80 ? '#15AD70' : (sys.healthScore ?? 0) >= 60 ? '#F7C700' : '#FF5757',
+                    background: (sys.healthScore ?? 0) >= 80 ? '#C8F26B' : (sys.healthScore ?? 0) >= 60 ? '#F7C700' : '#FF5757',
                   }}
                 />
               </div>
               <span className="text-xs w-8 text-right" style={{
-                color: (sys.healthScore ?? 0) >= 80 ? '#15AD70' : (sys.healthScore ?? 0) >= 60 ? '#F7C700' : '#FF5757',
+                color: (sys.healthScore ?? 0) >= 80 ? '#C8F26B' : (sys.healthScore ?? 0) >= 60 ? '#F7C700' : '#FF5757',
               }}>
                 {sys.healthScore ?? '--'}
               </span>

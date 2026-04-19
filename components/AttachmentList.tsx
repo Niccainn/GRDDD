@@ -23,7 +23,7 @@ type AttachmentListProps = {
 const CATEGORY_COLOR: Record<string, string> = {
   image: '#7193ED',
   document: '#BF9FF1',
-  spreadsheet: '#15AD70',
+  spreadsheet: '#C8F26B',
   archive: '#F7C700',
   other: 'rgba(255,255,255,0.3)',
 };

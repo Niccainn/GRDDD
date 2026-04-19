@@ -127,9 +127,9 @@ export default function PersistentNovaBar() {
               {tools.map((t, i) => (
                 <span key={i} className="text-[9px] px-2 py-0.5 rounded-full flex items-center gap-1"
                   style={{
-                    background: t.done ? 'rgba(21,173,112,0.1)' : 'rgba(191,159,241,0.1)',
-                    color: t.done ? '#15AD70' : 'var(--nova)',
-                    border: `1px solid ${t.done ? 'rgba(21,173,112,0.2)' : 'rgba(191,159,241,0.2)'}`,
+                    background: t.done ? 'rgba(200,242,107,0.1)' : 'rgba(191,159,241,0.1)',
+                    color: t.done ? '#C8F26B' : 'var(--nova)',
+                    border: `1px solid ${t.done ? 'rgba(200,242,107,0.2)' : 'rgba(191,159,241,0.2)'}`,
                   }}>
                   {t.done ? '✓' : '⟳'} {t.name}
                 </span>

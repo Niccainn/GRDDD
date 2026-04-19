@@ -24,7 +24,7 @@ type DomainRef = { type: string; name: string };
 const SEVERITY_COLORS: Record<string, string> = {
   critical: '#FF6B6B',
   warning: '#F7C700',
-  positive: '#15AD70',
+  positive: '#C8F26B',
   info: '#7193ED',
 };
 
@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 // Stable domain colors for the visualization
 const DOMAIN_COLORS = [
-  '#15AD70', '#7193ED', '#BF9FF1', '#F7C700', '#FF6B6B',
+  '#C8F26B', '#7193ED', '#BF9FF1', '#F7C700', '#FF6B6B',
   '#4ECDC4', '#FF8A65', '#AB47BC', '#66BB6A', '#EF5350',
 ];
 
@@ -184,10 +184,10 @@ export default function CrossDomainInsights({ className }: { className?: string 
             <div className="flex items-center gap-3">
               {/* Network graph icon */}
               <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{
-                background: 'rgba(21,173,112,0.08)',
-                border: '1px solid rgba(21,173,112,0.15)',
+                background: 'rgba(200,242,107,0.08)',
+                border: '1px solid rgba(200,242,107,0.15)',
               }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15AD70" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8F26B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="6" cy="6" r="2.5" />
                   <circle cx="18" cy="6" r="2.5" />
                   <circle cx="6" cy="18" r="2.5" />
@@ -341,7 +341,7 @@ export default function CrossDomainInsights({ className }: { className?: string 
           {[
             { label: 'Total Insights', value: totalInsights.toString(), color: 'rgba(255,255,255,0.5)' },
             { label: 'Critical', value: criticalCount.toString(), color: criticalCount > 0 ? '#FF6B6B' : 'rgba(255,255,255,0.2)' },
-            { label: 'Domains Connected', value: domainsConnected.toString(), color: '#15AD70' },
+            { label: 'Domains Connected', value: domainsConnected.toString(), color: '#C8F26B' },
             { label: 'Avg Confidence', value: `${avgConfidence}%`, color: '#7193ED' },
           ].map(stat => (
             <div key={stat.label} className="rounded-xl px-4 py-3" style={{
@@ -483,9 +483,9 @@ export default function CrossDomainInsights({ className }: { className?: string 
                       )}
                       {insight.acknowledged && !insight.actionTaken && (
                         <span className="text-[10px] px-2.5 py-1 rounded-full" style={{
-                          background: 'rgba(21,173,112,0.08)',
-                          border: '1px solid rgba(21,173,112,0.15)',
-                          color: 'rgba(21,173,112,0.6)',
+                          background: 'rgba(200,242,107,0.08)',
+                          border: '1px solid rgba(200,242,107,0.15)',
+                          color: 'rgba(200,242,107,0.6)',
                         }}>
                           Acknowledged
                         </span>
@@ -495,17 +495,17 @@ export default function CrossDomainInsights({ className }: { className?: string 
                           onClick={() => setActionInsightId(insight.id)}
                           className="text-[11px] font-light px-3 py-1.5 rounded-lg transition-all"
                           style={{
-                            background: 'rgba(21,173,112,0.06)',
-                            border: '1px solid rgba(21,173,112,0.15)',
-                            color: 'rgba(21,173,112,0.6)',
+                            background: 'rgba(200,242,107,0.06)',
+                            border: '1px solid rgba(200,242,107,0.15)',
+                            color: 'rgba(200,242,107,0.6)',
                           }}
                           onMouseEnter={e => {
-                            e.currentTarget.style.background = 'rgba(21,173,112,0.12)';
-                            e.currentTarget.style.borderColor = 'rgba(21,173,112,0.25)';
+                            e.currentTarget.style.background = 'rgba(200,242,107,0.12)';
+                            e.currentTarget.style.borderColor = 'rgba(200,242,107,0.25)';
                           }}
                           onMouseLeave={e => {
-                            e.currentTarget.style.background = 'rgba(21,173,112,0.06)';
-                            e.currentTarget.style.borderColor = 'rgba(21,173,112,0.15)';
+                            e.currentTarget.style.background = 'rgba(200,242,107,0.06)';
+                            e.currentTarget.style.borderColor = 'rgba(200,242,107,0.15)';
                           }}
                         >
                           Take Action
@@ -513,9 +513,9 @@ export default function CrossDomainInsights({ className }: { className?: string 
                       )}
                       {insight.actionTaken && (
                         <span className="text-[10px] px-2.5 py-1 rounded-full" style={{
-                          background: 'rgba(21,173,112,0.08)',
-                          border: '1px solid rgba(21,173,112,0.15)',
-                          color: 'rgba(21,173,112,0.6)',
+                          background: 'rgba(200,242,107,0.08)',
+                          border: '1px solid rgba(200,242,107,0.15)',
+                          color: 'rgba(200,242,107,0.6)',
                         }}>
                           Resolved
                         </span>
@@ -547,9 +547,9 @@ export default function CrossDomainInsights({ className }: { className?: string 
                         onClick={() => handleAction(insight.id)}
                         className="text-[11px] px-3 py-2 rounded-lg transition-all"
                         style={{
-                          background: 'rgba(21,173,112,0.15)',
-                          border: '1px solid rgba(21,173,112,0.3)',
-                          color: '#15AD70',
+                          background: 'rgba(200,242,107,0.15)',
+                          border: '1px solid rgba(200,242,107,0.3)',
+                          color: '#C8F26B',
                         }}
                       >
                         Save

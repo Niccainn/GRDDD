@@ -89,9 +89,9 @@ export default function DashboardsPage() {
             onClick={handleCreate}
             className="text-xs font-light px-3 py-1.5 rounded-full transition-all"
             style={{
-              background: 'rgba(21,173,112,0.1)',
-              border: '1px solid rgba(21,173,112,0.2)',
-              color: '#15AD70',
+              background: 'rgba(200,242,107,0.1)',
+              border: '1px solid rgba(200,242,107,0.2)',
+              color: '#C8F26B',
             }}
           >
             Create

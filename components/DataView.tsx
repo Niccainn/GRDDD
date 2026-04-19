@@ -78,12 +78,12 @@ const VIEW_LABELS: Record<ViewType, string> = {
 // ---------------------------------------------------------------------------
 
 const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: '#15AD70', DRAFT: 'rgba(255,255,255,0.35)', PAUSED: '#F7C700',
+  ACTIVE: '#C8F26B', DRAFT: 'rgba(255,255,255,0.35)', PAUSED: '#F7C700',
   COMPLETED: '#7193ED', ARCHIVED: 'rgba(255,255,255,0.15)', RUNNING: '#3B82F6',
-  FAILED: '#FF4D4D', SUCCESS: '#15AD70', PENDING: '#F7C700',
+  FAILED: '#FF4D4D', SUCCESS: '#C8F26B', PENDING: '#F7C700',
   TODO: 'rgba(255,255,255,0.35)', IN_PROGRESS: '#3B82F6', REVIEW: '#A78BFA',
-  DONE: '#15AD70', CANCELLED: 'rgba(255,255,255,0.15)', BACKLOG: 'rgba(255,255,255,0.2)',
-  ON_TRACK: '#15AD70', AT_RISK: '#F7C700', BEHIND: '#FF4D4D', ACHIEVED: '#7193ED',
+  DONE: '#C8F26B', CANCELLED: 'rgba(255,255,255,0.15)', BACKLOG: 'rgba(255,255,255,0.2)',
+  ON_TRACK: '#C8F26B', AT_RISK: '#F7C700', BEHIND: '#FF4D4D', ACHIEVED: '#7193ED',
 };
 
 const PRIORITY_COLORS: Record<string, string> = {

@@ -44,7 +44,7 @@ const CATEGORIES = ['illustration', 'photo', 'icon', 'logo', 'video', 'document'
 const CATEGORY_COLORS: Record<string, string> = {
   illustration: '#BF9FF1',
   photo: '#7193ED',
-  icon: '#15AD70',
+  icon: '#C8F26B',
   logo: '#F7C700',
   video: '#FF6B6B',
   document: '#4DB8DB',
@@ -481,7 +481,7 @@ export default function AssetDetailPage() {
                 <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <div
                     className="h-full rounded-full transition-all"
-                    style={{ width: `${versionProgress}%`, background: versionProgress === 100 ? '#15AD70' : 'rgba(113,147,237,0.6)' }}
+                    style={{ width: `${versionProgress}%`, background: versionProgress === 100 ? '#C8F26B' : 'rgba(113,147,237,0.6)' }}
                   />
                 </div>
               </div>

@@ -20,13 +20,13 @@ type Config = {
 const LEVELS = [
   { name: 'Observe', color: 'rgba(255,255,255,0.35)', desc: 'Nova watches, you decide' },
   { name: 'Suggest', color: '#6395ff', desc: 'Nova suggests, you approve' },
-  { name: 'Act & Notify', color: '#15AD70', desc: 'Nova acts, you\'re notified' },
+  { name: 'Act & Notify', color: '#C8F26B', desc: 'Nova acts, you\'re notified' },
   { name: 'Autonomous', color: '#a878ff', desc: 'Nova handles it' },
   { name: 'Self-Direct', color: '#F7C700', desc: 'Nova acts and adapts strategy' },
 ];
 
 function trustColor(rate: number) {
-  if (rate > 0.8) return '#15AD70';
+  if (rate > 0.8) return '#C8F26B';
   if (rate > 0.5) return '#F7C700';
   return '#ff5c46';
 }
@@ -335,7 +335,7 @@ export default function AutonomyConfig({
                         to right,
                         rgba(255,255,255,0.35) 0%,
                         #6395ff 25%,
-                        #15AD70 50%,
+                        #C8F26B 50%,
                         #a878ff 75%,
                         #F7C700 100%
                       );

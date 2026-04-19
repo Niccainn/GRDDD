@@ -35,7 +35,7 @@ export default function GoalsWidget({ widget }: Props) {
   }, [limit]);
 
   function statusColor(status: string) {
-    if (status === 'COMPLETED') return '#15AD70';
+    if (status === 'COMPLETED') return '#C8F26B';
     if (status === 'AT_RISK') return '#FF6B6B';
     return '#F7C700';
   }

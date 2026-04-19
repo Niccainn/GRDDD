@@ -43,16 +43,16 @@ function tierFor(score: number): Tier {
     return {
       label: 'high',
       color: 'var(--brand)',
-      bg: 'rgba(21,173,112,0.12)',
-      border: 'rgba(21,173,112,0.3)',
+      bg: 'rgba(200,242,107,0.12)',
+      border: 'rgba(200,242,107,0.3)',
     };
   }
   if (score >= 0.65) {
     return {
       label: 'good',
-      color: '#15AD70',
-      bg: 'rgba(21,173,112,0.08)',
-      border: 'rgba(21,173,112,0.2)',
+      color: '#C8F26B',
+      bg: 'rgba(200,242,107,0.08)',
+      border: 'rgba(200,242,107,0.2)',
     };
   }
   if (score >= 0.4) {
