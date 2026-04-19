@@ -282,18 +282,48 @@ export default function CalendarPage() {
                 ? `${layers.filter(l => l.visible).length} layers active`
                 : 'Tasks, goals, and milestones'}
             </p>
-            {/* Inline source-status banner — shows if any external
-                calendar provider failed, so users no longer see an
-                empty month with zero explanation. */}
-            {Object.values(sourceStatus).filter(s => !s.ok).map(s => (
-              <p
-                key={s.integrationId}
-                className="text-[11px] font-light mt-1"
-                style={{ color: '#FF6B6B' }}
-              >
-                ⚠ {s.displayName}: {s.reason ?? 'fetch failed'} — try disconnecting and reconnecting.
-              </p>
-            ))}
+            {/* Inline source-status banner + one-click reconnect.
+                Users no longer see an empty month with zero
+                explanation; they see the reason AND a button that
+                starts the fix without leaving the page. */}
+            {Object.values(sourceStatus).filter(s => !s.ok).map(s => {
+              // Map integration row → provider id from the connected list.
+              const conn = connected.find(c => c.id === s.integrationId);
+              const envId = environments[0]?.id;
+              const reconnect = async () => {
+                if (!conn || !envId) return;
+                // Fire-and-forget disconnect so the new OAuth row replaces
+                // rather than stacks. Ignore failure — worst case the user
+                // ends up with two rows of the same provider, which is
+                // benign and a disconnect button next to it fixes.
+                await fetch(`/api/integrations/${s.integrationId}`, {
+                  method: 'DELETE',
+                }).catch(() => {});
+                window.location.href = `/api/integrations/oauth/${conn.provider}/start?environmentId=${envId}`;
+              };
+              return (
+                <div
+                  key={s.integrationId}
+                  className="flex items-center gap-2 mt-1 text-[11px] font-light flex-wrap"
+                  style={{ color: '#FF6B6B' }}
+                >
+                  <span>⚠ {s.displayName}: {s.reason ?? 'fetch failed'}</span>
+                  {conn && envId && (
+                    <button
+                      onClick={reconnect}
+                      className="px-2 py-0.5 rounded-full"
+                      style={{
+                        background: 'rgba(255,107,107,0.1)',
+                        border: '1px solid rgba(255,107,107,0.3)',
+                        color: '#FF6B6B',
+                      }}
+                    >
+                      Reconnect →
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <div className="flex items-center gap-3">
             <button onClick={prevMonth} className="w-8 h-8 rounded-lg flex items-center justify-center"

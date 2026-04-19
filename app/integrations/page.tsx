@@ -411,8 +411,28 @@ export default function IntegrationsPage() {
                         {int.lastSyncedAt && ` · last checked ${new Date(int.lastSyncedAt).toLocaleString()}`}
                       </div>
                       {int.lastError && (
-                        <div className="text-xs mt-1" style={{ color: '#f87171' }}>
-                          {int.lastError}
+                        <div className="flex items-center gap-2 mt-1 text-xs" style={{ color: '#f87171' }}>
+                          <span>{int.lastError}</span>
+                          <button
+                            onClick={async () => {
+                              // Delete the broken row then redirect to
+                              // OAuth start so the new scopes take. Same
+                              // flow as the calendar-page reconnect.
+                              await fetch(`/api/integrations/${int.id}`, { method: 'DELETE' }).catch(() => {});
+                              if (environmentId) {
+                                window.location.href =
+                                  `/api/integrations/oauth/${int.provider}/start?environmentId=${environmentId}`;
+                              }
+                            }}
+                            className="px-2 py-0.5 rounded-full text-[10px]"
+                            style={{
+                              background: 'rgba(248,113,113,0.08)',
+                              border: '1px solid rgba(248,113,113,0.25)',
+                              color: '#f87171',
+                            }}
+                          >
+                            Reconnect →
+                          </button>
                         </div>
                       )}
                     </div>
