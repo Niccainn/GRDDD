@@ -96,7 +96,7 @@ export default function OperatePage() {
   const [feedTab, setFeedTab] = useState<'activity' | 'runs'>('runs');
   const [novaInitialQuery, setNovaInitialQuery] = useState<string | undefined>();
   const [primaryEnvId, setPrimaryEnvId] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const { complete: onboardingComplete, profile: onboardingProfile } = useOnboarding();
 
   const handleWelcomePrompt = useCallback((query: string) => {
@@ -112,7 +112,10 @@ export default function OperatePage() {
         setExecutions(d.executions ?? []);
         setWfStats(d.workflows);
         setAvgHealth(d.avgHealth);
-        setFirstName(d.user?.firstName ?? null);
+        // Pull the Display name from /settings/profile — shown in
+        // the greeting below. Falls back to firstName for older API
+        // responses that don't yet include displayName.
+        setDisplayName(d.user?.displayName ?? d.user?.firstName ?? null);
         setLoaded(true);
         // Default to activity tab if there's nova activity, else runs
         if ((d.activity ?? []).length > 0) setFeedTab('activity');
@@ -180,7 +183,7 @@ export default function OperatePage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="stat-number tracking-tight mb-1">
-            {getGreeting()}{firstName ? `, ${firstName}` : ''}
+            {getGreeting()}{displayName ? `, ${displayName}` : ''}
           </h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {getStatusLine()}
