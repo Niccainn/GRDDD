@@ -358,8 +358,8 @@ export default function CommandPalette() {
                     <span
                       className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{
-                        background: item.icon === 'create' ? 'rgba(21,173,112,0.08)' : 'var(--glass, rgba(255,255,255,0.04))',
-                        color: item.icon === 'create' ? '#15AD70' : 'var(--text-3)',
+                        background: item.icon === 'create' ? 'rgba(200,242,107,0.08)' : 'var(--glass, rgba(255,255,255,0.04))',
+                        color: item.icon === 'create' ? '#C8F26B' : 'var(--text-3)',
                       }}
                     >
                       {NAV_ICONS[item.icon] ?? null}

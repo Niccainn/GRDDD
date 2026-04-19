@@ -128,7 +128,7 @@ export default function ProfilePage() {
               color: tab === t.key ? 'var(--text-1)' : 'var(--text-3)',
               background: 'transparent',
               border: 'none',
-              borderBottom: tab === t.key ? '2px solid #15AD70' : '2px solid transparent',
+              borderBottom: tab === t.key ? '2px solid #C8F26B' : '2px solid transparent',
               cursor: 'pointer',
               transition: 'all 0.2s',
               marginBottom: -1,

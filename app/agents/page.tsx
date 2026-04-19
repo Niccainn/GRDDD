@@ -65,9 +65,9 @@ export default function AgentsPage() {
           href="/agents/new"
           className="text-xs font-light px-4 py-2 rounded-lg transition-all"
           style={{
-            background: 'rgba(21,173,112,0.1)',
-            border: '1px solid rgba(21,173,112,0.25)',
-            color: '#15AD70',
+            background: 'rgba(200,242,107,0.1)',
+            border: '1px solid rgba(200,242,107,0.25)',
+            color: '#C8F26B',
           }}
         >
           + New agent
@@ -90,8 +90,8 @@ export default function AgentsPage() {
           style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
         >
           <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 mx-auto"
-            style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.15)' }}>
-            <svg width="18" height="18" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L12.5 4.5V10.5L7.5 13.5L2.5 10.5V4.5L7.5 1.5Z" stroke="#15AD70" strokeWidth="1.1" strokeLinejoin="round"/><circle cx="7.5" cy="7.5" r="1.75" stroke="#15AD70" strokeWidth="1.1"/></svg>
+            style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.15)' }}>
+            <svg width="18" height="18" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L12.5 4.5V10.5L7.5 13.5L2.5 10.5V4.5L7.5 1.5Z" stroke="#C8F26B" strokeWidth="1.1" strokeLinejoin="round"/><circle cx="7.5" cy="7.5" r="1.75" stroke="#C8F26B" strokeWidth="1.1"/></svg>
           </div>
           <p className="text-lg font-extralight mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
             Create your first agent
@@ -105,9 +105,9 @@ export default function AgentsPage() {
             href="/agents/new"
             className="text-xs font-light px-4 py-2 rounded-lg inline-block transition-all"
             style={{
-              background: 'rgba(21,173,112,0.1)',
-              border: '1px solid rgba(21,173,112,0.25)',
-              color: '#15AD70',
+              background: 'rgba(200,242,107,0.1)',
+              border: '1px solid rgba(200,242,107,0.25)',
+              color: '#C8F26B',
             }}
           >
             Create your first agent →

@@ -21,7 +21,7 @@ type Environment = { id: string; name: string; slug: string };
 
 const TRIGGER_META: Record<string, { label: string; color: string }> = {
   manual:   { label: 'Manual',   color: '#7193ED' },
-  schedule: { label: 'Schedule', color: '#15AD70' },
+  schedule: { label: 'Schedule', color: '#C8F26B' },
   webhook:  { label: 'Webhook',  color: '#F7C700' },
   event:    { label: 'Event',    color: '#BF9FF1' },
 };
@@ -153,7 +153,7 @@ export default function AutomationsPage() {
           </div>
           <button type="submit" disabled={!createName.trim() || creating}
             className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
-            style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.25)', color: '#15AD70' }}>
+            style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.25)', color: '#C8F26B' }}>
             {creating ? '...' : 'Create'}
           </button>
           <button type="button" onClick={() => setShowCreate(false)}
@@ -256,15 +256,15 @@ export default function AutomationsPage() {
                         {tm.label}
                       </span>
                       {a.isActive && (
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#15AD70' }} />
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
                       )}
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleActive(a.id, a.isActive); }}
                       className="w-8 h-4 rounded-full flex-shrink-0 relative transition-all"
-                      style={{ background: a.isActive ? 'rgba(21,173,112,0.3)' : 'rgba(255,255,255,0.1)' }}>
+                      style={{ background: a.isActive ? 'rgba(200,242,107,0.3)' : 'rgba(255,255,255,0.1)' }}>
                       <span className="absolute top-0.5 transition-all w-3 h-3 rounded-full"
-                        style={{ left: a.isActive ? '18px' : '2px', background: a.isActive ? '#15AD70' : 'rgba(255,255,255,0.3)' }} />
+                        style={{ left: a.isActive ? '18px' : '2px', background: a.isActive ? '#C8F26B' : 'rgba(255,255,255,0.3)' }} />
                     </button>
                   </div>
                   <p className="text-sm font-light mb-1 group-hover:text-white transition-colors"

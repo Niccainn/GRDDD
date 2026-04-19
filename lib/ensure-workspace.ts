@@ -28,7 +28,7 @@ export async function ensureWorkspace(identityId: string) {
     data: {
       name: 'My Workspace',
       slug,
-      color: '#15AD70',
+      color: '#C8F26B',
       ownerId: identityId,
     },
   });
@@ -37,7 +37,7 @@ export async function ensureWorkspace(identityId: string) {
     data: {
       name: 'Getting Started',
       description: 'Your first system — explore GRID capabilities here.',
-      color: '#15AD70',
+      color: '#C8F26B',
       environmentId: environment.id,
       creatorId: identityId,
     },

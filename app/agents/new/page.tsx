@@ -609,9 +609,9 @@ function ShapeStep({
             onClick={() => onAdopt(false)}
             className="text-xs font-light px-3 py-1 rounded-lg transition-all"
             style={{
-              background: 'rgba(21,173,112,0.1)',
-              border: '1px solid rgba(21,173,112,0.25)',
-              color: '#15AD70',
+              background: 'rgba(200,242,107,0.1)',
+              border: '1px solid rgba(200,242,107,0.25)',
+              color: '#C8F26B',
             }}
           >
             Use this →
@@ -823,9 +823,9 @@ function ReviewStep({
           disabled={!envId || !name.trim() || !promptTemplate.trim() || saving}
           className="text-xs font-light px-5 py-2.5 rounded-lg transition-all disabled:opacity-40"
           style={{
-            background: 'rgba(21,173,112,0.1)',
-            border: '1px solid rgba(21,173,112,0.25)',
-            color: '#15AD70',
+            background: 'rgba(200,242,107,0.1)',
+            border: '1px solid rgba(200,242,107,0.25)',
+            color: '#C8F26B',
           }}
         >
           {saving ? 'Creating…' : 'Create agent'}

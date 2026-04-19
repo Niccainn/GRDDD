@@ -15,8 +15,8 @@ type ActivityEvent = {
 };
 
 const DOT_COLORS: Record<string, string> = {
-  system: '#15AD70',
-  workflow: '#15AD70',
+  system: '#C8F26B',
+  workflow: '#C8F26B',
   execution: '#7193ED',
   goal: '#F7C700',
   nova: '#BF9FF1',

@@ -42,7 +42,7 @@ function timeAgo(iso: string) {
 }
 
 function confidenceColor(c: number) {
-  if (c >= 0.8) return '#15AD70';
+  if (c >= 0.8) return '#C8F26B';
   if (c >= 0.5) return '#E5A913';
   return '#E54B4B';
 }
@@ -573,8 +573,8 @@ export default function NovaSecondBrainPanel({
                           fontWeight: 300,
                           padding: '2px 8px',
                           borderRadius: '10px',
-                          background: 'rgba(21,173,112,0.08)',
-                          color: 'rgba(21,173,112,0.6)',
+                          background: 'rgba(200,242,107,0.08)',
+                          color: 'rgba(200,242,107,0.6)',
                         }}
                       >
                         {m.category}

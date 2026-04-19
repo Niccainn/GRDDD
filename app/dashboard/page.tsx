@@ -59,7 +59,7 @@ type WfStats = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  COMPLETED: '#15AD70',
+  COMPLETED: '#C8F26B',
   RUNNING: '#7193ED',
   FAILED: '#FF6B6B',
   CANCELLED: 'rgba(255,255,255,0.25)',
@@ -131,7 +131,7 @@ export default function OperatePage() {
 
   function healthColor(score: number | null) {
     if (score === null) return 'rgba(255,255,255,0.2)';
-    if (score >= 80) return '#15AD70';
+    if (score >= 80) return '#C8F26B';
     if (score >= 60) return '#F7C700';
     return '#FF6B6B';
   }
@@ -200,8 +200,8 @@ export default function OperatePage() {
               </Link>
             ) : (
               <span className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-full"
-                style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#15AD70' }} />
+                style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
                 All systems stable
               </span>
             )}
@@ -279,7 +279,7 @@ export default function OperatePage() {
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>Automations Running</p>
             </div>
-            <p className="stat-number" style={{ color: '#15AD70' }}>{wfStats?.active ?? 0}</p>
+            <p className="stat-number" style={{ color: '#C8F26B' }}>{wfStats?.active ?? 0}</p>
           </Link>
           <Link href="/executions" className="glass-deep px-5 py-4 group transition-all">
             <div className="flex items-center justify-between mb-2">
@@ -310,9 +310,9 @@ export default function OperatePage() {
           <div className="space-y-2">
             <Link href="/systems"
               className="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all group"
-              style={{ background: 'rgba(21,173,112,0.04)', border: '1px solid rgba(21,173,112,0.12)' }}>
+              style={{ background: 'rgba(200,242,107,0.04)', border: '1px solid rgba(200,242,107,0.12)' }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(21,173,112,0.1)', border: '1px solid rgba(21,173,112,0.2)' }}>
+                style={{ background: 'rgba(200,242,107,0.1)', border: '1px solid rgba(200,242,107,0.2)' }}>
                 <span className="stat-number text-sm" style={{ color: 'var(--brand)' }}>1</span>
               </div>
               <div className="flex-1">
@@ -517,15 +517,15 @@ export default function OperatePage() {
               <div className="flex flex-col items-center justify-center py-20 rounded-xl"
                 style={{ border: '1px dashed var(--glass-border)' }}>
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-4"
-                  style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.15)' }}>
+                  style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.15)' }}>
                   <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
-                    <path d="M3 2.5L12 7.5L3 12.5V2.5Z" stroke="#15AD70" strokeWidth="1.1" strokeLinejoin="round"/>
+                    <path d="M3 2.5L12 7.5L3 12.5V2.5Z" stroke="#C8F26B" strokeWidth="1.1" strokeLinejoin="round"/>
                   </svg>
                 </div>
                 <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No runs yet</p>
                 <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>Open a workflow and click ▶ Run</p>
                 <Link href="/workflows" className="text-xs font-light px-4 py-2 rounded-lg transition-all"
-                  style={{ background: 'rgba(21,173,112,0.08)', border: '1px solid rgba(21,173,112,0.2)', color: '#15AD70' }}>
+                  style={{ background: 'rgba(200,242,107,0.08)', border: '1px solid rgba(200,242,107,0.2)', color: '#C8F26B' }}>
                   Go to workflows →
                 </Link>
               </div>
@@ -550,7 +550,7 @@ export default function OperatePage() {
                       {/* Meta */}
                       <div className="flex items-center gap-3 flex-shrink-0">
                         {ex.validationScore !== null && (
-                          <span className="text-xs" style={{ color: ex.validationScore >= 0.8 ? '#15AD70' : ex.validationScore >= 0.6 ? '#F7C700' : '#FF6B6B' }}>
+                          <span className="text-xs" style={{ color: ex.validationScore >= 0.8 ? '#C8F26B' : ex.validationScore >= 0.6 ? '#F7C700' : '#FF6B6B' }}>
                             {Math.round(ex.validationScore * 100)}%
                           </span>
                         )}

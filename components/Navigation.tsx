@@ -28,7 +28,7 @@ export default function Navigation() {
             <Link href="/workflows" className={`text-sm font-light transition-colors ${isActive('/workflows') ? 'text-white' : 'text-white/60 hover:text-white'}`}>Workflows</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#15AD70] to-[#68D0CA] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#C8F26B] to-[#68D0CA] rounded-full flex items-center justify-center">
               <span className="text-xs font-medium">D</span>
             </div>
           </div>

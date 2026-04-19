@@ -107,7 +107,7 @@ export default function ValueMeterWidget({
           <div className="grid grid-cols-2 gap-2.5">
             <Metric label="Executions" value={data.executions} color="#BF9FF1" />
             <Metric label="Signals triaged" value={data.signalsHandled} color="#7193ED" />
-            <Metric label="Tasks completed" value={data.tasksCompleted} color="#15AD70" />
+            <Metric label="Tasks completed" value={data.tasksCompleted} color="#C8F26B" />
             <Metric label="Scaffolds" value={data.scaffoldsThisWeek} color="#F7C700" />
           </div>
 

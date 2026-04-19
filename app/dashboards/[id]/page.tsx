@@ -136,7 +136,7 @@ export default function DashboardEditorPage() {
       case 'stat': return { metric: 'totalTasks', color: '#7193ED' };
       case 'chart': return { dataSource: 'executions', chartType: 'bar', timeRange: '7d' };
       case 'list': return { entityType: 'executions', limit: 5, sort: 'recent' };
-      case 'progress': return { metric: 'goalProgress', color: '#15AD70' };
+      case 'progress': return { metric: 'goalProgress', color: '#C8F26B' };
       case 'activity': return { limit: 8 };
       case 'tasks': return { statusFilter: 'all', limit: 5 };
       case 'goals': return { limit: 4 };
@@ -403,9 +403,9 @@ export default function DashboardEditorPage() {
             onClick={() => setEditing(!editing)}
             className="text-xs font-light px-4 py-2 rounded-full transition-all"
             style={{
-              background: editing ? 'rgba(21,173,112,0.1)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${editing ? 'rgba(21,173,112,0.2)' : 'var(--glass-border)'}`,
-              color: editing ? '#15AD70' : 'var(--text-2)',
+              background: editing ? 'rgba(200,242,107,0.1)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${editing ? 'rgba(200,242,107,0.2)' : 'var(--glass-border)'}`,
+              color: editing ? '#C8F26B' : 'var(--text-2)',
             }}
           >
             {editing ? 'Done' : 'Edit'}

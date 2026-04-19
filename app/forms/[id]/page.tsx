@@ -185,7 +185,7 @@ export default function FormBuilderPage() {
             style={{
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.08)',
-              color: copied ? '#15AD70' : 'var(--text-3)',
+              color: copied ? '#C8F26B' : 'var(--text-3)',
             }}
           >
             {copied ? 'Copied' : 'Share'}
@@ -208,12 +208,12 @@ export default function FormBuilderPage() {
             className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
             style={{
               background: form.isPublished
-                ? 'rgba(21,173,112,0.1)'
+                ? 'rgba(200,242,107,0.1)'
                 : 'rgba(255,255,255,0.06)',
               border: form.isPublished
-                ? '1px solid rgba(21,173,112,0.25)'
+                ? '1px solid rgba(200,242,107,0.25)'
                 : '1px solid rgba(255,255,255,0.1)',
-              color: form.isPublished ? '#15AD70' : 'rgba(255,255,255,0.5)',
+              color: form.isPublished ? '#C8F26B' : 'rgba(255,255,255,0.5)',
             }}
           >
             {form.isPublished ? 'Published' : 'Publish'}
@@ -593,14 +593,14 @@ function FieldConfig({
               className="w-8 h-[18px] rounded-full transition-all relative"
               style={{
                 background: field.required
-                  ? 'rgba(21,173,112,0.3)'
+                  ? 'rgba(200,242,107,0.3)'
                   : 'rgba(255,255,255,0.1)',
               }}
             >
               <span
                 className="absolute top-[2px] w-[14px] h-[14px] rounded-full transition-all"
                 style={{
-                  background: field.required ? '#15AD70' : 'rgba(255,255,255,0.3)',
+                  background: field.required ? '#C8F26B' : 'rgba(255,255,255,0.3)',
                   left: field.required ? '16px' : '2px',
                 }}
               />

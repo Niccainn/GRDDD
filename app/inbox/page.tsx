@@ -39,7 +39,7 @@ const PRIORITY_BG: Record<string, string> = {
 const STATUS_COLOR: Record<string, string> = {
   UNREAD:    '#BF9FF1',
   READ:      'rgba(255,255,255,0.3)',
-  TRIAGED:   '#15AD70',
+  TRIAGED:   '#C8F26B',
   DISMISSED: 'rgba(255,255,255,0.15)',
 };
 
@@ -207,7 +207,7 @@ export default function InboxPage() {
   const INTERNAL_SOURCES: { id: string; label: string; match: (src: string) => boolean; color: string }[] = [
     { id: 'internal:manual', label: 'Manual', match: s => s === 'manual', color: '#7193ED' },
     { id: 'internal:nova', label: 'Nova', match: s => s === 'nova', color: '#BF9FF1' },
-    { id: 'internal:workflow', label: 'Workflows', match: s => s === 'workflow' || s === 'scheduler', color: '#15AD70' },
+    { id: 'internal:workflow', label: 'Workflows', match: s => s === 'workflow' || s === 'scheduler', color: '#C8F26B' },
     { id: 'internal:system', label: 'System', match: s => !['manual', 'nova', 'workflow', 'scheduler'].includes(s) && !s.startsWith('integration:'), color: 'rgba(255,255,255,0.4)' },
   ];
 
@@ -413,7 +413,7 @@ export default function InboxPage() {
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {signal.novaTriaged && (
                     <span className="text-xs px-1.5 py-0.5 rounded"
-                      style={{ background: 'rgba(21,173,112,0.08)', color: '#15AD70', border: '1px solid rgba(21,173,112,0.15)' }}>
+                      style={{ background: 'rgba(200,242,107,0.08)', color: '#C8F26B', border: '1px solid rgba(200,242,107,0.15)' }}>
                       ✓ triaged
                     </span>
                   )}
@@ -437,10 +437,10 @@ export default function InboxPage() {
                   {/* Nova routing info */}
                   {signal.novaRouting && (
                     <div className="px-3 py-2 rounded-lg text-xs"
-                      style={{ background: 'rgba(21,173,112,0.05)', border: '1px solid rgba(21,173,112,0.15)' }}>
-                      <span style={{ color: '#15AD70' }}>Nova: </span>
+                      style={{ background: 'rgba(200,242,107,0.05)', border: '1px solid rgba(200,242,107,0.15)' }}>
+                      <span style={{ color: '#C8F26B' }}>Nova: </span>
                       <span style={{ color: 'rgba(255,255,255,0.5)' }}>{signal.novaRouting.reasoning}</span>
-                      <span className="ml-2 text-xs" style={{ color: 'rgba(21,173,112,0.5)' }}>
+                      <span className="ml-2 text-xs" style={{ color: 'rgba(200,242,107,0.5)' }}>
                         {Math.round((signal.novaRouting.confidence ?? 0) * 100)}% confidence
                       </span>
                     </div>
@@ -498,9 +498,9 @@ export default function InboxPage() {
                       }}
                       className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
                       style={{
-                        background: 'rgba(21,173,112,0.08)',
-                        border: '1px solid rgba(21,173,112,0.2)',
-                        color: '#15AD70',
+                        background: 'rgba(200,242,107,0.08)',
+                        border: '1px solid rgba(200,242,107,0.2)',
+                        color: '#C8F26B',
                       }}
                     >
                       → Task

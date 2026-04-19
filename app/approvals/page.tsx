@@ -37,7 +37,7 @@ type Tab = 'review' | 'requests' | 'all';
 
 const STATUS_STYLES: Record<string, { bg: string; border: string; text: string; label: string }> = {
   pending:            { bg: 'rgba(113,147,237,0.08)', border: 'rgba(113,147,237,0.2)', text: '#7193ED', label: 'Pending' },
-  approved:           { bg: 'rgba(21,173,112,0.08)',  border: 'rgba(21,173,112,0.2)',  text: '#15AD70', label: 'Approved' },
+  approved:           { bg: 'rgba(200,242,107,0.08)',  border: 'rgba(200,242,107,0.2)',  text: '#C8F26B', label: 'Approved' },
   rejected:           { bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)',   text: '#EF4444', label: 'Rejected' },
   changes_requested:  { bg: 'rgba(234,179,8,0.08)',   border: 'rgba(234,179,8,0.2)',   text: '#EAB308', label: 'Changes Requested' },
 };
@@ -51,7 +51,7 @@ const PRIORITY_STYLES: Record<string, { bg: string; border: string; text: string
 
 const ENTITY_STYLES: Record<string, { bg: string; border: string; text: string }> = {
   expense:  { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', text: '#F59E0B' },
-  invoice:  { bg: 'rgba(21,173,112,0.08)', border: 'rgba(21,173,112,0.2)', text: '#15AD70' },
+  invoice:  { bg: 'rgba(200,242,107,0.08)', border: 'rgba(200,242,107,0.2)', text: '#C8F26B' },
   design:   { bg: 'rgba(191,159,241,0.08)', border: 'rgba(191,159,241,0.2)', text: '#BF9FF1' },
   document: { bg: 'rgba(113,147,237,0.08)', border: 'rgba(113,147,237,0.2)', text: '#7193ED' },
   task:     { bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.2)',  text: '#3B82F6' },
@@ -89,14 +89,14 @@ function ApprovalChain({ steps, currentStep, status }: { steps: ApprovalStep[]; 
         else if (idx === currentStep && status === 'pending') stepStatus = 'current';
 
         const circleStyles = {
-          completed: { bg: 'rgba(21,173,112,0.15)', border: '1px solid rgba(21,173,112,0.4)', color: '#15AD70' },
+          completed: { bg: 'rgba(200,242,107,0.15)', border: '1px solid rgba(200,242,107,0.4)', color: '#C8F26B' },
           current:   { bg: 'rgba(113,147,237,0.15)', border: '1px solid rgba(113,147,237,0.4)', color: '#7193ED' },
           pending:   { bg: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' },
           rejected:  { bg: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', color: '#EF4444' },
         }[stepStatus];
 
         const lineColor = step.status === 'approved'
-          ? 'rgba(21,173,112,0.3)'
+          ? 'rgba(200,242,107,0.3)'
           : 'rgba(255,255,255,0.08)';
 
         return (
@@ -467,9 +467,9 @@ export default function ApprovalsPage() {
                           onClick={() => startAction(a.id, 'approved')}
                           className="text-[11px] font-light px-3 py-1.5 rounded-xl transition-all"
                           style={{
-                            background: actionId === a.id && actionType === 'approved' ? 'rgba(21,173,112,0.2)' : 'rgba(21,173,112,0.08)',
-                            border: '1px solid rgba(21,173,112,0.25)',
-                            color: '#15AD70',
+                            background: actionId === a.id && actionType === 'approved' ? 'rgba(200,242,107,0.2)' : 'rgba(200,242,107,0.08)',
+                            border: '1px solid rgba(200,242,107,0.25)',
+                            color: '#C8F26B',
                           }}
                         >
                           Approve
@@ -520,15 +520,15 @@ export default function ApprovalsPage() {
                         disabled={acting}
                         className="text-[11px] font-light px-3 py-2 rounded-xl transition-all disabled:opacity-40"
                         style={{
-                          background: actionType === 'approved' ? 'rgba(21,173,112,0.15)' :
+                          background: actionType === 'approved' ? 'rgba(200,242,107,0.15)' :
                                      actionType === 'rejected' ? 'rgba(239,68,68,0.15)' :
                                      'rgba(234,179,8,0.15)',
                           border: `1px solid ${
-                            actionType === 'approved' ? 'rgba(21,173,112,0.3)' :
+                            actionType === 'approved' ? 'rgba(200,242,107,0.3)' :
                             actionType === 'rejected' ? 'rgba(239,68,68,0.3)' :
                             'rgba(234,179,8,0.3)'
                           }`,
-                          color: actionType === 'approved' ? '#15AD70' :
+                          color: actionType === 'approved' ? '#C8F26B' :
                                  actionType === 'rejected' ? '#EF4444' :
                                  '#EAB308',
                         }}

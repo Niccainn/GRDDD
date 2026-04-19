@@ -158,9 +158,9 @@ export default function FormsPage() {
             disabled={!createName.trim() || creating}
             className="text-xs font-light px-4 py-2 rounded-lg transition-all disabled:opacity-40"
             style={{
-              background: 'rgba(21,173,112,0.1)',
-              border: '1px solid rgba(21,173,112,0.25)',
-              color: '#15AD70',
+              background: 'rgba(200,242,107,0.1)',
+              border: '1px solid rgba(200,242,107,0.25)',
+              color: '#C8F26B',
             }}
           >
             {creating ? '...' : 'Create'}
@@ -303,12 +303,12 @@ export default function FormsPage() {
                     className="text-[10px] font-light px-2 py-0.5 rounded-full"
                     style={{
                       background: f.isPublished
-                        ? 'rgba(21,173,112,0.1)'
+                        ? 'rgba(200,242,107,0.1)'
                         : 'rgba(255,255,255,0.05)',
                       border: f.isPublished
-                        ? '1px solid rgba(21,173,112,0.2)'
+                        ? '1px solid rgba(200,242,107,0.2)'
                         : '1px solid rgba(255,255,255,0.08)',
-                      color: f.isPublished ? '#15AD70' : 'rgba(255,255,255,0.35)',
+                      color: f.isPublished ? '#C8F26B' : 'rgba(255,255,255,0.35)',
                     }}
                   >
                     {f.isPublished ? 'published' : 'draft'}
@@ -346,7 +346,7 @@ export default function FormsPage() {
                       copyLink(f.slug);
                     }}
                     className="text-xs font-light transition-colors"
-                    style={{ color: copied === f.slug ? '#15AD70' : 'rgba(255,255,255,0.25)' }}
+                    style={{ color: copied === f.slug ? '#C8F26B' : 'rgba(255,255,255,0.25)' }}
                   >
                     {copied === f.slug ? 'Copied' : 'Share'}
                   </button>

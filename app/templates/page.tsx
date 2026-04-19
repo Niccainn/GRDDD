@@ -53,7 +53,7 @@ export default function TemplatesPage() {
   }
 
   const categories = Object.entries(CATEGORY_META) as [TemplateCategory, { label: string; icon: string; color: string }][];
-  const difficultyColor = { starter: '#15AD70', intermediate: '#F7C700', advanced: '#FF6B6B' };
+  const difficultyColor = { starter: '#C8F26B', intermediate: '#F7C700', advanced: '#FF6B6B' };
 
   return (
     <div className="p-8 max-w-6xl">
@@ -246,7 +246,7 @@ export default function TemplatesPage() {
         {install.status === 'done' && (
           <div
             className="fixed bottom-8 right-8 px-5 py-3 rounded-xl text-sm font-light animate-fade-in"
-            style={{ background: 'rgba(21,173,112,0.12)', border: '1px solid rgba(21,173,112,0.3)', color: '#15AD70' }}
+            style={{ background: 'rgba(200,242,107,0.12)', border: '1px solid rgba(200,242,107,0.3)', color: '#C8F26B' }}
           >
             Template installed — redirecting to systems...
           </div>

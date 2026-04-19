@@ -14,10 +14,10 @@ type ListItem = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  COMPLETED: '#15AD70',
+  COMPLETED: '#C8F26B',
   RUNNING: '#7193ED',
   FAILED: '#FF6B6B',
-  ACTIVE: '#15AD70',
+  ACTIVE: '#C8F26B',
   DRAFT: 'rgba(255,255,255,0.3)',
   PAUSED: '#F7C700',
 };
