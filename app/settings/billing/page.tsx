@@ -235,7 +235,7 @@ export default function BillingPage() {
               letterSpacing: '-0.01em',
             }}
           >
-            Plans (coming soon)
+            Plan reference
           </h2>
           <div
             style={{

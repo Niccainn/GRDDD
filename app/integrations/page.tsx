@@ -237,16 +237,25 @@ export default function IntegrationsPage() {
 
   const renderProviderCard = (prov: ProviderSummary) => {
     const alreadyConnected = connectedProviderIds.has(prov.id);
-    const disabled = !prov.implemented || !prov.envReady;
+    const notImplemented = !prov.implemented;
+    const envMissing = prov.implemented && !prov.envReady;
+    const disabled = notImplemented || envMissing;
+    // Cards that aren't implemented or aren't env-ready become
+    // non-interactive. Prior behaviour fired a toast when clicked —
+    // which made users keep clicking hoping it would change. Proper
+    // disabled state is honest + accessible.
     return (
       <div
         key={prov.id}
-        className="chrome p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 hover:scale-[1.01] group"
-        style={{ opacity: disabled ? 0.5 : 1 }}
-        onClick={() => setConfigModal(prov)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfigModal(prov); } }}
+        className={`chrome p-4 flex items-center gap-4 transition-all duration-200 group ${
+          disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-[1.01]'
+        }`}
+        style={{ opacity: notImplemented ? 0.4 : envMissing ? 0.6 : 1 }}
+        onClick={disabled ? undefined : () => setConfigModal(prov)}
+        role={disabled ? undefined : 'button'}
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled || undefined}
+        onKeyDown={disabled ? undefined : e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfigModal(prov); } }}
       >
         <div
           className="chrome-squircle w-11 h-11 flex items-center justify-center text-lg shrink-0"

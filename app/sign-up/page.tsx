@@ -245,9 +245,9 @@ function SignUpInner() {
 
         <p className="text-[10px] text-center font-light pt-1" style={{ color: 'var(--text-3)' }}>
           See our{' '}
-          <Link href="/subprocessors" style={{ color: 'var(--text-2)' }}>subprocessors</Link>
+          <Link href="/subprocessors" className="underline decoration-dotted underline-offset-2 hover:decoration-solid transition-all" style={{ color: 'var(--text-2)' }}>subprocessors</Link>
           {' '}and{' '}
-          <Link href="/security" style={{ color: 'var(--text-2)' }}>security policy</Link>.
+          <Link href="/security" className="underline decoration-dotted underline-offset-2 hover:decoration-solid transition-all" style={{ color: 'var(--text-2)' }}>security policy</Link>.
         </p>
       </form>
     </AuthLayout>

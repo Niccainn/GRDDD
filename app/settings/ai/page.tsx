@@ -154,6 +154,25 @@ export default function AiSettingsPage() {
         </p>
       </div>
 
+      {/* Prominent warning — without a key, Nova doesn't run. Users hit
+          this after clicking Scaffold / asking Nova a question and got
+          no output. Now they know *why* upfront. */}
+      <div
+        className="mb-6 px-4 py-3 rounded-xl flex items-start gap-3 text-xs font-light"
+        style={{
+          background: 'rgba(247,199,0,0.06)',
+          border: '1px solid rgba(247,199,0,0.22)',
+          color: 'var(--text-2)',
+        }}
+      >
+        <span style={{ color: '#F7C700', marginTop: 1 }}>⚠</span>
+        <span>
+          <strong style={{ color: '#F7C700', fontWeight: 400 }}>Nova requires an Anthropic API key.</strong>{' '}
+          Without a connected key, Nova queries, scaffolding, workflow
+          critic passes, and agent runs will all fail silently.
+        </span>
+      </div>
+
       {/* Environment picker — only shown when >1 env exists */}
       {loaded && environments.length > 1 && (
         <div className="mb-6">

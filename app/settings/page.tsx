@@ -267,8 +267,17 @@ export default function ProfilePage() {
               cursor: 'not-allowed',
             }}
           />
-          <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 11, marginTop: 4, opacity: 0.6 }}>
-            Email cannot be changed from here.
+          {/* Actionable instead of just informative — users who need to
+              change their email now know how to ask. */}
+          <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 11, marginTop: 6 }}>
+            To change your email, contact{' '}
+            <a
+              href="mailto:support@grid.systems?subject=Email%20change%20request"
+              style={{ color: 'var(--brand)', textDecoration: 'underline', textUnderlineOffset: 2 }}
+            >
+              support@grid.systems
+            </a>
+            . We verify both the old and new address before switching.
           </p>
         </div>
 

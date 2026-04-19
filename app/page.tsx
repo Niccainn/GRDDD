@@ -73,11 +73,11 @@ export default function Home() {
             The AI Operations Layer
           </p>
           <h1 className="text-4xl md:text-6xl font-extralight tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            AI that learns how your<br />
-            <span style={{ color: 'var(--brand)' }}>business works.</span>
+            AI that watches your business<br />
+            and <span style={{ color: 'var(--brand)' }}>runs better versions for you.</span>
           </h1>
           <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-8 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
-            Map your business as interconnected systems. Run multi-stage AI workflows. Review every output. Watch your operational playbook build itself.
+            Connect your tools. GRID maps your operations, runs AI workflows, and learns from every output you accept or reject — so the next run is sharper than the last.
           </p>
           {/* Capability pills — reflect what's actually shipped and
               demonstrable to a design partner today. Order is
