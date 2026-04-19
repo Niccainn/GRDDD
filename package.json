@@ -16,7 +16,10 @@
     "test:integration": "DATABASE_URL_TEST=${DATABASE_URL_TEST:-postgresql://postgres:pw@localhost:55432/postgres} vitest run __tests__/integration",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:nova-eval": "vitest run __tests__/nova-eval"
+    "test:nova-eval": "vitest run __tests__/nova-eval",
+    "test:load": "k6 run load/smoke.js",
+    "test:load:steady": "SCENARIO=steady k6 run load/smoke.js",
+    "test:load:burst": "SCENARIO=burst k6 run load/smoke.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
