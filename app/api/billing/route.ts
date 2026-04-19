@@ -3,13 +3,25 @@ import { rateLimitApi } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 import { getUsage } from '@/lib/billing/usage';
 import { getPlanLimits, PLANS, type PlanType } from '@/lib/billing/plans';
+import { getBetaTier } from '@/lib/config';
 
 export async function GET() {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
 
-  if (!process.env.STRIPE_SECRET_KEY) {
+  // Beta mode is the safe default: paid plans are only live when the
+  // tier is explicitly 'live' AND the full env is configured. Anything
+  // less and we render the "Free during beta" screen — no broken
+  // Upgrade buttons, no half-working Stripe flow.
+  const tier = getBetaTier();
+  const fullyConfigured =
+    tier === 'live' &&
+    !!process.env.STRIPE_SECRET_KEY &&
+    !!process.env.STRIPE_PRO_PRICE_ID &&
+    !!process.env.STRIPE_TEAM_PRICE_ID;
+
+  if (!fullyConfigured) {
     return Response.json({
       plan: 'BETA',
       status: 'active',

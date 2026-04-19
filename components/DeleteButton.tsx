@@ -55,8 +55,14 @@ export default function DeleteButton({
   return (
     <button
       onClick={e => { e.preventDefault(); e.stopPropagation(); setConfirming(true); }}
-      className="text-xs font-light transition-colors opacity-0 group-hover:opacity-100"
-      style={{ color: 'rgba(255,255,255,0.25)' }}
+      // Visible at low opacity by default so users discover it without
+      // hovering. Prior behaviour (opacity-0 until hover) was invisible
+      // on touch devices and hidden from anyone unfamiliar with the
+      // hover-reveal pattern — multiple users reported "there's no
+      // delete button."
+      className="text-xs font-light transition-colors opacity-50 hover:opacity-100"
+      style={{ color: 'rgba(255,120,120,0.7)' }}
+      aria-label="Delete"
     >
       Delete
     </button>

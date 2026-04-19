@@ -96,6 +96,7 @@ export default function OperatePage() {
   const [feedTab, setFeedTab] = useState<'activity' | 'runs'>('runs');
   const [novaInitialQuery, setNovaInitialQuery] = useState<string | undefined>();
   const [primaryEnvId, setPrimaryEnvId] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState<string | null>(null);
   const { complete: onboardingComplete, profile: onboardingProfile } = useOnboarding();
 
   const handleWelcomePrompt = useCallback((query: string) => {
@@ -111,6 +112,7 @@ export default function OperatePage() {
         setExecutions(d.executions ?? []);
         setWfStats(d.workflows);
         setAvgHealth(d.avgHealth);
+        setFirstName(d.user?.firstName ?? null);
         setLoaded(true);
         // Default to activity tab if there's nova activity, else runs
         if ((d.activity ?? []).length > 0) setFeedTab('activity');
@@ -177,7 +179,9 @@ export default function OperatePage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="stat-number tracking-tight mb-1">{getGreeting()}</h1>
+          <h1 className="stat-number tracking-tight mb-1">
+            {getGreeting()}{firstName ? `, ${firstName}` : ''}
+          </h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {getStatusLine()}
           </p>
