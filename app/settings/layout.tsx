@@ -60,7 +60,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    // Column on mobile so the mobile-nav sits ABOVE the content instead
+    // of beside it; row on desktop so the sidebar sits to the left.
+    // Prior `display: flex` (row-only) was squeezing content into a thin
+    // column on mobile, leaving pages looking blank.
+    <div className="flex flex-col md:flex-row min-h-screen">
       {/* Settings sidebar */}
       <aside
         className="hidden md:flex flex-col flex-shrink-0"

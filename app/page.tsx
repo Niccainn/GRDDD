@@ -70,14 +70,14 @@ export default function Home() {
       <section className="min-h-screen flex flex-col items-center justify-center px-5 md:px-8 pt-20 relative">
         <div className="text-center max-w-3xl">
           <p className="text-[10px] tracking-[0.18em] uppercase mb-6 animate-fade-in" style={{ color: 'var(--brand)', opacity: 0.85 }}>
-            The AI Operations Layer
+            The adaptive workspace for growth
           </p>
           <h1 className="text-4xl md:text-6xl font-extralight tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            AI that watches your business<br />
-            and <span style={{ color: 'var(--brand)' }}>runs better versions for you.</span>
+            Your team&rsquo;s thinking lives in six different tools.<br />
+            <span style={{ color: 'var(--brand)' }}>GRID learns the synergy.</span>
           </h1>
           <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-8 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
-            Connect your tools. GRID maps your operations, runs AI workflows, and learns from every output you accept or reject — so the next run is sharper than the last.
+            An adaptive workspace where AI connects your stack, learns from every accept and reject, and grows with your team. Idea to outcome in one environment — not six tools and three hand-offs.
           </p>
           {/* Capability pills — reflect what's actually shipped and
               demonstrable to a design partner today. Order is
