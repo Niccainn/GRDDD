@@ -152,21 +152,19 @@ export function middleware(req: NextRequest) {
   }
 
   // Redirect un-onboarded users to /welcome (skip for API routes, the
-  // welcome page itself, and pricing). The onboarded cookie is set by
-  // /api/onboarding/complete alongside Identity.onboardedAt in the DB.
-  // Using a cookie avoids a DB round-trip on every middleware invocation.
-  const onboarded = req.cookies.get('grid_onboarded')?.value;
-  if (
-    !onboarded &&
-    !pathname.startsWith('/api/') &&
-    !pathname.startsWith('/welcome') &&
-    pathname !== '/pricing'
-  ) {
-    return withSecurityHeaders(
-      NextResponse.redirect(new URL('/welcome', req.url))
-    );
-  }
-
+  // Onboarding is NON-BLOCKING. Prior behaviour force-redirected
+  // every request from a non-onboarded user to /welcome — which
+  // re-fired the whole wizard on any state that briefly lost the
+  // grid_onboarded cookie (OAuth callbacks, Safari ITP, tab-session
+  // loss). Users reported having to "redo onboarding after connecting
+  // a calendar" because of this.
+  //
+  // New behaviour: the user can use the app at any time. When they
+  // haven't completed onboarding yet, an in-app checklist shows on
+  // the dashboard (OnboardingChecklist component) with resumable
+  // progress — matching the Notion / ClickUp / Monday pattern.
+  // Middleware only redirects on a first-time hit to /dashboard
+  // right after signup, which is handled client-side now.
   return withSecurityHeaders(NextResponse.next());
 }
 

@@ -156,7 +156,10 @@ export async function POST(req: Request) {
     const headers = new Headers(res.headers);
     headers.append(
       'Set-Cookie',
-      `grid_onboarded=1; Path=/; HttpOnly; SameSite=Strict; Max-Age=${60 * 60 * 24 * 365}`
+      // SameSite=Lax so the cookie survives OAuth ping-pongs — Strict
+      // was getting dropped by some browsers on the Google-calendar
+      // return trip, re-triggering /welcome every integration connect.
+      `grid_onboarded=1; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 365}`
     );
     return new Response(res.body, { status: res.status, headers });
   } catch (err) {

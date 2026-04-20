@@ -71,7 +71,12 @@ export async function POST(req: NextRequest) {
       const headers = new Headers(res.headers);
       headers.append(
         'Set-Cookie',
-        `grid_onboarded=1; Path=/; HttpOnly; SameSite=Strict; Max-Age=${60 * 60 * 24 * 365}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
+        // SameSite=Lax so the cookie survives OAuth ping-pongs
+        // (Google → integrations callback → redirect). Strict was
+        // getting dropped by some browsers on that chain and
+        // re-triggering the /welcome wizard after every calendar
+        // connect even though the user had already onboarded.
+        `grid_onboarded=1; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 365}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
       );
       return new Response(res.body, { status: res.status, headers });
     }

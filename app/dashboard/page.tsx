@@ -7,7 +7,6 @@ import GlobalNovaBar from '@/components/GlobalNovaBar';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import SampleDataBanner from '@/components/SampleDataBanner';
 import OnlineIndicator from '@/components/OnlineIndicator';
-import { useOnboarding } from '@/lib/use-onboarding';
 import { useAuth } from '@/components/AuthProvider';
 import ReviewNudgeBanner from '@/components/ReviewNudgeBanner';
 
@@ -16,6 +15,7 @@ const CrossDomainInsights = dynamic(() => import('@/components/CrossDomainInsigh
 const ActivitySummary = dynamic(() => import('@/components/ActivitySummary'), { ssr: false });
 const LiveScaffoldWidget = dynamic(() => import('@/components/widgets/LiveScaffoldWidget'), { ssr: false });
 const ValueMeterWidget = dynamic(() => import('@/components/widgets/ValueMeterWidget'), { ssr: false });
+const OnboardingChecklist = dynamic(() => import('@/components/OnboardingChecklist'), { ssr: false });
 
 type SystemData = {
   id: string;
@@ -102,8 +102,10 @@ export default function OperatePage() {
   // authoritative source — prior code trusted a client-only
   // localStorage key that the /welcome wizard never set, so every
   // onboarded user saw the "complete your setup" nudge forever.
-  const [serverOnboardedAt, setServerOnboardedAt] = useState<string | null | undefined>(undefined);
-  const { complete: onboardingComplete, profile: onboardingProfile } = useOnboarding();
+  // Progress state moved to the OnboardingChecklist component, which
+  // derives step completion from real account state (name, env, key,
+  // system, integration) rather than a separate flag. Kept here only
+  // to preserve the existing setDisplayName / operate-data flow.
 
   // Greeting name — pulled directly from the auth provider so a Display
   // Name change in /settings/profile reflects on the dashboard without
@@ -165,7 +167,6 @@ export default function OperatePage() {
         // the greeting below. Falls back to firstName for older API
         // responses that don't yet include displayName.
         setDisplayName(d.user?.displayName ?? d.user?.firstName ?? null);
-        setServerOnboardedAt(d.user?.onboardedAt ?? null);
         setLoaded(true);
         // Default to activity tab if there's nova activity, else runs
         if ((d.activity ?? []).length > 0) setFeedTab('activity');
@@ -310,53 +311,13 @@ export default function OperatePage() {
       <WelcomeBanner onPromptClick={handleWelcomePrompt} />
       <SampleDataBanner />
 
-      {/* Onboarding-incomplete nudge. Only shown when the SERVER says
-          the user hasn't completed onboarding (Identity.onboardedAt
-          is null). Previously this rendered whenever a client-only
-          localStorage flag was missing — which it always was after
-          the /welcome flow, because that flow only sets the cookie
-          and DB, not the localStorage key. Result: every onboarded
-          user got nagged forever. Fixed. */}
-      {serverOnboardedAt === null && onboardingComplete !== true && (() => {
-        // Only surface fields the /welcome wizard actually collects.
-        // workType and environmentType were orphaned — the wizard
-        // never asks for them, so the nudge was always telling users
-        // to fill something they couldn't fill.
-        const missing: string[] = [];
-        if (!onboardingProfile?.role) missing.push('role');
-        if (!onboardingProfile?.environmentName) missing.push('workspace');
-        const label = missing.length === 0
-          ? 'Finish setting up your workspace'
-          : missing.length === 1
-            ? `Add your ${missing[0]}`
-            : `Add your ${missing.join(' and ')}`;
-        return (
-          <Link
-            href="/welcome"
-            className="flex items-center gap-3 rounded-xl px-5 py-3.5 mb-6 transition-all group"
-            style={{
-              background: 'linear-gradient(135deg, rgba(113,147,237,0.06), rgba(191,159,241,0.04))',
-              border: '1px solid rgba(191,159,241,0.15)',
-            }}
-          >
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.2)' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(191,159,241,0.7)" strokeWidth="1.8">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-light" style={{ color: 'var(--text-2)' }}>{label}</p>
-              <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-                Nova uses this to tailor suggestions to how you actually work — 30 seconds.
-              </p>
-            </div>
-            <span className="text-xs font-light transition-colors group-hover:text-white/50" style={{ color: 'var(--text-3)' }}>
-              Finish →
-            </span>
-          </Link>
-        );
-      })()}
+      {/* Onboarding checklist — Notion/ClickUp/Monday pattern. Floats
+          bottom-right, dismissible, minimisable to a pill, resumable.
+          Replaces the prior inline blocking nudge and the forced
+          /welcome redirect in middleware. The user can use the app
+          freely; setup progress shows as an overlay until complete.
+          Hides itself automatically when all steps are done. */}
+      <OnboardingChecklist />
 
       {/* Global Nova bar */}
       <div data-tour="nova-bar">
