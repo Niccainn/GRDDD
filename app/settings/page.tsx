@@ -94,7 +94,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="px-4 md:px-10 py-6 md:py-10" style={{ maxWidth: 720, margin: '0 auto' }}>
+    <div className="px-4 md:px-10 py-6 md:py-10 max-w-3xl mx-auto w-full">
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h1

@@ -163,7 +163,7 @@ export default function BillingPage() {
 
   if (betaMode) {
     return (
-      <div style={{ padding: '2rem 2.5rem', maxWidth: 1100, margin: '0 auto' }}>
+      <div className="px-4 md:px-10 py-6 md:py-10 max-w-6xl mx-auto w-full">
         <SettingsNav />
         {/* Header */}
         <div style={{ marginBottom: '2.5rem' }}>
@@ -240,7 +240,7 @@ export default function BillingPage() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
               gap: 16,
             }}
           >
@@ -344,7 +344,7 @@ export default function BillingPage() {
   const badge = PLAN_BADGE_COLORS[plan];
 
   return (
-    <div style={{ padding: '2rem 2.5rem', maxWidth: 1100, margin: '0 auto' }}>
+    <div className="px-4 md:px-10 py-6 md:py-10 max-w-6xl mx-auto w-full">
       <SettingsNav />
       {/* Toast */}
       {toast && (
@@ -558,7 +558,7 @@ export default function BillingPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
             gap: 16,
           }}
         >
