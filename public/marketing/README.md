@@ -1,3 +1,46 @@
+# GRID — Marketing assets
+
+Two sets, different jobs:
+
+| Set | What it is | Use when |
+|---|---|---|
+| **`png/`** — 10 brand mockups | Composed HTML mocks rendered against the brand tokens | Pitch deck, hero shots, "how it works" narratives, any scene that needs perfect composition |
+| **`live/`** — 10 live-app screens | Real screenshots of the production app (grddd.com) with realistic seeded data, driven by headless Chrome + a session cookie | Product Hunt, Show HN, "this is what you actually get" proof, changelog, retention marketing |
+
+---
+
+## `live/` — screenshots of the actual running app
+
+All captures are 1920×1080, taken from the real grddd.com production deployment, logged in as a seeded marketing demo account (`demo+marketing@grddd.com`) with 3 Systems, 8 Workflows, 40 Executions, 8 Signals, and 5 Tasks populated.
+
+| File | Route | What it shows |
+|---|---|---|
+| `live/grid-live-01-dashboard.png`       | `/dashboard`       | "Good evening, Nicole Cain" + health stats + last-7-day metrics |
+| `live/grid-live-02-systems.png`         | `/systems`         | All 3 Systems as cards with health scores |
+| `live/grid-live-03-operations-detail.png` | `/operations`    | A single System's detail view — workflows, agent, integrations |
+| `live/grid-live-04-workflows.png`       | `/workflows`       | All 8 workflows as a filterable grid |
+| `live/grid-live-05-calendar.png`        | `/calendar`        | Calendar with task/goal/nova layers |
+| `live/grid-live-06-analytics.png`       | `/analytics`       | Execution history, token usage, completion rate |
+| `live/grid-live-07-integrations.png`    | `/integrations`    | Full provider grid with capability tiers |
+| `live/grid-live-08-settings-ai.png`     | `/settings/ai`     | The BYOK Anthropic-key connect screen |
+| `live/grid-live-09-tasks.png`           | `/tasks`           | Task list / board |
+| `live/grid-live-10-goals.png`           | `/goals`           | Goals with milestones |
+
+### How to regenerate
+
+```bash
+# Pulls Vercel prod env, seeds the demo account, renders all 10 screens.
+bash scripts/render-marketing-screens.sh
+```
+
+Requires: `.env.vercel` (run `vercel env pull .env.vercel --environment=production`) and macOS Chrome at the default install path.
+
+### Known production bug surfaced by this work
+
+- **`/inbox` throws `ReferenceError: Cannot access 'H' before initialization`** (TDZ / hoisting issue in the minified bundle). Swapped for `/analytics` in the capture list. Tracked separately — real user-facing bug that should be fixed.
+
+---
+
 # GRID — Marketing mockups
 
 10 pixel-perfect mockup screenshots at **1920×1080** (16:9, 1080p), generated
