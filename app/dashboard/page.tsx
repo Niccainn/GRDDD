@@ -241,7 +241,7 @@ export default function OperatePage() {
             : `Add your ${missing.join(' and ')}`;
         return (
           <Link
-            href="/onboarding"
+            href="/welcome"
             className="flex items-center gap-3 rounded-xl px-5 py-3.5 mb-6 transition-all group"
             style={{
               background: 'linear-gradient(135deg, rgba(113,147,237,0.06), rgba(191,159,241,0.04))',
