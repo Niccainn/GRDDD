@@ -72,7 +72,7 @@ export async function GET(req: Request) {
       response.cookies.set('grid_onboarded', '1', {
         path: '/',
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 365,
       });
     }
