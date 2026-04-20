@@ -176,6 +176,23 @@ export default function InboxPage() {
     ),
   ).sort();
 
+  // Internal source categories. Each one is a toggleable layer in
+  // the sidebar — hiding "manual" hides all user-created signals,
+  // hiding "nova" hides everything Nova produced, etc. The key is
+  // matched loosely against signal.source to survive naming drift.
+  //
+  // MUST be declared BEFORE internalLayerOf and `filtered` — those
+  // reference it at render time. Previously this was declared after
+  // them, which survived dev-mode execution but threw a TDZ
+  // "Cannot access 'H' before initialization" in the minified prod
+  // bundle the moment a user opened /inbox. Classic hoisting trap.
+  const INTERNAL_SOURCES: { id: string; label: string; match: (src: string) => boolean; color: string }[] = [
+    { id: 'internal:manual', label: 'Manual', match: s => s === 'manual', color: '#7193ED' },
+    { id: 'internal:nova', label: 'Nova', match: s => s === 'nova', color: '#BF9FF1' },
+    { id: 'internal:workflow', label: 'Workflows', match: s => s === 'workflow' || s === 'scheduler', color: '#C8F26B' },
+    { id: 'internal:system', label: 'System', match: s => !['manual', 'nova', 'workflow', 'scheduler'].includes(s) && !s.startsWith('integration:'), color: 'rgba(255,255,255,0.4)' },
+  ];
+
   // Resolve which internal-layer id (if any) this signal belongs to,
   // so a "Manual" hidden toggle filters every user-created signal at
   // once, not just the one whose raw source string matches.
@@ -199,17 +216,6 @@ export default function InboxPage() {
     }
     return true;
   });
-
-  // Internal source categories. Each one is a toggleable layer in
-  // the sidebar — hiding "manual" hides all user-created signals,
-  // hiding "nova" hides everything Nova produced, etc. The key is
-  // matched loosely against signal.source to survive naming drift.
-  const INTERNAL_SOURCES: { id: string; label: string; match: (src: string) => boolean; color: string }[] = [
-    { id: 'internal:manual', label: 'Manual', match: s => s === 'manual', color: '#7193ED' },
-    { id: 'internal:nova', label: 'Nova', match: s => s === 'nova', color: '#BF9FF1' },
-    { id: 'internal:workflow', label: 'Workflows', match: s => s === 'workflow' || s === 'scheduler', color: '#C8F26B' },
-    { id: 'internal:system', label: 'System', match: s => !['manual', 'nova', 'workflow', 'scheduler'].includes(s) && !s.startsWith('integration:'), color: 'rgba(255,255,255,0.4)' },
-  ];
 
   // Count signals per layer so the sidebar can show "Manual · 12".
   // Done once per signal list change; cheap O(n × layers).
