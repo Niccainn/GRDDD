@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from './db';
+import { decryptPII } from './crypto/pii-encryption';
 import { calculateCost, checkBudget, recordTokenUsage } from './cost';
 import {
   getAnthropicClientForEnvironment,
@@ -559,10 +560,13 @@ async function executeTool(
         where: { environmentId: ctx.environmentId },
         include: { identity: true },
       });
+      // identity pulled via relation include → PII extension skipped.
+      // Decrypt defensively (no-op on plaintext) so Nova's team-member
+      // tool returns real names instead of 'pii:/…' ciphertext.
       const result = members.map(m => ({
         id: m.identity.id,
-        name: m.identity.name,
-        email: m.identity.email,
+        name: decryptPII(m.identity.name),
+        email: m.identity.email ? decryptPII(m.identity.email) : null,
         avatar: m.identity.avatar,
         role: m.role,
       }));

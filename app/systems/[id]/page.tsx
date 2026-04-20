@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
+import { decryptPII } from '@/lib/crypto/pii-encryption';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import NovaBar from '@/components/NovaBar';
@@ -249,7 +250,10 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
               {[
                 { label: 'Workflows', value: system.workflows.length },
                 { label: 'Active', value: system.workflows.filter(w => w.status === 'ACTIVE').length },
-                { label: 'Created by', value: system.creator.name },
+                // creator comes back via relation include → PII extension
+                // skipped the decrypt pass. Defensive decryptPII is a no-op
+                // on plaintext, safe to call unconditionally.
+                { label: 'Created by', value: decryptPII(system.creator.name) },
                 { label: 'Created', value: new Date(system.createdAt).toLocaleDateString() },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between">

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db';
 import { hashEmail } from './crypto/email-hash';
+import { decryptPII } from './crypto/pii-encryption';
 import { sendVerificationEmail } from './email-verification';
 
 const SESSION_COOKIE = 'grid_session';
@@ -39,10 +40,17 @@ export async function getAuthIdentityOrNull(): Promise<AuthIdentity | null> {
 
   if (session.identity.deletedAt) return null;
 
+  // The PII extension on prisma.identity.* decrypts name/email on direct
+  // queries, but the identity comes back here as a RELATION on session —
+  // which bypasses the extension and returns raw ciphertext. Without this
+  // defensive decrypt, every greeting / sidebar / "created by" surface
+  // that threads through getAuthIdentityOrNull shows 'pii:/…' placeholders
+  // instead of the user's name. decryptPII is a no-op on plaintext
+  // (migration-safe), so this is safe to call unconditionally.
   return {
     id: session.identity.id,
-    name: session.identity.name,
-    email: session.identity.email,
+    name: decryptPII(session.identity.name),
+    email: session.identity.email ? decryptPII(session.identity.email) : null,
     type: session.identity.type,
     avatar: session.identity.avatar,
   };
