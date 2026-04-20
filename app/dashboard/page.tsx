@@ -8,6 +8,7 @@ import WelcomeBanner from '@/components/WelcomeBanner';
 import SampleDataBanner from '@/components/SampleDataBanner';
 import OnlineIndicator from '@/components/OnlineIndicator';
 import { useOnboarding } from '@/lib/use-onboarding';
+import { useAuth } from '@/components/AuthProvider';
 import ReviewNudgeBanner from '@/components/ReviewNudgeBanner';
 
 // Lazy-load below-fold widgets to reduce LCP
@@ -104,6 +105,21 @@ export default function OperatePage() {
   const [serverOnboardedAt, setServerOnboardedAt] = useState<string | null | undefined>(undefined);
   const { complete: onboardingComplete, profile: onboardingProfile } = useOnboarding();
 
+  // Greeting name — pulled directly from the auth provider so a Display
+  // Name change in /settings/profile reflects on the dashboard without
+  // a full reload. useAuth() already subscribes to the live /api/auth/me
+  // identity; the operate-data response is cached longer and could drift.
+  const { user: authUser } = useAuth();
+  const greetingName = (() => {
+    const raw = (authUser?.name ?? displayName ?? '').trim();
+    if (!raw) return null;
+    // Use the first word only — reads as a personal greeting
+    // ("Good morning, Nicole") rather than ("Good morning, Nicole
+    // Cain") or an unwieldy company name. User can still see full
+    // name in Settings / Profile.
+    return raw.split(/\s+/)[0];
+  })();
+
   const handleWelcomePrompt = useCallback((query: string) => {
     setNovaInitialQuery(query);
   }, []);
@@ -189,7 +205,7 @@ export default function OperatePage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="stat-number tracking-tight mb-1">
-            {getGreeting()}{displayName ? `, ${displayName}` : ''}
+            {getGreeting()}{greetingName ? `, ${greetingName}` : ''}
           </h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {getStatusLine()}
