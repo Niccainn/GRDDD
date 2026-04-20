@@ -206,23 +206,40 @@ export default function ProfilePage() {
           </span>
         </div>
 
-        {/* Name field */}
+        {/* Name field — expanded so users understand this drives the
+            dashboard greeting + every in-product mention of them.
+            Previously labelled ambiguously as "Display name" which led
+            to team/company names being entered and then greetings
+            reading "Good morning, Acme Inc." */}
         <div style={{ marginBottom: 20 }}>
           <label
             style={{
               display: 'block',
               color: 'var(--text-2)',
-              fontWeight: 300,
+              fontWeight: 400,
               fontSize: 13,
-              marginBottom: 8,
+              marginBottom: 6,
             }}
           >
-            Display name
+            Your name
           </label>
+          <p
+            style={{
+              color: 'var(--text-3)',
+              fontSize: 12,
+              fontWeight: 300,
+              marginBottom: 10,
+              lineHeight: 1.5,
+            }}
+          >
+            This is how Nova and the dashboard will address you. Use
+            your first name or full name — not your team or company name.
+          </p>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Nicole"
             style={{
               width: '100%',
               padding: '10px 14px',
@@ -235,6 +252,25 @@ export default function ProfilePage() {
               outline: 'none',
             }}
           />
+          {/* Live preview so users can confirm what the greeting will
+              actually read before hitting save. Kills the "I typed
+              my team name, now every screen greets me wrong" trap. */}
+          {name.trim() && (
+            <p
+              style={{
+                marginTop: 10,
+                fontSize: 12,
+                color: 'var(--text-3)',
+                fontWeight: 300,
+              }}
+            >
+              <span style={{ color: 'var(--text-4)' }}>Preview · </span>
+              Good morning,{' '}
+              <span style={{ color: 'var(--brand)', fontWeight: 400 }}>
+                {name.trim().split(/\s+/)[0]}
+              </span>
+            </p>
+          )}
         </div>
 
         {/* Email (read-only) */}
