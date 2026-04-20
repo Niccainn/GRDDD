@@ -109,7 +109,7 @@ export default function OperatePage() {
   // Name change in /settings/profile reflects on the dashboard without
   // a full reload. useAuth() already subscribes to the live /api/auth/me
   // identity; the operate-data response is cached longer and could drift.
-  const { user: authUser } = useAuth();
+  const { user: authUser, refresh: refreshAuth } = useAuth();
   const greetingName = (() => {
     const raw = (authUser?.name ?? displayName ?? '').trim();
     if (!raw) return null;
@@ -119,6 +119,34 @@ export default function OperatePage() {
     // name in Settings / Profile.
     return raw.split(/\s+/)[0];
   })();
+
+  // Click-to-edit on the greeting name. If Identity.name is wrong
+  // (user typed their team/company name during signup), clicking the
+  // name opens an inline editor right where they see it. Saves via
+  // PATCH /api/settings/profile then refreshAuth() so the whole app
+  // picks up the change without a hard reload.
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const startEditName = useCallback(() => {
+    setNameDraft(authUser?.name ?? '');
+    setEditingName(true);
+  }, [authUser?.name]);
+  const saveName = useCallback(async () => {
+    const trimmed = nameDraft.trim();
+    if (!trimmed) { setEditingName(false); return; }
+    setSavingName(true);
+    try {
+      await fetch('/api/settings/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed }),
+      });
+      refreshAuth();
+    } catch { /* ignore — user can retry */ }
+    setSavingName(false);
+    setEditingName(false);
+  }, [nameDraft, refreshAuth]);
 
   const handleWelcomePrompt = useCallback((query: string) => {
     setNovaInitialQuery(query);
@@ -204,8 +232,55 @@ export default function OperatePage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="stat-number tracking-tight mb-1">
-            {getGreeting()}{greetingName ? `, ${greetingName}` : ''}
+          <h1 className="stat-number tracking-tight mb-1 flex items-center gap-2 flex-wrap">
+            <span>{getGreeting()}</span>
+            {editingName ? (
+              <span className="inline-flex items-center gap-2">
+                <span>,</span>
+                <input
+                  autoFocus
+                  value={nameDraft}
+                  onChange={e => setNameDraft(e.target.value)}
+                  onBlur={saveName}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') saveName();
+                    if (e.key === 'Escape') setEditingName(false);
+                  }}
+                  placeholder="your name"
+                  className="bg-transparent outline-none border-b px-1 min-w-[6ch]"
+                  style={{
+                    borderColor: 'var(--brand)',
+                    color: 'var(--brand)',
+                    fontSize: 'inherit',
+                    fontWeight: 'inherit',
+                    letterSpacing: 'inherit',
+                    fontFamily: 'inherit',
+                  }}
+                  disabled={savingName}
+                />
+              </span>
+            ) : greetingName ? (
+              <button
+                onClick={startEditName}
+                title="Click to edit the name Nova uses for you"
+                className="transition-opacity hover:opacity-80 cursor-pointer"
+                style={{ font: 'inherit', letterSpacing: 'inherit', color: 'inherit', background: 'transparent', border: 'none', padding: 0 }}
+              >
+                , {greetingName}
+              </button>
+            ) : (
+              <button
+                onClick={startEditName}
+                className="text-sm font-light px-3 py-1 rounded-full ml-2 align-middle"
+                style={{
+                  background: 'var(--brand-soft)',
+                  border: '1px solid var(--brand-border)',
+                  color: 'var(--brand)',
+                }}
+              >
+                + add your name
+              </button>
+            )}
           </h1>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
             {getStatusLine()}
