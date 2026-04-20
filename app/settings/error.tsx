@@ -6,7 +6,7 @@ export default function SettingsError({ error, reset }: { error: Error; reset: (
   useEffect(() => { console.error('Settings error:', error); }, [error]);
 
   return (
-    <div style={{ padding: '3rem 2.5rem', maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+    <div className="px-4 md:px-10 py-8 md:py-12 max-w-xl mx-auto w-full text-center">
       <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--danger-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />

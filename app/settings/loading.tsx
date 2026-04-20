@@ -1,6 +1,6 @@
 export default function SettingsLoading() {
   return (
-    <div style={{ padding: '2rem 2.5rem', maxWidth: 700, margin: '0 auto' }}>
+    <div className="px-4 md:px-10 py-6 md:py-10 max-w-3xl mx-auto w-full">
       {/* Title */}
       <div className="skeleton" style={{ width: 120, height: 32, borderRadius: 8, marginBottom: 8 }} />
       <div className="skeleton" style={{ width: 280, height: 14, borderRadius: 6, marginBottom: 32 }} />
