@@ -51,6 +51,12 @@ model Identity {
   // recoverable.
   onboardedAt DateTime?
 
+  // Session versioning (SEC-04). Bumped on privilege-altering events
+  // — plan change, role change, password reset, email change — to
+  // invalidate every active session token without a DB scan. Sessions
+  // compare their stored `version` against this field at auth time.
+  sessionVersion Int @default(0)
+
   // Optional Properties
   avatar      String?
   description String?
@@ -105,6 +111,12 @@ model Session {
   expiresAt DateTime
 
   token String @unique
+
+  /// Snapshot of Identity.sessionVersion at session-creation time.
+  /// Reject this session when `Identity.sessionVersion != Session.version`
+  /// — that's how plan changes, role changes, and password resets
+  /// invalidate every active session without a DB scan.
+  version Int @default(0)
 
   identityId String
   identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)

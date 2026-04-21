@@ -116,6 +116,10 @@ export async function consumeResetToken(raw: string, newPassword: string): Promi
       // If the user completed a reset, their email is effectively
       // verified (they just clicked a link we sent to that mailbox).
       emailVerifiedAt: identity.emailVerifiedAt ?? new Date(),
+      // SEC-04 — bump session version so any session that
+      // deleteMany below races against (or cached mid-flight) is
+      // still rejected by the auth gate.
+      sessionVersion: { increment: 1 },
     },
   });
   // Invalidate all other sessions for this identity. If an attacker

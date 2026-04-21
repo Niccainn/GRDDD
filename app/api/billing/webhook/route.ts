@@ -82,6 +82,10 @@ export async function POST(req: Request) {
           currentPeriodEnd: periodEnd,
         },
       });
+      // SEC-04 — plan upgrade/downgrade invalidates old sessions.
+      await prisma.identity
+        .update({ where: { id: identityId }, data: { sessionVersion: { increment: 1 } } })
+        .catch(() => {});
       break;
     }
 
@@ -116,6 +120,15 @@ export async function POST(req: Request) {
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
         },
       });
+      // SEC-04 — status/plan change → invalidate old sessions.
+      if (existing.identityId) {
+        await prisma.identity
+          .update({
+            where: { id: existing.identityId },
+            data: { sessionVersion: { increment: 1 } },
+          })
+          .catch(() => {});
+      }
       break;
     }
 
@@ -134,6 +147,15 @@ export async function POST(req: Request) {
           cancelAtPeriodEnd: false,
         },
       });
+      // SEC-04 — subscription cancellation invalidates premium-tier sessions.
+      if (existing.identityId) {
+        await prisma.identity
+          .update({
+            where: { id: existing.identityId },
+            data: { sessionVersion: { increment: 1 } },
+          })
+          .catch(() => {});
+      }
       break;
     }
 
