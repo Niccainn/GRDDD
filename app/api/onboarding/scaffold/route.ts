@@ -13,6 +13,7 @@
  * user's default Environment (or creates one if they have none).
  */
 import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitNovaStrict } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 import { getAnthropicClientForEnvironment } from '@/lib/nova/client-factory';
 import {
@@ -71,6 +72,8 @@ async function ensureDefaultEnvironment(identityId: string, name: string | null)
 
 export async function POST(req: Request) {
   const identity = await getAuthIdentity();
+  const rl = await rateLimitNovaStrict(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const body = await req.json().catch(() => ({}));
   const description = String(body?.description ?? '').slice(0, MAX_DESCRIPTION);
   if (description.trim().length < 10) {

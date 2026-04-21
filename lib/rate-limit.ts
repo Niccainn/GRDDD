@@ -1,29 +1,34 @@
 /**
- * Rate limiting — two-tier.
+ * Rate limiting — three-tier.
  *
- *   1. Sync in-memory limiter (rateLimit, rateLimitApi, rateLimitNova).
+ *   1. Sync in-memory limiter (rateLimit, rateLimitApi).
  *      Per-instance, fast, no network. Used by ~40 internal API routes
- *      that already require an authenticated session — at worst a
- *      noisy authed user can burn N×limit if Vercel cold-starts N
- *      instances. Acceptable risk because the blast radius is bounded
- *      by their daily Anthropic budget cap.
+ *      that already require an authenticated session and don't burn
+ *      external budget. Per-instance bypass is acceptable for listings
+ *      and reads.
  *
- *   2. Async Upstash-backed limiter (rateLimitDistributed). Used ONLY
- *      by the auth endpoints (sign-in, sign-up, password reset, etc.)
- *      where multi-instance bypass would enable credential stuffing
- *      and account enumeration. This goes through a real network
- *      round-trip per check so it's strictly the high-stakes path.
+ *   2. Async distributed limiter (rateLimitDistributed / *Strict).
+ *      Upstash-backed sliding window. Mandatory for any endpoint that
+ *      spends money downstream (Anthropic tokens, Stripe fees, email
+ *      sends) — a cold-start bypass on these paths is a cost-DoS
+ *      vector. In production the Strict variants fail-closed when
+ *      Upstash is unreachable rather than silently falling back.
  *
- * The split is deliberate: forcing every internal route to await a
- * Redis call would add ~20ms per request × 40 routes for negligible
- * security benefit. Keep the boundary at the auth perimeter where it
- * actually matters.
+ *   3. Auth-perimeter limiter (rateLimitSignIn*Distributed, etc.)
+ *      Also distributed, also mandatory in prod, because multi-instance
+ *      bypass on sign-in enables credential stuffing and account
+ *      enumeration.
  *
- * To enable distributed rate limiting set both env vars:
+ * Config:
  *   UPSTASH_REDIS_REST_URL
  *   UPSTASH_REDIS_REST_TOKEN
- * When unset, rateLimitDistributed transparently falls back to the
- * in-memory limiter.
+ *   GRID_CACHE_PREFIX       — optional per-deployment key namespace
+ *                             (see SEC-11). Defaults to VERCEL_ENV.
+ *
+ * In production (NODE_ENV=production AND VERCEL_ENV=production), both
+ * Upstash env vars MUST be set or assertRateLimitReady() throws on
+ * first request. In non-prod, absent Upstash transparently falls back
+ * to the in-memory limiter so developers don't need a Redis instance.
  */
 const store = new Map<string, { count: number; resetAt: number }>();
 
@@ -105,6 +110,39 @@ function isUpstashConfigured(): boolean {
   return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
 }
 
+function isProductionDeployment(): boolean {
+  // Vercel sets VERCEL_ENV=production for the prod deployment;
+  // preview/development deployments get "preview" or "development".
+  // Defensive: treat NODE_ENV=production as prod too for non-Vercel
+  // self-hosts.
+  return (
+    process.env.VERCEL_ENV === 'production' ||
+    (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV)
+  );
+}
+
+/** Derive a per-deployment cache-key prefix so preview/staging/prod
+ *  don't collide on a shared Upstash instance (SEC-11). */
+function cachePrefix(): string {
+  return (
+    process.env.GRID_CACHE_PREFIX ||
+    process.env.VERCEL_ENV ||
+    process.env.NODE_ENV ||
+    'dev'
+  );
+}
+
+/** Throws on first strict call in prod if Upstash is missing. Call
+ *  sites that depend on distributed rate limiting for cost control
+ *  (Nova, agent runs, email sends) should use this to fail loud. */
+export function assertRateLimitReady(): void {
+  if (isProductionDeployment() && !isUpstashConfigured()) {
+    throw new Error(
+      'Distributed rate limiting is required in production. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN env vars.',
+    );
+  }
+}
+
 interface UpstashPipelineResponse {
   result: unknown;
   error?: string;
@@ -149,20 +187,32 @@ async function upstashIncr(key: string, ttlSeconds: number): Promise<number | nu
 export async function rateLimitDistributed(
   key: string,
   limit: number,
-  windowMs: number
+  windowMs: number,
+  opts: { strict?: boolean } = {},
 ): Promise<RateLimitResult> {
+  // Strict mode (cost-gate endpoints): in prod, Upstash MUST be
+  // configured. Fail closed if it's missing so ops notices.
+  if (opts.strict && isProductionDeployment() && !isUpstashConfigured()) {
+    return { allowed: false, remaining: 0, resetAt: Date.now() + windowMs };
+  }
+
   if (!isUpstashConfigured()) {
+    // Dev / preview fallback — still rate-limited, just per-instance.
     return rateLimit(key, limit, windowMs);
   }
 
   const ttlSeconds = Math.max(1, Math.ceil(windowMs / 1000));
-  const namespacedKey = `grid:rl:${key}`;
+  const namespacedKey = `${cachePrefix()}:rl:${key}`;
   const count = await upstashIncr(namespacedKey, ttlSeconds);
 
   if (count === null) {
-    // Upstash unreachable — degrade gracefully to in-memory rather
-    // than fail-open. The local limiter still gives us per-instance
-    // protection while ops investigates.
+    // Upstash unreachable. In strict mode (cost-gate) fail closed —
+    // better to bounce one user than let an attacker burn the budget
+    // during an outage. In non-strict mode degrade to in-memory so
+    // reads keep working.
+    if (opts.strict) {
+      return { allowed: false, remaining: 0, resetAt: Date.now() + windowMs };
+    }
     return rateLimit(key, limit, windowMs);
   }
 
@@ -171,6 +221,45 @@ export async function rateLimitDistributed(
     return { allowed: false, remaining: 0, resetAt };
   }
   return { allowed: true, remaining: limit - count, resetAt };
+}
+
+/** Strict, distributed Nova rate limiter. 30 req/min per user AND
+ *  a shared 2k req/hr ceiling per user across all instances. Fails
+ *  closed in prod if Upstash is misconfigured. */
+export async function rateLimitNovaStrict(userId: string): Promise<RateLimitResult> {
+  // Per-minute bucket (spike control)
+  const perMin = await rateLimitDistributed(
+    `nova:min:${userId}`,
+    30,
+    60_000,
+    { strict: true },
+  );
+  if (!perMin.allowed) return perMin;
+  // Per-hour bucket (cost ceiling — catches slow-drip attacks)
+  return rateLimitDistributed(
+    `nova:hr:${userId}`,
+    500,
+    60 * 60_000,
+    { strict: true },
+  );
+}
+
+/** Strict, distributed agent-run limiter. Runs spend tokens + sometimes
+ *  Stripe fees, so treat like Nova. */
+export async function rateLimitAgentRunStrict(userId: string): Promise<RateLimitResult> {
+  const perMin = await rateLimitDistributed(
+    `agent:min:${userId}`,
+    20,
+    60_000,
+    { strict: true },
+  );
+  if (!perMin.allowed) return perMin;
+  return rateLimitDistributed(
+    `agent:hr:${userId}`,
+    200,
+    60 * 60_000,
+    { strict: true },
+  );
 }
 
 /** Distributed sign-in limiter: 10 attempts per IP per 15 min */

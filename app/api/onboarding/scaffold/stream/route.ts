@@ -15,6 +15,7 @@
  * ~1800 chars should fall back to the synchronous POST variant.
  */
 import { getAuthIdentity } from '@/lib/auth';
+import { rateLimitNovaStrict } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 import { getAnthropicClientForEnvironment } from '@/lib/nova/client-factory';
 import {
@@ -73,6 +74,8 @@ async function ensureDefaultEnvironment(identityId: string, name: string | null)
 
 export async function GET(req: Request) {
   const identity = await getAuthIdentity();
+  const rl = await rateLimitNovaStrict(identity.id);
+  if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { searchParams } = new URL(req.url);
   const description = String(searchParams.get('description') ?? '').slice(0, MAX_DESCRIPTION);
   if (description.trim().length < 10) {

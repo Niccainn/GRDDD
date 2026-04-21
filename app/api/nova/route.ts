@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
 import { runNovaAgent, type NovaEvent } from '@/lib/nova';
 import { getAuthIdentity } from '@/lib/auth';
-import { rateLimitNova } from '@/lib/rate-limit';
+import { rateLimitNovaStrict } from '@/lib/rate-limit';
 import { MissingKeyError } from '@/lib/nova/client-factory';
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
-  const rl = rateLimitNova(identity.id);
+  const rl = await rateLimitNovaStrict(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
 
   const { systemId, input } = await req.json();

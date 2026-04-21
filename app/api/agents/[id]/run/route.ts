@@ -13,7 +13,7 @@ import { NextRequest } from 'next/server';
 import { getAuthIdentity } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { executeAgentRun, AgentRunError } from '@/lib/agents/run';
-import { rateLimitAgentRun } from '@/lib/rate-limit';
+import { rateLimitAgentRunStrict } from '@/lib/rate-limit';
 
 export async function POST(
   req: NextRequest,
@@ -21,7 +21,7 @@ export async function POST(
 ) {
   const identity = await getAuthIdentity();
 
-  const rl = rateLimitAgentRun(identity.id);
+  const rl = await rateLimitAgentRunStrict(identity.id);
   if (!rl.allowed) {
     return Response.json(
       { error: 'Too many agent runs — slow down', code: 'rate_limited' },
