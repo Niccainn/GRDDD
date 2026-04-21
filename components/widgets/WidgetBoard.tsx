@@ -21,12 +21,15 @@ import WidgetDesigner from './WidgetDesigner';
 import CanvasGrid, { type CanvasItem } from './CanvasGrid';
 import { CELL, type WidgetSpec } from '@/lib/widgets/registry';
 import { fetchWidgetData } from '@/lib/widgets/fetch';
-import { type Layout } from '@/lib/widgets/canvas';
+import { useCanvasSync } from '@/lib/widgets/canvas-sync';
 
 export type BoardData = Record<string, WidgetRenderData | undefined>;
 
 type Props = {
   boardId: string;
+  /** Optional: DB-back this board to a Canvas row. Falls back to
+   *  localStorage when omitted (legacy dashboard, pre-login flows). */
+  canvasId?: string;
   /** Widgets shipped by the app (dashboard defaults, system page defaults). */
   systemSpecs: WidgetSpec[];
   /** Data keyed by widget id, or by a stable key the caller maps to ids. */
@@ -37,59 +40,23 @@ type Props = {
   cols?: number;
 };
 
-function loadUserWidgets(boardId: string): WidgetSpec[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(`grid_widgets_${boardId}`);
-    return raw ? (JSON.parse(raw) as WidgetSpec[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveUserWidgets(boardId: string, widgets: WidgetSpec[]) {
-  try {
-    localStorage.setItem(`grid_widgets_${boardId}`, JSON.stringify(widgets));
-  } catch {
-    /* quota exceeded or private mode — non-fatal */
-  }
-}
-
-function loadLayout(boardId: string): Layout {
-  if (typeof window === 'undefined') return {};
-  try {
-    const raw = localStorage.getItem(`grid_layout_${boardId}`);
-    return raw ? (JSON.parse(raw) as Layout) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveLayout(boardId: string, layout: Layout) {
-  try {
-    localStorage.setItem(`grid_layout_${boardId}`, JSON.stringify(layout));
-  } catch {
-    /* non-fatal */
-  }
-}
-
 export default function WidgetBoard({
   boardId,
+  canvasId,
   systemSpecs,
   data,
   allowAdd = true,
   cols = 4,
 }: Props) {
-  const [userSpecs, setUserSpecs] = useState<WidgetSpec[]>([]);
+  const {
+    specs: userSpecs,
+    layout,
+    setSpecs: setUserSpecs,
+    setLayout,
+  } = useCanvasSync({ canvasId, boardId });
   const [userData, setUserData] = useState<BoardData>({});
-  const [layout, setLayout] = useState<Layout>({});
   const [designerOpen, setDesignerOpen] = useState(false);
   const [editingBoard, setEditingBoard] = useState(false);
-
-  useEffect(() => {
-    setUserSpecs(loadUserWidgets(boardId));
-    setLayout(loadLayout(boardId));
-  }, [boardId]);
 
   // Live data for user widgets. Re-fetches when specs change, then
   // refreshes per spec.refresh.
@@ -119,37 +86,25 @@ export default function WidgetBoard({
 
   const addWidget = useCallback(
     (spec: WidgetSpec) => {
-      setUserSpecs(prev => {
-        const next = [...prev, spec];
-        saveUserWidgets(boardId, next);
-        return next;
-      });
+      setUserSpecs([...userSpecs, spec]);
     },
-    [boardId],
+    [userSpecs, setUserSpecs],
   );
 
   const removeWidget = useCallback(
     (id: string) => {
-      setUserSpecs(prev => {
-        const next = prev.filter(w => w.id !== id);
-        saveUserWidgets(boardId, next);
-        return next;
-      });
-      setLayout(prev => {
-        const { [id]: _, ...rest } = prev;
-        saveLayout(boardId, rest);
-        return rest;
-      });
+      setUserSpecs(userSpecs.filter(w => w.id !== id));
+      const { [id]: _, ...restLayout } = layout;
+      setLayout(restLayout);
     },
-    [boardId],
+    [userSpecs, layout, setUserSpecs, setLayout],
   );
 
   const handleLayoutChange = useCallback(
-    (next: Layout) => {
+    (next: typeof layout) => {
       setLayout(next);
-      saveLayout(boardId, next);
     },
-    [boardId],
+    [setLayout],
   );
 
   const allSpecs = useMemo(

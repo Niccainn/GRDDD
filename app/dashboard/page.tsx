@@ -38,6 +38,19 @@ export default function DashboardPage() {
   const [data, setData] = useState<OperateData | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [novaSummary, setNovaSummary] = useState<string | null>(null);
+  const [environmentId, setEnvironmentId] = useState<string | null>(null);
+
+  // Resolve the user's primary environment so the canvas can persist
+  // to the DB. Dashboard is global; we pick the first owned env.
+  useEffect(() => {
+    fetch('/api/environments')
+      .then(r => (r.ok ? r.json() : null))
+      .then(list => {
+        const envs = Array.isArray(list) ? list : list?.environments ?? [];
+        if (envs.length > 0) setEnvironmentId(envs[0].id);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,6 +118,7 @@ export default function DashboardPage() {
       displayName={data?.user?.displayName ?? null}
       novaSummary={novaSummary}
       systems={cardData}
+      environmentId={environmentId}
     />
   );
 }
