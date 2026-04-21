@@ -40,6 +40,16 @@ export async function getAuthIdentityOrNull(): Promise<AuthIdentity | null> {
 
   if (session.identity.deletedAt) return null;
 
+  // SEC-04 — session version check. When Identity.sessionVersion is
+  // bumped (plan change, role change, password reset, email change)
+  // every existing session whose stored `version` doesn't match is
+  // invalidated without a DB scan. Also clean up stale rows so the
+  // session table doesn't grow unbounded.
+  if (session.version !== session.identity.sessionVersion) {
+    await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+    return null;
+  }
+
   // The PII extension on prisma.identity.* decrypts name/email on direct
   // queries, but the identity comes back here as a RELATION on session —
   // which bypasses the extension and returns raw ciphertext. Without this
@@ -145,8 +155,19 @@ export async function createSession(identityId: string) {
   const token = crypto.randomBytes(48).toString('base64url');
   const expiresAt = new Date(Date.now() + SESSION_DURATION);
 
+  // Snapshot the identity's current session version so the session
+  // becomes invalid the moment sessionVersion is bumped.
+  const identity = await prisma.identity.findUnique({
+    where: { id: identityId },
+    select: { sessionVersion: true },
+  });
   await prisma.session.create({
-    data: { token, identityId, expiresAt },
+    data: {
+      token,
+      identityId,
+      expiresAt,
+      version: identity?.sessionVersion ?? 0,
+    },
   });
 
   const cookieStore = await cookies();
@@ -163,8 +184,25 @@ export async function createSession(identityId: string) {
     expires: expiresAt,
   });
 
-  const identity = await prisma.identity.findUnique({ where: { id: identityId } });
-  return { id: identity!.id, name: identity!.name, email: identity!.email, onboardedAt: identity!.onboardedAt };
+  const identityFull = await prisma.identity.findUnique({ where: { id: identityId } });
+  return { id: identityFull!.id, name: identityFull!.name, email: identityFull!.email, onboardedAt: identityFull!.onboardedAt };
+}
+
+/**
+ * Invalidate every active session for an identity by bumping the
+ * session version. Call this whenever privileges change — plan
+ * change via Stripe webhook, role change in an environment, password
+ * reset, email change.
+ *
+ * The caller who triggered the change typically needs to mint a
+ * fresh session right after (otherwise they get logged out of their
+ * own tab). See app/api/auth/password-reset for the pattern.
+ */
+export async function bumpSessionVersion(identityId: string): Promise<void> {
+  await prisma.identity.update({
+    where: { id: identityId },
+    data: { sessionVersion: { increment: 1 } },
+  });
 }
 
 /**
