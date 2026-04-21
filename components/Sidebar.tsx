@@ -46,9 +46,17 @@ type NavItem = {
   badge?: string;
 };
 
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
 type NavSection = {
   label: string;
   items: NavItem[];
+  /** Optional subgroups — when present, `items` is ignored and the
+   *  section renders each group with its own mini-header. */
+  groups?: NavGroup[];
 };
 
 // ── Sidebar sections ─────────────────────────────────────────────────
@@ -84,27 +92,48 @@ const navSections: CollapsibleNavSection[] = [
     id: 'apps',
     collapsible: true,
     defaultCollapsed: true,
-    items: [
-      { href: '/workflows', label: 'Workflows', icon: icons.workflows },
-      { href: '/goals', label: 'Goals', icon: icons.goals },
-      { href: '/integrations', label: 'Integrations', icon: icons.integrations },
-      { href: '/environments', label: 'Environments', icon: icons.environments },
-      { href: '/docs', label: 'Documents', icon: icons.documents },
-      { href: '/templates', label: 'Templates', icon: icons.templates },
-      { href: '/mastery', label: 'Mastery', icon: icons.analytics },
-      { href: '/agents', label: 'Agents', icon: icons.agents },
-      { href: '/automations', label: 'Automations', icon: icons.automations },
-      { href: '/dashboards', label: 'Dashboards', icon: icons.dashboards },
-      { href: '/forms', label: 'Forms', icon: icons.forms },
-      { href: '/views', label: 'Views', icon: icons.views },
-      { href: '/finance', label: 'Finance', icon: icons.finance },
-      { href: '/time', label: 'Time Tracking', icon: icons.time },
-      { href: '/approvals', label: 'Approvals', icon: icons.approvals },
-      { href: '/assets', label: 'Assets', icon: icons.assets },
-      { href: '/analytics', label: 'Analytics', icon: icons.analytics },
-      { href: '/reports', label: 'Reports', icon: icons.reports },
-      { href: '/audit', label: 'Audit', icon: icons.audit },
-      { href: '/activity', label: 'Activity', icon: icons.activity },
+    items: [],
+    groups: [
+      {
+        label: 'Build',
+        items: [
+          { href: '/workflows', label: 'Workflows', icon: icons.workflows },
+          { href: '/agents', label: 'Agents', icon: icons.agents },
+          { href: '/automations', label: 'Automations', icon: icons.automations },
+          { href: '/templates', label: 'Templates', icon: icons.templates },
+          { href: '/forms', label: 'Forms', icon: icons.forms },
+          { href: '/views', label: 'Views', icon: icons.views },
+        ],
+      },
+      {
+        label: 'Work',
+        items: [
+          { href: '/goals', label: 'Goals', icon: icons.goals },
+          { href: '/approvals', label: 'Approvals', icon: icons.approvals },
+          { href: '/docs', label: 'Documents', icon: icons.documents },
+          { href: '/assets', label: 'Assets', icon: icons.assets },
+          { href: '/time', label: 'Time Tracking', icon: icons.time },
+          { href: '/finance', label: 'Finance', icon: icons.finance },
+        ],
+      },
+      {
+        label: 'Insights',
+        items: [
+          { href: '/dashboards', label: 'Dashboards', icon: icons.dashboards },
+          { href: '/analytics', label: 'Analytics', icon: icons.analytics },
+          { href: '/reports', label: 'Reports', icon: icons.reports },
+          { href: '/mastery', label: 'Mastery', icon: icons.analytics },
+          { href: '/activity', label: 'Activity', icon: icons.activity },
+          { href: '/audit', label: 'Audit', icon: icons.audit },
+        ],
+      },
+      {
+        label: 'Platform',
+        items: [
+          { href: '/integrations', label: 'Integrations', icon: icons.integrations },
+          { href: '/environments', label: 'Environments', icon: icons.environments },
+        ],
+      },
     ],
   },
 ];
@@ -380,36 +409,84 @@ export default function Sidebar() {
               )}
 
               {!isCollapsed && (
-              <div className="space-y-0.5">
-                {section.items.map(item => {
-                    const active = isActive(item.href);
-                    const isNova = item.accent;
-                    const showBadge = item.badge === 'inbox' && inboxUnread > 0;
-                    return (
-                      <Link key={item.href} href={item.href}
-                        className="flex items-center gap-3 px-3 py-2 text-sm transition-all"
-                        style={{
-                          color: active
-                            ? isNova ? 'var(--nova)' : 'var(--text-1)'
-                            : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
-                          background: active
-                            ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
-                            : 'transparent',
-                          borderRadius: 'var(--radius-sm)',
-                        }}>
-                        <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
-                        <span className="font-light tracking-wide">{item.label}</span>
-                        {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
-                        {showBadge && (
-                          <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
-                            style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
-                            {inboxUnread}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
+                cs.groups && cs.groups.length > 0 ? (
+                  // Grouped render — each NavGroup becomes a small
+                  // subheader + its items. Keeps the scent of structure
+                  // (build → work → see → connect) so users can skim.
+                  <div className="space-y-3">
+                    {cs.groups.map(g => (
+                      <div key={g.label}>
+                        <p
+                          className="px-3 mb-1 text-[9px] tracking-[0.14em] font-light uppercase"
+                          style={{ color: 'var(--text-3)', opacity: 0.7 }}
+                        >
+                          {g.label}
+                        </p>
+                        <div className="space-y-0.5">
+                          {g.items.map(item => {
+                            const active = isActive(item.href);
+                            const isNova = item.accent;
+                            const showBadge = item.badge === 'inbox' && inboxUnread > 0;
+                            return (
+                              <Link key={item.href} href={item.href}
+                                className="flex items-center gap-3 px-3 py-1.5 text-sm transition-all"
+                                style={{
+                                  color: active
+                                    ? isNova ? 'var(--nova)' : 'var(--text-1)'
+                                    : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
+                                  background: active
+                                    ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
+                                    : 'transparent',
+                                  borderRadius: 'var(--radius-sm)',
+                                }}>
+                                <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+                                <span className="font-light tracking-wide">{item.label}</span>
+                                {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
+                                {showBadge && (
+                                  <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
+                                    style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
+                                    {inboxUnread}
+                                  </span>
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-0.5">
+                    {section.items.map(item => {
+                      const active = isActive(item.href);
+                      const isNova = item.accent;
+                      const showBadge = item.badge === 'inbox' && inboxUnread > 0;
+                      return (
+                        <Link key={item.href} href={item.href}
+                          className="flex items-center gap-3 px-3 py-2 text-sm transition-all"
+                          style={{
+                            color: active
+                              ? isNova ? 'var(--nova)' : 'var(--text-1)'
+                              : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
+                            background: active
+                              ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
+                              : 'transparent',
+                            borderRadius: 'var(--radius-sm)',
+                          }}>
+                          <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+                          <span className="font-light tracking-wide">{item.label}</span>
+                          {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
+                          {showBadge && (
+                            <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
+                              style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
+                              {inboxUnread}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )
               )}
             </div>
           );
