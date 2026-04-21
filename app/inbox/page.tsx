@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/components/AuthProvider';
 
 type Signal = {
   id: string;
@@ -55,12 +56,75 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
+// ── Channel taxonomy ─────────────────────────────────────────────────
+// Multi-signal channels for the tab strip. Each channel answers a
+// different question:
+//   • All      — the full merged stream
+//   • Nova     — your system talking to you (AI triage, automations)
+//   • Business — signals from the outside world (email, webhooks)
+//   • Mentions — you were @-tagged somewhere
+//   • Gmail    — raw inbox from the connected Google account
+//
+// Gmail sits alongside signals as its own data source — it doesn't
+// live in the Signal table, so the list renders a different component
+// under that tab. Everything else filters the existing Signal list.
+type Channel = 'all' | 'nova' | 'business' | 'mentions' | 'gmail';
+
+const CHANNEL_ORDER: Channel[] = ['all', 'nova', 'business', 'mentions', 'gmail'];
+
+const CHANNEL_META: Record<Channel, { label: string; color: string; hint: string }> = {
+  all:      { label: 'All',      color: 'rgba(255,255,255,0.7)', hint: 'Everything merged' },
+  nova:     { label: 'Nova',     color: '#BF9FF1',               hint: 'Your system talking to you' },
+  business: { label: 'Business', color: '#7193ED',               hint: 'From the outside world' },
+  mentions: { label: 'Mentions', color: '#F7C700',               hint: 'You were tagged' },
+  gmail:    { label: 'Gmail',    color: '#4285f4',               hint: 'Primary inbox' },
+};
+
+/** Classify a signal into a channel bucket. `mentions` detection is
+ *  conservative: only trips on @name or @email in title/body. */
+function classifySignal(
+  s: Signal,
+  me: { name: string | null; email: string | null },
+): Exclude<Channel, 'all' | 'gmail'> | null {
+  const text = `${s.title} ${s.body ?? ''}`.toLowerCase();
+  const mentionTokens: string[] = [];
+  if (me.name) mentionTokens.push(`@${me.name.split(/\s+/)[0].toLowerCase()}`);
+  if (me.email) mentionTokens.push(`@${me.email.split('@')[0].toLowerCase()}`);
+  if (mentionTokens.some(t => text.includes(t))) return 'mentions';
+
+  const source = s.source.toLowerCase();
+  if (source === 'nova' || source === 'api') return 'nova';
+  if (source === 'email' || source === 'webhook' || source.startsWith('integration:')) return 'business';
+  return 'nova'; // manual / unclassified falls under "your system"
+}
+
+type GmailMessage = {
+  id: string;
+  threadId: string;
+  from: string;
+  fromEmail: string;
+  subject: string;
+  snippet: string;
+  date: string;
+  unread: boolean;
+  starred: boolean;
+};
+
 export default function InboxPage() {
+  const { user } = useAuth();
   const [signals, setSignals] = useState<Signal[]>([]);
   const [systems, setSystems] = useState<System[]>([]);
   const [environments, setEnvironments] = useState<{ id: string; name: string }[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const [channel, setChannel] = useState<Channel>('all');
+  const [gmail, setGmail] = useState<{ connected: boolean; account: string | null; messages: GmailMessage[]; loaded: boolean; error?: string }>({
+    connected: false,
+    account: null,
+    messages: [],
+    loaded: false,
+  });
 
   const [showCreate, setShowCreate] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
@@ -105,6 +169,23 @@ export default function InboxPage() {
       if (envs.length > 0) setForm(f => ({ ...f, environmentId: envs[0].id }));
     });
   }, [load]);
+
+  // Lazy-load Gmail only when the tab is first opened. Subsequent
+  // switches reuse the cached list; a manual refresh comes via the
+  // "Refresh" chip on the Gmail empty state if needed.
+  useEffect(() => {
+    if (channel !== 'gmail' || gmail.loaded) return;
+    fetch('/api/gmail/messages?limit=20')
+      .then(r => r.json())
+      .then(d => setGmail({
+        connected: Boolean(d.connected),
+        account: d.account ?? null,
+        messages: Array.isArray(d.messages) ? d.messages : [],
+        loaded: true,
+        error: d.error,
+      }))
+      .catch(err => setGmail(prev => ({ ...prev, loaded: true, error: String(err) })));
+  }, [channel, gmail.loaded]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -202,9 +283,43 @@ export default function InboxPage() {
     return null;
   }
 
+  // Classify every signal once per render so the tab counts and the
+  // filter share the same predicate. Cheap O(n).
+  const me = useMemo(
+    () => ({ name: user?.name ?? null, email: user?.email ?? null }),
+    [user?.name, user?.email],
+  );
+  const signalChannel = useMemo(() => {
+    const map = new Map<string, Exclude<Channel, 'all' | 'gmail'>>();
+    for (const s of signals) {
+      const c = classifySignal(s, me);
+      if (c) map.set(s.id, c);
+    }
+    return map;
+  }, [signals, me]);
+
+  const channelCounts = useMemo(() => {
+    const counts: Record<Channel, number> = { all: 0, nova: 0, business: 0, mentions: 0, gmail: 0 };
+    for (const s of signals) {
+      if (s.status !== 'READ' && s.status !== 'DISMISSED') {
+        counts.all += 1;
+        const c = signalChannel.get(s.id);
+        if (c) counts[c] += 1;
+      }
+    }
+    counts.gmail = gmail.messages.filter(m => m.unread).length;
+    return counts;
+  }, [signals, signalChannel, gmail.messages]);
+
   const filtered = signals.filter(s => {
     if (statusFilter && s.status !== statusFilter) return false;
     if (priorityFilter && s.priority !== priorityFilter) return false;
+    // Channel tab filter — skip when on All / Gmail (Gmail renders
+    // its own list) or when signal doesn't match the active channel.
+    if (channel !== 'all' && channel !== 'gmail') {
+      const c = signalChannel.get(s.id);
+      if (c !== channel) return false;
+    }
     // External integrations are keyed by their full source string
     // ("integration:notion"); internal signals are keyed by layer id
     // ("internal:manual", …) so the sidebar can toggle a whole class.
@@ -317,7 +432,51 @@ export default function InboxPage() {
         </form>
       )}
 
-      {/* Filters */}
+      {/* Channel tabs — one surface, multi-signal. Counts show unread
+          per channel so users know where new things are. */}
+      <div
+        className="flex items-center gap-1.5 mb-5 overflow-x-auto"
+        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+      >
+        {CHANNEL_ORDER.map(ch => {
+          const meta = CHANNEL_META[ch];
+          const active = channel === ch;
+          const count = channelCounts[ch];
+          return (
+            <button
+              key={ch}
+              onClick={() => setChannel(ch)}
+              title={meta.hint}
+              className="text-xs font-light px-3 py-1.5 rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 flex-shrink-0"
+              style={{
+                background: active ? `${meta.color}14` : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${active ? `${meta.color}55` : 'rgba(255,255,255,0.07)'}`,
+                color: active ? meta.color : 'rgba(255,255,255,0.55)',
+              }}
+            >
+              <span>{meta.label}</span>
+              {count > 0 && (
+                <span
+                  className="tabular-nums"
+                  style={{
+                    fontSize: 10,
+                    padding: '1px 6px',
+                    borderRadius: 999,
+                    background: active ? `${meta.color}20` : 'rgba(255,255,255,0.06)',
+                    color: active ? meta.color : 'rgba(255,255,255,0.45)',
+                  }}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Filters — hidden on Gmail tab since Gmail has its own
+          read/unread state rather than triaged/dismissed. */}
+      {channel !== 'gmail' && (
       <div className="flex items-center gap-2 mb-6">
         {['', 'UNREAD', 'TRIAGED', 'READ'].map(s => (
           <button key={s} onClick={() => setStatusFilter(s)}
@@ -343,7 +502,14 @@ export default function InboxPage() {
           </button>
         ))}
       </div>
+      )}
 
+      {/* Gmail tab — renders alongside the Signal list for any other
+          channel. Keeps the Signals path completely untouched. */}
+      {channel === 'gmail' ? (
+        <GmailTab gmail={gmail} onRefresh={() => setGmail(prev => ({ ...prev, loaded: false }))} />
+      ) : (
+      <>
       {/* Signal list — integration toggles moved to the sidebar on the right,
           mirroring the Calendar's layer panel so the two surfaces stay
           conceptually aligned. */}
@@ -540,6 +706,8 @@ export default function InboxPage() {
           ))}
         </div>
       )}
+      </>
+      )}
       </div>
 
       {/* ── Layer sidebar ──────────────────────────────────────────
@@ -655,6 +823,204 @@ export default function InboxPage() {
           </a>
         </div>
       </aside>
+    </div>
+  );
+}
+
+// ── GmailTab ─────────────────────────────────────────────────────────
+// Raw Gmail messages from the connected Google account. Rendered
+// inside the main inbox column when the Gmail channel is active.
+// Signals surface isn't touched — this is a sibling view.
+
+function gmailTimeAgo(iso: string) {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.floor(s / 60)}m`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h`;
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function GmailTab({
+  gmail,
+  onRefresh,
+}: {
+  gmail: {
+    connected: boolean;
+    account: string | null;
+    messages: GmailMessage[];
+    loaded: boolean;
+    error?: string;
+  };
+  onRefresh: () => void;
+}) {
+  if (!gmail.loaded) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-16 rounded-xl animate-pulse"
+            style={{ background: 'var(--glass)' }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (!gmail.connected) {
+    return (
+      <div
+        className="flex flex-col items-center py-20 rounded-xl"
+        style={{ border: '1px dashed var(--glass-border)' }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+          style={{
+            background: 'rgba(66,133,244,0.08)',
+            border: '1px solid rgba(66,133,244,0.2)',
+          }}
+        >
+          <span style={{ color: '#4285f4', fontSize: 18, fontWeight: 500 }}>
+            ◯
+          </span>
+        </div>
+        <p
+          className="text-sm font-light mb-1"
+          style={{ color: 'var(--text-2)' }}
+        >
+          Connect Google Workspace
+        </p>
+        <p
+          className="text-xs mb-4 max-w-xs text-center leading-relaxed"
+          style={{ color: 'var(--text-3)' }}
+        >
+          Your Gmail inbox will appear here alongside your signals — a single
+          pane for everything coming in.
+        </p>
+        <a
+          href="/integrations"
+          className="text-xs font-light px-4 py-2 rounded-lg"
+          style={{
+            background: 'rgba(66,133,244,0.1)',
+            border: '1px solid rgba(66,133,244,0.25)',
+            color: '#4285f4',
+          }}
+        >
+          Connect Gmail
+        </a>
+      </div>
+    );
+  }
+
+  if (gmail.error) {
+    return (
+      <div
+        className="p-4 rounded-xl"
+        style={{
+          background: 'rgba(255,107,107,0.06)',
+          border: '1px solid rgba(255,107,107,0.2)',
+        }}
+      >
+        <p className="text-xs" style={{ color: '#FF6B6B' }}>
+          {gmail.error}
+        </p>
+        <button
+          onClick={onRefresh}
+          className="text-xs font-light mt-2 underline"
+          style={{ color: 'rgba(255,255,255,0.5)' }}
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3 px-1">
+        <p className="text-[11px]" style={{ color: 'var(--text-3)' }}>
+          Signed in as{' '}
+          <span style={{ color: 'var(--text-2)' }}>{gmail.account}</span>
+        </p>
+        <button
+          onClick={onRefresh}
+          className="text-[11px] font-light"
+          style={{ color: 'var(--text-3)' }}
+        >
+          Refresh
+        </button>
+      </div>
+
+      {gmail.messages.length === 0 ? (
+        <p
+          className="text-sm font-light py-8 text-center"
+          style={{ color: 'var(--text-3)' }}
+        >
+          Inbox zero.
+        </p>
+      ) : (
+        <div className="space-y-1.5">
+          {gmail.messages.map(m => (
+            <a
+              key={m.id}
+              href={`https://mail.google.com/mail/u/0/#inbox/${m.threadId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 p-3 rounded-xl transition-colors"
+              style={{
+                background: m.unread ? 'rgba(66,133,244,0.04)' : 'var(--glass)',
+                border: `1px solid ${m.unread ? 'rgba(66,133,244,0.2)' : 'var(--glass-border)'}`,
+                textDecoration: 'none',
+              }}
+            >
+              <span
+                aria-hidden
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 6,
+                  flexShrink: 0,
+                  marginTop: 8,
+                  background: m.unread ? '#4285f4' : 'transparent',
+                  border: m.unread ? 'none' : '1px solid rgba(255,255,255,0.2)',
+                }}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-2 mb-0.5">
+                  <span
+                    className="text-xs font-medium truncate"
+                    style={{
+                      color: m.unread ? 'var(--text-1)' : 'var(--text-2)',
+                    }}
+                  >
+                    {m.from}
+                  </span>
+                  <span
+                    className="text-[10px] tabular-nums flex-shrink-0"
+                    style={{ color: 'var(--text-3)' }}
+                  >
+                    {gmailTimeAgo(m.date)}
+                  </span>
+                </div>
+                <p
+                  className="text-sm font-light truncate"
+                  style={{
+                    color: m.unread ? 'var(--text-1)' : 'var(--text-2)',
+                  }}
+                >
+                  {m.subject}
+                </p>
+                <p
+                  className="text-xs font-light truncate mt-0.5"
+                  style={{ color: 'var(--text-3)' }}
+                >
+                  {m.snippet}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
