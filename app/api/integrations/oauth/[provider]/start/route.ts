@@ -95,10 +95,54 @@ import {
 
 const STATE_COOKIE_PREFIX = 'grid_int_state_';
 
+/**
+ * SEC-06 — CSRF protection for the OAuth kickoff.
+ *
+ * Changing this endpoint from GET to POST would break every existing
+ * "Connect" link in the UI (the providers redirect through a browser
+ * navigation, not a fetch) and every deep-linked onboarding handoff.
+ * Instead we enforce strict same-origin on the request: the Origin
+ * or Referer header MUST match our canonical app URL. A cross-origin
+ * page can drive a user's browser to a <a href>, but the attacker
+ * can't forge Origin/Referer from their own origin — browsers set
+ * them automatically and honor them exactly.
+ */
+function hasValidOrigin(req: NextRequest): boolean {
+  const canonical = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '');
+  // In dev or when no canonical is set, any origin is fine —
+  // localhost development ergonomics beat theoretical CSRF there.
+  if (!canonical) return true;
+
+  // A user navigating from our own app either has an Origin matching
+  // our canonical URL or a Referer whose origin matches. Browsers
+  // don't let third-party script forge either.
+  const origin = req.headers.get('origin');
+  if (origin && origin.replace(/\/$/, '') === canonical) return true;
+
+  const referer = req.headers.get('referer');
+  if (referer) {
+    try {
+      const refOrigin = new URL(referer).origin.replace(/\/$/, '');
+      if (refOrigin === canonical) return true;
+    } catch {
+      // malformed referer — reject below
+    }
+  }
+
+  // No Origin AND no Referer — treat as cross-origin. Some browsers
+  // strip both on top-level navigations from "unsafe" origins, which
+  // is the exact case we want to reject.
+  return false;
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ provider: string }> },
 ) {
+  if (!hasValidOrigin(req)) {
+    return Response.json({ error: 'Cross-origin OAuth kickoff blocked' }, { status: 403 });
+  }
+
   const identity = await getAuthIdentityOrNull();
   if (!identity) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
