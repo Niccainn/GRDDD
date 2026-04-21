@@ -101,10 +101,13 @@
   --chrome-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   --chrome-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 
-  --text-1: #1d1d1f;              /* 16:1 — crisp body */
-  --text-2: #4c4c52;              /* 8.5:1 — secondary */
-  --text-3: #6b6b72;              /* 5.1:1 — tertiary labels */
-  --text-4: #8e8e96;              /* 3.4:1 — large text only */
+  /* WCAG AA+ on #f2f2f5 background. Pushed harder toward black
+     at the user's request — body copy reads crisper, labels stay
+     clearly legible. text-4 still passes 4.5:1 for normal text. */
+  --text-1: #000000;              /* 21:1 — pure black, body */
+  --text-2: #2a2a2e;              /* 12.6:1 — secondary */
+  --text-3: #4a4a52;              /* 7.6:1 — tertiary labels */
+  --text-4: #6b6b72;              /* 5.1:1 — AA for normal text */
 
   /* Light mode: the lime is unreadable on near-white, so we drop
      to a deep olive-lime that still reads as the same family.
@@ -127,6 +130,27 @@
 [data-theme="light"] ::selection {
   background: rgba(200, 242, 107, 0.15);
   color: #000;
+}
+
+/* Sidebar is an "always-dark island" — its background stays near
+   pitch regardless of theme, so even in light mode the sidebar
+   reads as a calm anchor rather than a grey gradient. Scoped
+   overrides give child elements the dark-palette text variables
+   so `var(--text-1/2/3)` inside the sidebar render light, not
+   dark. */
+[data-theme="light"] aside[data-surface="sidebar"],
+aside[data-surface="sidebar"] {
+  /* Deeper than glass-grey, shallower than pure black — matches
+     the pre-light-mode feel. */
+  --text-1: rgba(255, 255, 255, 0.95);
+  --text-2: rgba(255, 255, 255, 0.72);
+  --text-3: rgba(255, 255, 255, 0.55);
+  --text-4: rgba(255, 255, 255, 0.38);
+  --glass: rgba(255, 255, 255, 0.04);
+  --glass-hover: rgba(255, 255, 255, 0.08);
+  --glass-active: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="light"] ::-webkit-scrollbar-thumb {
