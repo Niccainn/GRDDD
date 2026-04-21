@@ -599,8 +599,15 @@ export async function GET(
     }
 
     if (provider === 'airtable') {
-      const codeVerifier = cookieExtra;
-      if (!codeVerifier) return redirectBack(provider, environmentId, 'error', 'PKCE code_verifier missing from state');
+      // SEC-05 — PKCE code_verifier now lives in a dedicated cookie.
+      // Read, use once, and delete on every exit path so it never
+      // lingers even if this branch throws downstream.
+      const pkceCookieName = `${STATE_COOKIE_PREFIX}airtable_pkce`;
+      const codeVerifier = cookieStore.get(pkceCookieName)?.value ?? '';
+      cookieStore.delete(pkceCookieName);
+      if (!codeVerifier) {
+        return redirectBack(provider, environmentId, 'error', 'PKCE code_verifier missing or expired');
+      }
       const tokens = await exchangeAirtableCode(code, codeVerifier);
       let accountLabel = 'default';
       let displayName = 'Airtable';

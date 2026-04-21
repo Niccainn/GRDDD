@@ -330,13 +330,27 @@ export async function GET(
   // different environment than the one the user kicked off from.
   //
   // For Shopify: state.environmentId.shop
-  // For Airtable: state.environmentId.codeVerifier
+  // (Airtable PKCE used to be concatenated here too; moved to its
+  // own cookie in SEC-05 so the code_verifier never rides in a
+  // payload that could be log-echoed in an error trace.)
   let payload = `${state}.${environmentId}`;
   if (provider === 'shopify') {
     const shop = req.nextUrl.searchParams.get('shop')!;
     payload = `${state}.${environmentId}.${shop}`;
-  } else if (provider === 'airtable' && airtableCodeVerifier) {
-    payload = `${state}.${environmentId}.${airtableCodeVerifier}`;
+  }
+
+  // SEC-05 — Airtable PKCE code_verifier lives in a dedicated
+  // httpOnly cookie. Short maxAge matches the state cookie so the
+  // two expire together. Callback reads + deletes it immediately.
+  if (provider === 'airtable' && airtableCodeVerifier) {
+    const pkceCookie = await cookies();
+    pkceCookie.set(`${STATE_COOKIE_PREFIX}airtable_pkce`, airtableCodeVerifier, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 10 * 60,
+      path: '/',
+    });
   }
 
   // Same-origin redirect path piggybacks on the state cookie — the
