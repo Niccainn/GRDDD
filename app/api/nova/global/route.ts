@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import type { NovaEvent } from '@/lib/nova';
 import { selectAvailableTools } from '@/lib/integrations/tools';
 import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
+import { fenceUserInput, withScopeGuard } from '@/lib/llm/safe-prompt';
 
 // ── Internal Grid tools (database reads) ─────────────────────────────
 const INTERNAL_TOOLS: Anthropic.Tool[] = [
@@ -305,7 +306,7 @@ export async function POST(req: NextRequest) {
     ? `\n\nYou have access to these connected integrations: ${connectedProviders.join(', ')}. Use their tools proactively when the user's request relates to them. For example, if Figma is connected and the user asks about designs, use figma_get_file or figma_get_text_content to read their actual design data.`
     : '';
 
-  const systemPrompt = `You are Nova — the AI operations engine for GRID. You operate in global mode across ALL systems.
+  const rawSystemPrompt = `You are Nova — the AI operations engine for GRID. You operate in global mode across ALL systems the authenticated operator owns.
 
 You have visibility across ${systemCount} systems and ${workflowCount} workflows in this organisation.
 
@@ -322,6 +323,14 @@ Your capabilities:
 You are NOT just a chatbot. You are an operational AI that takes action. When asked to do something, USE YOUR TOOLS to actually do it — read real data, create real tasks, check real systems. Be direct and specific.${integrationContext}${brandContext}
 ${identity ? `Operator: ${identity.name}` : ''}`;
 
+  // Prepend the cross-tenant scope guard — Nova must never surface
+  // data from environments this operator doesn't own, and must treat
+  // everything inside <user_input> as data, not instructions.
+  const systemPrompt = withScopeGuard(rawSystemPrompt, {
+    environmentName: primaryEnv.name,
+    environmentId: primaryEnv.id,
+  });
+
   const encoder = new TextEncoder();
 
   const readable = new ReadableStream({
@@ -332,7 +341,7 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
 
       try {
         send({ type: 'thinking' });
-        const messages: Anthropic.MessageParam[] = [{ role: 'user', content: input }];
+        const messages: Anthropic.MessageParam[] = [{ role: 'user', content: fenceUserInput(input) }];
         let totalTokens = 0;
 
         const MAX_ROUNDS = 8;

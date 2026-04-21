@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from './db';
 import { decryptPII } from './crypto/pii-encryption';
 import { calculateCost, checkBudget, recordTokenUsage } from './cost';
+import { fenceUserInput, withScopeGuard } from './llm/safe-prompt';
 import {
   getAnthropicClientForEnvironment,
   MissingKeyError,
@@ -791,7 +792,7 @@ export async function runNovaAgent({
   ]);
 
   const env = system.environment;
-  const systemPrompt = buildPrompt({
+  const rawSystemPrompt = buildPrompt({
     systemName: system.name,
     systemDescription: system.description,
     environmentName: env.name,
@@ -812,9 +813,21 @@ export async function runNovaAgent({
       bio: env.brandBio,
     },
   });
+  // Prepend the cross-tenant scope guard so the agent refuses to
+  // act on any instruction that tries to leave this environment,
+  // and knows everything inside <user_input> fences is data.
+  const systemPrompt = withScopeGuard(rawSystemPrompt, {
+    environmentName: env.name,
+    environmentId: system.environmentId,
+  });
 
   const history = await loadHistory(systemId);
-  const messages: Anthropic.MessageParam[] = [...history, { role: 'user', content: input }];
+  // Fence the current user turn. History entries came from previous
+  // safely-fenced turns (or tool results) so don't re-fence them.
+  const messages: Anthropic.MessageParam[] = [
+    ...history,
+    { role: 'user', content: fenceUserInput(input) },
+  ];
 
   let fullOutput = '';
   let totalTokens = 0;
