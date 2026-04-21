@@ -186,7 +186,16 @@ function WedgeStep({ wedges, onPick }: { wedges: Wedge[]; onPick: (w: Wedge) => 
         What do you want Grid to run for you?
       </h1>
       <p className="text-sm mb-8" style={{ color: 'var(--text-3)' }}>
-        Pick a recurring job. Nova will build the System and be ready in minutes.
+        Describe your work below — or pick a recurring job.
+      </p>
+
+      <PromptComposer />
+
+      <p
+        className="text-[10px] tracking-[0.15em] mt-10 mb-4"
+        style={{ color: 'var(--text-3)' }}
+      >
+        OR PICK A STARTING POINT
       </p>
 
       <div className="space-y-2">
@@ -219,6 +228,95 @@ function WedgeStep({ wedges, onPick }: { wedges: Wedge[]; onPick: (w: Wedge) => 
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ─── Prompt-to-Environment composer ──────────────────────────────────
+//
+// Single prompt → Nova emits a full scaffold (Systems + Workflows +
+// Canvas). The apple-tier moment: user types "I run a 5-person
+// design agency on Notion + Gmail + Stripe", tap Build, watch Nova
+// stream the construction, land on a populated canvas.
+
+function PromptComposer() {
+  const router = useRouter();
+  const [value, setValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+
+  async function submit() {
+    if (value.trim().length < 10 || loading) return;
+    setLoading(true);
+    setErr('');
+    try {
+      const res = await fetch('/api/onboarding/scaffold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: value }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? 'Scaffold failed');
+      const firstSystemId = data.systemIds?.[0];
+      if (firstSystemId) {
+        router.push(`/systems/${firstSystemId}`);
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Something went wrong');
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        background: 'var(--glass)',
+        border: '1px solid var(--glass-border)',
+      }}
+    >
+      <textarea
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit();
+        }}
+        placeholder={
+          "e.g. I run a 5-person design agency with 12 active clients. We use Notion, Gmail, Stripe, and Figma. I want Grid to handle client onboarding, weekly status updates, and financials."
+        }
+        rows={4}
+        disabled={loading}
+        className="w-full bg-transparent text-sm font-light resize-none outline-none"
+        style={{ color: 'var(--text-1)' }}
+      />
+      <div className="flex items-center justify-between mt-3">
+        <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
+          {loading ? 'Nova is designing your workspace…' : '⌘⏎ to build'}
+        </span>
+        <button
+          onClick={submit}
+          disabled={value.trim().length < 10 || loading}
+          className="px-4 py-2 rounded-xl text-xs font-medium transition-all"
+          style={{
+            background:
+              value.trim().length >= 10 && !loading ? 'var(--brand)' : 'var(--glass)',
+            color:
+              value.trim().length >= 10 && !loading ? '#000' : 'var(--text-3)',
+            opacity: value.trim().length >= 10 && !loading ? 1 : 0.5,
+            cursor:
+              value.trim().length >= 10 && !loading ? 'pointer' : 'not-allowed',
+          }}
+        >
+          {loading ? 'Building…' : 'Let Nova build it'}
+        </button>
+      </div>
+      {err && (
+        <p className="text-xs mt-2" style={{ color: '#FF6B6B' }}>
+          {err}
+        </p>
+      )}
     </div>
   );
 }
