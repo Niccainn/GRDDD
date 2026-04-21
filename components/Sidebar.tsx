@@ -52,8 +52,17 @@ type NavSection = {
 };
 
 // ── Sidebar sections ─────────────────────────────────────────────────
-// System-first: your business functions → daily work → everything else
-const navSections: NavSection[] = [
+// System-first: business functions → daily work → full app library.
+// The APPS section restores every capability that Phase 1 unlinked;
+// kept collapsed by default so new users see a clean 6-item sidebar,
+// but returning users can expand and browse the full catalog.
+type CollapsibleNavSection = NavSection & {
+  id?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
+};
+
+const navSections: CollapsibleNavSection[] = [
   {
     label: '',
     items: [
@@ -68,6 +77,34 @@ const navSections: NavSection[] = [
       { href: '/tasks', label: 'Tasks', icon: icons.tasks },
       { href: '/inbox', label: 'Inbox', icon: icons.inbox, badge: 'inbox' },
       { href: '/calendar', label: 'Calendar', icon: icons.calendar },
+    ],
+  },
+  {
+    label: 'APPS',
+    id: 'apps',
+    collapsible: true,
+    defaultCollapsed: true,
+    items: [
+      { href: '/workflows', label: 'Workflows', icon: icons.workflows },
+      { href: '/goals', label: 'Goals', icon: icons.goals },
+      { href: '/integrations', label: 'Integrations', icon: icons.integrations },
+      { href: '/environments', label: 'Environments', icon: icons.environments },
+      { href: '/docs', label: 'Documents', icon: icons.documents },
+      { href: '/templates', label: 'Templates', icon: icons.templates },
+      { href: '/mastery', label: 'Mastery', icon: icons.analytics },
+      { href: '/agents', label: 'Agents', icon: icons.agents },
+      { href: '/automations', label: 'Automations', icon: icons.automations },
+      { href: '/dashboards', label: 'Dashboards', icon: icons.dashboards },
+      { href: '/forms', label: 'Forms', icon: icons.forms },
+      { href: '/views', label: 'Views', icon: icons.views },
+      { href: '/finance', label: 'Finance', icon: icons.finance },
+      { href: '/time', label: 'Time Tracking', icon: icons.time },
+      { href: '/approvals', label: 'Approvals', icon: icons.approvals },
+      { href: '/assets', label: 'Assets', icon: icons.assets },
+      { href: '/analytics', label: 'Analytics', icon: icons.analytics },
+      { href: '/reports', label: 'Reports', icon: icons.reports },
+      { href: '/audit', label: 'Audit', icon: icons.audit },
+      { href: '/activity', label: 'Activity', icon: icons.activity },
     ],
   },
 ];
@@ -131,6 +168,27 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [inboxUnread, setInboxUnread] = useState(0);
   const [systems, setSystems] = useState<{ id: string; name: string; color: string | null }[]>([]);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') return { apps: true };
+    try {
+      const saved = localStorage.getItem('grid_sidebar_sections');
+      return saved ? JSON.parse(saved) : { apps: true };
+    } catch {
+      return { apps: true };
+    }
+  });
+
+  const toggleSection = (id: string) => {
+    setCollapsedSections(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      try {
+        localStorage.setItem('grid_sidebar_sections', JSON.stringify(next));
+      } catch {
+        /* non-fatal */
+      }
+      return next;
+    });
+  };
 
   // Close mobile nav on route change
   useEffect(() => {
@@ -236,14 +294,35 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-3 overflow-y-auto">
         {activeSections.map((section, si) => {
-          const sectionId = section.label || String(si);
+          const cs = section as CollapsibleNavSection;
+          const sectionId = cs.id || section.label || String(si);
+          const isCollapsible = Boolean(cs.collapsible);
+          const isCollapsed = isCollapsible && collapsedSections[sectionId] !== false;
 
           return (
             <div key={sectionId} className={si > 0 ? 'mt-4' : ''}>
               {section.label && (
+                isCollapsible ? (
+                  <button
+                    onClick={() => toggleSection(sectionId)}
+                    className="w-full flex items-center justify-between px-3 mb-1.5"
+                  >
+                    <p className="text-[10px] tracking-[0.16em] font-light" style={{ color: 'var(--text-3)' }}>
+                      {section.label}
+                    </p>
+                    <svg
+                      width="8" height="8" viewBox="0 0 8 8" fill="none"
+                      className="transition-transform duration-200"
+                      style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', opacity: 0.4, color: 'var(--text-3)' }}
+                    >
+                      <path d="M1 2.5l3 3 3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                ) : (
                 <p className="text-[10px] tracking-[0.16em] font-light px-3 mb-1.5" style={{ color: 'var(--text-3)' }}>
                   {section.label}
                 </p>
+                )
               )}
 
               {/* Dynamic systems section — injected after the first section (Home/Nova) */}
@@ -300,6 +379,7 @@ export default function Sidebar() {
                 </div>
               )}
 
+              {!isCollapsed && (
               <div className="space-y-0.5">
                 {section.items.map(item => {
                     const active = isActive(item.href);
@@ -330,6 +410,7 @@ export default function Sidebar() {
                     );
                   })}
                 </div>
+              )}
             </div>
           );
         })}
