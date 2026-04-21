@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
+import { logWebhookSignatureFailure } from '@/lib/webhook-log';
 
 /** Extract period dates from first subscription item */
 function getItemPeriod(sub: Stripe.Subscription): { start: Date; end: Date } | null {
@@ -24,6 +25,13 @@ export async function POST(req: Request) {
   const sig = req.headers.get('stripe-signature');
 
   if (!sig) {
+    logWebhookSignatureFailure({
+      provider: 'stripe',
+      path: '/api/billing/webhook',
+      req,
+      rawBody: body,
+      reason: 'missing stripe-signature header',
+    });
     return new Response('Missing signature', { status: 400 });
   }
 
@@ -33,6 +41,13 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Invalid signature';
+    logWebhookSignatureFailure({
+      provider: 'stripe',
+      path: '/api/billing/webhook',
+      req,
+      rawBody: body,
+      reason: message,
+    });
     return new Response(`Webhook Error: ${message}`, { status: 400 });
   }
 
