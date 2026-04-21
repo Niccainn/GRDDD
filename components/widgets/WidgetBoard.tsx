@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react';
 import WidgetRenderer, { type WidgetRenderData } from './WidgetRenderer';
 import WidgetDesigner from './WidgetDesigner';
 import { CELL, type WidgetSpec } from '@/lib/widgets/registry';
+import { fetchWidgetData } from '@/lib/widgets/fetch';
 
 export type BoardData = Record<string, WidgetRenderData | undefined>;
 
@@ -53,12 +54,40 @@ export default function WidgetBoard({
   allowAdd = true,
 }: Props) {
   const [userSpecs, setUserSpecs] = useState<WidgetSpec[]>([]);
+  const [userData, setUserData] = useState<BoardData>({});
   const [designerOpen, setDesignerOpen] = useState(false);
   const [editingBoard, setEditingBoard] = useState(false);
 
   useEffect(() => {
     setUserSpecs(loadUserWidgets(boardId));
   }, [boardId]);
+
+  // Resolve live data for every user widget. Re-fetches whenever the
+  // spec list changes (new widget added → new data fetched). Each
+  // widget's refresh interval kicks in after the initial fetch.
+  useEffect(() => {
+    let cancelled = false;
+    const timers: ReturnType<typeof setInterval>[] = [];
+
+    async function resolve(spec: WidgetSpec) {
+      const d = await fetchWidgetData(spec.source);
+      if (cancelled) return;
+      setUserData(prev => ({ ...prev, [spec.id]: d }));
+    }
+
+    for (const spec of userSpecs) {
+      resolve(spec);
+      if (spec.refresh.mode === 'interval') {
+        const ms = Math.max(15, spec.refresh.seconds) * 1000;
+        timers.push(setInterval(() => resolve(spec), ms));
+      }
+    }
+
+    return () => {
+      cancelled = true;
+      for (const t of timers) clearInterval(t);
+    };
+  }, [userSpecs]);
 
   const addWidget = useCallback(
     (spec: WidgetSpec) => {
@@ -92,13 +121,19 @@ export default function WidgetBoard({
           flexWrap: 'wrap',
           gap: CELL.gap,
           alignItems: 'flex-start',
+          // On narrow (touch) viewports, widgets wider than 2 cells
+          // would cause overflow. Allow horizontal scroll as a
+          // graceful fallback until the canvas grid enforces snap.
+          overflowX: 'auto',
+          paddingBottom: 4,
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         {allSpecs.map(spec => (
           <WidgetRenderer
             key={spec.id}
             spec={spec}
-            data={data[spec.id]}
+            data={spec.origin === 'user' ? userData[spec.id] : data[spec.id]}
             editMode={editingBoard && spec.origin === 'user'}
             onRemove={
               spec.origin === 'user'

@@ -17,7 +17,7 @@
  * Visual language: Grid glass + lime, not iOS blue. Apple's
  * *rhythm*, Grid's *tone*.
  */
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   WIDGET_SIZES,
   type WidgetKind,
@@ -132,6 +132,54 @@ export default function WidgetDesigner({
     if (!allowed.includes(size)) setSize(allowed[0]);
   }, [kind, size]);
 
+  // Swipe-down-to-dismiss. Tracks the touch delta on the grab
+  // handle + sheet header. Releases: if the user dragged >80px
+  // or released with >0.5px/ms velocity, dismiss; otherwise
+  // spring back into place.
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const dragState = useRef<{
+    startY: number;
+    startT: number;
+    lastY: number;
+    lastT: number;
+    dragging: boolean;
+  }>({ startY: 0, startT: 0, lastY: 0, lastT: 0, dragging: false });
+  const [dragY, setDragY] = useState(0);
+
+  function onGrabTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    dragState.current = {
+      startY: t.clientY,
+      startT: Date.now(),
+      lastY: t.clientY,
+      lastT: Date.now(),
+      dragging: true,
+    };
+    setDragY(0);
+  }
+
+  function onGrabTouchMove(e: React.TouchEvent) {
+    if (!dragState.current.dragging) return;
+    const t = e.touches[0];
+    const dy = Math.max(0, t.clientY - dragState.current.startY);
+    dragState.current.lastY = t.clientY;
+    dragState.current.lastT = Date.now();
+    setDragY(dy);
+  }
+
+  function onGrabTouchEnd() {
+    const s = dragState.current;
+    if (!s.dragging) return;
+    s.dragging = false;
+    const distance = s.lastY - s.startY;
+    const duration = Math.max(1, s.lastT - s.startT);
+    const velocity = distance / duration; // px/ms
+    if (distance > 80 || velocity > 0.5) {
+      onClose();
+    }
+    setDragY(0);
+  }
+
   if (!open) return null;
 
   function save() {
@@ -194,8 +242,11 @@ export default function WidgetDesigner({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: '24px 28px 36px',
-    transform: open ? 'translateY(0)' : 'translateY(100%)',
-    transition: `transform ${DURATION.settle}ms ${EASE.settle}`,
+    transform: open ? `translateY(${dragY}px)` : 'translateY(100%)',
+    transition: dragState.current.dragging
+      ? 'none'
+      : `transform ${DURATION.settle}ms ${EASE.settle}`,
+    touchAction: 'pan-y',
     zIndex: 81,
   };
 
@@ -221,17 +272,34 @@ export default function WidgetDesigner({
   return (
     <>
       <div style={backdrop} onClick={onClose} />
-      <div style={sheet} role="dialog" aria-label="Design a widget">
-        {/* Grab handle — iOS style */}
+      <div ref={sheetRef} style={sheet} role="dialog" aria-label="Design a widget">
+        {/* Grab handle — iOS style. The top 32px is a touch-drag
+            zone that dismisses the sheet on pull-down. */}
         <div
+          onTouchStart={onGrabTouchStart}
+          onTouchMove={onGrabTouchMove}
+          onTouchEnd={onGrabTouchEnd}
+          onTouchCancel={onGrabTouchEnd}
           style={{
-            width: 40,
-            height: 4,
-            background: 'rgba(255,255,255,0.2)',
-            borderRadius: 4,
-            margin: '0 auto 18px',
+            height: 22,
+            margin: '-24px -28px 12px',
+            padding: '10px 0 4px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+            touchAction: 'none',
+            cursor: 'grab',
           }}
-        />
+        >
+          <div
+            style={{
+              width: 40,
+              height: 4,
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: 4,
+            }}
+          />
+        </div>
 
         <h2
           style={{
