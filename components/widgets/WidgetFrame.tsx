@@ -67,6 +67,13 @@ export default function WidgetFrame({
   const px = sizeToPx(size);
   const isEditing = editMode || localEdit || forceEdit;
 
+  // Touch devices should never show the hover-lift — a tap would
+  // trigger hover + then the click, making the UI feel laggy. Gate
+  // hover visuals on devices that genuinely support hover.
+  const supportsHover =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(hover: hover)')?.matches;
+
   // Inject keyframes once per page load. Using an id prevents
   // duplicates if multiple widgets mount simultaneously.
   useEffect(() => {
@@ -144,7 +151,7 @@ export default function WidgetFrame({
     overflow: 'hidden',
     cursor: isEditing ? 'grab' : onOpen ? 'pointer' : 'default',
     transition: `transform ${DURATION.hover}ms ${EASE.settle}, box-shadow ${DURATION.hover}ms ${EASE.settle}, border-color ${DURATION.hover}ms ${EASE.settle}`,
-    ...(hovering && !isEditing ? LIFT_STYLE : {}),
+    ...(hovering && supportsHover && !isEditing ? LIFT_STYLE : {}),
     ...(isEditing ? EDIT_MODE_STYLE : {}),
     ...DROP_IN_STYLE,
   };
@@ -181,31 +188,50 @@ export default function WidgetFrame({
         />
       )}
 
-      {/* Remove affordance — appears only in edit mode */}
+      {/* Remove affordance — appears only in edit mode.
+          Visual 22×22 but the hit area is 44×44 (Apple HIG minimum)
+          via an outer padded anchor wrapping the visible dot. */}
       {isEditing && onRemove && (
         <button
           onClick={e => {
             e.stopPropagation();
             onRemove();
           }}
+          onTouchStart={e => e.stopPropagation()}
           aria-label="Remove widget"
           style={{
             position: 'absolute',
-            top: 8,
-            left: 8,
-            width: 22,
-            height: 22,
-            borderRadius: 22,
+            top: -6,
+            left: -6,
+            width: 44,
+            height: 44,
             border: 'none',
-            background: 'rgba(255,107,107,0.9)',
-            color: '#fff',
-            fontSize: 14,
-            lineHeight: 1,
+            background: 'transparent',
+            padding: 0,
             cursor: 'pointer',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          −
+          <span
+            aria-hidden
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 22,
+              background: 'rgba(255,107,107,0.95)',
+              color: '#fff',
+              fontSize: 14,
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.35)',
+            }}
+          >
+            −
+          </span>
         </button>
       )}
 
