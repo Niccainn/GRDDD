@@ -15,8 +15,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import CanvasSwitcher, { type CanvasTab } from './CanvasSwitcher';
 import WidgetBoard from './WidgetBoard';
+import NameSheet from './NameSheet';
 import type { WidgetSpec } from '@/lib/widgets/registry';
 import type { BoardData } from './WidgetBoard';
+import { useSwipe } from '@/lib/widgets/swipe';
+import { DURATION, EASE } from '@/lib/widgets/motion';
 
 type Props = {
   environmentId: string;
@@ -94,25 +97,33 @@ export default function CanvasContainer({
     [environmentId],
   );
 
-  const handleCreate = useCallback(async () => {
-    const name = prompt('Name this canvas');
-    if (!name || !name.trim()) return;
-    const res = await fetch('/api/canvases', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        environmentId,
-        name: name.trim(),
-        widgets: [],
-        layout: {},
-      }),
-    });
-    if (res.ok) {
-      const c = await res.json();
-      setCanvases(prev => [...prev, { id: c.id, name: c.name, icon: c.icon }]);
-      handleSelect(c.id);
-    }
-  }, [environmentId, handleSelect]);
+  const [nameSheetOpen, setNameSheetOpen] = useState(false);
+
+  const handleCreate = useCallback(() => {
+    setNameSheetOpen(true);
+  }, []);
+
+  const confirmCreate = useCallback(
+    async (name: string) => {
+      const res = await fetch('/api/canvases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          environmentId,
+          name,
+          widgets: [],
+          layout: {},
+        }),
+      });
+      if (res.ok) {
+        const c = await res.json();
+        setCanvases(prev => [...prev, { id: c.id, name: c.name, icon: c.icon }]);
+        handleSelect(c.id);
+      }
+      setNameSheetOpen(false);
+    },
+    [environmentId, handleSelect],
+  );
 
   const handleRename = useCallback(
     async (id: string, name: string) => {
@@ -137,6 +148,83 @@ export default function CanvasContainer({
     },
     [canvases, activeId, handleSelect],
   );
+
+  const handleReorder = useCallback(
+    async (orderedIds: string[]) => {
+      // Reorder locally first for instant feedback, then persist
+      // each canvas's new position. Keep the requests in flight
+      // parallel — they don't depend on each other.
+      const byId = new Map(canvases.map(c => [c.id, c]));
+      const next = orderedIds
+        .map(id => byId.get(id))
+        .filter((c): c is CanvasTab => Boolean(c));
+      setCanvases(next);
+      await Promise.all(
+        orderedIds.map((id, position) =>
+          fetch(`/api/canvases/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ position }),
+          }),
+        ),
+      );
+    },
+    [canvases],
+  );
+
+  // Swipe navigation — horizontal pan on the board moves between
+  // canvases iOS-home-screen style. Follow-animation renders the
+  // active board translating with the finger; on commit we switch
+  // canvas and let the new one settle in.
+  const [dragDx, setDragDx] = useState(0);
+  const [committing, setCommitting] = useState<'left' | 'right' | null>(null);
+
+  const activeIndex = activeId
+    ? canvases.findIndex(c => c.id === activeId)
+    : -1;
+
+  const swipeHandlers = useSwipe({
+    onMove: dx => {
+      // Only translate visually if there is somewhere to go in that
+      // direction — rubber-band at the ends.
+      const rubberBanded =
+        (dx < 0 && activeIndex >= canvases.length - 1) ||
+        (dx > 0 && activeIndex <= 0)
+          ? dx / 3
+          : dx;
+      setDragDx(rubberBanded);
+    },
+    onLeft: () => {
+      // Swipe right → previous canvas.
+      if (activeIndex > 0) {
+        setCommitting('left');
+        setTimeout(() => {
+          handleSelect(canvases[activeIndex - 1].id);
+          setDragDx(0);
+          setCommitting(null);
+        }, 180);
+      } else {
+        setDragDx(0);
+      }
+    },
+    onRight: () => {
+      // Swipe left → next canvas.
+      if (activeIndex < canvases.length - 1) {
+        setCommitting('right');
+        setTimeout(() => {
+          handleSelect(canvases[activeIndex + 1].id);
+          setDragDx(0);
+          setCommitting(null);
+        }, 180);
+      } else {
+        setDragDx(0);
+      }
+    },
+    onEnd: () => {
+      // Spring-back when swipe didn't commit.
+      if (!committing) setDragDx(0);
+    },
+  });
 
   if (!loaded) {
     return (
@@ -165,18 +253,44 @@ export default function CanvasContainer({
           onCreate={handleCreate}
           onRename={handleRename}
           onDelete={handleDelete}
+          onReorder={handleReorder}
         />
       </div>
 
       {activeId && (
-        <WidgetBoard
-          key={activeId}
-          boardId={`canvas-${activeId}`}
-          canvasId={activeId}
-          systemSpecs={systemSpecs}
-          data={systemData}
-        />
+        <div
+          {...swipeHandlers}
+          style={{
+            transform: committing
+              ? `translateX(${committing === 'left' ? 40 : -40}px)`
+              : `translateX(${dragDx}px)`,
+            opacity: committing ? 0 : 1 - Math.min(Math.abs(dragDx) / 400, 0.2),
+            transition:
+              dragDx === 0 || committing
+                ? `transform ${DURATION.settle}ms ${EASE.settle}, opacity ${DURATION.settle}ms ${EASE.settle}`
+                : 'none',
+            willChange: 'transform, opacity',
+            touchAction: 'pan-y',
+          }}
+        >
+          <WidgetBoard
+            key={activeId}
+            boardId={`canvas-${activeId}`}
+            canvasId={activeId}
+            systemSpecs={systemSpecs}
+            data={systemData}
+          />
+        </div>
       )}
+
+      <NameSheet
+        open={nameSheetOpen}
+        title="New canvas"
+        placeholder="e.g. Financials, Creative, Launch week"
+        confirmLabel="Create canvas"
+        onClose={() => setNameSheetOpen(false)}
+        onConfirm={confirmCreate}
+      />
     </div>
   );
 }

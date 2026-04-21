@@ -8,9 +8,9 @@
  * Visual: muted glass pills, active = filled lime. Same motion
  * language as widgets (settle ease, no bounce).
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import WidgetContextMenu from './WidgetContextMenu';
-import { DURATION, EASE } from '@/lib/widgets/motion';
+import { DURATION, EASE, EDIT_MODE_STYLE } from '@/lib/widgets/motion';
 
 export type CanvasTab = {
   id: string;
@@ -25,6 +25,8 @@ type Props = {
   onCreate: () => void;
   onRename: (id: string, name: string) => void;
   onDelete: (id: string) => void;
+  /** Receives the new order of canvas ids after a reorder. */
+  onReorder?: (orderedIds: string[]) => void;
 };
 
 export default function CanvasSwitcher({
@@ -34,10 +36,43 @@ export default function CanvasSwitcher({
   onCreate,
   onRename,
   onDelete,
+  onReorder,
 }: Props) {
   const [menuFor, setMenuFor] = useState<{ id: string; x: number; y: number } | null>(null);
   const [renaming, setRenaming] = useState<{ id: string; value: string } | null>(null);
   const [pressTimer, setPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  /** When non-null, the user has picked this tab to Move. Tapping
+      another tab inserts the moving one before it. Tapping outside
+      or pressing Escape cancels. */
+  const [moving, setMoving] = useState<string | null>(null);
+
+  // Cancel reorder mode on Escape or outside tap.
+  useEffect(() => {
+    if (!moving) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoving(null);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [moving]);
+
+  function commitMove(targetId: string) {
+    if (!moving || !onReorder || moving === targetId) {
+      setMoving(null);
+      return;
+    }
+    const order = canvases.map(c => c.id);
+    const from = order.indexOf(moving);
+    const to = order.indexOf(targetId);
+    if (from === -1 || to === -1) {
+      setMoving(null);
+      return;
+    }
+    order.splice(from, 1);
+    order.splice(to, 0, moving);
+    onReorder(order);
+    setMoving(null);
+  }
 
   function openMenu(id: string, x: number, y: number) {
     setMenuFor({ id, x, y });
@@ -114,20 +149,47 @@ export default function CanvasSwitcher({
               />
             ) : (
               <button
-                onClick={() => onSelect(c.id)}
+                onClick={() => {
+                  if (moving) {
+                    commitMove(c.id);
+                    return;
+                  }
+                  onSelect(c.id);
+                }}
                 style={{
                   padding: '6px 14px',
                   borderRadius: 999,
                   fontSize: 12,
                   fontWeight: active ? 500 : 300,
-                  background: active
-                    ? 'rgba(200,242,107,0.14)'
-                    : 'var(--glass)',
-                  border: `1px solid ${active ? 'rgba(200,242,107,0.4)' : 'var(--glass-border)'}`,
-                  color: active ? 'var(--brand)' : 'var(--text-2)',
-                  cursor: 'pointer',
+                  background:
+                    moving === c.id
+                      ? 'rgba(200,242,107,0.18)'
+                      : moving
+                        ? 'rgba(200,242,107,0.04)'
+                        : active
+                          ? 'rgba(200,242,107,0.14)'
+                          : 'var(--glass)',
+                  border: `1px solid ${
+                    moving === c.id
+                      ? 'rgba(200,242,107,0.6)'
+                      : moving
+                        ? 'rgba(200,242,107,0.18)'
+                        : active
+                          ? 'rgba(200,242,107,0.4)'
+                          : 'var(--glass-border)'
+                  }`,
+                  color:
+                    moving === c.id
+                      ? 'var(--brand)'
+                      : moving
+                        ? 'var(--text-3)'
+                        : active
+                          ? 'var(--brand)'
+                          : 'var(--text-2)',
+                  cursor: moving ? 'copy' : 'pointer',
                   transition: `all ${DURATION.hover}ms ${EASE.settle}`,
                   whiteSpace: 'nowrap',
+                  ...(moving === c.id ? EDIT_MODE_STYLE : {}),
                 }}
               >
                 {c.icon && <span style={{ marginRight: 6 }}>{c.icon}</span>}
@@ -178,6 +240,13 @@ export default function CanvasSwitcher({
                 if (c) setRenaming({ id: c.id, value: c.name });
               },
             },
+            onReorder && canvases.length > 1
+              ? {
+                  id: 'move',
+                  label: 'Move',
+                  onSelect: () => setMoving(menuFor.id),
+                }
+              : null,
             {
               id: 'delete',
               label: 'Delete',
@@ -185,9 +254,41 @@ export default function CanvasSwitcher({
               disabled: canvases.length <= 1,
               onSelect: () => onDelete(menuFor.id),
             },
-          ]}
+          ].filter(Boolean) as Array<{
+            id: string;
+            label: string;
+            destructive?: boolean;
+            disabled?: boolean;
+            onSelect: () => void;
+          }>}
           onClose={() => setMenuFor(null)}
         />
+      )}
+
+      {moving && (
+        <div
+          onClick={() => setMoving(null)}
+          style={{
+            position: 'fixed',
+            top: 18,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '8px 16px',
+            borderRadius: 999,
+            background: 'rgba(16,16,20,0.92)',
+            border: '1px solid rgba(200,242,107,0.4)',
+            color: 'var(--brand)',
+            fontSize: 12,
+            fontWeight: 400,
+            cursor: 'pointer',
+            zIndex: 85,
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            animation: `grid-widget-dropin ${DURATION.settle}ms ${EASE.settle} both`,
+          }}
+        >
+          Tap a tab to move this one before it · Cancel
+        </div>
       )}
     </div>
   );
