@@ -244,11 +244,56 @@ function PromptComposer() {
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
+  const [narration, setNarration] = useState<string[]>([]);
 
   async function submit() {
     if (value.trim().length < 10 || loading) return;
     setLoading(true);
     setErr('');
+    setNarration([]);
+
+    // Streaming scaffold — SSE narrates each step. Falls back to
+    // the synchronous POST when the description is too long for a
+    // URL or EventSource isn't available.
+    const useStream =
+      typeof window !== 'undefined' &&
+      typeof EventSource !== 'undefined' &&
+      encodeURIComponent(value).length < 1800;
+
+    if (useStream) {
+      const es = new EventSource(
+        `/api/onboarding/scaffold/stream?description=${encodeURIComponent(value)}`,
+      );
+      es.onmessage = evt => {
+        try {
+          const msg = JSON.parse(evt.data);
+          if (msg.type === 'step') {
+            setNarration(prev => [...prev, msg.text]);
+          } else if (msg.type === 'done') {
+            es.close();
+            const firstSystemId = msg.systemIds?.[0];
+            setTimeout(() => {
+              if (firstSystemId) router.push(`/systems/${firstSystemId}`);
+              else router.push('/dashboard');
+            }, 700);
+          } else if (msg.type === 'error') {
+            setErr(msg.message || 'Scaffold failed');
+            es.close();
+            setLoading(false);
+          }
+        } catch {
+          /* ignore malformed frames */
+        }
+      };
+      es.onerror = () => {
+        es.close();
+        setErr('Connection to scaffold stream lost.');
+        setLoading(false);
+      };
+      return;
+    }
+
+    // Fallback: synchronous POST.
     try {
       const res = await fetch('/api/onboarding/scaffold', {
         method: 'POST',
@@ -258,11 +303,8 @@ function PromptComposer() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? 'Scaffold failed');
       const firstSystemId = data.systemIds?.[0];
-      if (firstSystemId) {
-        router.push(`/systems/${firstSystemId}`);
-      } else {
-        router.push('/dashboard');
-      }
+      if (firstSystemId) router.push(`/systems/${firstSystemId}`);
+      else router.push('/dashboard');
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Something went wrong');
       setLoading(false);
@@ -316,6 +358,31 @@ function PromptComposer() {
         <p className="text-xs mt-2" style={{ color: '#FF6B6B' }}>
           {err}
         </p>
+      )}
+
+      {narration.length > 0 && (
+        <div
+          className="mt-4 pt-4"
+          style={{
+            borderTop: '1px solid var(--glass-border)',
+            fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+            fontSize: 11,
+            lineHeight: 1.7,
+          }}
+        >
+          {narration.map((line, i) => (
+            <div
+              key={i}
+              style={{
+                color: i === narration.length - 1 ? 'var(--text-1)' : 'var(--text-3)',
+                animation: 'fadeIn 300ms ease',
+              }}
+            >
+              <span style={{ color: 'var(--brand)', marginRight: 8 }}>✓</span>
+              {line}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
