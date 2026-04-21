@@ -15,6 +15,7 @@
 import ApprovalFeed from './ApprovalFeed';
 import type { SystemCardData } from './SystemCard';
 import WidgetBoard from '@/components/widgets/WidgetBoard';
+import CanvasContainer from '@/components/widgets/CanvasContainer';
 import type { WidgetSpec } from '@/lib/widgets/registry';
 import type { BoardData } from '@/components/widgets/WidgetBoard';
 
@@ -22,12 +23,17 @@ export type ModeBProps = {
   displayName: string | null;
   novaSummary: string | null;
   systems: SystemCardData[];
+  /** If provided, widgets persist to the DB (via Canvas rows) and
+      the user gets the full canvas switcher. Omit for legacy
+      localStorage-only behavior. */
+  environmentId?: string | null;
 };
 
 export default function ModeB_FirstWeek({
   displayName,
   novaSummary,
   systems,
+  environmentId,
 }: ModeBProps) {
   const name = displayName?.split(' ')[0] ?? 'there';
 
@@ -85,17 +91,28 @@ export default function ModeB_FirstWeek({
       </section>
 
       <section>
-        <h2
-          className="text-[11px] tracking-[0.15em] mb-4"
-          style={{ color: 'var(--text-3)' }}
-        >
-          YOUR CANVAS
-        </h2>
-        <WidgetBoard
-          boardId="dashboard-default"
-          systemSpecs={systemSpecs}
-          data={data}
-        />
+        {environmentId ? (
+          <CanvasContainer
+            environmentId={environmentId}
+            defaultCanvasName="Today"
+            systemSpecs={systemSpecs}
+            systemData={data}
+          />
+        ) : (
+          <>
+            <h2
+              className="text-[11px] tracking-[0.15em] mb-4"
+              style={{ color: 'var(--text-3)' }}
+            >
+              YOUR CANVAS
+            </h2>
+            <WidgetBoard
+              boardId="dashboard-default"
+              systemSpecs={systemSpecs}
+              data={data}
+            />
+          </>
+        )}
       </section>
     </div>
   );

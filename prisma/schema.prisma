@@ -88,6 +88,7 @@ model Identity {
   timeEntries            TimeEntry[]
   executionReviews       ExecutionReview[]
   consentLogs            ConsentLog[] @relation("ConsentLog")
+  canvases               Canvas[]
 
   @@index([emailHash])
   @@index([type])
@@ -203,6 +204,7 @@ model Environment {
   masteryInsights  MasteryInsight[]
   playbook         OperationalPlaybook?
   crossDomainInsights CrossDomainInsight[]
+  canvases     Canvas[]
 
   @@index([ownerId])
   @@index([slug])
@@ -2120,4 +2122,49 @@ model MasteryInsight {
   @@index([environmentId])
   @@index([workflowId])
   @@index([category])
+}
+
+// ===============================================
+// CANVAS
+// A named widget composition inside an Environment. A user can
+// have multiple canvases per environment (Today, Financials,
+// Creative Review, etc.) and swipe between them.
+//
+// Design choice: widget specs + layout live as JSON blobs rather
+// than their own tables. The canvas engine is schema-lite — we
+// iterate on widget shapes without Prisma migrations, and a canvas
+// round-trips through a single query.
+// ===============================================
+model Canvas {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+  icon        String?
+
+  /// JSON array of WidgetSpec objects (see lib/widgets/registry.ts)
+  widgets String
+
+  /// JSON map { [widgetId]: { x, y, w, h } } — the canvas-engine
+  /// layout (see lib/widgets/canvas.ts). Separate from widgets so
+  /// reordering doesn't rewrite the spec blob.
+  layout  String
+
+  /// Ordering within the environment. Lower values appear first.
+  position Int @default(0)
+
+  /// Soft delete so a user can restore a canvas they nuked by mistake.
+  deletedAt DateTime?
+
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  ownerId String
+  owner   Identity @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([environmentId])
+  @@index([ownerId])
+  @@index([environmentId, position])
 }
