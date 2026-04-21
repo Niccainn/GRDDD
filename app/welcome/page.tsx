@@ -15,8 +15,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { shippedWedges, type Wedge, wedgeById } from './wedges';
+import ImportWizard from '@/components/ImportWizard';
 
-type Step = 'wedge' | 'connect' | 'build' | 'done';
+type Step = 'wedge' | 'connect' | 'build' | 'import' | 'done';
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -141,7 +142,13 @@ export default function WelcomePage() {
 
   return (
     <Shell>
-      {step === 'wedge' && <WedgeStep wedges={wedges} onPick={pickWedge} />}
+      {step === 'wedge' && (
+        <WedgeStep
+          wedges={wedges}
+          onPick={pickWedge}
+          onImport={() => setStep('import')}
+        />
+      )}
 
       {step === 'connect' && wedge && (
         <ConnectStep
@@ -156,6 +163,21 @@ export default function WelcomePage() {
 
       {step === 'build' && wedge && (
         <BuildStep lines={buildLines} error={error} wedge={wedge} />
+      )}
+
+      {step === 'import' && environmentId && (
+        <ImportWizard
+          environmentId={environmentId}
+          onBack={() => setStep('wedge')}
+          onComplete={() => router.push('/dashboard')}
+        />
+      )}
+      {step === 'import' && !environmentId && (
+        <div className="text-center">
+          <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+            Preparing your workspace…
+          </p>
+        </div>
       )}
 
       {step === 'done' && (
@@ -179,7 +201,15 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 // ─── Step 1: Wedge picker ────────────────────────────────────────────
 
-function WedgeStep({ wedges, onPick }: { wedges: Wedge[]; onPick: (w: Wedge) => void }) {
+function WedgeStep({
+  wedges,
+  onPick,
+  onImport,
+}: {
+  wedges: Wedge[];
+  onPick: (w: Wedge) => void;
+  onImport: () => void;
+}) {
   return (
     <div>
       <h1 className="text-2xl font-light mb-2" style={{ color: 'var(--text-1)' }}>
@@ -228,6 +258,35 @@ function WedgeStep({ wedges, onPick }: { wedges: Wedge[]; onPick: (w: Wedge) => 
           </button>
         ))}
       </div>
+
+      <p
+        className="text-[10px] tracking-[0.15em] mt-10 mb-4"
+        style={{ color: 'var(--text-3)' }}
+      >
+        ALREADY RUNNING SOMEWHERE ELSE?
+      </p>
+
+      <button
+        onClick={onImport}
+        className="w-full text-left p-4 rounded-xl transition-all"
+        style={{
+          background: 'var(--glass)',
+          border: '1px solid var(--glass-border)',
+        }}
+      >
+        <div className="flex items-baseline justify-between mb-1">
+          <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
+            Import from Notion, Asana, Monday, or CSV
+          </span>
+          <span className="text-[10px] tracking-wide" style={{ color: 'var(--text-3)' }}>
+            ~5 min
+          </span>
+        </div>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
+          Bring your existing tasks and projects into Grid — Nova will map them
+          to Systems and workflows.
+        </p>
+      </button>
     </div>
   );
 }
