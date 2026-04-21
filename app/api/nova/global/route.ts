@@ -7,6 +7,7 @@ import type { NovaEvent } from '@/lib/nova';
 import { selectAvailableTools } from '@/lib/integrations/tools';
 import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
 import { fenceUserInput, withScopeGuard } from '@/lib/llm/safe-prompt';
+import { checkUserTokenBudget, recordUserTokenUsage } from '@/lib/cost/user-budget';
 
 // ── Internal Grid tools (database reads) ─────────────────────────────
 const INTERNAL_TOOLS: Anthropic.Tool[] = [
@@ -286,6 +287,23 @@ export async function POST(req: NextRequest) {
   }
   const anthropic = resolved.client;
 
+  // SEC-03 — daily per-user token cap. Global Nova is the most
+  // expensive path; gate it hard. BYOK envs are exempt.
+  const userBudget = await checkUserTokenBudget(
+    identity.id,
+    80_000, // matches MAX_TOKENS_PER_REQUEST below
+    primaryEnv.id,
+  );
+  if (!userBudget.allowed) {
+    return Response.json(
+      {
+        error: `Daily token limit reached (${userBudget.used.toLocaleString()} / ${userBudget.limit.toLocaleString()}).`,
+        code: 'user_budget_exceeded',
+      },
+      { status: 429 },
+    );
+  }
+
   const brandLines: string[] = [];
   if (primaryEnv) {
     if (primaryEnv.brandName) brandLines.push(`**Brand:** ${primaryEnv.brandName}`);
@@ -444,6 +462,8 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
         }
 
         send({ type: 'done', executionId: 'global', tokens: totalTokens, cost: 0 });
+        // Record actual usage against the user's daily budget.
+        recordUserTokenUsage(identity.id, totalTokens, primaryEnv.id).catch(() => {});
       } catch (err) {
         send({ type: 'error', message: err instanceof Error ? err.message : 'Nova failed' });
       } finally {

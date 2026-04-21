@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from './db';
 import { decryptPII } from './crypto/pii-encryption';
 import { calculateCost, checkBudget, recordTokenUsage } from './cost';
+import { checkUserTokenBudget, recordUserTokenUsage } from './cost/user-budget';
 import { fenceUserInput, withScopeGuard } from './llm/safe-prompt';
 import {
   getAnthropicClientForEnvironment,
@@ -739,10 +740,27 @@ export async function runNovaAgent({
   const identity = await prisma.identity.findUnique({ where: { id: identityId } });
   if (!identity) throw new Error('Identity not found');
 
-  // Check budget
+  // Check environment budget
   const budget = await checkBudget(system.environmentId);
   if (!budget.allowed) {
     onEvent({ type: 'error', message: 'Token budget exceeded for this environment. Contact an admin to increase the budget.' });
+    return;
+  }
+
+  // SEC-03 — per-user daily token cap. Estimate the turn as
+  // (max_tokens × rounds) + prompt size; the post-call record
+  // below trues this up with actual usage.
+  const estimatedTurnTokens = 4096 * 6 + Math.ceil(input.length / 3);
+  const userBudget = await checkUserTokenBudget(
+    identityId,
+    estimatedTurnTokens,
+    system.environmentId,
+  );
+  if (!userBudget.allowed) {
+    onEvent({
+      type: 'error',
+      message: `Daily token limit reached (${userBudget.used.toLocaleString()} / ${userBudget.limit.toLocaleString()} tokens). Try again tomorrow or connect your own Anthropic key.`,
+    });
     return;
   }
 
@@ -918,6 +936,7 @@ export async function runNovaAgent({
       create: { systemId: system.id, lastActivity: new Date() },
     }),
     recordTokenUsage(system.environmentId, totalTokens),
+    recordUserTokenUsage(identityId, totalTokens, system.environmentId),
   ]);
 
   // Budget warning

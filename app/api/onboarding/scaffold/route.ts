@@ -16,6 +16,7 @@ import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitNovaStrict } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 import { getAnthropicClientForEnvironment } from '@/lib/nova/client-factory';
+import { checkUserTokenBudget, recordUserTokenUsage } from '@/lib/cost/user-budget';
 import {
   SCAFFOLD_SYSTEM_PROMPT,
   buildScaffoldUserMessage,
@@ -85,8 +86,18 @@ export async function POST(req: Request) {
 
   const env = await ensureDefaultEnvironment(identity.id, identity.name ?? null);
 
+  // SEC-03 — gate on daily budget. BYOK exempt.
+  const userBudget = await checkUserTokenBudget(identity.id, 4096 + 1000, env.id);
+  if (!userBudget.allowed) {
+    return Response.json(
+      { error: `Daily token limit reached (${userBudget.used}/${userBudget.limit}).` },
+      { status: 429 },
+    );
+  }
+
   // Anthropic call — BYOK-aware via the existing client factory.
   let scaffold: EnvironmentScaffold;
+  let scaffoldTokens = 0;
   try {
     const { client } = await getAnthropicClientForEnvironment(env.id);
     const msg = await client.messages.create({
@@ -97,6 +108,7 @@ export async function POST(req: Request) {
         { role: 'user', content: buildScaffoldUserMessage(description) },
       ],
     });
+    scaffoldTokens = msg.usage.input_tokens + msg.usage.output_tokens;
     const first = msg.content[0];
     const text =
       first && first.type === 'text' ? first.text : '';
@@ -155,6 +167,9 @@ export async function POST(req: Request) {
     where: { id: identity.id },
     data: { onboardedAt: new Date() },
   });
+
+  // Record the LLM spend against the user's daily budget.
+  recordUserTokenUsage(identity.id, scaffoldTokens, env.id).catch(() => {});
 
   return Response.json({
     ok: true,
