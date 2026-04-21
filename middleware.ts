@@ -102,12 +102,104 @@ function withSecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
+/**
+ * SEC-10 — default Cache-Control on API responses.
+ *
+ * Authenticated JSON must never land in a shared cache (CDN, ISP,
+ * browser back/forward cache). We set private + no-store on any
+ * /api/* response that doesn't already have Cache-Control. Routes
+ * that want to cache (e.g. public blog fetchers) can override by
+ * setting the header explicitly in their own handler.
+ *
+ * Static + page responses keep Next.js defaults — those are already
+ * safe (Vercel handles cache semantics for RSC / static assets).
+ */
+function withCacheControl(res: NextResponse, pathname: string): NextResponse {
+  if (pathname.startsWith('/api/') && !res.headers.has('Cache-Control')) {
+    res.headers.set('Cache-Control', 'private, no-store, max-age=0');
+  }
+  return res;
+}
+
+/**
+ * SEC-12 — belt-and-suspenders CSRF protection for state-changing
+ * /api/* requests. SameSite=Lax on the session cookie blocks most
+ * cross-origin form POSTs already; this adds a server-side Origin /
+ * Referer check so we don't depend solely on the browser's cookie
+ * behavior.
+ *
+ * Webhook endpoints are exempt — they authenticate via provider
+ * signatures and are expected to arrive without an Origin header.
+ * Public sign-in / sign-up stay exempt for the same browser-behavior
+ * reason as SameSite: some flows legitimately come from different
+ * origins (e.g. "sign in with Google" redirecting back via a 302
+ * with no Origin), and those are already rate-limited + auth'd.
+ */
+const CSRF_EXEMPT_PREFIXES = [
+  '/api/webhooks/',
+  '/api/billing/webhook',
+  '/api/v1/', // public API with bearer token auth
+  '/api/cron/', // cron secret auth
+  '/api/portal/', // token auth
+  '/api/forms/submit', // public form submissions, rate-limited
+  '/api/waitlist',
+  '/api/auth/sign-in',
+  '/api/auth/sign-up',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password',
+  '/api/auth/verify-email',
+  '/api/auth/oauth/',
+  // OAuth integration kickoff has its own SEC-06 origin check and
+  // is a GET (state-changing but driven by browser navigation).
+  '/api/integrations/oauth/',
+];
+
+function isCsrfExempt(pathname: string): boolean {
+  return CSRF_EXEMPT_PREFIXES.some(p => pathname.startsWith(p));
+}
+
+function hasSameOriginIntent(req: NextRequest): boolean {
+  const method = req.method.toUpperCase();
+  if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
+    return true; // safe methods, no CSRF exposure
+  }
+  const canonical = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '');
+  if (!canonical) return true; // dev with no canonical — permit
+
+  const origin = req.headers.get('origin');
+  if (origin && origin.replace(/\/$/, '') === canonical) return true;
+
+  const referer = req.headers.get('referer');
+  if (referer) {
+    try {
+      const refOrigin = new URL(referer).origin.replace(/\/$/, '');
+      if (refOrigin === canonical) return true;
+    } catch {
+      /* malformed — reject below */
+    }
+  }
+
+  return false;
+}
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // SEC-12 — CSRF protection on state-changing API requests.
+  // Runs before any other auth/redirect logic so a cross-origin
+  // attack gets 403'd immediately.
+  if (pathname.startsWith('/api/') && !isCsrfExempt(pathname) && !hasSameOriginIntent(req)) {
+    return withCacheControl(
+      withSecurityHeaders(
+        NextResponse.json({ error: 'Cross-origin request blocked' }, { status: 403 }),
+      ),
+      pathname,
+    );
+  }
+
   // Portal data endpoints are token-gated (not session-gated)
   if (pathname.match(/^\/api\/portal\/[^/]+$/)) {
-    return withSecurityHeaders(NextResponse.next());
+    return withCacheControl(withSecurityHeaders(NextResponse.next()), pathname);
   }
 
   // Allow public paths — but redirect authenticated users away from
@@ -122,7 +214,7 @@ export function middleware(req: NextRequest) {
         NextResponse.redirect(new URL(dest, req.url))
       );
     }
-    return withSecurityHeaders(NextResponse.next());
+    return withCacheControl(withSecurityHeaders(NextResponse.next()), pathname);
   }
 
   // Allow static files and generated assets (icon, apple-icon, opengraph-image, etc.)
@@ -134,15 +226,18 @@ export function middleware(req: NextRequest) {
     pathname.startsWith('/icon') ||
     pathname.includes('.')
   ) {
-    return withSecurityHeaders(NextResponse.next());
+    return withCacheControl(withSecurityHeaders(NextResponse.next()), pathname);
   }
 
   // Check session cookie (already read above for public-path redirect)
   if (!session) {
     // API routes get 401
     if (pathname.startsWith('/api/')) {
-      return withSecurityHeaders(
-        NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return withCacheControl(
+        withSecurityHeaders(
+          NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+        ),
+        pathname,
       );
     }
     // Pages redirect to sign-in
@@ -165,7 +260,7 @@ export function middleware(req: NextRequest) {
   // progress — matching the Notion / ClickUp / Monday pattern.
   // Middleware only redirects on a first-time hit to /dashboard
   // right after signup, which is handled client-side now.
-  return withSecurityHeaders(NextResponse.next());
+  return withCacheControl(withSecurityHeaders(NextResponse.next()), pathname);
 }
 
 export const config = {
