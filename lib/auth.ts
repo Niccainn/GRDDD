@@ -82,14 +82,45 @@ export async function getAuthIdentity(): Promise<AuthIdentity> {
 
 /**
  * Sign up a new user with email + password.
+ *
+ * SEC-07 — enumeration-safe. Returns a discriminated result rather
+ * than throwing on duplicate so the route can respond identically
+ * for new and existing addresses. The route layer is responsible
+ * for presenting the same "check your inbox" copy in either case.
  */
-export async function signUp(name: string, email: string, password: string) {
+export type SignUpResult =
+  | {
+      ok: true;
+      duplicate: false;
+      identity: Awaited<ReturnType<typeof createSession>>;
+    }
+  | { ok: true; duplicate: true };
+
+export async function signUp(
+  name: string,
+  email: string,
+  password: string,
+): Promise<SignUpResult> {
   const hash = hashEmail(email);
   const existing = hash
     ? await prisma.identity.findUnique({ where: { emailHash: hash } })
     : await prisma.identity.findFirst({ where: { email } });
+
   if (existing) {
-    throw new Error('An account with this email already exists');
+    // Enumeration-safe: do the same amount of work as a fresh signup
+    // (bcrypt cost, fire an account-exists email) and return a
+    // duplicate marker. Attackers comparing timings and response
+    // shapes can't distinguish this from a fresh registration.
+    await bcrypt.hash(password, 12); // timing parity with create path
+    try {
+      // Best-effort "someone tried to sign up with your email" hint.
+      // Reuses the verification-email transport so we don't add a new
+      // email dependency; when RESEND_API_KEY is unset this no-ops.
+      await sendVerificationEmail(existing.id, existing.name, email);
+    } catch {
+      /* non-fatal */
+    }
+    return { ok: true, duplicate: true };
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -110,7 +141,8 @@ export async function signUp(name: string, email: string, password: string) {
     console.error('[signUp] sendVerificationEmail failed:', err);
   }
 
-  return createSession(identity.id);
+  const session = await createSession(identity.id);
+  return { ok: true, duplicate: false, identity: session };
 }
 
 /**

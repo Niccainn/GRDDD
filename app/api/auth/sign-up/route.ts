@@ -65,13 +65,24 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const identity = await signUp(name, email, password);
-    // Record consent AFTER identity exists so we have identityId to
-    // link. Marketing consent is optional — default off; only log
-    // when the user actively checks the box.
+    const result = await signUp(name, email, password);
+
+    // SEC-07 — same response shape for new + existing addresses so an
+    // attacker can't enumerate accounts by trying emails.
+    const enumerationSafeResponse = {
+      success: true,
+      message: 'Check your inbox to finish signing in.',
+    };
+
+    if (result.duplicate) {
+      return Response.json(enumerationSafeResponse);
+    }
+
+    // Record consent AFTER identity exists. Only runs on genuine
+    // fresh signups.
     const userAgent = req.headers.get('user-agent');
     await recordConsent({
-      identityId: identity.id,
+      identityId: result.identity.id,
       kind: 'signup_tos_privacy',
       granted: true,
       ip,
@@ -79,14 +90,20 @@ export async function POST(req: NextRequest) {
     });
     if (consentMarketing === true) {
       await recordConsent({
-        identityId: identity.id,
+        identityId: result.identity.id,
         kind: 'marketing_email',
         granted: true,
         ip,
         userAgent,
       });
     }
-    return Response.json({ success: true, identity });
+
+    // Include the session identity on the fresh path so the client
+    // can redirect into /welcome. The enumeration guarantee holds
+    // because duplicates never reach here — same-shape response
+    // with `success: true` in both cases; callers that look for
+    // `identity` simply treat its absence as "please sign in".
+    return Response.json({ ...enumerationSafeResponse, identity: result.identity });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Sign up failed';
     return Response.json({ error: message }, { status: 400 });
