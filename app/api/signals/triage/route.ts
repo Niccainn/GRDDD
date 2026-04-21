@@ -1,6 +1,6 @@
 import { getAuthIdentity } from '@/lib/auth';
 import { assertOwnsSignal } from '@/lib/auth/ownership';
-import { rateLimitApi } from '@/lib/rate-limit';
+import { rateLimitNovaStrict } from '@/lib/rate-limit';
 /**
  * POST /api/signals/triage
  * Nova reads an unrouted signal and suggests which system + workflow it belongs to.
@@ -12,7 +12,7 @@ import { fenceUserInputRecord, withScopeGuard } from '@/lib/llm/safe-prompt';
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
-  const rl = rateLimitApi(identity.id);
+  const rl = await rateLimitNovaStrict(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
 
   const { signalId } = await req.json();

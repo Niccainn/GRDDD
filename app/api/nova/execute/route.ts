@@ -1,6 +1,6 @@
 import { getAuthIdentity } from '@/lib/auth';
 import { assertOwnsSystem } from '@/lib/auth/ownership';
-import { rateLimitApi } from '@/lib/rate-limit';
+import { rateLimitNovaStrict } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
@@ -18,7 +18,7 @@ export type ExecuteEvent =
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
-  const rl = rateLimitApi(identity.id);
+  const rl = await rateLimitNovaStrict(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { executionId, workflowId, systemId, input, stages } = await req.json();
 

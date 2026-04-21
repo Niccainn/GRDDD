@@ -1,5 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { rateLimitApi } from '@/lib/rate-limit';
+import { rateLimitNovaStrict } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
@@ -222,7 +222,7 @@ async function executeInternalTool(name: string, input: Record<string, unknown>,
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
-  const rl = rateLimitApi(identity.id);
+  const rl = await rateLimitNovaStrict(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { input } = await req.json();
   if (!input) return new Response(JSON.stringify({ error: 'Missing input' }), { status: 400 });
