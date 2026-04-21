@@ -2,20 +2,26 @@
 /**
  * WidgetBoard — the composition surface.
  *
- * Pre-canvas-engine (Phase 6): a flex-wrap grid of widgets.
- * Once the canvas engine lands, this component's only change is
- * swapping the container for a grid-layout with x/y coords.
- * Widgets themselves are unchanged.
+ * Uses CanvasGrid for snap-layout: widgets live at integer cell
+ * coordinates, drag + resize with pointer events (touch + mouse
+ * unified), release snaps to cell and pushes neighbors down on
+ * collision (iOS home-screen behavior).
  *
- * Persists user-added widgets to localStorage keyed by boardId so
- * different canvases can coexist without a DB migration. Phase 6
- * promotes this to a Canvas row.
+ * Persists two local maps per boardId:
+ *   • user widget specs
+ *   • layout { widgetId → {x,y,w,h} }
+ *
+ * Once Phase 6's Canvas model lands in the DB, this component
+ * moves from localStorage to the Canvas table; widgets themselves
+ * don't change.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import WidgetRenderer, { type WidgetRenderData } from './WidgetRenderer';
 import WidgetDesigner from './WidgetDesigner';
+import CanvasGrid, { type CanvasItem } from './CanvasGrid';
 import { CELL, type WidgetSpec } from '@/lib/widgets/registry';
 import { fetchWidgetData } from '@/lib/widgets/fetch';
+import { type Layout } from '@/lib/widgets/canvas';
 
 export type BoardData = Record<string, WidgetRenderData | undefined>;
 
@@ -27,6 +33,8 @@ type Props = {
   data: BoardData;
   /** If true, the designer "+" tile appears at the end. */
   allowAdd?: boolean;
+  /** Column count for the snap grid. Defaults to 4. */
+  cols?: number;
 };
 
 function loadUserWidgets(boardId: string): WidgetSpec[] {
@@ -47,24 +55,44 @@ function saveUserWidgets(boardId: string, widgets: WidgetSpec[]) {
   }
 }
 
+function loadLayout(boardId: string): Layout {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(`grid_layout_${boardId}`);
+    return raw ? (JSON.parse(raw) as Layout) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLayout(boardId: string, layout: Layout) {
+  try {
+    localStorage.setItem(`grid_layout_${boardId}`, JSON.stringify(layout));
+  } catch {
+    /* non-fatal */
+  }
+}
+
 export default function WidgetBoard({
   boardId,
   systemSpecs,
   data,
   allowAdd = true,
+  cols = 4,
 }: Props) {
   const [userSpecs, setUserSpecs] = useState<WidgetSpec[]>([]);
   const [userData, setUserData] = useState<BoardData>({});
+  const [layout, setLayout] = useState<Layout>({});
   const [designerOpen, setDesignerOpen] = useState(false);
   const [editingBoard, setEditingBoard] = useState(false);
 
   useEffect(() => {
     setUserSpecs(loadUserWidgets(boardId));
+    setLayout(loadLayout(boardId));
   }, [boardId]);
 
-  // Resolve live data for every user widget. Re-fetches whenever the
-  // spec list changes (new widget added → new data fetched). Each
-  // widget's refresh interval kicks in after the initial fetch.
+  // Live data for user widgets. Re-fetches when specs change, then
+  // refreshes per spec.refresh.
   useEffect(() => {
     let cancelled = false;
     const timers: ReturnType<typeof setInterval>[] = [];
@@ -107,52 +135,61 @@ export default function WidgetBoard({
         saveUserWidgets(boardId, next);
         return next;
       });
+      setLayout(prev => {
+        const { [id]: _, ...rest } = prev;
+        saveLayout(boardId, rest);
+        return rest;
+      });
     },
     [boardId],
   );
 
-  const allSpecs = [...systemSpecs, ...userSpecs];
+  const handleLayoutChange = useCallback(
+    (next: Layout) => {
+      setLayout(next);
+      saveLayout(boardId, next);
+    },
+    [boardId],
+  );
 
-  return (
-    <>
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: CELL.gap,
-          alignItems: 'flex-start',
-          // On narrow (touch) viewports, widgets wider than 2 cells
-          // would cause overflow. Allow horizontal scroll as a
-          // graceful fallback until the canvas grid enforces snap.
-          overflowX: 'auto',
-          paddingBottom: 4,
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
-        {allSpecs.map(spec => (
+  const allSpecs = useMemo(
+    () => [...systemSpecs, ...userSpecs],
+    [systemSpecs, userSpecs],
+  );
+
+  const canvasItems: CanvasItem[] = useMemo(
+    () =>
+      allSpecs.map(spec => ({
+        id: spec.id,
+        size: spec.size,
+        canMove: editingBoard && spec.origin === 'user',
+        render: () => (
           <WidgetRenderer
-            key={spec.id}
             spec={spec}
             data={spec.origin === 'user' ? userData[spec.id] : data[spec.id]}
             editMode={editingBoard && spec.origin === 'user'}
             onRemove={
-              spec.origin === 'user'
-                ? () => removeWidget(spec.id)
-                : undefined
+              spec.origin === 'user' ? () => removeWidget(spec.id) : undefined
             }
           />
-        ))}
+        ),
+      })),
+    [allSpecs, data, userData, editingBoard, removeWidget],
+  );
 
-        {allowAdd && (
-          <AddTile onClick={() => setDesignerOpen(true)} />
-        )}
-      </div>
+  return (
+    <>
+      <CanvasGrid
+        items={canvasItems}
+        cols={cols}
+        layout={layout}
+        onLayoutChange={handleLayoutChange}
+      />
 
-      {/* Board-level toggle — tap to enter edit mode across all user
-          widgets at once. Appears only when there's at least one user
-          widget to manage. */}
-      {userSpecs.length > 0 && (
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
+      <div style={{ display: 'flex', gap: CELL.gap, marginTop: CELL.gap }}>
+        {allowAdd && <AddTile onClick={() => setDesignerOpen(true)} />}
+
+        {userSpecs.length > 0 && (
           <button
             onClick={() => setEditingBoard(v => !v)}
             style={{
@@ -164,12 +201,13 @@ export default function WidgetBoard({
               color: editingBoard ? 'var(--brand)' : 'var(--text-3)',
               cursor: 'pointer',
               fontWeight: 300,
+              alignSelf: 'center',
             }}
           >
             {editingBoard ? 'Done editing' : 'Edit widgets'}
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <WidgetDesigner
         open={designerOpen}
