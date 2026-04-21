@@ -104,9 +104,26 @@ import {
 
 const STATE_COOKIE_PREFIX = 'grid_int_state_';
 
-function redirectBack(environmentId: string | null, status: 'success' | 'error', message?: string) {
+async function redirectBack(
+  provider: string,
+  environmentId: string | null,
+  status: 'success' | 'error',
+  message?: string,
+) {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-  const url = new URL('/integrations', base);
+
+  // Honor onboarding's redirect cookie if present. The start route
+  // already validated the path; we still double-check here because
+  // cookie tampering is cheap to defend against.
+  const cookieStore = await cookies();
+  const redirCookie = cookieStore.get(`${STATE_COOKIE_PREFIX}${provider}_redir`);
+  let targetPath = '/integrations';
+  if (redirCookie && /^\/(?!\/)[^\s]*$/.test(redirCookie.value) && redirCookie.value.length < 256) {
+    targetPath = redirCookie.value;
+    cookieStore.delete(`${STATE_COOKIE_PREFIX}${provider}_redir`);
+  }
+
+  const url = new URL(targetPath, base);
   if (environmentId) url.searchParams.set('environmentId', environmentId);
   url.searchParams.set('oauth', status);
   if (message) url.searchParams.set('message', message);
@@ -211,29 +228,30 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ provider: string }> },
 ) {
-  const identity = await getAuthIdentityOrNull();
-  if (!identity) return redirectBack(null, 'error', 'Session expired — please sign in and try again');
-
   const { provider } = await params;
+
+  const identity = await getAuthIdentityOrNull();
+  if (!identity) return redirectBack(provider, null, 'error', 'Session expired — please sign in and try again');
+
   const def = findProvider(provider);
   if (!def || def.authType !== 'oauth' || !def.implemented) {
-    return redirectBack(null, 'error', `Unknown provider: ${provider}`);
+    return redirectBack(provider, null, 'error', `Unknown provider: ${provider}`);
   }
 
   const code = req.nextUrl.searchParams.get('code');
   const returnedState = req.nextUrl.searchParams.get('state');
   const oauthError = req.nextUrl.searchParams.get('error');
   if (oauthError) {
-    return redirectBack(null, 'error', req.nextUrl.searchParams.get('error_description') ?? oauthError);
+    return redirectBack(provider, null, 'error', req.nextUrl.searchParams.get('error_description') ?? oauthError);
   }
   if (!code || !returnedState) {
-    return redirectBack(null, 'error', 'Missing code or state from provider');
+    return redirectBack(provider, null, 'error', 'Missing code or state from provider');
   }
 
   const cookieStore = await cookies();
   const cookieName = `${STATE_COOKIE_PREFIX}${provider}`;
   const cookieVal = cookieStore.get(cookieName)?.value;
-  if (!cookieVal) return redirectBack(null, 'error', 'State cookie missing or expired');
+  if (!cookieVal) return redirectBack(provider, null, 'error', 'State cookie missing or expired');
 
   // Cookie format: state.environmentId[.extra]
   // Extra segment is used for Shopify (shop domain) and Airtable (code_verifier).
@@ -243,12 +261,12 @@ export async function GET(
   const cookieExtra = cookieParts.slice(2).join('.'); // rejoin in case extra contains dots
 
   if (storedState !== returnedState) {
-    return redirectBack(null, 'error', 'State mismatch — possible CSRF, aborting');
+    return redirectBack(provider, null, 'error', 'State mismatch — possible CSRF, aborting');
   }
   cookieStore.delete(cookieName);
 
   const env = await getAdministrableEnvironment(environmentId, identity.id);
-  if (!env) return redirectBack(null, 'error', 'Environment not found or access revoked');
+  if (!env) return redirectBack(provider, null, 'error', 'Environment not found or access revoked');
 
   try {
     // ── Original dedicated providers ──────────────────────────────
@@ -256,7 +274,7 @@ export async function GET(
     if (provider === 'meta_ads') {
       const tokens = await completeMetaOAuth(code);
       const accounts = await listMetaAdAccounts(tokens.access_token);
-      if (accounts.length === 0) return redirectBack(environmentId, 'error', 'No Meta ad accounts found');
+      if (accounts.length === 0) return redirectBack(provider, environmentId, 'error', 'No Meta ad accounts found');
       const primary = accounts[0];
       await persistIntegration({
         environmentId,
@@ -270,7 +288,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'google_ads' || provider === 'google_analytics' || provider === 'google_search_console' || provider === 'google_workspace' || provider === 'google_calendar') {
@@ -375,7 +393,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'salesforce') {
@@ -393,7 +411,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'hubspot') {
@@ -411,7 +429,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'slack') {
@@ -428,7 +446,7 @@ export async function GET(
         previewSource: result.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'github') {
@@ -446,7 +464,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'linear') {
@@ -476,7 +494,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'notion') {
@@ -493,7 +511,7 @@ export async function GET(
         previewSource: result.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'figma') {
@@ -511,7 +529,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'microsoft_outlook') {
@@ -530,14 +548,14 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     // ── New dedicated providers ─────────────────────────────────
 
     if (provider === 'shopify') {
       const shop = cookieExtra;
-      if (!shop) return redirectBack(environmentId, 'error', 'Shop domain missing from state');
+      if (!shop) return redirectBack(provider, environmentId, 'error', 'Shop domain missing from state');
       const tokens = await completeShopifyOAuth(shop, code);
       let shopName = shop;
       try {
@@ -556,7 +574,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'mailchimp') {
@@ -577,12 +595,12 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'airtable') {
       const codeVerifier = cookieExtra;
-      if (!codeVerifier) return redirectBack(environmentId, 'error', 'PKCE code_verifier missing from state');
+      if (!codeVerifier) return redirectBack(provider, environmentId, 'error', 'PKCE code_verifier missing from state');
       const tokens = await exchangeAirtableCode(code, codeVerifier);
       let accountLabel = 'default';
       let displayName = 'Airtable';
@@ -603,7 +621,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'typeform') {
@@ -627,7 +645,7 @@ export async function GET(
         previewSource: tokens.access_token,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     // ── Generic providers with profile fetchers ──────────────────
@@ -651,7 +669,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: def.name };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'asana') {
@@ -669,7 +687,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'Asana' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'discord') {
@@ -687,7 +705,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'Discord' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'zoom') {
@@ -705,7 +723,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'Zoom' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'microsoft_teams') {
@@ -723,7 +741,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'Microsoft Teams' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'linkedin' || provider === 'linkedin_ads') {
@@ -742,7 +760,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: def.name };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'twitter') {
@@ -760,7 +778,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'X (Twitter)' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'gitlab') {
@@ -778,7 +796,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'GitLab' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'bitbucket') {
@@ -796,7 +814,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'Bitbucket' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     if (provider === 'dropbox') {
@@ -815,7 +833,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'Dropbox' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     // Google-OAuth providers that reuse GOOGLE_CLIENT_ID
@@ -835,7 +853,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: def.name };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     // Microsoft-OAuth providers that reuse MICROSOFT_CLIENT_ID
@@ -854,7 +872,7 @@ export async function GET(
           return { accountLabel: 'default', displayName: 'OneDrive' };
         },
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
     // ── Generic providers without dedicated profile fetchers ─────
@@ -909,12 +927,12 @@ export async function GET(
         scopes: def.scopes,
         createdById: identity.id,
       });
-      return redirectBack(environmentId, 'success');
+      return redirectBack(provider, environmentId, 'success');
     }
 
-    return redirectBack(environmentId, 'error', `No callback handler for ${provider}`);
+    return redirectBack(provider, environmentId, 'error', `No callback handler for ${provider}`);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'OAuth exchange failed';
-    return redirectBack(environmentId, 'error', message);
+    return redirectBack(provider, environmentId, 'error', message);
   }
 }
