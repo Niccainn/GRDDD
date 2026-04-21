@@ -23,7 +23,7 @@
  *     unique-indexed equality, not compared to a secret in memory.
  */
 
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { prisma } from './db';
 import { sendEmail, isEmailConfigured } from './email';
 
@@ -31,6 +31,13 @@ const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 function generateToken(): string {
   return randomBytes(32).toString('base64url');
+}
+
+/** SEC-09 — persist hashes, not raw tokens. A DB backup leak or
+ *  rogue operator can't use the stored value to complete verification;
+ *  only the user (who has the raw token in the email link) can. */
+function hashToken(raw: string): string {
+  return createHash('sha256').update(raw).digest('hex');
 }
 
 function appUrl(): string {
@@ -47,10 +54,11 @@ function appUrl(): string {
 export async function issueVerificationToken(identityId: string): Promise<string> {
   const token = generateToken();
   const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
+  // SEC-09 — store sha256(token); only the email link holds the raw.
   await prisma.identity.update({
     where: { id: identityId },
     data: {
-      emailVerifyToken: token,
+      emailVerifyToken: hashToken(token),
       emailVerifyTokenExpiresAt: expiresAt,
     },
   });
@@ -120,8 +128,11 @@ export async function sendVerificationEmail(
 export async function consumeVerificationToken(
   token: string
 ): Promise<{ id: string; email: string | null } | null> {
+  // SEC-09 — compare the hash of the supplied token to the stored
+  // hash. Unique-indexed equality still works since the hash of a
+  // given token is deterministic.
   const identity = await prisma.identity.findUnique({
-    where: { emailVerifyToken: token },
+    where: { emailVerifyToken: hashToken(token) },
     select: {
       id: true,
       email: true,
