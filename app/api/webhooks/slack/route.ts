@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { logWebhookSignatureFailure } from '@/lib/webhook-log';
 
 /**
  * Slack Events API webhook receiver.
@@ -53,6 +54,13 @@ export async function POST(req: NextRequest) {
   // before the signing secret is confirmed), but all other events do.
   if (body.type !== 'url_verification') {
     if (!verifySlackSignature(req, rawBody)) {
+      logWebhookSignatureFailure({
+        provider: 'slack',
+        path: '/api/webhooks/slack',
+        req,
+        rawBody,
+        reason: 'verifySlackSignature returned false',
+      });
       return Response.json({ error: 'Invalid signature' }, { status: 401 });
     }
   }
