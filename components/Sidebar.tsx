@@ -263,13 +263,18 @@ export default function Sidebar() {
         />
       )}
 
-    <aside className={`fixed left-0 top-0 h-screen w-[220px] flex flex-col z-50 transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+    <aside
+      data-surface="sidebar"
+      className={`fixed left-0 top-0 h-screen w-[220px] flex flex-col z-50 transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       style={{
+        // Always-dark island — crisp anchor in both themes, matches
+        // the pre-light-mode feel of the sidebar.
         background: 'rgba(8, 8, 12, 0.95)',
         backdropFilter: 'blur(60px)',
         WebkitBackdropFilter: 'blur(60px)',
-        borderRight: '1px solid var(--glass-border)',
-      }}>
+        borderRight: '1px solid rgba(255, 255, 255, 0.06)',
+      }}
+    >
 
       {/* Logo / Brand */}
       <div className="px-5 py-5" style={{ borderBottom: '1px solid var(--glass-border)' }}>
