@@ -171,6 +171,9 @@ export default function WidgetBoard({
             onRemove={
               spec.origin === 'user' ? () => removeWidget(spec.id) : undefined
             }
+            onEditLayout={
+              spec.origin === 'user' ? () => setEditingBoard(true) : undefined
+            }
           />
         ),
       })),
