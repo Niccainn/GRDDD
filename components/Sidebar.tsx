@@ -53,9 +53,7 @@ type NavSection = {
 
 // ── Sidebar sections ─────────────────────────────────────────────────
 // System-first: your business functions → daily work → everything else
-type CollapsibleNavSection = NavSection & { collapsible?: boolean; defaultCollapsed?: boolean; id?: string };
-
-const navSections: CollapsibleNavSection[] = [
+const navSections: NavSection[] = [
   {
     label: '',
     items: [
@@ -65,55 +63,11 @@ const navSections: CollapsibleNavSection[] = [
   },
   // YOUR SYSTEMS — injected dynamically below
   {
-    label: 'WORK',
+    label: '',
     items: [
       { href: '/tasks', label: 'Tasks', icon: icons.tasks },
       { href: '/inbox', label: 'Inbox', icon: icons.inbox, badge: 'inbox' },
-      { href: '/goals', label: 'Goals', icon: icons.goals },
       { href: '/calendar', label: 'Calendar', icon: icons.calendar },
-    ],
-  },
-  {
-    label: 'EXPLORE',
-    id: 'explore',
-    collapsible: true,
-    defaultCollapsed: true,
-    items: [
-      { href: '/workflows', label: 'Workflows', icon: icons.workflows },
-      { href: '/integrations', label: 'Integrations', icon: icons.integrations },
-      { href: '/docs', label: 'Documents', icon: icons.documents },
-      { href: '/templates', label: 'Templates', icon: icons.templates },
-      { href: '/mastery', label: 'Mastery', icon: icons.analytics },
-    ],
-  },
-  {
-    label: 'MORE',
-    id: 'more',
-    collapsible: true,
-    defaultCollapsed: true,
-    items: [
-      { href: '/finance', label: 'Finance', icon: icons.finance },
-      { href: '/time', label: 'Time Tracking', icon: icons.time },
-      { href: '/forms', label: 'Forms', icon: icons.forms },
-      { href: '/views', label: 'Views', icon: icons.views },
-      { href: '/approvals', label: 'Approvals', icon: icons.approvals },
-      { href: '/assets', label: 'Assets', icon: icons.assets },
-      { href: '/agents', label: 'Agents', icon: icons.agents },
-      { href: '/automations', label: 'Automations', icon: icons.automations },
-      { href: '/dashboards', label: 'Dashboards', icon: icons.dashboards },
-      { href: '/environments', label: 'Environments', icon: icons.environments },
-    ],
-  },
-  {
-    label: 'INTELLIGENCE',
-    id: 'intelligence',
-    collapsible: true,
-    defaultCollapsed: true,
-    items: [
-      { href: '/analytics', label: 'Analytics', icon: icons.analytics },
-      { href: '/reports', label: 'Reports', icon: icons.reports },
-      { href: '/audit', label: 'Audit', icon: icons.audit },
-      { href: '/activity', label: 'Activity', icon: icons.activity },
     ],
   },
 ];
@@ -177,21 +131,6 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [inboxUnread, setInboxUnread] = useState(0);
   const [systems, setSystems] = useState<{ id: string; name: string; color: string | null }[]>([]);
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
-    if (typeof window === 'undefined') return { explore: true, more: true, intelligence: true };
-    try {
-      const saved = localStorage.getItem('grid_sidebar_sections');
-      return saved ? JSON.parse(saved) : { explore: true, more: true, intelligence: true };
-    } catch { return { explore: true, more: true, intelligence: true }; }
-  });
-
-  const toggleSection = (id: string) => {
-    setCollapsedSections(prev => {
-      const next = { ...prev, [id]: !prev[id] };
-      try { localStorage.setItem('grid_sidebar_sections', JSON.stringify(next)); } catch {}
-      return next;
-    });
-  };
 
   // Close mobile nav on route change
   useEffect(() => {
@@ -297,36 +236,14 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-3 overflow-y-auto">
         {activeSections.map((section, si) => {
-          const cs = section as CollapsibleNavSection;
-          const sectionId = cs.id || section.label || String(si);
-          const isCollapsible = cs.collapsible;
-          const isCollapsed = isCollapsible && collapsedSections[sectionId];
+          const sectionId = section.label || String(si);
 
           return (
             <div key={sectionId} className={si > 0 ? 'mt-4' : ''}>
-              {/* Section label — clickable if collapsible */}
               {section.label && (
-                isCollapsible ? (
-                  <button
-                    onClick={() => toggleSection(sectionId)}
-                    className="w-full flex items-center justify-between px-3 mb-1.5 group"
-                  >
-                    <p className="text-[10px] tracking-[0.16em] font-light" style={{ color: 'var(--text-3)' }}>
-                      {section.label}
-                    </p>
-                    <svg
-                      width="8" height="8" viewBox="0 0 8 8" fill="none"
-                      className="transition-transform duration-200"
-                      style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', opacity: 0.3 }}
-                    >
-                      <path d="M1 2.5l3 3 3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" style={{ color: 'var(--text-3)' }} />
-                    </svg>
-                  </button>
-                ) : (
-                  <p className="text-[10px] tracking-[0.16em] font-light px-3 mb-1.5" style={{ color: 'var(--text-3)' }}>
-                    {section.label}
-                  </p>
-                )
+                <p className="text-[10px] tracking-[0.16em] font-light px-3 mb-1.5" style={{ color: 'var(--text-3)' }}>
+                  {section.label}
+                </p>
               )}
 
               {/* Dynamic systems section — injected after the first section (Home/Nova) */}
@@ -383,10 +300,8 @@ export default function Sidebar() {
                 </div>
               )}
 
-              {/* Section items — hidden if collapsed */}
-              {!isCollapsed && (
-                <div className="space-y-0.5">
-                  {section.items.map(item => {
+              <div className="space-y-0.5">
+                {section.items.map(item => {
                     const active = isActive(item.href);
                     const isNova = item.accent;
                     const showBadge = item.badge === 'inbox' && inboxUnread > 0;
@@ -415,7 +330,6 @@ export default function Sidebar() {
                     );
                   })}
                 </div>
-              )}
             </div>
           );
         })}

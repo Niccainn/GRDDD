@@ -120,9 +120,15 @@ export default function IntegrationsPage() {
     if (environmentId) loadConnected(environmentId);
   }, [environmentId, loadConnected]);
 
-  // Filtered + grouped providers
+  // Filtered + grouped providers.
+  // Hide providers that aren't ready to use — unimplemented ("Soon")
+  // and env-missing ("Setup required"). The operator-setup banner
+  // still surfaces them at the page level, so admins know what's
+  // outstanding without every user seeing a wall of dim cards.
   const filtered = useMemo(() => {
     return providers.filter(p => {
+      if (!p.implemented) return false;
+      if (!p.envReady) return false;
       if (category !== 'all' && p.category !== category) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -149,6 +155,7 @@ export default function IntegrationsPage() {
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const p of providers) {
+      if (!p.implemented || !p.envReady) continue;
       if (search) {
         const q = search.toLowerCase();
         if (!p.name.toLowerCase().includes(q) && !p.tagline.toLowerCase().includes(q) && !p.categoryLabel.toLowerCase().includes(q)) continue;
@@ -352,7 +359,7 @@ export default function IntegrationsPage() {
           <div>
             <h1 className="text-2xl font-extralight tracking-tight mb-1">Integrations</h1>
             <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-              {connected.length} connected · {providers.filter(p => p.envReady && p.implemented).length} ready · {providers.filter(p => p.implemented && !p.envReady).length} need setup
+              {connected.length} connected · {providers.filter(p => p.envReady && p.implemented).length} ready to connect
             </p>
           </div>
           {environments.length > 0 && (
@@ -371,12 +378,13 @@ export default function IntegrationsPage() {
           )}
         </div>
 
-        {/* Setup-required banner. Only shows when at least one
-            implemented provider is missing its env vars, so it's
-            invisible on fully-configured deployments. Deep-link
-            straight to the setup guide so admins know exactly what to
-            register and where. */}
-        {providers.filter(p => p.implemented && !p.envReady).length > 0 && (
+        {/* Setup-required banner. Admin-only: append ?admin=1 to see it.
+            End users get a clean page showing only ready integrations;
+            the "Soon" / "Setup required" clutter would feel like a
+            problem they can't solve. */}
+        {typeof window !== 'undefined' &&
+          new URLSearchParams(window.location.search).get('admin') === '1' &&
+          providers.filter(p => p.implemented && !p.envReady).length > 0 && (
           <div
             className="mb-6 rounded-xl p-4 flex items-start gap-3"
             style={{

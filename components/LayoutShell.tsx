@@ -18,7 +18,7 @@ import SkipLink from './SkipLink';
 import LegalFooter from './LegalFooter';
 import PersistentNovaBar from './PersistentNovaBar';
 
-const AUTH_ROUTES = ['/sign-in', '/sign-up', '/access'];
+const AUTH_ROUTES = ['/sign-in', '/sign-up', '/access', '/welcome'];
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

@@ -339,6 +339,23 @@ export async function GET(
     payload = `${state}.${environmentId}.${airtableCodeVerifier}`;
   }
 
+  // Same-origin redirect path piggybacks on the state cookie — the
+  // caller (e.g. /welcome onboarding) wants the callback to drop
+  // them back where they started, not the default /integrations.
+  // Validate strictly: must start with "/" and not "//" (no
+  // protocol-relative URLs) to prevent open-redirect.
+  const redirectParam = req.nextUrl.searchParams.get('redirect');
+  if (redirectParam && /^\/(?!\/)[^\s]*$/.test(redirectParam) && redirectParam.length < 256) {
+    const redirectCookie = await cookies();
+    redirectCookie.set(`${STATE_COOKIE_PREFIX}${provider}_redir`, redirectParam, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 10 * 60,
+      path: '/',
+    });
+  }
+
   const cookieStore = await cookies();
   cookieStore.set(`${STATE_COOKIE_PREFIX}${provider}`, payload, {
     httpOnly: true,
