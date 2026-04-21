@@ -32,6 +32,7 @@ import {
   LIFT_STYLE,
 } from '@/lib/widgets/motion';
 import { sizeToPx, type WidgetSize } from '@/lib/widgets/registry';
+import WidgetContextMenu from './WidgetContextMenu';
 
 type WidgetFrameProps = {
   size: WidgetSize;
@@ -42,6 +43,15 @@ type WidgetFrameProps = {
   onEnterEdit?: () => void;
   onRemove?: () => void;
   onOpen?: () => void;
+  /** Context menu items. If provided, long-press / right-click opens a menu. */
+  menuItems?: Array<{
+    id: string;
+    label: string;
+    icon?: ReactNode;
+    destructive?: boolean;
+    disabled?: boolean;
+    onSelect: () => void;
+  }>;
   /** If true, the widget will breathe regardless of local long-press. */
   forceEdit?: boolean;
   accent?: string;
@@ -58,12 +68,15 @@ export default function WidgetFrame({
   onEnterEdit,
   onRemove,
   onOpen,
+  menuItems,
   forceEdit,
   accent,
 }: WidgetFrameProps) {
   const [hovering, setHovering] = useState(false);
   const [localEdit, setLocalEdit] = useState(false);
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const px = sizeToPx(size);
   const isEditing = editMode || localEdit || forceEdit;
 
@@ -104,11 +117,18 @@ export default function WidgetFrame({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  function beginPress() {
+  function beginPress(clientX: number, clientY: number) {
     if (pressTimer.current) clearTimeout(pressTimer.current);
+    pressPos.current = { x: clientX, y: clientY };
     pressTimer.current = setTimeout(() => {
-      setLocalEdit(true);
-      onEnterEdit?.();
+      // If the widget offers a context menu, prefer that over
+      // going straight into edit mode — it's more discoverable.
+      if (menuItems && menuItems.length > 0) {
+        setMenuAt({ x: pressPos.current.x, y: pressPos.current.y });
+      } else {
+        setLocalEdit(true);
+        onEnterEdit?.();
+      }
       // Soft haptic echo where available.
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         try {
@@ -165,12 +185,23 @@ export default function WidgetFrame({
         setHovering(false);
         cancelPress();
       }}
-      onMouseDown={beginPress}
+      onMouseDown={(e: MouseEvent) => beginPress(e.clientX, e.clientY)}
       onMouseUp={cancelPress}
-      onTouchStart={(_: TouchEvent) => beginPress()}
+      onTouchStart={(e: TouchEvent) => {
+        const t = e.touches[0];
+        beginPress(t?.clientX ?? 0, t?.clientY ?? 0);
+      }}
       onTouchEnd={cancelPress}
       onTouchCancel={cancelPress}
       onClick={handleClick}
+      onContextMenu={
+        menuItems && menuItems.length > 0
+          ? e => {
+              e.preventDefault();
+              setMenuAt({ x: e.clientX, y: e.clientY });
+            }
+          : undefined
+      }
     >
       {/* Accent hairline — echoes the System color without shouting */}
       {accent && (
@@ -267,6 +298,15 @@ export default function WidgetFrame({
       )}
 
       <div style={{ height: '100%', overflow: 'hidden' }}>{children}</div>
+
+      {menuAt && menuItems && menuItems.length > 0 && (
+        <WidgetContextMenu
+          x={menuAt.x}
+          y={menuAt.y}
+          items={menuItems}
+          onClose={() => setMenuAt(null)}
+        />
+      )}
     </div>
   );
 }

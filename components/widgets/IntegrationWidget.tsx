@@ -18,6 +18,7 @@ type IntegrationWidgetProps = {
   };
   editMode?: boolean;
   onRemove?: () => void;
+  menuItems?: Array<{ id: string; label: string; destructive?: boolean; disabled?: boolean; onSelect: () => void }>;
   onOpen?: () => void;
 };
 
@@ -51,6 +52,7 @@ export default function IntegrationWidget({
   integration,
   editMode,
   onRemove,
+  menuItems,
   onOpen,
 }: IntegrationWidgetProps) {
   const accent = integration.accentColor ?? '#7193ED';
@@ -61,6 +63,7 @@ export default function IntegrationWidget({
       size={spec.size}
       editMode={editMode}
       onRemove={onRemove}
+      menuItems={menuItems}
       onOpen={onOpen ?? (() => (window.location.href = '/integrations'))}
       accent={accent}
     >

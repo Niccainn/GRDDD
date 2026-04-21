@@ -20,6 +20,7 @@ type NovaOutputWidgetProps = {
   };
   editMode?: boolean;
   onRemove?: () => void;
+  menuItems?: Array<{ id: string; label: string; destructive?: boolean; disabled?: boolean; onSelect: () => void }>;
   onOpen?: () => void;
 };
 
@@ -28,6 +29,7 @@ export default function NovaOutputWidget({
   output,
   editMode,
   onRemove,
+  menuItems,
   onOpen,
 }: NovaOutputWidgetProps) {
   const confidencePct =
@@ -38,6 +40,7 @@ export default function NovaOutputWidget({
       size={spec.size}
       editMode={editMode}
       onRemove={onRemove}
+      menuItems={menuItems}
       onOpen={onOpen}
       accent="#BF9FF1"
     >

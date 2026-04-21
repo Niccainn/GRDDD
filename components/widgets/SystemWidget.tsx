@@ -21,6 +21,7 @@ type SystemWidgetProps = {
   };
   editMode?: boolean;
   onRemove?: () => void;
+  menuItems?: Array<{ id: string; label: string; destructive?: boolean; disabled?: boolean; onSelect: () => void }>;
   onOpen?: () => void;
 };
 
@@ -29,6 +30,7 @@ export default function SystemWidget({
   system,
   editMode,
   onRemove,
+  menuItems,
   onOpen,
 }: SystemWidgetProps) {
   const accent = system.color ?? '#7193ED';
@@ -41,6 +43,7 @@ export default function SystemWidget({
       size={spec.size}
       editMode={editMode}
       onRemove={onRemove}
+      menuItems={menuItems}
       onOpen={onOpen ?? (() => (window.location.href = `/systems/${system.id}`))}
       accent={accent}
     >

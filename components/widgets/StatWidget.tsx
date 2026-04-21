@@ -18,6 +18,7 @@ type StatWidgetProps = {
   spark?: number[] | null;
   editMode?: boolean;
   onRemove?: () => void;
+  menuItems?: Array<{ id: string; label: string; destructive?: boolean; disabled?: boolean; onSelect: () => void }>;
   onOpen?: () => void;
 };
 
@@ -28,6 +29,7 @@ export default function StatWidget({
   spark,
   editMode,
   onRemove,
+  menuItems,
   onOpen,
 }: StatWidgetProps) {
   const [mounted, setMounted] = useState(false);
@@ -45,6 +47,7 @@ export default function StatWidget({
       subtitle={isCompact ? undefined : spec.subtitle}
       editMode={editMode}
       onRemove={onRemove}
+      menuItems={menuItems}
       onOpen={onOpen}
     >
       <div

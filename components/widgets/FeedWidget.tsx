@@ -27,6 +27,7 @@ type FeedWidgetProps = {
   emptyLabel?: string;
   editMode?: boolean;
   onRemove?: () => void;
+  menuItems?: Array<{ id: string; label: string; destructive?: boolean; disabled?: boolean; onSelect: () => void }>;
   onOpen?: () => void;
 };
 
@@ -36,6 +37,7 @@ export default function FeedWidget({
   emptyLabel = "You're caught up.",
   editMode,
   onRemove,
+  menuItems,
   onOpen,
 }: FeedWidgetProps) {
   // Pinned items float to the top; rest preserve their order.
@@ -51,6 +53,7 @@ export default function FeedWidget({
       subtitle={spec.subtitle}
       editMode={editMode}
       onRemove={onRemove}
+      menuItems={menuItems}
       onOpen={onOpen}
     >
       {items.length === 0 ? (

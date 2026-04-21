@@ -52,6 +52,7 @@ type Props = {
   editMode?: boolean;
   onRemove?: () => void;
   onOpen?: () => void;
+  onEditLayout?: () => void;
 };
 
 export default function WidgetRenderer({
@@ -60,7 +61,33 @@ export default function WidgetRenderer({
   editMode,
   onRemove,
   onOpen,
+  onEditLayout,
 }: Props) {
+  // Build the context menu once so every kind shares the same items.
+  // Only user-origin widgets get Edit Layout / Remove. System-origin
+  // widgets can only open, and their context menu is suppressed.
+  const menuItems =
+    spec.origin === 'user' && (onRemove || onEditLayout)
+      ? [
+          onEditLayout && {
+            id: 'edit',
+            label: 'Edit layout',
+            onSelect: onEditLayout,
+          },
+          onRemove && {
+            id: 'remove',
+            label: 'Remove',
+            destructive: true,
+            onSelect: onRemove,
+          },
+        ].filter(Boolean) as Array<{
+          id: string;
+          label: string;
+          destructive?: boolean;
+          onSelect: () => void;
+        }>
+      : undefined;
+
   switch (spec.kind) {
     case 'stat':
       return (
@@ -72,6 +99,7 @@ export default function WidgetRenderer({
           editMode={editMode}
           onRemove={onRemove}
           onOpen={onOpen}
+          menuItems={menuItems}
         />
       );
     case 'feed':
@@ -83,6 +111,7 @@ export default function WidgetRenderer({
           editMode={editMode}
           onRemove={onRemove}
           onOpen={onOpen}
+          menuItems={menuItems}
         />
       );
     case 'system':
@@ -93,6 +122,7 @@ export default function WidgetRenderer({
           editMode={editMode}
           onRemove={onRemove}
           onOpen={onOpen}
+          menuItems={menuItems}
         />
       ) : null;
     case 'integration':
@@ -103,6 +133,7 @@ export default function WidgetRenderer({
           editMode={editMode}
           onRemove={onRemove}
           onOpen={onOpen}
+          menuItems={menuItems}
         />
       ) : null;
     case 'nova-output':
@@ -113,6 +144,7 @@ export default function WidgetRenderer({
           editMode={editMode}
           onRemove={onRemove}
           onOpen={onOpen}
+          menuItems={menuItems}
         />
       ) : null;
     case 'chart':
@@ -125,6 +157,7 @@ export default function WidgetRenderer({
           editMode={editMode}
           onRemove={onRemove}
           onOpen={onOpen}
+          menuItems={menuItems}
         />
       );
   }
