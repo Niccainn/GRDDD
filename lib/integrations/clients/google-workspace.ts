@@ -32,6 +32,98 @@ export async function getGoogleWorkspaceClient(integrationId: string, environmen
       return { unread: data.threadsUnread ?? 0 };
     },
 
+    /**
+     * List recent Gmail messages in the primary inbox.
+     * Two-step fetch: list ids (cheap), then `messages.get` per id
+     * with format=metadata to pull only the headers we need.
+     * Parallel gets keep latency flat even at limit=25.
+     */
+    async listRecentMessages(limit = 20): Promise<Array<{
+      id: string;
+      threadId: string;
+      from: string;
+      fromEmail: string;
+      subject: string;
+      snippet: string;
+      date: string;
+      unread: boolean;
+      starred: boolean;
+    }>> {
+      const accessToken = await token();
+      const listUrl = new URL('https://gmail.googleapis.com/gmail/v1/users/me/messages');
+      listUrl.searchParams.set('maxResults', String(Math.min(Math.max(limit, 1), 50)));
+      listUrl.searchParams.set('labelIds', 'INBOX');
+      listUrl.searchParams.set('q', 'in:inbox -category:promotions -category:social');
+
+      const listRes = await fetch(listUrl.toString(), { headers: googleAuthHeaders(accessToken) });
+      if (!listRes.ok) {
+        const text = await listRes.text();
+        throw new Error(`Gmail list failed (${listRes.status}): ${text.slice(0, 200)}`);
+      }
+      const listData = (await listRes.json()) as {
+        messages?: Array<{ id: string; threadId: string }>;
+      };
+      const ids = listData.messages ?? [];
+      if (ids.length === 0) return [];
+
+      // Fetch each message's metadata in parallel. Gmail's per-user
+      // quota is generous; 25 parallel gets is well within limits.
+      const messages = await Promise.all(
+        ids.map(async ({ id, threadId }) => {
+          const detailUrl = new URL(
+            `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}`,
+          );
+          detailUrl.searchParams.set('format', 'metadata');
+          detailUrl.searchParams.append('metadataHeaders', 'From');
+          detailUrl.searchParams.append('metadataHeaders', 'Subject');
+          detailUrl.searchParams.append('metadataHeaders', 'Date');
+          const res = await fetch(detailUrl.toString(), {
+            headers: googleAuthHeaders(accessToken),
+          });
+          if (!res.ok) return null;
+          const data = (await res.json()) as {
+            id: string;
+            threadId: string;
+            snippet?: string;
+            internalDate?: string;
+            labelIds?: string[];
+            payload?: {
+              headers?: Array<{ name: string; value: string }>;
+            };
+          };
+          const header = (name: string) =>
+            data.payload?.headers?.find(
+              h => h.name.toLowerCase() === name.toLowerCase(),
+            )?.value ?? '';
+          const fromRaw = header('From');
+          // "Jane Doe <jane@x.com>" → name "Jane Doe", email "jane@x.com"
+          const emailMatch = fromRaw.match(/<([^>]+)>/);
+          const fromEmail = emailMatch ? emailMatch[1] : fromRaw;
+          const fromName = emailMatch
+            ? fromRaw.slice(0, emailMatch.index).replace(/"/g, '').trim()
+            : fromRaw;
+          const labels = data.labelIds ?? [];
+          const dateValue = data.internalDate
+            ? new Date(Number(data.internalDate)).toISOString()
+            : header('Date') || new Date().toISOString();
+          return {
+            id: data.id,
+            threadId: data.threadId,
+            from: fromName || fromEmail,
+            fromEmail,
+            subject: header('Subject') || '(no subject)',
+            snippet: data.snippet ?? '',
+            date: dateValue,
+            unread: labels.includes('UNREAD'),
+            starred: labels.includes('STARRED'),
+          };
+        }),
+      );
+      return messages.filter(
+        (m): m is NonNullable<typeof m> => m !== null,
+      );
+    },
+
     /** List upcoming calendar events in the next N days. */
     async listUpcomingEvents(days = 7, maxResults = 10) {
       const accessToken = await token();
