@@ -11,6 +11,10 @@ import IntegrationsWidget from '@/components/widgets/IntegrationsWidget';
 import ReflectiveInsightsWidget from '@/components/widgets/ReflectiveInsightsWidget';
 import ROIEffortWidget from '@/components/widgets/ROIEffortWidget';
 import MasteryWidget from '@/components/widgets/MasteryWidget';
+import NarrativeWidget from '@/components/environments/NarrativeWidget';
+import ExceptionsWidget from '@/components/environments/ExceptionsWidget';
+import ActionLedgerWidget from '@/components/environments/ActionLedgerWidget';
+import NovaLearningRibbon from '@/components/environments/NovaLearningRibbon';
 
 type DashboardData = {
   systems: {
@@ -79,7 +83,7 @@ type DashboardData = {
 };
 
 export default function EnvironmentOverview() {
-  const { environmentId, slug } = useEnvironmentWorkspace();
+  const { environmentId, slug, name } = useEnvironmentWorkspace();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -109,19 +113,31 @@ export default function EnvironmentOverview() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <SystemHealthWidget systems={data.systems} />
-      <ActivityFeedWidget novaLogs={data.novaLogs} signals={data.signals} />
-      <WorkflowKanbanWidget executions={data.executions} />
-      {data.goals.length > 0 && <GoalsWidget goals={data.goals} />}
-      <IntegrationsWidget environmentId={environmentId} />
-      <ReflectiveInsightsWidget environmentId={environmentId} />
-      <MasteryWidget environmentId={environmentId} />
-      <ROIEffortWidget environmentId={environmentId} />
-      <CampaignAnalyticsWidget
-        analytics={data.campaignAnalytics}
-        successRate={data.successRate}
-      />
+    <div className="space-y-4">
+      {/* Canonical artifact — the three surfaces that define the page:
+          weekly narrative, exceptions feed, action ledger. They lead
+          so screenshots of this page carry the product thesis on
+          their own. Everything below is supplementary. */}
+      <NovaLearningRibbon environmentId={environmentId} />
+      <NarrativeWidget environmentId={environmentId} environmentName={name} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ExceptionsWidget environmentId={environmentId} />
+        <ActionLedgerWidget environmentId={environmentId} />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SystemHealthWidget systems={data.systems} />
+        <ActivityFeedWidget novaLogs={data.novaLogs} signals={data.signals} />
+        <WorkflowKanbanWidget executions={data.executions} />
+        {data.goals.length > 0 && <GoalsWidget goals={data.goals} />}
+        <IntegrationsWidget environmentId={environmentId} />
+        <ReflectiveInsightsWidget environmentId={environmentId} />
+        <MasteryWidget environmentId={environmentId} />
+        <ROIEffortWidget environmentId={environmentId} />
+        <CampaignAnalyticsWidget
+          analytics={data.campaignAnalytics}
+          successRate={data.successRate}
+        />
+      </div>
     </div>
   );
 }
