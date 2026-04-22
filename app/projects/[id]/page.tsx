@@ -223,6 +223,25 @@ export default function ProjectRunPage() {
   );
 }
 
+function ClassifierBadge({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-[10px] font-light px-2 py-0.5 rounded-full"
+      style={{
+        background: `${color}0e`,
+        border: `1px solid ${color}22`,
+        color: 'var(--text-3)',
+      }}
+      title={`${label}: ${value}`}
+    >
+      <span style={{ color, fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        {label.slice(0, 3)}
+      </span>
+      <span style={{ color: 'var(--text-2)' }}>{value}</span>
+    </span>
+  );
+}
+
 function NarrativeBlock({ projectId }: { projectId: string }) {
   const [text, setText] = useState<string | null>(null);
   const [source, setSource] = useState<string | null>(null);
@@ -308,9 +327,17 @@ function StepCard({
               {STATUS_LABEL[step.status]}
             </span>
           </div>
-          <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-3)' }}>
+          <p className="text-xs font-light leading-relaxed mb-2" style={{ color: 'var(--text-3)' }}>
             {step.rationale}
           </p>
+          {step.classifier && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <ClassifierBadge label="Location" value={step.classifier.location} color="#7193ED" />
+              <ClassifierBadge label="Action" value={step.classifier.action} color="#C8F26B" />
+              <ClassifierBadge label="Interaction" value={step.classifier.interaction.replace(/_/g, ' ')} color="#F5D76E" />
+              <ClassifierBadge label="Execution" value={step.classifier.execution.replace(/_/g, ' ')} color="#BF9FF1" />
+            </div>
+          )}
           {step.approval?.required && step.status !== 'done' && step.status !== 'skipped' && (
             <p className="text-[11px] font-light mt-2" style={{ color: '#F5D76E' }}>
               HITL gate: {step.approval.reason}

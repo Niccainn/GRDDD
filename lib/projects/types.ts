@@ -67,8 +67,24 @@ export type Step = {
   title: string;
   /** Why this step — shown inline so the trace reads like a memo. */
   rationale: string;
+  /**
+   * Legacy fields — kept so existing projects still render. New
+   * projects carry the richer `classifier` tuple below. Executor
+   * dispatch prefers `classifier` when present.
+   */
   tool: ToolSlug;
   action: string;
+  /**
+   * The four-dimensional classifier. Present on projects created
+   * after the taxonomy landed; absent on legacy projects where we
+   * fall back to (tool, action). See lib/skills/taxonomy.ts.
+   */
+  classifier?: {
+    location: string;
+    action: string;
+    interaction: string;
+    execution: string;
+  };
   status: StepStatus;
   /** Inputs Claude used. Shown in the expanded trace. */
   inputs?: Record<string, unknown>;
