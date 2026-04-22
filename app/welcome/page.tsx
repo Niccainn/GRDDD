@@ -17,9 +17,18 @@ import { useAuth } from '@/components/AuthProvider';
 import { shippedWedges, type Wedge, wedgeById } from './wedges';
 import ImportWizard from '@/components/ImportWizard';
 import WidgetPicker from '@/components/onboarding/WidgetPicker';
+import InterviewStep from '@/components/onboarding/InterviewStep';
 import { writeHiddenPresets, type DepartmentId } from '@/lib/widgets/department-catalog';
 
-type Step = 'wedge' | 'connect' | 'customize' | 'build' | 'import' | 'done';
+type Step = 'interview' | 'wedge' | 'connect' | 'customize' | 'build' | 'import' | 'done';
+
+type Proposal = {
+  system: { name: string; description: string; color: string };
+  goals: { title: string; metric: string; target: string }[];
+  workflow: { name: string; stages: string[] };
+  escalationRule: string;
+  summaryForUser: string;
+};
 
 /**
  * Mapping from a shipped wedge to the department catalog the
@@ -41,8 +50,12 @@ export default function WelcomePage() {
   const { user, loading: authLoading } = useAuth();
   const wedges = shippedWedges();
 
-  const [step, setStep] = useState<Step>('wedge');
+  // Default to the interview — the blank-prompt problem is the
+  // biggest activation failure in AI products. Users who can't
+  // describe what they want can always answer five short questions.
+  const [step, setStep] = useState<Step>('interview');
   const [wedgeId, setWedgeId] = useState<string | null>(null);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
   const [environmentId, setEnvironmentId] = useState<string | null>(null);
   const [buildLines, setBuildLines] = useState<string[]>([]);
@@ -175,6 +188,22 @@ export default function WelcomePage() {
 
   return (
     <Shell>
+      {step === 'interview' && (
+        <InterviewStep
+          onSkipToTemplates={() => setStep('wedge')}
+          onProposal={p => {
+            setProposal(p);
+            // Treat the interview proposal as a "custom" wedge so the
+            // downstream connect/customize/build flow still works.
+            // We wire the proposal's summary into the build stream as
+            // context; for now we route through the existing custom
+            // wedge since its builder is zero-integration.
+            setWedgeId('custom');
+            setStep('customize');
+          }}
+        />
+      )}
+
       {step === 'wedge' && (
         <WedgeStep
           wedges={wedges}

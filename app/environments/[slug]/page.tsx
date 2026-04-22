@@ -15,6 +15,8 @@ import NarrativeWidget from '@/components/environments/NarrativeWidget';
 import ExceptionsWidget from '@/components/environments/ExceptionsWidget';
 import ActionLedgerWidget from '@/components/environments/ActionLedgerWidget';
 import NovaLearningRibbon from '@/components/environments/NovaLearningRibbon';
+import RoiSummaryWidget from '@/components/environments/RoiSummaryWidget';
+import TeamAdoptionWidget from '@/components/environments/TeamAdoptionWidget';
 
 type DashboardData = {
   systems: {
@@ -123,6 +125,10 @@ export default function EnvironmentOverview() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ExceptionsWidget environmentId={environmentId} />
         <ActionLedgerWidget environmentId={environmentId} />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <RoiSummaryWidget environmentId={environmentId} environmentSlug={slug} />
+        <TeamAdoptionWidget environmentId={environmentId} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SystemHealthWidget systems={data.systems} />
