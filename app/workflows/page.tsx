@@ -405,10 +405,12 @@ function WorkflowsContent() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
-            {workflows.length === 0 ? 'No workflows yet' : 'No matches'}
+            {workflows.length === 0 ? 'Workflows are the flows Nova runs for you' : 'No matches'}
           </p>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-3)' }}>
-            {workflows.length === 0 ? 'Create one or use a template to get started' : 'Try adjusting your filters'}
+          <p className="text-xs mb-4 text-center max-w-sm" style={{ color: 'var(--text-3)' }}>
+            {workflows.length === 0
+              ? 'A Workflow is a named sequence of steps — "draft → review → send" — that Nova executes at whatever autonomy level you set.'
+              : 'Try adjusting your filters'}
           </p>
           {workflows.length === 0 && (
             <button onClick={() => setShowTemplates(true)}
