@@ -69,8 +69,6 @@ a chatbot, not another workflow builder. Something underneath all three.
 - **The trust layer becomes visible.** "Why did Nova do this?" on every
   autonomous action. Per-team adoption telemetry. Reversible-by-default
   with a one-click undo window.
-- **Anthropic partnership brief is out.** GRID is the first reference
-  business-OS on Claude.
 
 ## The artifact
 

@@ -60,3 +60,9 @@ prisma/dev.db-journal
 .env.vercel
 .env.preview
 .env.development
+
+# Private / partnership correspondence — keep in ~/Documents/grid-private/
+pitch/anthropic_partnership_brief.md
+pitch/*partnership*
+pitch/*_private.md
+pitch/private/
