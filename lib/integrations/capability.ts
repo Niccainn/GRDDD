@@ -17,7 +17,12 @@
  * connect, 4 flow continuously."
  */
 
-import { IMPLEMENTED_SYNC_PROVIDERS } from './sync/dispatcher';
+// IMPORTANT: do NOT import from ./sync/dispatcher here. That module
+// pulls in node:dns/promises via the SSRF-safe HTTP client and
+// breaks the client bundle. Import the tiny plain-data module
+// instead — the dispatcher re-exports from the same source of
+// truth so nothing drifts.
+import { IMPLEMENTED_SYNC_PROVIDERS } from './sync-providers';
 
 export type CapabilityTier = 'live_sync' | 'import' | 'webhook' | 'connect_only';
 

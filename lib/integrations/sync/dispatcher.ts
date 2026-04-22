@@ -140,12 +140,9 @@ export async function dispatchSync(
 /**
  * Which providers currently have a working sync fetcher. Used by the
  * UI to show "Sync now" only when it'll do something real, and by
- * /api/health to report sync coverage.
+ * /api/health to report sync coverage. Defined in the plain-data
+ * sibling module so client code can read it without dragging the
+ * full dispatcher (and its node-only SSRF chain) into the browser
+ * bundle.
  */
-export const IMPLEMENTED_SYNC_PROVIDERS: ReadonlySet<string> = new Set([
-  'notion',
-  'slack',
-  'google_calendar',
-  'google-calendar',
-  'hubspot',
-]);
+export { IMPLEMENTED_SYNC_PROVIDERS } from '../sync-providers';
