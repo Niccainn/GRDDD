@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import DataOriginTag from '@/components/widgets/DataOriginTag';
 
 type Member = {
   identityId: string;
@@ -79,11 +80,17 @@ export default function TeamAdoptionWidget({ environmentId }: { environmentId: s
         >
           Team adoption · last 30 days
         </p>
-        {data && (
-          <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-            Team avg trust {data.cohort.avgTrust}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          <DataOriginTag
+            sources={['ApprovalRequest', 'ExecutionReview', 'EnvironmentMembership']}
+            computed="Trust = 100 − override%. Override% = rejected+changes_requested / total decisions in 30d."
+          />
+          {data && (
+            <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+              Team avg trust {data.cohort.avgTrust}
+            </span>
+          )}
+        </div>
       </div>
 
       {loading ? (

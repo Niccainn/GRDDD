@@ -8,6 +8,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import DataOriginTag from '@/components/widgets/DataOriginTag';
 
 type Row = {
   id: string;
@@ -59,9 +60,15 @@ export default function ExceptionsWidget({ environmentId }: { environmentId: str
         >
           What needs attention
         </p>
-        <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-          {loading ? '' : rows.length === 0 ? 'All clear' : `${rows.length} open`}
-        </span>
+        <div className="flex items-center gap-2">
+          <DataOriginTag
+            sources={['Signal', 'Execution (failed)', 'Goal (at risk)']}
+            computed="Unioned then ranked by severity (urgent > high > medium), recency as tie-break."
+          />
+          <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+            {loading ? '' : rows.length === 0 ? 'All clear' : `${rows.length} open`}
+          </span>
+        </div>
       </div>
       {loading ? (
         <div className="space-y-2">

@@ -11,6 +11,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import DataOriginTag from '@/components/widgets/DataOriginTag';
 
 type PerSystem = {
   systemId: string;
@@ -72,15 +73,21 @@ export default function RoiSummaryWidget({ environmentId, environmentSlug }: { e
         >
           ROI · last 30 days
         </p>
-        {data && (
-          <Link
-            href={`/environments/${environmentSlug}/report`}
-            className="text-[11px] font-light"
-            style={{ color: 'var(--text-3)' }}
-          >
-            Monthly report →
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <DataOriginTag
+            sources={['Goal (metric + current)', 'IntelligenceLog.cost']}
+            computed='Value: parsed from Goal metric labels ("hours", "$", "revenue") × loaded rate $85/hr. Cost: sum of IntelligenceLog.cost in the window.'
+          />
+          {data && (
+            <Link
+              href={`/environments/${environmentSlug}/report`}
+              className="text-[11px] font-light"
+              style={{ color: 'var(--text-3)' }}
+            >
+              Monthly report →
+            </Link>
+          )}
+        </div>
       </div>
 
       {loading ? (

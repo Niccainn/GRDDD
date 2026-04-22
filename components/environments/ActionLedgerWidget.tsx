@@ -8,6 +8,7 @@
 
 import { useEffect, useState } from 'react';
 import WhyDrawer from './WhyDrawer';
+import DataOriginTag from '@/components/widgets/DataOriginTag';
 
 type Row = {
   id: string;
@@ -61,9 +62,15 @@ export default function ActionLedgerWidget({ environmentId }: { environmentId: s
           >
             Action ledger
           </p>
-          <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-            Click any row · Nova explains
-          </span>
+          <div className="flex items-center gap-2">
+            <DataOriginTag
+              sources={['IntelligenceLog', 'AuditLog (high-signal actions)']}
+              computed="Unioned, sorted by recency. Click any row to see the full trace (reasoning, tools called, tokens, cost)."
+            />
+            <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+              Click any row · Nova explains
+            </span>
+          </div>
         </div>
         {loading ? (
           <div className="space-y-2">
