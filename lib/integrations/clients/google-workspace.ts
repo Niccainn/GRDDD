@@ -158,6 +158,64 @@ export async function getGoogleWorkspaceClient(integrationId: string, environmen
       }));
     },
 
+    /**
+     * Create a Gmail draft. WRITE — the draft is saved, not sent, so
+     * this is Phase-5-approval-safe on its own; the executor layer
+     * still routes user-visible email steps through a HITL gate so
+     * the user clicks Send themselves from Gmail.
+     *
+     * `from` defaults to `me` (the authenticated user's primary
+     * address). `to` is a single recipient for v1 — multi-recipient
+     * is trivial to add when a real template needs it.
+     */
+    async gmailCreateDraft(args: {
+      to: string;
+      subject: string;
+      body: string;
+    }): Promise<{ id: string; threadId: string | null; url: string }> {
+      const accessToken = await token();
+
+      // Build the RFC-2822 message. Gmail accepts simple
+      // "From/To/Subject/Content-Type" headers + a plain-text body.
+      // We base64url-encode per the API contract.
+      const raw = [
+        `To: ${args.to}`,
+        `Subject: ${args.subject}`,
+        'Content-Type: text/plain; charset="UTF-8"',
+        '',
+        args.body,
+      ].join('\r\n');
+      const encoded = Buffer.from(raw, 'utf8')
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+      const res = await fetch(
+        'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
+        {
+          method: 'POST',
+          headers: {
+            ...googleAuthHeaders(accessToken),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: { raw: encoded } }),
+        },
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Gmail draft create failed (${res.status}): ${text.slice(0, 200)}`);
+      }
+      const data = (await res.json()) as {
+        id: string;
+        message?: { threadId?: string; id?: string };
+      };
+      // Gmail doesn't return a direct URL for a draft, but the drafts
+      // folder is a stable deep link the user can follow to find it.
+      const url = `https://mail.google.com/mail/u/0/#drafts`;
+      return { id: data.id, threadId: data.message?.threadId ?? null, url };
+    },
+
     /** List files recently modified in Drive. */
     async listRecentDriveFiles(limit = 10) {
       const accessToken = await token();
