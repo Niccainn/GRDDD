@@ -113,7 +113,8 @@ export const SKILLS: Skill[] = [
     id: 'notion.create_page',
     tool: 'notion',
     title: 'Create a Notion page',
-    description: 'Creates a page under the target database or parent page.',
+    description:
+      'Creates a page under an accessible parent. Runs against the real Notion API when the integration is connected; falls back to simulated mode with an honest trace otherwise.',
     inputs: ['parent', 'title', 'content'],
     produces: 'document',
     status: 'available',
@@ -131,7 +132,8 @@ export const SKILLS: Skill[] = [
     id: 'gmail.draft_email',
     tool: 'gmail',
     title: 'Draft an email',
-    description: 'Composes a draft email; the user sends.',
+    description:
+      'Drafts an email into the user\'s Gmail drafts folder. The user reviews in Gmail and hits Send themselves — the draft is saved, never sent.',
     inputs: ['to', 'subject', 'body'],
     produces: 'email',
     status: 'available',
@@ -141,8 +143,9 @@ export const SKILLS: Skill[] = [
     id: 'slack.post_message',
     tool: 'slack',
     title: 'Post to Slack',
-    description: 'Posts a message or canvas to a channel or DM.',
-    inputs: ['channel', 'text', 'blocks?'],
+    description:
+      'Posts a message to a channel the bot is a member of. Runs against the real Slack API when connected; picks a sensible default channel (grid / notifications / nova / general) if none is provided.',
+    inputs: ['channel?', 'text'],
     produces: 'post',
     status: 'available',
   },

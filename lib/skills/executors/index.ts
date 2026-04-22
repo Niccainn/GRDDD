@@ -12,6 +12,9 @@ import type { ExecutorResult } from './types';
 import * as claudeExec from './claude';
 import * as simExec from './simulated';
 import { humanReview } from './human';
+import { notionCreatePage as realNotionCreatePage } from './notion';
+import { slackPostMessage as realSlackPostMessage } from './slack';
+import { gmailDraftEmail as realGmailDraftEmail } from './gmail';
 
 type Executor = (args: { step: Step; project: Project }) => Promise<ExecutorResult>;
 
@@ -29,11 +32,15 @@ const DISPATCH: Record<string, Executor> = {
   'meta_ads.draft_campaign': simExec.metaDraftCampaign,
   'google_ads.draft_campaign': simExec.googleAdsDraftCampaign,
   'linkedin_ads.draft_campaign': simExec.linkedinDraftCampaign,
-  'notion.create_page': simExec.notionCreatePage,
+  // Real — call the provider API if the integration is connected,
+  // gracefully fall back to simulated mode otherwise.
+  'notion.create_page': realNotionCreatePage,
+  'slack.post_message': realSlackPostMessage,
+  'gmail.draft_email': realGmailDraftEmail,
+  // Still simulated until wired against the matching write path in
+  // the client library.
   'notion.upload_asset': simExec.notionUploadAsset,
   'notion.fetch_document': simExec.notionFetchDocument,
-  'slack.post_message': simExec.slackPostMessage,
-  'gmail.draft_email': simExec.gmailDraftEmail,
   'google_drive.save_file': simExec.googleDriveSaveFile,
   'google_calendar.draft_event': simExec.googleCalendarDraftEvent,
 
