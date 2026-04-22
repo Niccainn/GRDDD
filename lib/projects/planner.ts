@@ -12,6 +12,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Step, TraceEntry, ToolSlug } from './types';
 import { SKILLS, skillMenuForPrompt, findSkill } from '@/lib/skills/registry';
+import { classifierFromLegacyId } from '@/lib/skills/taxonomy';
 
 const MAX_STEPS = 12;
 
@@ -20,16 +21,25 @@ function heuristicPlan(goal: string): Step[] {
   const steps: Step[] = [];
 
   let idx = 1;
-  const push = (title: string, tool: ToolSlug, action: string, rationale: string, approve = false) =>
+  const push = (title: string, tool: ToolSlug, action: string, rationale: string, approve = false) => {
+    const classifier = classifierFromLegacyId(action);
+    // Gate steps that default to approval get interaction updated so
+    // the UI badges and the auto-runner stay consistent.
+    if (approve) {
+      classifier.interaction = 'approve_before_executing';
+      classifier.execution = 'auto_on_approval';
+    }
     steps.push({
       id: idx++,
       title,
       rationale,
       tool,
       action,
+      classifier,
       status: 'pending',
       approval: approve ? { approvalRequestId: null, required: true, reason: 'User-visible artifact; default HITL gate.' } : undefined,
     });
+  };
 
   if (g.includes('brand') || g.includes('logo') || g.includes('identity')) {
     push('Read the brief', 'notion', 'notion.fetch_document', 'Anchor the plan in whatever the team already wrote.');
@@ -138,14 +148,21 @@ export async function planProject(goal: string): Promise<{ plan: Step[]; source:
 
     const plan: Step[] = parsed.slice(0, MAX_STEPS).map((s, i) => {
       const skill = findSkill(s.skillId) ?? SKILLS[0];
+      const classifier = classifierFromLegacyId(skill.id);
+      const gated = s.requiresApproval || skill.requiresApprovalByDefault;
+      if (gated) {
+        classifier.interaction = 'approve_before_executing';
+        classifier.execution = 'auto_on_approval';
+      }
       return {
         id: i + 1,
         title: s.title.slice(0, 80),
         rationale: s.rationale,
         tool: skill.tool,
         action: skill.id,
+        classifier,
         status: 'pending',
-        approval: (s.requiresApproval || skill.requiresApprovalByDefault)
+        approval: gated
           ? {
               approvalRequestId: null,
               required: true,

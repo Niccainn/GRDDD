@@ -128,6 +128,7 @@ const navSections: CollapsibleNavSection[] = [
           { href: '/learn', label: 'Nova Academy', icon: icons.analytics },
           { href: '/memory', label: 'Memory', icon: icons.documents },
           { href: '/projects', label: 'Projects', icon: icons.workflows },
+          { href: '/skill-space', label: 'Skill Space', icon: icons.analytics },
         ],
       },
       {
