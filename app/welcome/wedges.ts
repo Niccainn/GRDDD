@@ -15,6 +15,8 @@ export type WedgeId =
   | 'invoice-capture'
   | 'custom';
 
+import type { DepartmentId } from '@/lib/widgets/department-catalog';
+
 export type Wedge = {
   id: WedgeId;
   title: string;
@@ -27,6 +29,8 @@ export type Wedge = {
   /** Steps Nova will stream as it builds. Pre-warmed templates — honest theatre. */
   buildSteps: string[];
   shipped: boolean; // gate — don't show unshipped wedges
+  /** Which department's widget catalog the customize step should draw from. */
+  department?: DepartmentId;
 };
 
 export const WEDGES: Wedge[] = [

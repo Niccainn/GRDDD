@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/Breadcrumb';
 import EnvironmentTabs from '@/components/EnvironmentTabs';
+import DeleteButton from '@/components/DeleteButton';
+import RenameButton from '@/components/RenameButton';
+import ShareEnvironmentButton from '@/components/ShareEnvironmentButton';
 import { EnvironmentWorkspaceContext } from '@/lib/contexts/environment-workspace';
 
 type EnvMeta = {
@@ -126,6 +129,11 @@ export default function EnvironmentWorkspaceLayout({ children }: { children: Rea
             <span className="text-xs" style={{ color: 'var(--text-3)' }}>
               {env.systemCount} system{env.systemCount !== 1 ? 's' : ''}
             </span>
+            <div className="flex items-center gap-3">
+              <ShareEnvironmentButton environmentId={env.id} />
+              <RenameButton id={env.id} type="environments" currentName={env.name} />
+              <DeleteButton id={env.id} type="environments" redirectTo="/environments" />
+            </div>
           </div>
         </div>
 

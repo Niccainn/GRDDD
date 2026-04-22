@@ -103,11 +103,16 @@ export default function DocsPage() {
     }
   };
 
-  const archiveDoc = async (id: string) => {
-    await fetch(`/api/docs/${id}`, {
-      method: 'DELETE',
-    });
+  const deleteDoc = async (id: string) => {
+    const ok = typeof window !== 'undefined'
+      ? window.confirm('Delete this document permanently? This cannot be undone.')
+      : true;
+    if (!ok) return;
+    await fetch(`/api/docs/${id}`, { method: 'DELETE' });
     setMenuOpen(null);
+    // Optimistic local removal so the row disappears immediately, then
+    // reload to pick up any server-side side effects.
+    setDocs(prev => prev.filter(d => d.id !== id));
     load();
   };
 
@@ -279,10 +284,21 @@ export default function DocsPage() {
                   </svg>
                 </button>
 
-                {/* Icon */}
-                <span className="text-base flex-shrink-0 w-5 text-center" style={{ opacity: 0.7 }}>
-                  {node.icon || '\u{1F4C4}'}
-                </span>
+                {/* Icon — brand-colored circle keyed to the document's environment */}
+                <span
+                  className="flex-shrink-0 rounded-full"
+                  aria-hidden="true"
+                  style={{
+                    width: 10,
+                    height: 10,
+                    background: node.environment.color || 'var(--brand)',
+                    boxShadow: node.environment.color
+                      ? `0 0 0 2px ${node.environment.color}20`
+                      : '0 0 0 2px rgba(200,242,107,0.12)',
+                    marginLeft: 4,
+                    marginRight: 4,
+                  }}
+                />
 
                 {/* Title */}
                 {renaming === node.id ? (
@@ -366,12 +382,12 @@ export default function DocsPage() {
                       <button
                         onClick={e => {
                           e.stopPropagation();
-                          archiveDoc(node.id);
+                          deleteDoc(node.id);
                         }}
                         className="w-full text-left px-4 py-2 text-sm font-light transition-colors"
                         style={{ color: '#FF6B6B' }}
                       >
-                        Archive
+                        Delete
                       </button>
                     </div>
                   )}

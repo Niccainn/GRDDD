@@ -12,16 +12,16 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.grddd.com'),
   title: {
-    default: 'GRID — AI That Learns How Your Business Works',
+    default: 'GRID — The nervous system your company has been missing',
     template: '%s | GRID',
   },
-  description: 'GRID maps your business as interconnected systems, runs multi-stage AI workflows, and builds an operational playbook from every execution. 110+ integrations, predictive consequence mapping, and a metacognitive feedback loop that makes your operations smarter over time.',
+  description: 'A living business OS built on Claude. Reads your company, acts with your permission, proves its work. Not a dashboard, not a chatbot, not a workflow builder — the substrate underneath all three.',
   keywords: ['AI operations layer', 'operational intelligence platform', 'AI workflow automation', 'business operating system', 'metacognitive AI', 'predictive business operations', 'AI that learns', 'workflow quality scoring', 'operational playbook', 'consequence mapping', 'system health monitoring', 'Nova AI agent', 'BYOK AI platform', 'notion alternative', 'monday alternative', 'solo founder tools', 'small team operations'],
   authors: [{ name: 'GRID Systems Inc.' }],
   creator: 'GRID Systems Inc.',
   openGraph: {
-    title: 'GRID — AI That Learns How Your Business Works',
-    description: 'Map your business as systems. Run AI workflows. Review output quality. Watch your operational playbook build itself. 110+ integrations, predictive consequence mapping, and AI that gets smarter with every run.',
+    title: 'GRID — The nervous system your company has been missing',
+    description: 'Reads your company. Acts with your permission. Proves its work. A living business OS built on Claude — not a dashboard, not a chatbot, not a workflow builder.',
     url: 'https://www.grddd.com',
     siteName: 'GRID',
     locale: 'en_US',
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'GRID — AI That Learns How Your Business Works',
-    description: 'Not a task tool. Not a copilot. The operations layer that maps your business, runs AI workflows, and builds an operational playbook from real execution data.',
+    title: 'GRID — The nervous system your company has been missing',
+    description: 'The nervous system your company has been missing. Reads, acts, proves its work. Built on Claude.',
   },
   robots: {
     index: true,

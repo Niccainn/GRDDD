@@ -12,6 +12,8 @@ import SystemContextDocs from '@/components/SystemContextDocs';
 import SystemGoals from '@/components/SystemGoals';
 import Breadcrumb from '@/components/Breadcrumb';
 import SystemWorkflowsView from '@/components/SystemWorkflowsView';
+import HideablePanel from '@/components/systems/HideablePanel';
+import HiddenPanelsChip from '@/components/systems/HiddenPanelsChip';
 
 export const dynamic = 'force-dynamic';
 
@@ -244,77 +246,90 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
 
         {/* Meta + Execution chart */}
         <div className="space-y-6">
-          <div>
-            <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>DETAILS</p>
-            <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
-              {[
-                { label: 'Workflows', value: system.workflows.length },
-                { label: 'Active', value: system.workflows.filter(w => w.status === 'ACTIVE').length },
-                // creator comes back via relation include → PII extension
-                // skipped the decrypt pass. Defensive decryptPII is a no-op
-                // on plaintext, safe to call unconditionally.
-                { label: 'Created by', value: decryptPII(system.creator.name) },
-                { label: 'Created', value: new Date(system.createdAt).toLocaleDateString() },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex items-center justify-between">
-                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>{label}</span>
-                  <span className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.55)' }}>{value}</span>
-                </div>
-              ))}
-              {system.healthScore !== null && (
-                <div className="pt-2" style={{ borderTop: '1px solid var(--glass-border)' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>Health</span>
-                    <span className="text-xs font-light" style={{ color: healthColor }}>{Math.round(system.healthScore || 0)}%</span>
+          <HiddenPanelsChip systemId={system.id} />
+          <HideablePanel systemId={system.id} presetId="core:details">
+            <div>
+              <p className="text-xs tracking-[0.12em] mb-4" style={{ color: 'var(--text-3)' }}>DETAILS</p>
+              <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+                {[
+                  { label: 'Workflows', value: system.workflows.length },
+                  { label: 'Active', value: system.workflows.filter(w => w.status === 'ACTIVE').length },
+                  // creator comes back via relation include → PII extension
+                  // skipped the decrypt pass. Defensive decryptPII is a no-op
+                  // on plaintext, safe to call unconditionally.
+                  { label: 'Created by', value: decryptPII(system.creator.name) },
+                  { label: 'Created', value: new Date(system.createdAt).toLocaleDateString() },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <span className="text-xs" style={{ color: 'var(--text-3)' }}>{label}</span>
+                    <span className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.55)' }}>{value}</span>
                   </div>
-                  <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, system.healthScore || 0)}%`, backgroundColor: healthColor }} />
+                ))}
+                {system.healthScore !== null && (
+                  <div className="pt-2" style={{ borderTop: '1px solid var(--glass-border)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs" style={{ color: 'var(--text-3)' }}>Health</span>
+                      <span className="text-xs font-light" style={{ color: healthColor }}>{Math.round(system.healthScore || 0)}%</span>
+                    </div>
+                    <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, system.healthScore || 0)}%`, backgroundColor: healthColor }} />
+                    </div>
                   </div>
+                )}
+              </div>
+            </div>
+          </HideablePanel>
+
+          {/* Goals */}
+          <HideablePanel systemId={system.id} presetId="core:goals">
+            <SystemGoals systemId={system.id} environmentId={system.environmentId} />
+          </HideablePanel>
+
+          {/* Nova memory */}
+          <HideablePanel systemId={system.id} presetId="core:nova-memory">
+            <NovaMemoryPanel systemId={system.id} />
+          </HideablePanel>
+
+          {/* Context docs */}
+          <HideablePanel systemId={system.id} presetId="core:context-docs">
+            <SystemContextDocs systemId={system.id} />
+          </HideablePanel>
+
+          {/* Execution analytics */}
+          <HideablePanel systemId={system.id} presetId="core:execution-chart">
+            <SystemExecutionChart systemId={system.id} />
+          </HideablePanel>
+
+          {/* Connected Integrations */}
+          <HideablePanel systemId={system.id} presetId="core:integrations">
+            <div>
+              <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>CONNECTED</p>
+              {integrations.length === 0 ? (
+                <Link href="/integrations"
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-light transition-all"
+                  style={{ background: 'rgba(113,147,237,0.04)', border: '1px dashed rgba(113,147,237,0.15)', color: 'var(--info)' }}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                  </svg>
+                  Connect an integration
+                </Link>
+              ) : (
+                <div className="rounded-xl p-3 space-y-2" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+                  {integrations.map(int => (
+                    <div key={int.id} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
+                      <span className="text-[11px] font-light truncate" style={{ color: 'var(--text-2)' }}>
+                        {int.displayName || int.provider}
+                      </span>
+                    </div>
+                  ))}
+                  <Link href="/integrations" className="text-[10px] font-light transition-colors hover:text-white/50 block mt-1" style={{ color: 'var(--text-3)' }}>
+                    Manage →
+                  </Link>
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Goals */}
-          <SystemGoals systemId={system.id} environmentId={system.environmentId} />
-
-          {/* Nova memory */}
-          <NovaMemoryPanel systemId={system.id} />
-
-          {/* Context docs */}
-          <SystemContextDocs systemId={system.id} />
-
-          {/* Execution analytics */}
-          <SystemExecutionChart systemId={system.id} />
-
-          {/* Connected Integrations */}
-          <div>
-            <p className="text-xs tracking-[0.12em] mb-3" style={{ color: 'var(--text-3)' }}>CONNECTED</p>
-            {integrations.length === 0 ? (
-              <Link href="/integrations"
-                className="flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-light transition-all"
-                style={{ background: 'rgba(113,147,237,0.04)', border: '1px dashed rgba(113,147,237,0.15)', color: 'var(--info)' }}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
-                </svg>
-                Connect an integration
-              </Link>
-            ) : (
-              <div className="rounded-xl p-3 space-y-2" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
-                {integrations.map(int => (
-                  <div key={int.id} className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
-                    <span className="text-[11px] font-light truncate" style={{ color: 'var(--text-2)' }}>
-                      {int.displayName || int.provider}
-                    </span>
-                  </div>
-                ))}
-                <Link href="/integrations" className="text-[10px] font-light transition-colors hover:text-white/50 block mt-1" style={{ color: 'var(--text-3)' }}>
-                  Manage →
-                </Link>
-              </div>
-            )}
-          </div>
+          </HideablePanel>
         </div>
       </div>
     </div>

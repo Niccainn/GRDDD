@@ -45,7 +45,23 @@ function SignInInner() {
         return;
       }
       refresh();
-      router.push(next);
+      // After sign-in: land the user on their primary Environment
+      // rather than the generic /dashboard — that's the canonical
+      // artifact of the product and every other surface is reachable
+      // from it. Honor an explicit ?next= override (OAuth callbacks,
+      // deep-links) ahead of the environment lookup.
+      let target = next;
+      if (target === '/dashboard') {
+        try {
+          const list = await fetch('/api/environments').then(r => r.json());
+          const envs = Array.isArray(list) ? list : list?.environments ?? [];
+          const first = envs[0];
+          if (first?.slug) target = `/environments/${first.slug}`;
+        } catch {
+          /* fall back to /dashboard */
+        }
+      }
+      router.push(target);
     } catch {
       setError('Connection error');
       setLoading(false);
@@ -55,7 +71,7 @@ function SignInInner() {
   return (
     <AuthLayout
       title="Sign in to GRID"
-      subtitle="Your workspace is waiting"
+      subtitle="The nervous system your company has been missing"
       footer={
         <>
           New to GRID?{' '}
