@@ -22,6 +22,9 @@ export default function DeleteButton({
     setLoading(true);
     await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
     setLoading(false);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(`grid:${type}-changed`));
+    }
     if (redirectTo) {
       router.push(redirectTo);
     } else {
