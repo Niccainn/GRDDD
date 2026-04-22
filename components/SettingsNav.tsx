@@ -8,6 +8,7 @@ const SETTINGS_NAV = [
   { href: '/settings/team', label: 'Team' },
   { href: '/settings/preferences', label: 'Preferences' },
   { href: '/settings/webhooks', label: 'Webhooks' },
+  { href: '/settings/consent', label: 'Consent' },
   { href: '/settings/billing', label: 'Billing' },
 ];
 

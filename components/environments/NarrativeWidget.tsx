@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import DataOriginTag from '@/components/widgets/DataOriginTag';
 
 type Props = { environmentId: string; environmentName: string };
 
@@ -73,19 +74,25 @@ export default function NarrativeWidget({ environmentId, environmentName }: Prop
             </p>
           )}
         </div>
-        <button
-          onClick={refresh}
-          disabled={refreshing || loading}
-          className="text-[11px] font-light px-3 py-1 rounded-full transition-colors"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            color: 'var(--text-3)',
-            opacity: refreshing || loading ? 0.5 : 1,
-          }}
-        >
-          {refreshing ? 'Regenerating…' : 'Regenerate'}
-        </button>
+        <div className="flex items-center gap-2">
+          <DataOriginTag
+            sources={['AuditLog (7d)', 'Signal', 'Goal']}
+            computed="Claude writes the 5-sentence summary; stripped of marketing adverbs; cached 24h."
+          />
+          <button
+            onClick={refresh}
+            disabled={refreshing || loading}
+            className="text-[11px] font-light px-3 py-1 rounded-full transition-colors"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'var(--text-3)',
+              opacity: refreshing || loading ? 0.5 : 1,
+            }}
+          >
+            {refreshing ? 'Regenerating…' : 'Regenerate'}
+          </button>
+        </div>
       </div>
       {loading ? (
         <div className="space-y-2">
