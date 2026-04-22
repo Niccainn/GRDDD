@@ -41,17 +41,29 @@ type ActionData = NovaAction | AuditAction;
 
 export default function WhyDrawer({
   actionId,
+  environmentId,
   onClose,
+  onUndone,
 }: {
   actionId: string | null;
+  environmentId?: string;
   onClose: () => void;
+  onUndone?: (actionId: string) => void;
 }) {
   const [data, setData] = useState<ActionData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [teachReason, setTeachReason] = useState<string | null>(null);
+  const [teachNote, setTeachNote] = useState('');
+  const [teachState, setTeachState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [undoState, setUndoState] = useState<'idle' | 'pending' | 'done' | 'expired' | 'error'>('idle');
 
   useEffect(() => {
     if (!actionId) {
       setData(null);
+      setTeachReason(null);
+      setTeachNote('');
+      setTeachState('idle');
+      setUndoState('idle');
       return;
     }
     setLoading(true);
@@ -63,6 +75,45 @@ export default function WhyDrawer({
       })
       .catch(() => setLoading(false));
   }, [actionId]);
+
+  async function undo() {
+    if (!actionId || !environmentId) return;
+    setUndoState('pending');
+    try {
+      const res = await fetch(
+        `/api/environments/${environmentId}/actions/${encodeURIComponent(actionId)}/undo`,
+        { method: 'POST' },
+      );
+      if (res.status === 410) { setUndoState('expired'); return; }
+      if (!res.ok) { setUndoState('error'); return; }
+      setUndoState('done');
+      onUndone?.(actionId);
+    } catch {
+      setUndoState('error');
+    }
+  }
+
+  async function teach() {
+    if (!actionId || !teachReason) return;
+    setTeachState('saving');
+    try {
+      const res = await fetch(
+        `/api/nova/action/${encodeURIComponent(actionId)}/teach`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: teachReason, note: teachNote }),
+        },
+      );
+      if (res.ok) {
+        setTeachState('saved');
+      } else {
+        setTeachState('idle');
+      }
+    } catch {
+      setTeachState('idle');
+    }
+  }
 
   useEffect(() => {
     if (!actionId) return;
@@ -121,13 +172,181 @@ export default function WhyDrawer({
               The trace for this action is no longer available.
             </p>
           ) : data.source === 'nova' ? (
-            <NovaTrace data={data} />
+            <>
+              <NovaTrace data={data} />
+              {environmentId && (
+                <div className="mt-8 space-y-5">
+                  <TeachSection
+                    reason={teachReason}
+                    note={teachNote}
+                    state={teachState}
+                    onReason={setTeachReason}
+                    onNote={setTeachNote}
+                    onSave={teach}
+                  />
+                  <UndoSection
+                    createdAt={data.createdAt}
+                    state={undoState}
+                    onUndo={undo}
+                  />
+                </div>
+              )}
+            </>
           ) : (
             <AuditTrace data={data} />
           )}
         </div>
       </aside>
     </>
+  );
+}
+
+function TeachSection({
+  reason,
+  note,
+  state,
+  onReason,
+  onNote,
+  onSave,
+}: {
+  reason: string | null;
+  note: string;
+  state: 'idle' | 'saving' | 'saved';
+  onReason: (r: string) => void;
+  onNote: (n: string) => void;
+  onSave: () => void;
+}) {
+  const reasons: { id: string; label: string }[] = [
+    { id: 'wrong_data', label: 'Wrong data' },
+    { id: 'wrong_judgment', label: 'Wrong judgment' },
+    { id: 'wrong_timing', label: 'Wrong timing' },
+    { id: 'other', label: 'Other' },
+  ];
+  if (state === 'saved') {
+    return (
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(200,242,107,0.06)', border: '1px solid rgba(200,242,107,0.2)' }}
+      >
+        <p className="text-xs font-light" style={{ color: '#C8F26B' }}>
+          Nova recorded the correction. Future calls will factor this in.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <p className="text-[10px] tracking-[0.16em] uppercase font-light mb-2" style={{ color: 'var(--text-3)' }}>
+        Teach Nova why this was off
+      </p>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {reasons.map(r => {
+          const active = reason === r.id;
+          return (
+            <button
+              key={r.id}
+              onClick={() => onReason(r.id)}
+              className="text-[11px] font-light px-3 py-1.5 rounded-full"
+              style={{
+                background: active ? 'rgba(255,107,107,0.1)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${active ? 'rgba(255,107,107,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                color: active ? '#FF8C8C' : 'var(--text-2)',
+              }}
+            >
+              {r.label}
+            </button>
+          );
+        })}
+      </div>
+      <textarea
+        value={note}
+        onChange={e => onNote(e.target.value)}
+        placeholder="One line: what would the right call have been?"
+        rows={2}
+        className="w-full text-xs font-light px-3 py-2 rounded-lg focus:outline-none mb-2"
+        style={{
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid var(--glass-border)',
+          color: 'var(--text-1)',
+          resize: 'vertical',
+        }}
+      />
+      <button
+        onClick={onSave}
+        disabled={!reason || state === 'saving'}
+        className="text-[11px] font-light px-4 py-1.5 rounded-full disabled:opacity-40"
+        style={{
+          background: 'var(--brand-soft)',
+          border: '1px solid var(--brand-border)',
+          color: 'var(--brand)',
+        }}
+      >
+        {state === 'saving' ? 'Recording…' : 'Teach Nova →'}
+      </button>
+    </div>
+  );
+}
+
+function UndoSection({
+  createdAt,
+  state,
+  onUndo,
+}: {
+  createdAt: string;
+  state: 'idle' | 'pending' | 'done' | 'expired' | 'error';
+  onUndo: () => void;
+}) {
+  const age = Date.now() - new Date(createdAt).getTime();
+  const remainingMs = 24 * 60 * 60 * 1000 - age;
+  const withinWindow = remainingMs > 0;
+  const hoursLeft = Math.max(0, Math.round(remainingMs / 3_600_000));
+
+  if (state === 'done') {
+    return (
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(200,242,107,0.06)', border: '1px solid rgba(200,242,107,0.2)' }}
+      >
+        <p className="text-xs font-light" style={{ color: '#C8F26B' }}>
+          Undone. The action is marked reversed and Nova has been told not to repeat it.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-[10px] tracking-[0.16em] uppercase font-light mb-2" style={{ color: 'var(--text-3)' }}>
+        Reversible window
+      </p>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onUndo}
+          disabled={!withinWindow || state === 'pending'}
+          className="text-xs font-light px-4 py-1.5 rounded-full disabled:opacity-40"
+          style={{
+            background: 'rgba(255,107,107,0.08)',
+            border: '1px solid rgba(255,107,107,0.25)',
+            color: '#FF8C8C',
+          }}
+        >
+          {state === 'pending' ? 'Undoing…' : 'Undo this action'}
+        </button>
+        <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+          {withinWindow ? `${hoursLeft}h left in the window` : 'Window expired'}
+        </span>
+      </div>
+      {state === 'expired' && (
+        <p className="text-[11px] font-light mt-2" style={{ color: '#FF8C8C' }}>
+          The 24-hour undo window has passed.
+        </p>
+      )}
+      {state === 'error' && (
+        <p className="text-[11px] font-light mt-2" style={{ color: '#FF8C8C' }}>
+          Could not record the undo. Try again in a moment.
+        </p>
+      )}
+    </div>
   );
 }
 

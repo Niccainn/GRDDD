@@ -648,8 +648,23 @@ export default function OperatePage() {
             ) : activity.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 rounded-xl"
                 style={{ border: '1px dashed var(--glass-border)' }}>
-                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No activity yet</p>
-                <p className="text-xs" style={{ color: 'var(--text-3)' }}>Open a system and ask Nova something</p>
+                <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
+                  Activity shows up here once you run something
+                </p>
+                <p className="text-xs mb-4 text-center max-w-sm" style={{ color: 'var(--text-3)' }}>
+                  Every Nova action, every workflow run, every override writes to this feed so the team can see what the system actually does.
+                </p>
+                <Link
+                  href="/systems"
+                  className="text-xs font-light px-4 py-2 rounded-lg"
+                  style={{
+                    background: 'rgba(191,159,241,0.08)',
+                    border: '1px solid rgba(191,159,241,0.2)',
+                    color: '#BF9FF1',
+                  }}
+                >
+                  Open a system →
+                </Link>
               </div>
             ) : (
               <div className="space-y-2">

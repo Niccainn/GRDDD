@@ -608,9 +608,12 @@ export default function IntegrationsPage() {
           )}
 
           {filtered.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-                No integrations match your search.
+            <div className="flex flex-col items-center justify-center py-16">
+              <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
+                Nothing matches that search
+              </p>
+              <p className="text-xs text-center max-w-sm" style={{ color: 'var(--text-3)' }}>
+                GRID connects to 110+ tools across calendar, email, CRM, billing, storage, messaging, and code. Try a provider name or a category word like <span style={{ color: 'var(--text-2)' }}>calendar</span> or <span style={{ color: 'var(--text-2)' }}>billing</span>.
               </p>
             </div>
           )}

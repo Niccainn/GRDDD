@@ -36,6 +36,7 @@ export default function ActionLedgerWidget({ environmentId }: { environmentId: s
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [undone, setUndone] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch(`/api/environments/${environmentId}/actions?limit=15`)
@@ -76,35 +77,58 @@ export default function ActionLedgerWidget({ environmentId }: { environmentId: s
           </p>
         ) : (
           <div className="space-y-0.5">
-            {rows.map(r => (
-              <button
-                key={r.id}
-                onClick={() => setOpenId(r.id)}
-                className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group"
-                onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.03)')}
-                onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{
-                    background: r.source === 'nova' ? '#BF9FF1' : r.systemColor || 'var(--text-3)',
-                  }}
-                />
-                <span className="flex-1 text-xs font-light truncate" style={{ color: 'var(--text-2)' }}>
-                  {r.summary}
-                </span>
-                <span className="text-[10px] font-light flex-shrink-0" style={{ color: 'var(--text-3)' }}>
-                  {r.actor}
-                </span>
-                <span className="text-[10px] font-light flex-shrink-0 w-14 text-right" style={{ color: 'var(--text-3)' }}>
-                  {relativeTime(r.createdAt)}
-                </span>
-              </button>
-            ))}
+            {rows.map(r => {
+              const isUndone = undone.has(r.id);
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => setOpenId(r.id)}
+                  className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group"
+                  onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.03)')}
+                  onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')}
+                  style={{ opacity: isUndone ? 0.45 : 1 }}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{
+                      background: r.source === 'nova' ? '#BF9FF1' : r.systemColor || 'var(--text-3)',
+                    }}
+                  />
+                  <span
+                    className="flex-1 text-xs font-light truncate"
+                    style={{
+                      color: 'var(--text-2)',
+                      textDecoration: isUndone ? 'line-through' : 'none',
+                    }}
+                  >
+                    {r.summary}
+                  </span>
+                  {isUndone && (
+                    <span
+                      className="text-[10px] font-light tracking-wider uppercase px-2 py-0.5 rounded-full"
+                      style={{ color: '#FF8C8C', background: 'rgba(255,107,107,0.06)' }}
+                    >
+                      Undone
+                    </span>
+                  )}
+                  <span className="text-[10px] font-light flex-shrink-0" style={{ color: 'var(--text-3)' }}>
+                    {r.actor}
+                  </span>
+                  <span className="text-[10px] font-light flex-shrink-0 w-14 text-right" style={{ color: 'var(--text-3)' }}>
+                    {relativeTime(r.createdAt)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
-      <WhyDrawer actionId={openId} onClose={() => setOpenId(null)} />
+      <WhyDrawer
+        actionId={openId}
+        environmentId={environmentId}
+        onClose={() => setOpenId(null)}
+        onUndone={id => setUndone(prev => new Set(prev).add(id))}
+      />
     </>
   );
 }
