@@ -17,6 +17,8 @@ import ActionLedgerWidget from '@/components/environments/ActionLedgerWidget';
 import NovaLearningRibbon from '@/components/environments/NovaLearningRibbon';
 import RoiSummaryWidget from '@/components/environments/RoiSummaryWidget';
 import TeamAdoptionWidget from '@/components/environments/TeamAdoptionWidget';
+import ProjectsWidget from '@/components/environments/ProjectsWidget';
+import ProjectLauncher from '@/components/projects/ProjectLauncher';
 
 type DashboardData = {
   systems: {
@@ -122,6 +124,8 @@ export default function EnvironmentOverview() {
           their own. Everything below is supplementary. */}
       <NovaLearningRibbon environmentId={environmentId} />
       <NarrativeWidget environmentId={environmentId} environmentName={name} />
+      <ProjectLauncher environmentId={environmentId} />
+      <ProjectsWidget environmentId={environmentId} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ExceptionsWidget environmentId={environmentId} />
         <ActionLedgerWidget environmentId={environmentId} />
