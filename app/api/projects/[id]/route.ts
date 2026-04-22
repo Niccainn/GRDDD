@@ -12,6 +12,7 @@ import { NextRequest } from 'next/server';
 import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { readProject, writeProject } from '@/lib/projects/store';
+import { runAutoChain } from '@/lib/projects/run';
 import type { Artifact, Project, TraceEntry } from '@/lib/projects/types';
 
 function touch(project: Project, entry: Omit<TraceEntry, 'at'>): Project {
@@ -24,6 +25,7 @@ function touch(project: Project, entry: Omit<TraceEntry, 'at'>): Project {
     ],
   };
 }
+
 
 export async function GET(
   _req: NextRequest,
@@ -72,11 +74,14 @@ export async function PATCH(
       const nextStep = updated[cursor];
       updated[cursor] = {
         ...nextStep,
-        status: nextStep.approval?.required ? 'needs_approval' : 'running',
+        // On approval we clear the gate on this specific step so the
+        // auto-run chain can execute it. The default gate returns
+        // on the *next* unapproved step.
+        status: nextStep.approval?.required && op !== 'approve' ? 'needs_approval' : 'running',
         startedAt: new Date().toISOString(),
       };
     }
-    next = touch({ ...project, plan: updated, cursor }, {
+    const advanced = touch({ ...project, plan: updated, cursor }, {
       stepId: project.plan[stepIdx].id,
       source: 'human',
       message: op === 'approve'
@@ -84,13 +89,18 @@ export async function PATCH(
         : `Advanced past step: ${project.plan[stepIdx].title}`,
     });
     if (cursor >= updated.length) {
-      next.status = 'done';
-      next.trace.push({
+      advanced.status = 'done';
+      advanced.trace.push({
         at: new Date().toISOString(),
         stepId: null,
         source: 'nova',
         message: 'Project complete. All steps have landed.',
       });
+      next = advanced;
+    } else {
+      // Auto-run the chain of non-gated steps until we hit the next
+      // human checkpoint. Keeps the product feeling alive.
+      next = await runAutoChain(advanced);
     }
   } else if (op === 'skip') {
     const stepIdx = project.plan.findIndex(s => s.id === body.stepId);

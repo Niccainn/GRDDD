@@ -10,7 +10,8 @@ import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { planProject } from '@/lib/projects/planner';
-import { createProject, listProjects } from '@/lib/projects/store';
+import { createProject, listProjects, writeProject } from '@/lib/projects/store';
+import { runAutoChain } from '@/lib/projects/run';
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   const { plan, source, openingTrace } = await planProject(goal);
   try {
-    const project = await createProject({
+    const created = await createProject({
       environmentId,
       systemId,
       goal,
@@ -44,7 +45,24 @@ export async function POST(req: NextRequest) {
       creatorId: identity.id,
       openingMessage: openingTrace.message,
     });
-    return Response.json({ project, source }, { status: 201 });
+    // Mark step 1 as running (or needs_approval) so the auto-run
+    // chain has a starting point. First step's approval gate is
+    // respected — if step 1 is human-gated, the chain stops
+    // immediately and the user sees a gated step on the page.
+    const firstStep = created.plan[0];
+    if (firstStep) {
+      const now = new Date().toISOString();
+      created.plan[0] = {
+        ...firstStep,
+        status: firstStep.approval?.required ? 'needs_approval' : 'running',
+        startedAt: now,
+      };
+    }
+    // Kick off the auto-run chain so Nova starts executing
+    // immediately for any non-gated first step.
+    const afterRun = await runAutoChain(created);
+    await writeProject(afterRun.id, afterRun);
+    return Response.json({ project: afterRun, source }, { status: 201 });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Could not start project';
     return Response.json({ error: msg }, { status: 500 });

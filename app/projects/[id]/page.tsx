@@ -119,7 +119,7 @@ export default function ProjectRunPage() {
       >
         {project.goal}
       </h1>
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-6">
         <span
           className="h-1 w-40 rounded-full overflow-hidden"
           style={{ background: 'rgba(255,255,255,0.06)' }}
@@ -133,6 +133,8 @@ export default function ProjectRunPage() {
           {doneCount}/{project.plan.length} steps · started {new Date(project.createdAt).toLocaleDateString()}
         </span>
       </div>
+
+      <NarrativeBlock projectId={project.id} />
 
       {/* Steps */}
       <section className="mb-10 space-y-3">
@@ -217,6 +219,40 @@ export default function ProjectRunPage() {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function NarrativeBlock({ projectId }: { projectId: string }) {
+  const [text, setText] = useState<string | null>(null);
+  const [source, setSource] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/projects/${projectId}/narrative`)
+      .then(r => r.json())
+      .then(d => { setText(d.text ?? null); setSource(d.source ?? null); })
+      .catch(() => {});
+  }, [projectId]);
+
+  if (!text) return null;
+  return (
+    <div
+      className="rounded-2xl p-5 mb-8"
+      style={{
+        background: 'rgba(191,159,241,0.04)',
+        border: '1px solid rgba(191,159,241,0.18)',
+      }}
+    >
+      <p
+        className="text-[10px] tracking-[0.18em] uppercase font-light mb-2"
+        style={{ color: '#BF9FF1' }}
+      >
+        Nova's take
+        {source === 'fallback' ? ' · template' : ''}
+      </p>
+      <p className="text-sm font-light leading-relaxed" style={{ color: 'var(--text-1)' }}>
+        {text}
+      </p>
     </div>
   );
 }

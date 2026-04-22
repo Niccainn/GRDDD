@@ -9,14 +9,24 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const STARTERS = [
-  'Design a brand identity for our Q4 launch',
-  'Design a Meta ad campaign for a new feature',
-  'Onboard a new client end-to-end',
-  'Draft a weekly content pipeline',
-];
+type Template = {
+  id: string;
+  title: string;
+  subtitle: string;
+  goal: string;
+  badge: string;
+};
+
+const BADGE_COLOR: Record<string, string> = {
+  brand: '#C8F26B',
+  marketing: '#BF9FF1',
+  operations: '#7193ED',
+  design: '#E879F9',
+  finance: '#F5D76E',
+  development: '#6395FF',
+};
 
 export default function ProjectLauncher({ environmentId }: { environmentId: string }) {
   const router = useRouter();
@@ -24,6 +34,15 @@ export default function ProjectLauncher({ environmentId }: { environmentId: stri
   const [goal, setGoal] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [templates, setTemplates] = useState<Template[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    fetch('/api/projects/templates')
+      .then(r => r.json())
+      .then(d => setTemplates(Array.isArray(d.templates) ? d.templates : []))
+      .catch(() => {});
+  }, [open]);
 
   async function launch(goalText: string) {
     if (!goalText.trim()) return;
@@ -110,22 +129,49 @@ export default function ProjectLauncher({ environmentId }: { environmentId: stri
           resize: 'vertical',
         }}
       />
-      <div className="flex items-center gap-2 flex-wrap mb-3">
-        {STARTERS.map(s => (
-          <button
-            key={s}
-            onClick={() => setGoal(s)}
-            className="text-[11px] font-light px-2.5 py-1 rounded-full"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'var(--text-3)',
-            }}
+      {templates.length > 0 && (
+        <>
+          <p
+            className="text-[10px] tracking-[0.16em] uppercase font-light mb-2"
+            style={{ color: 'var(--text-3)' }}
           >
-            {s}
-          </button>
-        ))}
-      </div>
+            Or pick a template
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+            {templates.map(t => {
+              const color = BADGE_COLOR[t.badge] ?? '#BF9FF1';
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => launch(t.goal)}
+                  disabled={submitting}
+                  className="text-left rounded-xl p-3 transition-colors disabled:opacity-50"
+                  style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: color }}
+                    />
+                    <span className="text-[10px] font-light tracking-wider uppercase" style={{ color: 'var(--text-3)' }}>
+                      {t.badge}
+                    </span>
+                  </div>
+                  <p className="text-xs font-light mb-0.5" style={{ color: 'var(--text-1)' }}>
+                    {t.title}
+                  </p>
+                  <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+                    {t.subtitle}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
       {error && (
         <p className="text-[11px] font-light mb-2" style={{ color: '#FF8C8C' }}>
           {error}
