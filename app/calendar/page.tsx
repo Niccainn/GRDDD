@@ -7,7 +7,7 @@ import { bucketEventsByDay, nextFocusDay } from '@/lib/calendar/buckets';
 
 type CalendarEvent = {
   id: string;
-  type: 'task' | 'goal' | 'external';
+  type: 'task' | 'goal' | 'meeting' | 'external';
   title: string;
   date: string;
   endDate?: string;
@@ -65,6 +65,7 @@ const statusColor: Record<string, string> = {
   DONE: '#C8F26B', COMPLETED: '#C8F26B', IN_PROGRESS: '#7193ED',
   TODO: 'rgba(255,255,255,0.3)', ON_TRACK: '#C8F26B',
   AT_RISK: '#F7C700', BEHIND: '#FF6B6B', RUNNING: '#7193ED',
+  SCHEDULED: '#E879F9', CANCELLED: 'rgba(255,255,255,0.2)',
   external: '#BF9FF1',
 };
 
@@ -94,6 +95,7 @@ export default function CalendarPage() {
   // Layers — toggleable calendar views
   const [layers, setLayers] = useState<CalendarLayer[]>([
     { id: 'tasks', label: 'Tasks', color: '#7193ED', visible: true, type: 'internal', icon: '#' },
+    { id: 'meetings', label: 'Meetings', color: '#E879F9', visible: true, type: 'internal', icon: '◎' },
     { id: 'goals', label: 'Goals & Milestones', color: '#C8F26B', visible: true, type: 'internal', icon: '*' },
     { id: 'nova', label: 'Nova Checkpoints', color: '#BF9FF1', visible: true, type: 'internal', icon: '~' },
   ]);
@@ -186,6 +188,7 @@ export default function CalendarPage() {
   // Filter events by visible layers
   const visibleEvents = events.filter(ev => {
     if (ev.type === 'task') return layers.find(l => l.id === 'tasks')?.visible;
+    if (ev.type === 'meeting') return layers.find(l => l.id === 'meetings')?.visible;
     if (ev.type === 'goal') return layers.find(l => l.id === 'goals')?.visible;
     if (ev.type === 'external' && ev.source) {
       const extLayer = layers.find(l => l.type === 'external' && l.label.includes(ev.source!));
@@ -284,21 +287,36 @@ export default function CalendarPage() {
 
   // Optimistic insert when quick-add succeeds so the new event shows
   // up instantly without waiting for the next fetch cycle.
-  const handleCreated = useCallback((task: { id: string; title: string; dueDate: string; priority: string }) => {
-    setEvents(prev => [
-      ...prev,
-      {
-        id: task.id,
+  const handleCreated = useCallback((item:
+    | { kind: 'task'; id: string; title: string; dueDate: string; priority: string }
+    | { kind: 'meeting'; id: string; title: string; startTime: string; endTime: string; location?: string; videoLink?: string }
+  ) => {
+    if (item.kind === 'task') {
+      setEvents(prev => [...prev, {
+        id: item.id,
         type: 'task',
-        title: task.title,
-        date: task.dueDate,
+        title: item.title,
+        date: item.dueDate,
         status: 'TODO',
         color: '#7193ED',
         systemName: null,
-        meta: { priority: task.priority },
+        meta: { priority: item.priority },
         href: '/tasks',
-      },
-    ]);
+      }]);
+    } else {
+      setEvents(prev => [...prev, {
+        id: item.id,
+        type: 'meeting',
+        title: item.title,
+        date: item.startTime,
+        endDate: item.endTime,
+        status: 'SCHEDULED',
+        color: '#E879F9',
+        systemName: null,
+        meta: { location: item.location, meetLink: item.videoLink },
+        href: '/calendar',
+      }]);
+    }
   }, []);
 
   return (
@@ -692,8 +710,8 @@ export default function CalendarPage() {
                           day={day}
                           environmentId={environments[0]?.id ?? null}
                           onClose={() => setQuickAddDay(null)}
-                          onCreated={(task) => {
-                            handleCreated(task);
+                          onCreated={(item) => {
+                            handleCreated(item);
                             setQuickAddDay(null);
                           }}
                         />
@@ -754,7 +772,7 @@ export default function CalendarPage() {
                     className="text-[10px] px-2 py-0.5 rounded-full"
                     style={{ background: `${statusColor[ev.status] ?? ev.color}14`, color: statusColor[ev.status] ?? ev.color }}
                   >
-                    {ev.type === 'external' ? 'meeting' : ev.status.toLowerCase().replace('_', ' ')}
+                    {ev.type === 'external' || ev.type === 'meeting' ? ev.status.toLowerCase().replace('_', ' ') : ev.status.toLowerCase().replace('_', ' ')}
                   </span>
                   <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
                     {new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}

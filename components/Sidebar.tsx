@@ -224,11 +224,18 @@ export default function Sidebar() {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Fetch systems for sidebar
+  // Fetch systems for sidebar; re-fetch when a system is created/deleted so
+  // the sidebar stays in sync without a full page refresh.
   useEffect(() => {
-    fetch('/api/systems').then(r => r.json()).then(d => {
-      if (Array.isArray(d)) setSystems(d);
-    }).catch(() => {});
+    const load = () => {
+      fetch('/api/systems').then(r => r.json()).then(d => {
+        if (Array.isArray(d)) setSystems(d);
+      }).catch(() => {});
+    };
+    load();
+    const handler = () => load();
+    window.addEventListener('grid:systems-changed', handler);
+    return () => window.removeEventListener('grid:systems-changed', handler);
   }, []);
 
   useEffect(() => {

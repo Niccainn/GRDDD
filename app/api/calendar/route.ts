@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   const endDate = new Date(end);
 
   // Fetch internal events + connected calendar integrations in parallel
-  const [tasks, goals, calendarIntegrations] = await Promise.all([
+  const [tasks, goals, meetings, calendarIntegrations] = await Promise.all([
     prisma.task.findMany({
       where: {
         environment: { ownerId: identity.id, deletedAt: null },
@@ -68,6 +68,24 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { dueDate: 'asc' },
     }),
+    prisma.meeting.findMany({
+      where: {
+        environment: { ownerId: identity.id, deletedAt: null },
+        startTime: { gte: startDate, lte: endDate },
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        startTime: true,
+        endTime: true,
+        location: true,
+        videoLink: true,
+        attendees: true,
+        status: true,
+      },
+      orderBy: { startTime: 'asc' },
+    }),
     prisma.integration.findMany({
       where: {
         environment: { ownerId: identity.id, deletedAt: null },
@@ -86,7 +104,7 @@ export async function GET(req: NextRequest) {
 
   type CalendarEvent = {
     id: string;
-    type: 'task' | 'goal' | 'external';
+    type: 'task' | 'goal' | 'meeting' | 'external';
     title: string;
     date: Date | null;
     endDate?: Date | null;
@@ -120,6 +138,23 @@ export async function GET(req: NextRequest) {
       systemName: g.system?.name ?? null,
       meta: { progress: g.progress },
       href: `/goals`,
+    })),
+    ...meetings.map(m => ({
+      id: m.id,
+      type: 'meeting' as const,
+      title: m.title,
+      date: m.startTime,
+      endDate: m.endTime,
+      status: m.status,
+      color: '#E879F9',
+      systemName: null,
+      meta: {
+        description: m.description,
+        location: m.location,
+        meetLink: m.videoLink,
+        attendees: m.attendees ? JSON.parse(m.attendees) : [],
+      },
+      href: `/calendar`,
     })),
   ];
 
