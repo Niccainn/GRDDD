@@ -138,7 +138,7 @@ export default function IntegrationConfigModal({ open, onClose, integration, isC
                     Connect with {integration.name}
                   </button>
                   <p className="text-[11px] mt-3" style={{ color: 'var(--text-3)' }}>
-                    {!integration.implemented ? 'Coming soon' : 'Not configured yet'}
+                    {!integration.implemented ? 'Not yet wired' : 'Not configured yet'}
                   </p>
                 </div>
               )}

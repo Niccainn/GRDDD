@@ -235,7 +235,13 @@ export default function Sidebar() {
     load();
     const handler = () => load();
     window.addEventListener('grid:systems-changed', handler);
-    return () => window.removeEventListener('grid:systems-changed', handler);
+    // Deleting an Environment cascades to its Systems, so the list
+    // on the sidebar needs to reload on that event too.
+    window.addEventListener('grid:environments-changed', handler);
+    return () => {
+      window.removeEventListener('grid:systems-changed', handler);
+      window.removeEventListener('grid:environments-changed', handler);
+    };
   }, []);
 
   useEffect(() => {

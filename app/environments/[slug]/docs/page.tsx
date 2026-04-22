@@ -112,13 +112,36 @@ export default function EnvironmentDocs() {
               <path d="M3.5 2L6.5 5L3.5 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           ) : (
-            <svg width="10" height="10" viewBox="0 0 15 15" fill="none" className="flex-shrink-0" style={{ color: 'var(--text-3)' }}>
-              <path d="M4 1.5H9.5L12 4V13C12 13.28 11.78 13.5 11.5 13.5H4C3.72 13.5 3.5 13.28 3.5 13V2C3.5 1.72 3.72 1.5 4 1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" />
-            </svg>
+            <span
+              className="flex-shrink-0 rounded-full"
+              aria-hidden="true"
+              style={{
+                width: 8,
+                height: 8,
+                background: doc.systemColor || 'var(--brand)',
+              }}
+            />
           )}
           <span className="text-xs font-light truncate flex-1">{doc.title}</span>
-          <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--text-3)' }}>
-            {timeAgo(doc.updatedAt)}
+          <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2" style={{ color: 'var(--text-3)' }}>
+            <span>{timeAgo(doc.updatedAt)}</span>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={async e => {
+                e.preventDefault();
+                e.stopPropagation();
+                const ok = window.confirm(`Delete "${doc.title}"? This cannot be undone.`);
+                if (!ok) return;
+                await fetch(`/api/docs/${doc.id}`, { method: 'DELETE' });
+                setDocs(prev => prev.filter(d => d.id !== doc.id));
+                if (selected?.id === doc.id) setSelected(null);
+              }}
+              className="px-1.5 py-0.5 rounded hover:opacity-100"
+              style={{ color: '#FF6B6B', background: 'rgba(255,107,107,0.08)' }}
+            >
+              Delete
+            </span>
           </span>
         </button>
         {hasChildren && isExpanded && (

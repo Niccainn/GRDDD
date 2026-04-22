@@ -114,10 +114,15 @@ export async function DELETE(
     return Response.json({ error: 'Document not found' }, { status: 404 });
   }
 
-  // Soft delete
-  await prisma.document.update({
-    where: { id },
-    data: { isArchived: true },
+  // Hard delete — and cascade to child documents so nested notes don't
+  // linger invisibly after the parent is removed.
+  await prisma.document.deleteMany({
+    where: {
+      OR: [
+        { id },
+        { parentId: id },
+      ],
+    },
   });
 
   return Response.json({ success: true });

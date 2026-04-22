@@ -16,8 +16,25 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { shippedWedges, type Wedge, wedgeById } from './wedges';
 import ImportWizard from '@/components/ImportWizard';
+import WidgetPicker from '@/components/onboarding/WidgetPicker';
+import { writeHiddenPresets, type DepartmentId } from '@/lib/widgets/department-catalog';
 
-type Step = 'wedge' | 'connect' | 'build' | 'import' | 'done';
+type Step = 'wedge' | 'connect' | 'customize' | 'build' | 'import' | 'done';
+
+/**
+ * Mapping from a shipped wedge to the department catalog the
+ * customize step should draw from. A wedge can declare its
+ * department directly (new Wedge.department field) or fall back to
+ * this mapping when the field is omitted.
+ */
+const WEDGE_TO_DEPARTMENT: Record<string, DepartmentId> = {
+  'inbox-triage': 'operations',
+  'calendar-defense': 'operations',
+  'content-pipeline': 'marketing',
+  'client-onboarding': 'operations',
+  'invoice-capture': 'finance',
+  custom: 'general',
+};
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -30,6 +47,9 @@ export default function WelcomePage() {
   const [environmentId, setEnvironmentId] = useState<string | null>(null);
   const [buildLines, setBuildLines] = useState<string[]>([]);
   const [error, setError] = useState('');
+  // Hidden preset IDs the user picked at the customize step. Persisted
+  // once the build completes and we know the new System's id.
+  const [hiddenPresets, setHiddenPresets] = useState<string[]>([]);
 
   // Bootstrap the user's default environment so Connect buttons can
   // hit /api/integrations/oauth/[provider]/start?environmentId=…
@@ -88,7 +108,10 @@ export default function WelcomePage() {
 
   function pickWedge(w: Wedge) {
     setWedgeId(w.id);
-    setStep(w.integrations.length === 0 ? 'build' : 'connect');
+    // After picking a wedge: integrations first if any, then always
+    // the customize step where the user picks their widgets, then the
+    // build step streams the actual scaffold.
+    setStep(w.integrations.length === 0 ? 'customize' : 'connect');
   }
 
   function startBuild() {
@@ -103,6 +126,16 @@ export default function WelcomePage() {
           setBuildLines(prev => [...prev, msg.text]);
         } else if (msg.type === 'done') {
           es.close();
+          // Persist the customize-step selections against the new
+          // System id so HideablePanel / HiddenPanelsChip pick them up
+          // when the user lands on /systems/[id].
+          if (msg.systemId && hiddenPresets.length > 0) {
+            try {
+              writeHiddenPresets(msg.systemId, new Set(hiddenPresets));
+            } catch {
+              /* non-fatal */
+            }
+          }
           // Mark onboardedAt so middleware stops redirecting back here.
           fetch('/api/onboarding/complete', {
             method: 'POST',
@@ -156,8 +189,20 @@ export default function WelcomePage() {
           connectedIntegrations={connectedIntegrations}
           environmentId={environmentId}
           onBack={() => setStep('wedge')}
-          onContinue={startBuild}
+          onContinue={() => setStep('customize')}
           allReady={!!allIntegrationsReady}
+        />
+      )}
+
+      {step === 'customize' && wedge && (
+        <WidgetPicker
+          departmentId={wedge.department ?? WEDGE_TO_DEPARTMENT[wedge.id] ?? 'general'}
+          systemId={null}
+          onBack={() => setStep(wedge.integrations.length === 0 ? 'wedge' : 'connect')}
+          onContinue={hidden => {
+            setHiddenPresets(hidden);
+            startBuild();
+          }}
         />
       )}
 

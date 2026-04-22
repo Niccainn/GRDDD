@@ -3,6 +3,7 @@ import { getAuthIdentity } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DeleteButton from '@/components/DeleteButton';
+import RenameButton from '@/components/RenameButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +87,7 @@ export default async function EnvironmentsPage() {
                 <span className="text-xs" style={{ color: 'var(--text-3)' }}>/{env.slug}</span>
                 <div className="flex items-center gap-3">
                   <span className="text-xs" style={{ color: 'var(--text-3)' }}>{env.systems.length} system{env.systems.length !== 1 ? 's' : ''}</span>
+                  <RenameButton id={env.id} type="environments" currentName={env.name} />
                   <DeleteButton id={env.id} type="environments" />
                 </div>
               </div>

@@ -24,6 +24,16 @@ export default function DeleteButton({
     setLoading(false);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(`grid:${type}-changed`));
+      // Deleting an Environment cascades to its Systems (and Workflows),
+      // so fan out the adjacent change events as well. Cheap and keeps
+      // every surface in sync without a page reload.
+      if (type === 'environments') {
+        window.dispatchEvent(new CustomEvent('grid:systems-changed'));
+        window.dispatchEvent(new CustomEvent('grid:workflows-changed'));
+      }
+      if (type === 'systems') {
+        window.dispatchEvent(new CustomEvent('grid:workflows-changed'));
+      }
     }
     if (redirectTo) {
       router.push(redirectTo);
