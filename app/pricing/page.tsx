@@ -3,80 +3,76 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pricing — GRID',
-  description: 'Simple, transparent pricing. Start free, scale as you grow.',
+  description: 'Three tiers. Start free with your own Claude key. Every plan includes the full trust layer: explainable actions, 24h undo, override-as-teaching.',
 };
 
 const PLANS = [
   {
-    name: 'Free',
+    name: 'Operator',
     price: '$0',
-    suffix: '/mo',
-    description: 'For individuals exploring GRID',
+    suffix: '/mo · BYOK',
+    description: 'Solo operator, first 30 days',
     cta: 'Get started',
     ctaStyle: 'secondary' as const,
     features: [
-      '1 environment',
-      '5 systems',
-      '100 executions / mo',
-      '50 Nova queries / mo',
-      '1 API key',
-      'Community support',
-    ],
-  },
-  {
-    name: 'Pro',
-    price: '$29',
-    suffix: '/mo',
-    description: 'For operators running real workloads',
-    cta: 'Start free trial',
-    ctaStyle: 'primary' as const,
-    highlight: true,
-    features: [
-      '10 environments',
-      'Unlimited systems',
-      '2,000 executions / mo',
-      '500 Nova queries / mo',
-      '10 API keys',
-      'Priority support',
-      'Advanced analytics',
-      'Custom workflows',
+      '10 Projects / month',
+      'All real executors (Figma, Canva, Notion, Gmail, Slack, Meta Ads, Drive, Calendar)',
+      'Local Nova Memory',
+      'Every action explainable',
+      '24-hour undo on autonomous actions',
+      'Bring your own Anthropic key',
     ],
   },
   {
     name: 'Team',
-    price: '$79',
+    price: '$29',
     suffix: '/seat/mo',
-    description: 'For teams that need structure at scale',
+    description: '3–20 person teams running real projects',
+    cta: 'Start free trial',
+    ctaStyle: 'primary' as const,
+    highlight: true,
+    features: [
+      'Unlimited Projects',
+      'Team adoption telemetry (Trust Score per member)',
+      'Shared institutional Memory',
+      'Monthly ROI reports, signed for board review',
+      'Nova Academy · fluency scoring per user',
+      'Priority support',
+    ],
+  },
+  {
+    name: 'Enterprise',
+    price: 'Contract',
+    suffix: '',
+    description: '50+ person orgs, regulated industries',
     cta: 'Contact us',
     ctaStyle: 'secondary' as const,
     features: [
-      'Unlimited environments',
-      'Unlimited systems',
-      '10,000 executions / mo',
-      '2,000 Nova queries / mo',
-      '50 API keys',
-      'Team members & roles',
-      'Audit log',
-      'SSO & SAML',
-      'White-label environments',
-      'Priority support',
+      'SSO (OIDC, SAML)',
+      'SCIM provisioning',
+      'Audit-log export + signed monthly reports',
+      'Per-seat consent scoping',
+      'Data residency (EU / UK / US)',
+      'Customer-managed keys (CMK / BYOK at rest)',
+      'Dedicated support + onboarding',
     ],
   },
 ];
 
 const COMPARISON = [
-  { label: 'Environments', free: '1', pro: '10', team: 'Unlimited' },
-  { label: 'Systems', free: '5', pro: 'Unlimited', team: 'Unlimited' },
-  { label: 'Workflows', free: '10', pro: 'Unlimited', team: 'Unlimited' },
-  { label: 'Executions / mo', free: '100', pro: '2,000', team: '10,000' },
-  { label: 'Nova queries / mo', free: '50', pro: '500', team: '2,000' },
-  { label: 'API keys', free: '1', pro: '10', team: '50' },
-  { label: 'Team members', free: '\u2014', pro: '\u2014', team: 'Unlimited' },
-  { label: 'Audit log', free: '\u2014', pro: '\u2014', team: '\u2713' },
-  { label: 'SSO / SAML', free: '\u2014', pro: '\u2014', team: '\u2713' },
-  { label: 'White-label', free: '\u2014', pro: '\u2014', team: '\u2713' },
-  { label: 'Priority support', free: '\u2014', pro: '\u2713', team: '\u2713' },
-  { label: 'Custom integrations', free: '\u2014', pro: '\u2713', team: '\u2713' },
+  { label: 'Projects / mo', free: '10', pro: 'Unlimited', team: 'Unlimited' },
+  { label: 'Real tool executors', free: '\u2713', pro: '\u2713', team: '\u2713' },
+  { label: 'Every action explainable', free: '\u2713', pro: '\u2713', team: '\u2713' },
+  { label: '24-hour undo window', free: '\u2713', pro: '\u2713', team: '\u2713' },
+  { label: 'Override-as-teaching (Nova Memory)', free: 'Local', pro: 'Shared', team: 'Shared' },
+  { label: 'Team adoption telemetry', free: '\u2014', pro: '\u2713', team: '\u2713' },
+  { label: 'Monthly ROI report (signed PDF)', free: '\u2014', pro: '\u2713', team: '\u2713' },
+  { label: 'Nova Academy fluency tracking', free: '\u2014', pro: '\u2713', team: '\u2713' },
+  { label: 'SSO (OIDC, SAML)', free: '\u2014', pro: '\u2014', team: '\u2713' },
+  { label: 'SCIM provisioning', free: '\u2014', pro: '\u2014', team: '\u2713' },
+  { label: 'Audit log export (CSV/JSONL)', free: '\u2014', pro: '\u2713', team: '\u2713' },
+  { label: 'Data residency (EU / UK / US)', free: '\u2014', pro: '\u2014', team: '\u2713' },
+  { label: 'Customer-managed keys (CMK)', free: '\u2014', pro: '\u2014', team: '\u2713' },
 ];
 
 const FAQ = [
@@ -250,9 +246,9 @@ export default function PricingPage() {
             {/* Header */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 72px 72px 72px', padding: '14px 16px', borderBottom: '1px solid var(--glass-border)' }}>
               <span style={{ color: 'var(--text-3)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Feature</span>
-              <span style={{ color: 'var(--text-3)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center' }}>Free</span>
-              <span style={{ color: 'var(--brand)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center' }}>Pro</span>
-              <span style={{ color: 'var(--text-3)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center' }}>Team</span>
+              <span style={{ color: 'var(--text-3)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center' }}>Operator</span>
+              <span style={{ color: 'var(--brand)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center' }}>Team</span>
+              <span style={{ color: 'var(--text-3)', fontSize: 11, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center' }}>Enterprise</span>
             </div>
             {COMPARISON.map((row, i) => (
               <div

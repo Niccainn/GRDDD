@@ -29,12 +29,15 @@ type MoreItem = {
 };
 
 const globalMoreItems: MoreItem[] = [
+  { href: '/inbox', label: 'Inbox', icon: tabIcons.inbox },
   { href: '/environments', label: 'Environments', icon: tabIcons.environments },
   { href: '/systems', label: 'Systems', icon: tabIcons.systems },
   { href: '/workflows', label: 'Workflows', icon: tabIcons.workflows },
   { href: '/goals', label: 'Goals', icon: tabIcons.goals },
   { href: '/docs', label: 'Documents', icon: tabIcons.docs },
   { href: '/calendar', label: 'Calendar', icon: tabIcons.calendar },
+  { href: '/learn', label: 'Learn', icon: tabIcons.analytics },
+  { href: '/memory', label: 'Memory', icon: tabIcons.docs },
   { href: '/analytics', label: 'Analytics', icon: tabIcons.analytics },
   { href: '/integrations', label: 'Integrations', icon: tabIcons.integrations },
   { href: '/settings', label: 'Settings', icon: tabIcons.settings },
@@ -96,12 +99,14 @@ export default function BottomNav() {
       ]
     : [];
 
-  // Global tabs
+  // Global tabs — Projects takes the second slot because the
+  // interaction layer is the product's primary verb on mobile too.
+  // Inbox demoted to the More panel to keep the bottom row to five.
   const globalTabs = [
     { href: '/dashboard', label: 'Home', icon: tabIcons.home },
-    { href: '/tasks', label: 'Tasks', icon: tabIcons.tasks },
+    { href: '/projects', label: 'Projects', icon: tabIcons.workflows },
     { href: '/nova', label: 'Nova', icon: tabIcons.nova, isNova: true },
-    { href: '/inbox', label: 'Inbox', icon: tabIcons.inbox },
+    { href: '/tasks', label: 'Tasks', icon: tabIcons.tasks },
   ];
 
   const tabs = envTabs ?? globalTabs;
