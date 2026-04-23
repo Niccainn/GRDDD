@@ -3,7 +3,7 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
-import GoogleButton from '@/components/auth/GoogleButton';
+import OAuthProviders from '@/components/auth/OAuthProviders';
 import PasswordField from '@/components/auth/PasswordField';
 import AuthLayout from '@/components/auth/AuthLayout';
 
@@ -81,15 +81,7 @@ function SignInInner() {
         </>
       }
     >
-      <GoogleButton next={next} />
-
-      <div className="flex items-center gap-3 my-6">
-        <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-        <span className="text-[10px] uppercase tracking-[0.14em] font-light" style={{ color: 'var(--text-3)' }}>
-          or
-        </span>
-        <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-      </div>
+      <OAuthProviders next={next} />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
