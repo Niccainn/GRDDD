@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 // ── Icons (matching Sidebar) ────────────────────────────────────────
@@ -42,7 +42,21 @@ const globalMoreItems: MoreItem[] = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await fetch('/api/auth/sign-out', { method: 'POST' });
+      setMoreOpen(false);
+      router.push('/sign-in');
+    } catch {
+      setSigningOut(false);
+    }
+  }
 
   // Close More panel on route change
   useEffect(() => {
@@ -139,6 +153,44 @@ export default function BottomNav() {
                   </Link>
                 );
               })}
+            </div>
+            {/* Sign out — destructive action lives below a divider so
+                it doesn't mingle with navigation. Desktop users hit
+                this from the sidebar; mobile had no path until now. */}
+            <div
+              className="px-3 pb-3 pt-2"
+              style={{ borderTop: '1px solid var(--glass-border)' }}
+            >
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl transition-colors disabled:opacity-50"
+                style={{
+                  background: 'rgba(255,107,107,0.06)',
+                  border: '1px solid rgba(255,107,107,0.18)',
+                  color: '#FF8C8C',
+                }}
+                aria-label="Sign out"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                <span className="text-xs font-light tracking-wide">
+                  {signingOut ? 'Signing out…' : 'Sign out'}
+                </span>
+              </button>
             </div>
           </div>
         </>
