@@ -407,7 +407,7 @@ export default function DataView({ entityType, data, defaultView = 'table', comp
                 className="px-3 py-1.5 text-xs font-light rounded-lg transition-all"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.5)' }}
               >
-                Views ({savedViews.length})
+                Saved filters ({savedViews.length})
               </button>
               {showSavedViews && (
                 <div
@@ -415,7 +415,7 @@ export default function DataView({ entityType, data, defaultView = 'table', comp
                   style={{ background: 'var(--glass-deep, rgba(15,15,20,0.95))', border: '1px solid var(--glass-border)', backdropFilter: 'blur(20px)' }}
                 >
                   {savedViews.length === 0 && (
-                    <p className="text-xs font-light py-2 text-center" style={{ color: 'var(--text-3)' }}>No saved views</p>
+                    <p className="text-xs font-light py-2 text-center" style={{ color: 'var(--text-3)' }}>No saved filters</p>
                   )}
                   {savedViews.map(v => (
                     <div key={v.id} className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all">

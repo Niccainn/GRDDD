@@ -9,6 +9,7 @@ import SampleDataBanner from '@/components/SampleDataBanner';
 import OnlineIndicator from '@/components/OnlineIndicator';
 import { useAuth } from '@/components/AuthProvider';
 import ReviewNudgeBanner from '@/components/ReviewNudgeBanner';
+import DashboardEnvironmentRedirect from '@/components/DashboardEnvironmentRedirect';
 
 // Lazy-load below-fold widgets to reduce LCP
 const CrossDomainInsights = dynamic(() => import('@/components/CrossDomainInsights'), { ssr: false });
@@ -230,6 +231,11 @@ export default function OperatePage() {
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
+      {/* The Environment page is the canonical overview — if the user
+          has one, route them there. Users with no Environment stay
+          here so they still have a meaningful landing. The ?stay=1
+          escape hatch lets devs and Nova sessions stay put. */}
+      <DashboardEnvironmentRedirect />
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>

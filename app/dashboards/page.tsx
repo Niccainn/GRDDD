@@ -51,10 +51,10 @@ export default function DashboardsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-xl font-light tracking-tight mb-1" style={{ color: 'var(--text-1)' }}>
-            Dashboards
+            Surfaces
           </h1>
           <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
-            Create and customize widget-based dashboards
+            Composed tile layouts for monitoring your systems, workflows, and goals.
           </p>
         </div>
         <button
@@ -66,7 +66,7 @@ export default function DashboardsPage() {
             color: '#7193ED',
           }}
         >
-          New dashboard
+          New surface
         </button>
       </div>
 
@@ -78,7 +78,7 @@ export default function DashboardsPage() {
           <input
             autoFocus
             type="text"
-            placeholder="Dashboard name..."
+            placeholder="Surface name..."
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -113,10 +113,10 @@ export default function DashboardsPage() {
           style={{ border: '1px dashed var(--glass-border)' }}
         >
           <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>
-            No dashboards yet
+            No surfaces yet
           </p>
           <p className="text-xs font-light max-w-sm text-center" style={{ color: 'var(--text-3)' }}>
-            Build custom widget boards to monitor your systems, workflows, and goals in real-time.
+            Surfaces are composed tile layouts — pick what Nova shows you on one page.
           </p>
         </div>
       ) : (
@@ -137,7 +137,7 @@ export default function DashboardsPage() {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
-                    {db.widgets.length} widget{db.widgets.length !== 1 ? 's' : ''}
+                    {db.widgets.length} surface{db.widgets.length !== 1 ? 's' : ''}
                   </span>
                   <span className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.15)' }}>
                     Updated {timeAgo(db.updatedAt)}

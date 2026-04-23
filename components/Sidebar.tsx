@@ -110,7 +110,7 @@ const navSections: CollapsibleNavSection[] = [
           { href: '/automations', label: 'Automations', icon: icons.automations },
           { href: '/templates', label: 'Templates', icon: icons.templates },
           { href: '/forms', label: 'Forms', icon: icons.forms },
-          { href: '/views', label: 'Views', icon: icons.views },
+          { href: '/views', label: 'Saved filters', icon: icons.views },
         ],
       },
       {
