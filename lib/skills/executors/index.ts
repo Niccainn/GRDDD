@@ -12,7 +12,11 @@ import type { ExecutorResult } from './types';
 import * as claudeExec from './claude';
 import * as simExec from './simulated';
 import { humanReview } from './human';
-import { notionCreatePage as realNotionCreatePage, notionFetchDocument as realNotionFetchDocument } from './notion';
+import {
+  notionCreatePage as realNotionCreatePage,
+  notionFetchDocument as realNotionFetchDocument,
+  notionUploadAsset as realNotionUploadAsset,
+} from './notion';
 import { slackPostMessage as realSlackPostMessage } from './slack';
 import { gmailDraftEmail as realGmailDraftEmail } from './gmail';
 import { googleCalendarDraftEvent as realGcalDraftEvent } from './google-calendar';
@@ -59,9 +63,7 @@ const DISPATCH: Record<string, Executor> = {
   'meta_ads.draft_campaign': realMetaDraftCampaign,
   'google_ads.draft_campaign': realGoogleAdsDraftCampaign,
   'linkedin_ads.draft_campaign': realLinkedinDraftCampaign,
-  // Still simulated until wired against the matching write path in
-  // the client library.
-  'notion.upload_asset': simExec.notionUploadAsset,
+  'notion.upload_asset': realNotionUploadAsset,
 
   // Human-only.
   'human.review': humanReview,
