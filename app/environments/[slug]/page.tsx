@@ -112,7 +112,7 @@ export default function EnvironmentOverview() {
   if (!data) {
     return (
       <div className="flex items-center justify-center py-24">
-        <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>Failed to load dashboard data</p>
+        <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>Failed to load environment data</p>
       </div>
     );
   }

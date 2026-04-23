@@ -9,6 +9,14 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: 'week-1',
+    date: '2026-04-22',
+    category: 'Build in public',
+    title: 'Week 1 — what GRID shipped, in one memo',
+    excerpt: 'The first public weekly narrative. GRID runs on GRID; every Monday the Environment page writes a memo like this one. We are posting ours publicly because the product thesis is that work should be legible.',
+    readTime: '4 min read',
+  },
+  {
     slug: 'what-is-an-adaptive-workspace',
     date: '2026-04-10',
     category: 'Product',

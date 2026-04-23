@@ -74,9 +74,9 @@ export default function ViewsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-extralight tracking-tight mb-1">Views</h1>
+          <h1 className="text-2xl font-extralight tracking-tight mb-1">Saved filters</h1>
           <p className="text-sm font-light" style={{ color: 'var(--text-2)' }}>
-            Browse and organize any data with custom views
+            Named filters over your tasks, goals, executions, and signals.
           </p>
         </div>
       </div>

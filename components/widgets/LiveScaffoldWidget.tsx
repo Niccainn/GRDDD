@@ -369,7 +369,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
             <Stat label="Signals" count={spec.signals.length} color={KIND_COLOR.signal} />
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
-            <Stat label="Widgets" count={spec.widgets.length} color={KIND_COLOR.widget} />
+            <Stat label="Surfaces" count={spec.widgets.length} color={KIND_COLOR.widget} />
             <Stat label="Roles" count={spec.roles.length} color={KIND_COLOR.role} />
             <Stat label="Integrations" count={spec.integrations.length} color={KIND_COLOR.integration} />
           </div>

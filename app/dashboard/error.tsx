@@ -12,9 +12,9 @@ export default function DashboardError({ error, reset }: { error: Error; reset: 
           <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
       </div>
-      <h2 style={{ fontSize: 20, fontWeight: 300, color: 'var(--text-1)', marginBottom: 8 }}>Dashboard failed to load</h2>
+      <h2 style={{ fontSize: 20, fontWeight: 300, color: 'var(--text-1)', marginBottom: 8 }}>Home failed to load</h2>
       <p style={{ color: 'var(--text-2)', fontWeight: 300, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
-        {error.message || 'Something went wrong loading your dashboard.'}
+        {error.message || 'Something went wrong loading your home.'}
       </p>
       <button onClick={reset} style={{ background: 'var(--brand)', color: '#000', border: 'none', borderRadius: 'var(--radius-pill)', padding: '10px 28px', fontSize: 14, fontWeight: 400, cursor: 'pointer' }}>
         Try again

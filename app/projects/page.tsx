@@ -11,6 +11,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { Project } from '@/lib/projects/types';
+import { PROJECT_TEMPLATES } from '@/lib/projects/templates';
 
 type EnvRow = { id: string; name: string; slug: string; color: string | null };
 
@@ -49,6 +50,39 @@ export default function ProjectsIndexPage() {
   }, []);
 
   const total = Object.values(projectsByEnv).reduce((s, p) => s + p.length, 0);
+  const [launching, setLaunching] = useState<string | null>(null);
+
+  async function launchTemplate(templateId: string) {
+    if (launching) return;
+    const template = PROJECT_TEMPLATES.find(t => t.id === templateId);
+    const targetEnv = envs[0];
+    if (!template || !targetEnv) return;
+    setLaunching(templateId);
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ environmentId: targetEnv.id, goal: template.goal }),
+      });
+      const data = await res.json();
+      if (data.project?.id) {
+        window.location.href = `/projects/${data.project.id}`;
+      } else {
+        setLaunching(null);
+      }
+    } catch {
+      setLaunching(null);
+    }
+  }
+
+  const TEMPLATE_BADGE_COLORS: Record<string, string> = {
+    brand: '#BF9FF1',
+    marketing: '#E879F9',
+    operations: '#7193ED',
+    design: '#6395FF',
+    finance: '#C8F26B',
+    development: '#F5D76E',
+  };
 
   return (
     <div className="px-4 md:px-10 py-8 md:py-12 max-w-4xl mx-auto">
@@ -74,6 +108,67 @@ export default function ProjectsIndexPage() {
             No environments yet. Create one to start a project.
           </p>
         </div>
+      )}
+
+      {/* Featured prompts — the five-minute showcase. A new user who
+          lands here without any projects yet should be able to run
+          one in a single click. Routes through /api/projects with
+          the template's canonical goal; the project run page takes
+          over from there. */}
+      {!loading && envs.length > 0 && total === 0 && (
+        <section className="mb-10">
+          <p
+            className="text-[10px] tracking-[0.18em] uppercase font-light mb-3"
+            style={{ color: 'var(--brand)' }}
+          >
+            Try one of these
+          </p>
+          <p className="text-sm font-light mb-5" style={{ color: 'var(--text-2)' }}>
+            A prompt becomes a plan. Nova executes across real tools with a human
+            gate before anything user-visible. One click to launch.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {PROJECT_TEMPLATES.map(t => {
+              const color = TEMPLATE_BADGE_COLORS[t.badge] ?? '#BF9FF1';
+              const isLaunching = launching === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => launchTemplate(t.id)}
+                  disabled={!!launching}
+                  className="text-left rounded-2xl p-5 transition-all disabled:opacity-40"
+                  style={{
+                    background: 'var(--glass)',
+                    border: '1px solid var(--glass-border)',
+                    boxShadow: isLaunching ? `inset 0 0 0 1px ${color}30` : 'none',
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>
+                      {t.title}
+                    </p>
+                    <span
+                      className="text-[10px] font-light tracking-wider uppercase px-2 py-0.5 rounded-full flex-shrink-0"
+                      style={{
+                        color,
+                        background: `${color}14`,
+                        border: `1px solid ${color}30`,
+                      }}
+                    >
+                      {t.badge}
+                    </span>
+                  </div>
+                  <p className="text-xs font-light leading-relaxed mb-3" style={{ color: 'var(--text-2)' }}>
+                    {t.subtitle}
+                  </p>
+                  <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
+                    {isLaunching ? 'Nova is planning…' : 'One click to launch →'}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {!loading && envs.map(env => {
