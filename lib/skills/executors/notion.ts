@@ -168,6 +168,175 @@ export const notionFetchDocument: Executor = async ({ step, project }) => {
   }
 };
 
+/**
+ * notion.upload_asset — attach a prior-step artifact (image, file,
+ * or link) to a Notion page as an image/file/embed block referencing
+ * the external URL. True file uploads require Notion's File Uploads
+ * endpoint which is scoped behind a per-workspace toggle — external
+ * URL attach works for any integration and is zero-spend.
+ *
+ * Inputs resolution:
+ *   - step.inputs.url           explicit URL to attach
+ *   - step.inputs.pageId        target Notion page (else Nova searches)
+ *   - step.inputs.caption       optional caption for the block
+ *   - otherwise: grab the most recent artifact URL from prior steps
+ */
+export const notionUploadAsset: Executor = async ({ step, project }) => {
+  const now = new Date().toISOString();
+  const integration = await resolveIntegration(project.environmentId, 'notion');
+  if (!integration) {
+    return {
+      step: { ...step, status: 'done', completedAt: now, outputs: { simulated: true } },
+      artifacts: [],
+      trace: [
+        {
+          stepId: step.id,
+          source: 'system',
+          message:
+            'Simulated Notion upload: no active Notion integration for this Environment. Connect Notion to attach the asset for real.',
+        },
+      ],
+      mode: 'simulated',
+    };
+  }
+
+  const inputs = (step.inputs ?? {}) as {
+    url?: string;
+    pageId?: string;
+    caption?: string;
+    kind?: 'image' | 'file' | 'embed' | 'bookmark';
+  };
+
+  // Pull the most recent prior artifact URL if no explicit url given.
+  let url = inputs.url?.trim();
+  let sourceArtifactName: string | null = null;
+  if (!url) {
+    const recent = [...project.artifacts].reverse().find(a => typeof a.url === 'string' && a.url);
+    if (recent) {
+      url = recent.url ?? undefined;
+      sourceArtifactName = recent.name;
+    }
+  }
+  if (!url) {
+    return {
+      step: { ...step, status: 'done', completedAt: now, outputs: { simulated: true } },
+      artifacts: [],
+      trace: [
+        {
+          stepId: step.id,
+          source: 'system',
+          message:
+            'Simulated Notion upload: nothing to attach — no step.inputs.url and no prior artifact with a URL.',
+        },
+      ],
+      mode: 'simulated',
+    };
+  }
+
+  // Infer the block kind from the URL if not specified.
+  const kind: 'image' | 'file' | 'embed' | 'bookmark' =
+    inputs.kind ??
+    (/\.(png|jpe?g|gif|svg|webp|avif)(?:\?|$)/i.test(url)
+      ? 'image'
+      : /\.(pdf|zip|mp4|mov|mp3|wav)(?:\?|$)/i.test(url)
+      ? 'file'
+      : /figma\.com|youtube\.com|loom\.com|drive\.google\.com\/file/i.test(url)
+      ? 'embed'
+      : 'bookmark');
+
+  try {
+    const client = await getNotionClient(integration.id, project.environmentId);
+
+    let pageId = inputs.pageId ?? null;
+    if (!pageId) {
+      const terms = ['GRID Assets', 'Assets', 'GRID Projects', 'Projects'];
+      for (const term of terms) {
+        try {
+          const hits = await client.searchPages(term, 3);
+          if (hits.length > 0) {
+            pageId = hits[0].id;
+            break;
+          }
+        } catch {
+          /* try next */
+        }
+      }
+    }
+    if (!pageId) {
+      return {
+        step: { ...step, status: 'done', completedAt: now, outputs: { simulated: true } },
+        artifacts: [],
+        trace: [
+          {
+            stepId: step.id,
+            source: 'system',
+            message:
+              'Simulated Notion upload: no target page — share a "GRID Assets" or "Assets" page with the integration and retry.',
+          },
+        ],
+        mode: 'simulated',
+      };
+    }
+
+    const caption =
+      inputs.caption ??
+      (sourceArtifactName
+        ? `${sourceArtifactName} — attached by Nova for "${project.goal.slice(0, 60)}"`
+        : `Attached by Nova for "${project.goal.slice(0, 60)}"`);
+
+    await client.appendBlocks({
+      pageId,
+      blocks: [{ type: kind, url, caption }],
+    });
+
+    const artifact: Artifact = {
+      id: randomUUID(),
+      name: `Notion attach · ${kind}`,
+      kind: 'document',
+      tool: 'notion',
+      url: `https://www.notion.so/${pageId.replace(/-/g, '')}`,
+      createdAt: now,
+    };
+
+    return {
+      step: {
+        ...step,
+        status: 'done',
+        completedAt: now,
+        outputs: {
+          pageId,
+          url,
+          kind,
+          sourceArtifactName,
+        },
+      },
+      artifacts: [artifact],
+      trace: [
+        {
+          stepId: step.id,
+          source: 'nova',
+          message: `Attached the prior artifact to Notion as an ${kind} block. ${sourceArtifactName ? `Source: ${sourceArtifactName}.` : ''}`,
+        },
+      ],
+      mode: 'real',
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Unknown Notion error';
+    return {
+      step: { ...step, status: 'failed', completedAt: now, error: msg },
+      artifacts: [],
+      trace: [
+        {
+          stepId: step.id,
+          source: 'system',
+          message: `Notion upload_asset failed: ${msg}.`,
+        },
+      ],
+      mode: 'real',
+    };
+  }
+};
+
 export const notionCreatePage: Executor = async ({ step, project }) => {
   const now = new Date().toISOString();
   const integration = await resolveIntegration(project.environmentId, 'notion');

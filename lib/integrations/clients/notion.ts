@@ -85,9 +85,12 @@ export async function getNotionClient(integrationId: string, environmentId: stri
      */
     async appendBlocks(args: {
       pageId: string;
-      blocks: { type: string; text: string }[];
+      blocks: (
+        | { type: string; text: string }
+        | { type: 'image' | 'file' | 'embed' | 'bookmark'; url: string; caption?: string }
+      )[];
     }): Promise<{ count: number }> {
-      const supported = new Set([
+      const textTypes = new Set([
         'paragraph',
         'heading_1',
         'heading_2',
@@ -98,9 +101,38 @@ export async function getNotionClient(integrationId: string, environmentId: stri
         'quote',
         'code',
       ]);
+      const mediaTypes = new Set(['image', 'file', 'embed', 'bookmark']);
+
       const children = args.blocks.map(b => {
-        const type = supported.has(b.type) ? b.type : 'paragraph';
-        const richText = [{ type: 'text', text: { content: b.text } }];
+        if ('url' in b && mediaTypes.has(b.type)) {
+          const mb = b as { type: 'image' | 'file' | 'embed' | 'bookmark'; url: string; caption?: string };
+          const captionRt = mb.caption
+            ? [{ type: 'text', text: { content: mb.caption } }]
+            : [];
+          if (mb.type === 'image') {
+            return {
+              object: 'block',
+              type: 'image',
+              image: { type: 'external', external: { url: mb.url }, caption: captionRt },
+            };
+          }
+          if (mb.type === 'file') {
+            return {
+              object: 'block',
+              type: 'file',
+              file: { type: 'external', external: { url: mb.url }, caption: captionRt },
+            };
+          }
+          if (mb.type === 'embed') {
+            return { object: 'block', type: 'embed', embed: { url: mb.url, caption: captionRt } };
+          }
+          // bookmark
+          return { object: 'block', type: 'bookmark', bookmark: { url: mb.url, caption: captionRt } };
+        }
+
+        const tb = b as { type: string; text: string };
+        const type = textTypes.has(tb.type) ? tb.type : 'paragraph';
+        const richText = [{ type: 'text', text: { content: tb.text } }];
         if (type === 'code') {
           return { object: 'block', type, code: { rich_text: richText, language: 'plain text' } };
         }
