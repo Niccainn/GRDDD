@@ -12,16 +12,16 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.grddd.com'),
   title: {
-    default: 'GRID — The nervous system your company has been missing',
+    default: 'GRID — The adaptive workspace for growth',
     template: '%s | GRID',
   },
-  description: 'A living business OS built on Claude. Reads your company, acts with your permission, proves its work. Not a dashboard, not a chatbot, not a workflow builder — the substrate underneath all three.',
-  keywords: ['AI operations layer', 'operational intelligence platform', 'AI workflow automation', 'business operating system', 'metacognitive AI', 'predictive business operations', 'AI that learns', 'workflow quality scoring', 'operational playbook', 'consequence mapping', 'system health monitoring', 'Nova AI agent', 'BYOK AI platform', 'notion alternative', 'monday alternative', 'solo founder tools', 'small team operations'],
+  description: 'GRID is the adaptive workspace for growth. One environment where brand, operations, and intelligence operate as one system — reading your work, learning your patterns, and producing output that gets clearer every week.',
+  keywords: ['adaptive workspace', 'adaptive workspace for growth', 'AI workspace', 'intelligent workspace', 'adaptive work environment', 'AI operations layer', 'AI workflow automation', 'business operating system', 'operational intelligence platform', 'AI that learns', 'workflow quality scoring', 'operational playbook', 'consequence mapping', 'system health monitoring', 'Nova AI agent', 'BYOK AI platform', 'notion alternative', 'monday alternative', 'solo founder tools', 'small team operations'],
   authors: [{ name: 'GRID Systems Inc.' }],
   creator: 'GRID Systems Inc.',
   openGraph: {
-    title: 'GRID — The nervous system your company has been missing',
-    description: 'Reads your company. Acts with your permission. Proves its work. A living business OS built on Claude — not a dashboard, not a chatbot, not a workflow builder.',
+    title: 'GRID — The adaptive workspace for growth',
+    description: 'The adaptive workspace for growth. One environment where brand, operations, and intelligence operate as one — reading your work, learning your patterns, producing output that gets clearer every week.',
     url: 'https://www.grddd.com',
     siteName: 'GRID',
     locale: 'en_US',
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'GRID — The nervous system your company has been missing',
-    description: 'The nervous system your company has been missing. Reads, acts, proves its work. Built on Claude.',
+    title: 'GRID — The adaptive workspace for growth',
+    description: 'The adaptive workspace for growth. Brand, operations, and intelligence as one system. Built on Claude.',
   },
   robots: {
     index: true,

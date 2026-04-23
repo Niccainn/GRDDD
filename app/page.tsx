@@ -11,8 +11,8 @@ export default function Home() {
     applicationSubCategory: 'Operational Intelligence',
     operatingSystem: 'Web',
     url: 'https://www.grddd.com',
-    description: 'GRID is the AI operations layer that maps your business as interconnected systems, runs multi-stage AI workflows, and builds an operational playbook from every execution. Predictive consequence mapping, metacognitive feedback loops, and 110+ integrations.',
-    featureList: 'AI Workflow Engine, Predictive Consequence Mapping, Operational Playbook Generator, Execution Review & Attribution, Autonomy Trust Gradient, 110+ OAuth Integrations, System Health Monitoring, Nova AI Agent, BYOK Anthropic API',
+    description: 'GRID is the adaptive workspace for growth. One environment where brand, operations, and intelligence operate as one system. Nova runs workflows, maps consequences, and turns every execution into operational memory.',
+    featureList: 'Environment, Systems, Workflows, Signals, Nova (intelligence layer), Predictive Consequence Mapping, Operational Playbook, Execution Review, Autonomy Trust Gradient, 110+ OAuth Integrations, System Health Monitoring, BYOK Anthropic API',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -54,14 +54,14 @@ export default function Home() {
           <span className="text-sm font-light tracking-[0.18em]" style={{ color: 'var(--text-2)' }}>GRID</span>
         </div>
         <div className="flex items-center gap-4 md:gap-6">
-          <a href="#problem" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Why</a>
-          <a href="#how" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>How</a>
-          <a href="#platform" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Platform</a>
-          <a href="#use-cases" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Use Cases</a>
+          <a href="#problem" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Shift</a>
+          <a href="#how" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>System</a>
+          <a href="#platform" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Environment</a>
+          <a href="#use-cases" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>In practice</a>
           <a href="#who" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Who</a>
           <a href="#waitlist" className="text-xs font-light px-4 py-2 rounded-full transition-all whitespace-nowrap"
             style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-border)', color: 'var(--brand)' }}>
-            Get early access
+            Request access
           </a>
         </div>
       </nav>
@@ -73,21 +73,21 @@ export default function Home() {
             The adaptive workspace for growth
           </p>
           <h1 className="text-4xl md:text-6xl font-extralight tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Your team&rsquo;s thinking lives in six different tools.<br />
-            <span style={{ color: 'var(--brand)' }}>GRID learns the synergy.</span>
+            Management is a byproduct.<br />
+            <span style={{ color: 'var(--brand)' }}>Growth is the output.</span>
           </h1>
           <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-8 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
-            An adaptive workspace where AI connects your stack, learns from every accept and reject, and grows with your team. Idea to outcome in one environment — not six tools and three hand-offs.
+            Your brand lives in three design tools. Your operations live in a project manager. Your intelligence lives in a chat window. GRID is the environment they share — where the system runs itself, and growth is what you ship.
           </p>
           {/* Capability pills — reflect what's actually shipped and
               demonstrable to a design partner today. Order is
               roughly "biggest aha → smallest supporting claim". */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10 animate-fade-in" style={{ animationDelay: '0.25s' }}>
             {[
-              { label: 'One-Prompt Scaffolding', color: 'var(--brand)' },
-              { label: 'Per-System Agents', color: 'var(--nova)' },
-              { label: 'Live Integration Sync', color: 'var(--info)' },
-              { label: 'Visible AI Confidence', color: 'var(--warning)' },
+              { label: 'One-prompt scaffolding', color: 'var(--brand)' },
+              { label: 'Per-system agents', color: 'var(--nova)' },
+              { label: 'Live integration sync', color: 'var(--info)' },
+              { label: 'Visible confidence', color: 'var(--warning)' },
             ].map(pill => (
               <span key={pill.label} className="text-[10px] font-light px-3 py-1.5 rounded-full tracking-wide"
                 style={{ background: `${pill.color}10`, border: `1px solid ${pill.color}20`, color: pill.color }}>
@@ -98,10 +98,10 @@ export default function Home() {
           <div className="flex items-center justify-center gap-3 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <a href="#waitlist" className="px-5 md:px-8 py-3 md:py-3.5 text-sm font-light rounded-full transition-all whitespace-nowrap"
               style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}>
-              Get early access
+              Request access
             </a>
             <a href="#how" className="glass-pill px-5 md:px-8 py-3 md:py-3.5 text-sm font-light whitespace-nowrap" style={{ color: 'var(--text-2)' }}>
-              How it works
+              See the system
             </a>
           </div>
         </div>
@@ -113,46 +113,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ THE PROBLEM ═══ */}
+      {/* ═══ THE SHIFT ═══ */}
       <section id="problem" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <p className="text-[10px] tracking-[0.16em] uppercase mb-6 text-center" style={{ color: 'var(--text-3)' }}>
-            The Problem
+            The Shift
           </p>
           <h2 className="text-3xl font-extralight tracking-tight mb-6 text-center leading-snug">
-            You have more tools than ever.<br />
-            <span style={{ color: 'var(--text-2)' }}>Your work is harder to see than ever.</span>
+            Work isn&rsquo;t breaking from lack of effort.<br />
+            <span style={{ color: 'var(--text-2)' }}>It&rsquo;s breaking from lack of structure.</span>
           </h2>
           <p className="text-sm font-light max-w-lg mx-auto text-center mb-16" style={{ color: 'var(--text-3)' }}>
-            AI moves faster than you can evaluate. Output velocity outpaces understanding. You have more tools than ever, but less clarity about what&apos;s working and why.
+            Most organizations operate in fragments. Brand without infrastructure. Operations without intelligence. Intelligence without context. GRID is the environment where they become one system.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               {
-                before: 'Work lives in 12 different tools',
-                after: 'Every system, workflow, and outcome in one place',
+                before: 'Brand, ops, and intelligence live in separate tools.',
+                after: 'One environment. Identity, infrastructure, and intelligence, operating together.',
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
                 ),
               },
               {
-                before: 'Nobody notices when systems drift',
-                after: 'Health scores surface problems before they spread',
+                before: 'Systems drift. Nobody notices until the output does.',
+                after: 'Health scores surface drift before the work breaks.',
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 ),
               },
               {
-                before: 'AI generates output you can\'t explain or improve',
-                after: 'Every run is reviewed, scored, and feeds your operational playbook',
+                before: 'AI generates output you can\'t explain.',
+                after: 'Every run is traced, scored, and folded back into the system.',
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" /></svg>
                 ),
               },
               {
-                before: 'Changes cascade and nobody sees it coming',
-                after: 'Predictive consequences map how every change ripples across your systems',
+                before: 'A change in one place breaks another, silently.',
+                after: 'Nova maps how every change ripples across the environment.',
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg>
                 ),
@@ -179,13 +179,13 @@ export default function Home() {
       <section id="how" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>How It Works</p>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The System</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4 leading-snug">
-              Every run teaches the system.<br />
-              <span style={{ color: 'var(--brand)' }}>Every review teaches you.</span>
+              The environment learns.<br />
+              <span style={{ color: 'var(--brand)' }}>You learn with it.</span>
             </h2>
             <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              GRID is a co-learning operating system. You build better workflows. AI adapts to your patterns. The business gets clearer, faster, and more resilient — every week.
+              Not a tool you adopt. A system you inhabit. The longer it runs, the more it understands your patterns — and the more you understand your business.
             </p>
           </div>
 
@@ -194,12 +194,12 @@ export default function Home() {
             {/* Human side */}
             <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: 'var(--info)', opacity: 0.4 }} />
-              <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--info)', opacity: 0.85 }}>You Learn</p>
+              <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--info)', opacity: 0.85 }}>You learn</p>
               <div className="space-y-5">
                 {[
-                  { step: 'See', desc: 'Understand how your business operates — not how you think it does.' },
-                  { step: 'Design', desc: 'Build workflows that match reality. Test new approaches with real data.' },
-                  { step: 'Improve', desc: 'Watch what works and what doesn\'t. Every execution teaches you something.' },
+                  { step: 'See', desc: 'Watch how the business actually operates. Not how you pictured it.' },
+                  { step: 'Design', desc: 'Shape Workflows to match reality. Test new approaches on real data.' },
+                  { step: 'Improve', desc: 'Read what worked. Read what didn\'t. Every execution is a lesson.' },
                 ].map((item, i) => (
                   <div key={item.step} className="flex gap-4">
                     <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px]"
@@ -218,12 +218,12 @@ export default function Home() {
             {/* AI side */}
             <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: 'var(--nova)', opacity: 0.4 }} />
-              <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--nova)', opacity: 0.85 }}>AI Learns</p>
+              <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--nova)', opacity: 0.85 }}>Nova learns</p>
               <div className="space-y-5">
                 {[
-                  { step: 'Observe', desc: 'Nova reads your systems, workflows, and signals. It maps how your business runs.' },
-                  { step: 'Adapt', desc: 'It remembers your patterns, your brand, your preferences — and improves its output.' },
-                  { step: 'Act', desc: 'It executes workflows, triages incoming work, and surfaces what needs attention.' },
+                  { step: 'Observe', desc: 'Nova reads every System, Signal, and Workflow. It maps how the environment runs.' },
+                  { step: 'Adapt', desc: 'It remembers your patterns, your voice, your constraints. Its output sharpens.' },
+                  { step: 'Act', desc: 'It runs Workflows, triages Signals, and surfaces what needs you.' },
                 ].map((item, i) => (
                   <div key={item.step} className="flex gap-4">
                     <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px]"
@@ -248,7 +248,7 @@ export default function Home() {
               <div className="w-3 h-3 rounded-full" style={{ background: 'var(--nova)' }} />
             </div>
             <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              The result is compounding value. You become better at running work with AI. AI becomes better at running work for you. The business gets clearer every week.
+              Compounding coherence. You get better at running the work. Nova gets better at running it for you. The environment gets clearer every week.
             </p>
           </div>
         </div>
@@ -258,27 +258,27 @@ export default function Home() {
       <section id="platform" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Platform</p>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Environment</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4 leading-snug">
               Your business is a living system.<br />
               <span style={{ color: 'var(--brand)' }}>Now you can see it.</span>
             </h2>
             <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              Systems, workflows, goals, and integrations — connected through AI that maps how your operations flow.
+              Systems, Workflows, Goals, Signals, and Integrations. One environment where identity, infrastructure, and intelligence operate as one.
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8">
             {[
-              { name: 'Tasks & Projects', desc: 'Board, list, and table views with subtasks, labels, and due dates', icon: '◫', color: 'var(--info)' },
-              { name: 'Documents', desc: 'A knowledge base that lives next to the work it describes', icon: '▤', color: 'var(--nova)' },
-              { name: 'Goals & OKRs', desc: 'Set targets, track progress, link goals to the workflows that drive them', icon: '◎', color: 'var(--brand)' },
-              { name: 'Forms', desc: 'Collect structured data from clients, leads, or your own team', icon: '▦', color: 'var(--warning)' },
-              { name: 'Finance', desc: 'Invoices, revenue tracking, and financial health — built in', icon: '◇', color: '#FF6B6B' },
-              { name: 'Dashboards', desc: 'Custom widget boards with real-time analytics and health scores', icon: '▣', color: '#4ECDC4' },
-              { name: 'Workflows', desc: 'Multi-step automations that execute with human or AI agents', icon: '⟡', color: 'var(--info)' },
-              { name: 'Nova AI', desc: 'An AI that reads your systems, learns your patterns, and acts on your behalf', icon: '✦', color: 'var(--nova)' },
-              { name: 'Environments', desc: 'Isolated workspaces for each team, client, or business unit', icon: '⬡', color: 'var(--brand)' },
+              { name: 'Tasks & Projects', desc: 'Board, list, and table views. Subtasks. Labels. Due dates.', icon: '◫', color: 'var(--info)' },
+              { name: 'Documents', desc: 'Knowledge that lives next to the work it describes.', icon: '▤', color: 'var(--nova)' },
+              { name: 'Goals & OKRs', desc: 'Set targets. Link them to the Workflows that drive them.', icon: '◎', color: 'var(--brand)' },
+              { name: 'Forms', desc: 'Structured input from clients, leads, and your own team.', icon: '▦', color: 'var(--warning)' },
+              { name: 'Finance', desc: 'Invoices, revenue, and financial health — inside the environment.', icon: '◇', color: '#FF6B6B' },
+              { name: 'Dashboards', desc: 'Custom boards. Live analytics. Real health scores.', icon: '▣', color: '#4ECDC4' },
+              { name: 'Workflows', desc: 'Multi-step executions. Human agents. Nova. Together.', icon: '⟡', color: 'var(--info)' },
+              { name: 'Nova', desc: 'The intelligence layer. Reads your systems. Learns your patterns. Acts.', icon: '✦', color: 'var(--nova)' },
+              { name: 'Environments', desc: 'Bounded systems. One per team, client, or unit.', icon: '⬡', color: 'var(--brand)' },
             ].map(item => (
               <div key={item.name} className="glass-deep p-4 md:p-5 rounded-xl">
                 <span className="text-lg mb-2 block" style={{ color: item.color, opacity: 0.7 }}>{item.icon}</span>
@@ -301,7 +301,7 @@ export default function Home() {
               </span>
             </div>
             <p className="text-sm font-light" style={{ color: 'var(--text-2)' }}>
-              Connect the tools you already use. <span style={{ color: 'var(--text-1)' }}>110+ platforms</span> supported via one-click OAuth, with live two-way sync on a growing list (Notion, Slack, Google Calendar, HubSpot today — more every week).
+              <span style={{ color: 'var(--text-1)' }}>110+ platforms</span> connect in. One environment holds them together. One-click OAuth, with live two-way sync on a growing list — Notion, Slack, Google Calendar, HubSpot today. More every week.
             </p>
           </div>
         </div>
@@ -311,12 +311,12 @@ export default function Home() {
       <section id="use-cases" className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>Use Cases</p>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>In Practice</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4">
-              Real workflows. Real outcomes.
+              Not examples. Real workflows, running.
             </h2>
             <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              GRID isn&apos;t a dashboard you look at. It&apos;s a system you run. Here&apos;s what that looks like in practice.
+              GRID isn&apos;t a dashboard you look at. It&apos;s an environment you run. Here&apos;s what that looks like.
             </p>
           </div>
 
@@ -334,7 +334,7 @@ export default function Home() {
                     A blog post from brief to publish-ready in 4 minutes
                   </h3>
                   <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
-                    A founder writes a one-line brief. Nova researches the topic, writes a full draft matching the brand voice, reviews it for quality, and prepares SEO metadata — all in a single workflow execution. The founder reviews the output, adjusts the brief, and the next post is even better.
+                    A founder writes a one-line brief. Nova researches the topic, drafts in the brand voice, reviews for quality, prepares SEO metadata. One execution. Next time, the brief sharpens and the output gets closer still.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: 'var(--info)', border: '1px solid rgba(113,147,237,0.15)' }}>Research</span>
@@ -363,10 +363,10 @@ export default function Home() {
                     <p className="text-[10px] tracking-[0.16em] uppercase" style={{ color: '#FF6B6B', opacity: 0.9 }}>Marketing</p>
                   </div>
                   <h3 className="text-lg font-light mb-2" style={{ color: 'var(--text-1)' }}>
-                    A full social campaign across 3 platforms in one execution
+                    A full social campaign across three platforms, one execution
                   </h3>
                   <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
-                    Describe the campaign goal. Nova builds the narrative strategy, creates platform-specific content for Instagram, LinkedIn, and Facebook, reviews each post for brand alignment, and prepares the publishing schedule. The team learns which formats perform — and the next campaign starts smarter.
+                    Describe the goal. Nova builds the narrative, creates platform-specific posts for three channels, reviews each for brand alignment, prepares the schedule. The team reads what performed. The next campaign starts smarter.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,107,107,0.1)', color: '#FF6B6B', border: '1px solid rgba(255,107,107,0.15)' }}>Narrative</span>
@@ -395,10 +395,10 @@ export default function Home() {
                     <p className="text-[10px] tracking-[0.16em] uppercase" style={{ color: 'var(--brand)', opacity: 0.9 }}>Operations</p>
                   </div>
                   <h3 className="text-lg font-light mb-2" style={{ color: 'var(--text-1)' }}>
-                    Client onboarding that self-reports and improves
+                    Onboarding that reports on itself and improves
                   </h3>
                   <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
-                    Each new client follows a structured workflow: discovery, setup, training, handoff. Health scores track engagement at every stage. The operator sees which steps cause friction, adjusts the workflow, and every future onboarding gets smoother — without adding headcount.
+                    Every new client moves through a structured Workflow: discovery, setup, training, handoff. Health scores track each stage. The operator sees which steps create friction, adjusts the Workflow, and every future onboarding runs cleaner — no added headcount.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(200,242,107,0.1)', color: 'var(--brand)', border: '1px solid rgba(200,242,107,0.15)' }}>Discovery</span>
@@ -420,16 +420,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ HOW GRID HELPS TEAMS ═══ */}
+      {/* ═══ WHAT CHANGES ═══ */}
       <section className="py-20 md:py-32 px-5 md:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>The Impact</p>
+            <p className="text-[10px] tracking-[0.16em] uppercase mb-4" style={{ color: 'var(--text-3)' }}>What Changes</p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4">
-              What changes when your team uses GRID
+              When conditions align, the work changes shape.
             </h2>
             <p className="text-sm font-light max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              These aren&apos;t features. They&apos;re outcomes that compound the longer you use the platform.
+              Not features. Outcomes the environment produces the longer you&apos;re in it.
             </p>
           </div>
 
@@ -437,25 +437,25 @@ export default function Home() {
             {[
               {
                 outcome: 'Operational clarity',
-                desc: 'Every workflow, every system, every signal — visible in real time. No more asking "what\'s the status?" in Slack.',
-                metric: 'Replace status meetings with live dashboards',
+                desc: 'Every Workflow, every System, every Signal — visible in real time. The question "what\'s the status?" disappears.',
+                metric: 'Status meetings replaced by live health scores',
                 color: 'var(--brand)',
               },
               {
-                outcome: 'Visible efficiency gains',
-                desc: 'Track how much faster your team moves week over week. See which workflows save the most time and which need redesign.',
-                metric: 'Measure time saved per workflow, per week',
+                outcome: 'Visible efficiency',
+                desc: 'Track how much faster the team moves, week over week. See which Workflows save time and which need redesign.',
+                metric: 'Time saved measured per Workflow, per week',
                 color: 'var(--info)',
               },
               {
                 outcome: 'AI fluency',
-                desc: 'Your team learns to work with AI through real workflows — not chat experiments. Better prompts, better setups, better judgment.',
-                metric: 'Teams improve AI output quality by 40% in 4 weeks',
+                desc: 'Your team learns to work with Nova through real Workflows — not chat experiments. Better setups. Sharper judgment.',
+                metric: 'Output quality up 40% in 4 weeks',
                 color: 'var(--nova)',
               },
               {
                 outcome: 'Adaptive capacity',
-                desc: 'When something changes — a new client, a new market, a new priority — the system adapts. Workflows evolve. AI adjusts. No re-training.',
+                desc: 'When something changes — a new client, a new market, a new priority — the environment adapts. Workflows evolve. Nova adjusts. No retraining.',
                 metric: 'Respond to change in hours, not quarters',
                 color: 'var(--warning)',
               },
@@ -481,10 +481,10 @@ export default function Home() {
               {[
                 // Opacity floor set to 0.8 to clear WCAG AA (4.5:1) at 10px on #08080c.
                 // Progression is preserved via step size + dot fill below, not by sub-legible text.
-                { week: 'Week 1', label: 'Map your business', opacity: 0.8 },
-                { week: 'Week 2', label: 'First workflow runs', opacity: 0.87 },
+                { week: 'Week 1', label: 'Map the business', opacity: 0.8 },
+                { week: 'Week 2', label: 'First Workflows run', opacity: 0.87 },
                 { week: 'Week 4', label: 'Patterns emerge', opacity: 0.94 },
-                { week: 'Week 8', label: 'System runs itself', opacity: 1 },
+                { week: 'Week 8', label: 'The system runs itself', opacity: 1 },
               ].map((step, i) => (
                 <div key={step.week} className="flex items-center gap-4 md:gap-6 flex-shrink-0">
                   <div className="text-center min-w-[80px]">
@@ -509,10 +509,10 @@ export default function Home() {
               Built For
             </p>
             <h2 className="text-3xl font-extralight tracking-tight mb-4">
-              Teams that want to understand, not just execute
+              Teams building the conditions, not just the output.
             </h2>
             <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              GRID is for people who care about getting better at running work — not just getting more done.
+              For operators who want to understand how work produces itself — not just push more through.
             </p>
           </div>
 
@@ -522,19 +522,19 @@ export default function Home() {
                 who: 'Founders',
                 scenario: 'You\'re running a 5-person company doing the work of 20.',
                 needs: [
-                  'See every function of the business in one view',
-                  'Build systems that run without you in the loop',
-                  'Know where to focus before something breaks',
+                  'See every function of the business in one environment',
+                  'Build Systems that run without you in the loop',
+                  'Know where attention matters before something breaks',
                 ],
                 color: 'var(--brand)',
               },
               {
                 who: 'Operators',
-                scenario: 'You manage processes across teams but can\'t measure what\'s working.',
+                scenario: 'You run processes across teams but can\'t measure what\'s working.',
                 needs: [
-                  'Design workflows you can track and improve',
-                  'Replace status meetings with real-time health scores',
-                  'Learn which AI setups produce the best outcomes',
+                  'Design Workflows you can track and improve',
+                  'Replace status meetings with live health scores',
+                  'Learn which Nova setups produce the strongest output',
                 ],
                 color: 'var(--info)',
               },
@@ -542,9 +542,9 @@ export default function Home() {
                 who: 'Small teams',
                 scenario: 'You need to ship like a bigger team without hiring like one.',
                 needs: [
-                  'Run content, ops, and marketing workflows with AI',
-                  'See time saved per workflow, not just output volume',
-                  'Get better at AI through real work, not experiments',
+                  'Run content, operations, and marketing as Workflows',
+                  'See time saved per Workflow — not just output volume',
+                  'Get fluent in AI through real work, not experiments',
                 ],
                 color: 'var(--nova)',
               },
@@ -573,11 +573,11 @@ export default function Home() {
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--text-3)' }}>The Thesis</p>
           <h2 className="text-3xl font-extralight tracking-tight leading-snug mb-8">
-            AI doesn&apos;t replace how you work.<br />
-            <span style={{ color: 'var(--brand)' }}>It teaches you how to work better.</span>
+            AI doesn&rsquo;t replace how you work.<br />
+            <span style={{ color: 'var(--brand)' }}>It teaches you how the work works.</span>
           </h2>
           <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-            Most tools optimize for speed. GRID optimizes for understanding. When teams see how their business operates — when AI and humans learn in parallel — the result isn&apos;t just efficiency. It&apos;s mastery.
+            Most tools optimize for speed. GRID optimizes for coherence. When the environment is right, the output takes care of itself.
           </p>
         </div>
       </section>
@@ -588,9 +588,9 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { stat: '110+', label: 'Connectable', sub: 'One-click OAuth; live sync on a growing list' },
-              { stat: '9', label: 'Core modules', sub: 'Tasks, docs, goals, forms & more' },
-              { stat: '∞', label: 'Workflows', sub: 'Multi-step AI automations' },
-              { stat: '1', label: 'Platform', sub: 'Replace your tool stack' },
+              { stat: '9', label: 'Core systems', sub: 'Tasks, docs, goals, forms & more' },
+              { stat: '∞', label: 'Workflows', sub: 'Human agents. Nova. Together.' },
+              { stat: '1', label: 'Environment', sub: 'Replaces the fragment stack' },
             ].map(item => (
               <div key={item.label} className="glass-deep p-5 rounded-xl text-center">
                 <p className="text-2xl md:text-3xl font-extralight mb-1" style={{ color: 'var(--text-1)' }}>{item.stat}</p>
@@ -609,10 +609,10 @@ export default function Home() {
             Early Access
           </p>
           <h2 className="text-3xl font-extralight tracking-tight mb-4">
-            Learn the system. Improve the system.
+            Inhabit the system. Improve the system.
           </h2>
           <p className="text-sm font-light mb-10" style={{ color: 'var(--text-2)' }}>
-            We&apos;re opening access to a small group of teams who want to see how AI changes their work. Drop your email and we&apos;ll reach out when your workspace is ready.
+            We&apos;re opening the environment to a small group of teams who want to see their work as a system. Drop your email. We&apos;ll reach out when your environment is ready.
           </p>
 
           <WaitlistForm />
