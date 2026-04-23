@@ -29,8 +29,54 @@ export async function getCanvaClient(integrationId: string, environmentId: strin
     return (await res.json()) as T;
   }
 
+  async function post<T>(path: string, body: unknown): Promise<T> {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Canva ${path} failed (${res.status}): ${text.slice(0, 200)}`);
+    }
+    return (await res.json()) as T;
+  }
+
   return {
     integration,
+
+    /**
+     * Create a blank design from a preset. WRITE — approval-gated at
+     * the executor layer. Supported presets (via Connect API):
+     *   doc, whiteboard, presentation, social_media_post, poster,
+     *   mobile_video, video.
+     * Returns { id, editUrl, viewUrl, title } for the Artifact.
+     */
+    async createDesign(args: {
+      preset?: string;
+      title?: string;
+    }): Promise<{ id: string; editUrl: string; viewUrl: string; title: string }> {
+      const preset = args.preset ?? 'social_media_post';
+      const payload: Record<string, unknown> = {
+        design_type: { type: 'preset', name: preset },
+      };
+      if (args.title) payload.title = args.title.slice(0, 200);
+
+      const data = await post<{
+        design: {
+          id: string;
+          title?: string;
+          urls: { edit_url: string; view_url: string };
+        };
+      }>('/designs', payload);
+      return {
+        id: data.design.id,
+        editUrl: data.design.urls.edit_url,
+        viewUrl: data.design.urls.view_url,
+        title: data.design.title ?? args.title ?? preset,
+      };
+    },
 
     /** Recent designs. */
     async listDesigns(limit = 25) {
