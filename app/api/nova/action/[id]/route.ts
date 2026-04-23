@@ -76,16 +76,7 @@ export async function GET(
 
   if (kind === 'audit') {
     const log = await prisma.auditLog.findFirst({
-      where: {
-        id,
-        environment: {
-          deletedAt: null,
-          OR: [
-            { ownerId: identity.id },
-            { memberships: { some: { identityId: identity.id } } },
-          ],
-        },
-      },
+      where: { id },
       select: {
         id: true,
         createdAt: true,
@@ -99,9 +90,24 @@ export async function GET(
         before: true,
         after: true,
         metadata: true,
+        environmentId: true,
       },
     });
-    if (!log) return Response.json({ error: 'Not found' }, { status: 404 });
+    if (!log || !log.environmentId) return Response.json({ error: 'Not found' }, { status: 404 });
+
+    // AuditLog has no environment relation — verify access via a second query.
+    const env = await prisma.environment.findFirst({
+      where: {
+        id: log.environmentId,
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!env) return Response.json({ error: 'Not found' }, { status: 404 });
 
     return Response.json({
       id: `audit:${log.id}`,
