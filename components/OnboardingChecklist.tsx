@@ -30,6 +30,11 @@ type Step = {
 
 const DISMISSED_KEY = 'grid:onboarding-checklist-dismissed';
 const COLLAPSED_KEY = 'grid:onboarding-checklist-collapsed';
+// Tracks whether the user has already seen the full expanded
+// checklist once. On their second session we default to collapsed
+// so the overlay stops blocking content — the chip stays visible
+// so they can re-expand anytime.
+const SEEN_KEY = 'grid:onboarding-checklist-seen';
 
 export default function OnboardingChecklist() {
   const { user } = useAuth();
@@ -43,7 +48,22 @@ export default function OnboardingChecklist() {
   useEffect(() => {
     try {
       setDismissed(localStorage.getItem(DISMISSED_KEY) === 'true');
-      setCollapsed(localStorage.getItem(COLLAPSED_KEY) === 'true');
+      // Three-way state:
+      //  1. Explicit collapse decision exists → honor it.
+      //  2. No decision but SEEN_KEY is set → default to collapsed
+      //     (2nd+ session; don't steal attention).
+      //  3. No decision and SEEN is unset → default to expanded
+      //     (first session; show the ramp).
+      const explicit = localStorage.getItem(COLLAPSED_KEY);
+      if (explicit === 'true') {
+        setCollapsed(true);
+      } else if (explicit === 'false') {
+        setCollapsed(false);
+      } else {
+        const seen = localStorage.getItem(SEEN_KEY) === 'true';
+        setCollapsed(seen);
+        if (!seen) localStorage.setItem(SEEN_KEY, 'true');
+      }
     } catch {
       setDismissed(false);
     }

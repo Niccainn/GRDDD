@@ -18,7 +18,7 @@
 
 import crypto from 'node:crypto';
 
-export type OAuthProviderId = 'google' | 'github';
+export type OAuthProviderId = 'google' | 'github' | 'microsoft';
 
 export interface OAuthProvider {
   id: OAuthProviderId;
@@ -58,6 +58,39 @@ const PROVIDERS: Record<OAuthProviderId, Omit<OAuthProvider, 'clientId' | 'clien
       };
     },
   },
+  microsoft: {
+    id: 'microsoft',
+    label: 'Microsoft',
+    // "common" tenant accepts both personal (outlook.com) and work / school
+    // (Azure AD) accounts. Enterprises can swap to their tenant id via the
+    // MICROSOFT_TENANT_ID env var — see getProvider() below.
+    authorizeUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+    userUrl: 'https://graph.microsoft.com/v1.0/me',
+    scope: 'openid email profile User.Read',
+    parseProfile: async (profile) => {
+      const p = profile as {
+        id: string;
+        displayName?: string;
+        givenName?: string;
+        surname?: string;
+        mail?: string;
+        userPrincipalName?: string;
+      };
+      const email = p.mail || p.userPrincipalName || null;
+      const name =
+        p.displayName ||
+        [p.givenName, p.surname].filter(Boolean).join(' ') ||
+        email ||
+        'Microsoft user';
+      return {
+        providerAccountId: p.id,
+        email,
+        name,
+        avatar: null,
+      };
+    },
+  },
   github: {
     id: 'github',
     label: 'GitHub',
@@ -93,12 +126,26 @@ const PROVIDERS: Record<OAuthProviderId, Omit<OAuthProvider, 'clientId' | 'clien
 };
 
 export function getProvider(id: string): OAuthProvider | null {
-  if (id !== 'google' && id !== 'github') return null;
+  if (id !== 'google' && id !== 'github' && id !== 'microsoft') return null;
   const base = PROVIDERS[id];
   const envPrefix = id.toUpperCase();
   const clientId = process.env[`${envPrefix}_CLIENT_ID`];
   const clientSecret = process.env[`${envPrefix}_CLIENT_SECRET`];
   if (!clientId || !clientSecret) return null;
+
+  // Microsoft: enterprises can override the common tenant with their own
+  // (single-tenant) tenant id. Falls back to /common otherwise.
+  if (id === 'microsoft') {
+    const tenant = process.env.MICROSOFT_TENANT_ID || 'common';
+    return {
+      ...base,
+      clientId,
+      clientSecret,
+      authorizeUrl: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize`,
+      tokenUrl: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
+    };
+  }
+
   return { ...base, clientId, clientSecret };
 }
 
