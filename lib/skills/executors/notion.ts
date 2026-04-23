@@ -64,6 +64,110 @@ function simulatedFallback(
   };
 }
 
+/**
+ * notion.fetch_document — search Notion for the most relevant page
+ * and pull its text excerpt. The excerpt is stored on the step's
+ * outputs so downstream steps (e.g. claude.summarize) can use it
+ * via the auto-run chain.
+ */
+export const notionFetchDocument: Executor = async ({ step, project }) => {
+  const now = new Date().toISOString();
+  const integration = await resolveIntegration(project.environmentId, 'notion');
+  if (!integration) {
+    return {
+      step: { ...step, status: 'done', completedAt: now, outputs: { simulated: true } },
+      artifacts: [],
+      trace: [
+        {
+          stepId: step.id,
+          source: 'system',
+          message:
+            'Simulated Notion fetch: no active Notion integration for this Environment. Connect Notion to pull a real brief.',
+        },
+      ],
+      mode: 'simulated',
+    };
+  }
+
+  // Choose the search query: prefer an explicit step.inputs.query,
+  // otherwise use the step title, otherwise the project goal's head.
+  const inputs = (step.inputs ?? {}) as { query?: string; pageId?: string };
+  const query = inputs.query?.trim() || step.title || project.goal.slice(0, 80);
+
+  try {
+    const client = await getNotionClient(integration.id, project.environmentId);
+
+    // If the step carries an explicit pageId, fetch directly.
+    let pageId = inputs.pageId ?? null;
+    if (!pageId) {
+      const hits = await client.searchPages(query, 3);
+      if (hits.length === 0) {
+        return {
+          step: { ...step, status: 'done', completedAt: now, outputs: { simulated: true } },
+          artifacts: [],
+          trace: [
+            {
+              stepId: step.id,
+              source: 'system',
+              message: `Simulated Notion fetch: no pages matched "${query}". Share a relevant page with the integration and retry.`,
+            },
+          ],
+          mode: 'simulated',
+        };
+      }
+      pageId = hits[0].id;
+    }
+
+    const page = await client.fetchPage({ pageId });
+    const artifact: Artifact = {
+      id: randomUUID(),
+      name: `Notion · ${page.title}`,
+      kind: 'document',
+      tool: 'notion',
+      url: page.url,
+      createdAt: now,
+    };
+
+    return {
+      step: {
+        ...step,
+        status: 'done',
+        completedAt: now,
+        outputs: {
+          notionPageId: page.id,
+          url: page.url,
+          title: page.title,
+          excerpt: page.excerpt,
+          blockCount: page.blockCount,
+        },
+      },
+      artifacts: [artifact],
+      trace: [
+        {
+          stepId: step.id,
+          source: 'nova',
+          message: `Fetched "${page.title}" from Notion (${page.blockCount} blocks). Downstream steps will use this as context.`,
+        },
+      ],
+      mode: 'real',
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Unknown Notion error';
+    return {
+      step: { ...step, status: 'failed', completedAt: now, error: msg },
+      artifacts: [],
+      trace: [
+        {
+          stepId: step.id,
+          source: 'system',
+          message: `Notion fetch_document failed: ${msg}. The integration is connected but the call errored.`,
+        },
+      ],
+      mode: 'real',
+    };
+  }
+};
+
 export const notionCreatePage: Executor = async ({ step, project }) => {
   const now = new Date().toISOString();
   const integration = await resolveIntegration(project.environmentId, 'notion');
