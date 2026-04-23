@@ -121,6 +121,94 @@ export async function getNotionClient(integrationId: string, environmentId: stri
       return { count: children.length };
     },
 
+    /**
+     * Fetch a page's metadata plus its first page of text blocks,
+     * flattened into a plain-text excerpt. READ — safe to run inside
+     * a reasoning step without approval.
+     */
+    async fetchPage(args: { pageId: string; maxBlocks?: number; maxChars?: number }) {
+      const maxBlocks = args.maxBlocks ?? 40;
+      const maxChars = args.maxChars ?? 6000;
+
+      const pageRes = await fetch(`${API_BASE}/pages/${args.pageId}`, { headers });
+      if (!pageRes.ok) {
+        const text = await pageRes.text();
+        throw new Error(`Notion fetchPage (page) failed (${pageRes.status}): ${text.slice(0, 200)}`);
+      }
+      const page = (await pageRes.json()) as {
+        id: string;
+        url: string;
+        last_edited_time: string;
+        properties?: Record<string, unknown>;
+      };
+
+      // Extract a human-readable title from the properties bag.
+      let title = 'Untitled';
+      for (const value of Object.values(page.properties ?? {})) {
+        const v = value as { type?: string; title?: { plain_text?: string }[] };
+        if (v?.type === 'title' && Array.isArray(v.title) && v.title.length > 0) {
+          title = v.title.map(t => t.plain_text ?? '').join('').trim() || title;
+          break;
+        }
+      }
+
+      const blocksRes = await fetch(
+        `${API_BASE}/blocks/${args.pageId}/children?page_size=${maxBlocks}`,
+        { headers },
+      );
+      if (!blocksRes.ok) {
+        const text = await blocksRes.text();
+        throw new Error(`Notion fetchPage (blocks) failed (${blocksRes.status}): ${text.slice(0, 200)}`);
+      }
+      const blockData = (await blocksRes.json()) as {
+        results: Array<{ type: string } & Record<string, unknown>>;
+      };
+
+      const lines: string[] = [];
+      const richTextTypes = [
+        'paragraph',
+        'heading_1',
+        'heading_2',
+        'heading_3',
+        'bulleted_list_item',
+        'numbered_list_item',
+        'to_do',
+        'quote',
+        'code',
+        'callout',
+      ];
+      for (const block of blockData.results) {
+        const t = block.type;
+        if (!richTextTypes.includes(t)) continue;
+        const bag = (block as Record<string, unknown>)[t] as
+          | { rich_text?: Array<{ plain_text?: string }> }
+          | undefined;
+        const text = (bag?.rich_text ?? [])
+          .map(r => r.plain_text ?? '')
+          .join('')
+          .trim();
+        if (!text) continue;
+        if (t.startsWith('heading')) lines.push(`\n## ${text}`);
+        else if (t === 'bulleted_list_item') lines.push(`• ${text}`);
+        else if (t === 'numbered_list_item') lines.push(`1. ${text}`);
+        else if (t === 'to_do') lines.push(`☐ ${text}`);
+        else lines.push(text);
+      }
+      let excerpt = lines.join('\n').trim();
+      if (excerpt.length > maxChars) {
+        excerpt = excerpt.slice(0, maxChars) + '…';
+      }
+
+      return {
+        id: page.id,
+        url: page.url,
+        title,
+        lastEdited: page.last_edited_time,
+        excerpt,
+        blockCount: blockData.results.length,
+      };
+    },
+
     /** List databases the integration has been granted access to. */
     async listDatabases(limit = 20) {
       const data = await post<{

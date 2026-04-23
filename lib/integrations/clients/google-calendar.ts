@@ -68,5 +68,45 @@ export async function getGoogleCalendarClient(integrationId: string, environment
         status: ev.status ?? 'confirmed',
       }));
     },
+
+    /**
+     * Create a tentative event on the primary calendar. WRITE — only
+     * called through an approval-gated executor. Defaults to
+     * `status: 'tentative'` so the human can review before confirming
+     * to attendees. Invitations are NOT sent (sendUpdates=none) until
+     * the user explicitly flips the status.
+     */
+    async createDraftEvent(args: {
+      title: string;
+      description?: string | null;
+      start: Date;
+      end: Date;
+      attendees?: string[];
+      location?: string | null;
+    }): Promise<{ id: string; url: string | null }> {
+      const accessToken = await token();
+      const url = new URL('https://www.googleapis.com/calendar/v3/calendars/primary/events');
+      url.searchParams.set('sendUpdates', 'none');
+      const body = {
+        summary: args.title.slice(0, 200),
+        description: args.description ?? undefined,
+        start: { dateTime: args.start.toISOString() },
+        end: { dateTime: args.end.toISOString() },
+        status: 'tentative',
+        location: args.location ?? undefined,
+        attendees: (args.attendees ?? []).map(email => ({ email, responseStatus: 'needsAction' })),
+      };
+      const res = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { ...googleAuthHeaders(accessToken), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Google Calendar create failed (${res.status}): ${text.slice(0, 200)}`);
+      }
+      const data = (await res.json()) as { id: string; htmlLink?: string };
+      return { id: data.id, url: data.htmlLink ?? null };
+    },
   };
 }

@@ -12,9 +12,10 @@ import type { ExecutorResult } from './types';
 import * as claudeExec from './claude';
 import * as simExec from './simulated';
 import { humanReview } from './human';
-import { notionCreatePage as realNotionCreatePage } from './notion';
+import { notionCreatePage as realNotionCreatePage, notionFetchDocument as realNotionFetchDocument } from './notion';
 import { slackPostMessage as realSlackPostMessage } from './slack';
 import { gmailDraftEmail as realGmailDraftEmail } from './gmail';
+import { googleCalendarDraftEvent as realGcalDraftEvent } from './google-calendar';
 
 type Executor = (args: { step: Step; project: Project }) => Promise<ExecutorResult>;
 
@@ -35,14 +36,14 @@ const DISPATCH: Record<string, Executor> = {
   // Real — call the provider API if the integration is connected,
   // gracefully fall back to simulated mode otherwise.
   'notion.create_page': realNotionCreatePage,
+  'notion.fetch_document': realNotionFetchDocument,
   'slack.post_message': realSlackPostMessage,
   'gmail.draft_email': realGmailDraftEmail,
+  'google_calendar.draft_event': realGcalDraftEvent,
   // Still simulated until wired against the matching write path in
   // the client library.
   'notion.upload_asset': simExec.notionUploadAsset,
-  'notion.fetch_document': simExec.notionFetchDocument,
   'google_drive.save_file': simExec.googleDriveSaveFile,
-  'google_calendar.draft_event': simExec.googleCalendarDraftEvent,
 
   // Human-only.
   'human.review': humanReview,
