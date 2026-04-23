@@ -66,3 +66,9 @@ pitch/anthropic_partnership_brief.md
 pitch/*partnership*
 pitch/*_private.md
 pitch/private/
+
+# Admin surfaces — internal-only operator tooling, kept out of
+# the public repo. Archived under ~/Documents/grid-private/admin/.
+app/admin/
+app/api/admin/
+lib/admin/
