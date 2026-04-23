@@ -16,6 +16,12 @@ import { notionCreatePage as realNotionCreatePage, notionFetchDocument as realNo
 import { slackPostMessage as realSlackPostMessage } from './slack';
 import { gmailDraftEmail as realGmailDraftEmail } from './gmail';
 import { googleCalendarDraftEvent as realGcalDraftEvent } from './google-calendar';
+import { googleDriveSaveFile as realGoogleDriveSaveFile } from './google-drive';
+import {
+  figmaCreateFile as realFigmaCreateFile,
+  figmaCreateLogoExplorations as realFigmaCreateLogoExplorations,
+  figmaExportAsset as realFigmaExportAsset,
+} from './figma';
 
 type Executor = (args: { step: Step; project: Project }) => Promise<ExecutorResult>;
 
@@ -25,9 +31,6 @@ const DISPATCH: Record<string, Executor> = {
   'claude.draft_copy': claudeExec.draftCopy,
 
   // Simulated until the integration executors are wired.
-  'figma.create_file': simExec.figmaCreateFile,
-  'figma.create_logo_explorations': simExec.figmaCreateLogoExplorations,
-  'figma.export_asset': simExec.figmaExportAsset,
   'canva.create_design': simExec.canvaCreateDesign,
   'adobe.create_illustrator_file': simExec.adobeCreateIllustratorFile,
   'meta_ads.draft_campaign': simExec.metaDraftCampaign,
@@ -40,10 +43,16 @@ const DISPATCH: Record<string, Executor> = {
   'slack.post_message': realSlackPostMessage,
   'gmail.draft_email': realGmailDraftEmail,
   'google_calendar.draft_event': realGcalDraftEvent,
+  'google_drive.save_file': realGoogleDriveSaveFile,
+  // Figma — REST does not expose file creation, so create_file /
+  // create_logo_explorations validate the token and stage a pre-
+  // filled entry point. export_asset is a real API call.
+  'figma.create_file': realFigmaCreateFile,
+  'figma.create_logo_explorations': realFigmaCreateLogoExplorations,
+  'figma.export_asset': realFigmaExportAsset,
   // Still simulated until wired against the matching write path in
   // the client library.
   'notion.upload_asset': simExec.notionUploadAsset,
-  'google_drive.save_file': simExec.googleDriveSaveFile,
 
   // Human-only.
   'human.review': humanReview,

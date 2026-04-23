@@ -65,6 +65,80 @@ export async function getGoogleDriveClient(integrationId: string, environmentId:
       }));
     },
 
+    /**
+     * Create a text file in the user's Drive. WRITE — approval-gated
+     * at the executor layer. Supports three output shapes:
+     *
+     *   - 'doc'      Converts markdown/plain text into a Google Doc
+     *   - 'text'     Saves as a plain .txt file
+     *   - 'markdown' Saves as a .md file (preserves Markdown exactly)
+     *
+     * Returns { id, webViewLink } so the executor can emit an
+     * Artifact the user can click straight to.
+     */
+    async createTextFile(args: {
+      name: string;
+      content: string;
+      format?: 'doc' | 'text' | 'markdown';
+      parentFolderId?: string | null;
+    }): Promise<{ id: string; webViewLink: string; mimeType: string }> {
+      const format = args.format ?? 'doc';
+      const uploadMime =
+        format === 'doc' ? 'text/plain' : format === 'markdown' ? 'text/markdown' : 'text/plain';
+      const finalMime =
+        format === 'doc' ? 'application/vnd.google-apps.document' : uploadMime;
+      const ext = format === 'doc' ? '' : format === 'markdown' ? '.md' : '.txt';
+      const displayName = args.name.endsWith(ext) || ext === '' ? args.name : `${args.name}${ext}`;
+
+      const metadata: Record<string, unknown> = {
+        name: displayName,
+        mimeType: finalMime,
+      };
+      if (args.parentFolderId) metadata.parents = [args.parentFolderId];
+
+      // Multipart related upload — Drive's standard way of creating
+      // a file and its metadata in one call.
+      const boundary = '----grid-upload-' + Math.random().toString(36).slice(2);
+      const body = [
+        `--${boundary}`,
+        'Content-Type: application/json; charset=UTF-8',
+        '',
+        JSON.stringify(metadata),
+        `--${boundary}`,
+        `Content-Type: ${uploadMime}`,
+        '',
+        args.content,
+        `--${boundary}--`,
+        '',
+      ].join('\r\n');
+
+      const url = new URL('https://www.googleapis.com/upload/drive/v3/files');
+      url.searchParams.set('uploadType', 'multipart');
+      url.searchParams.set('fields', 'id,name,mimeType,webViewLink');
+
+      const res = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          Authorization: headers.Authorization,
+          'Content-Type': `multipart/related; boundary=${boundary}`,
+          'Content-Length': String(Buffer.byteLength(body)),
+        },
+        body,
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Google Drive createTextFile failed (${res.status}): ${text.slice(0, 200)}`);
+      }
+      const data = (await res.json()) as {
+        id: string;
+        name: string;
+        mimeType: string;
+        webViewLink: string;
+      };
+      return { id: data.id, webViewLink: data.webViewLink, mimeType: data.mimeType };
+    },
+
     /** Search files by query string. */
     async searchFiles(query: string, limit = 25) {
       const data = await get<{
