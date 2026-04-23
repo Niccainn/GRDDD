@@ -2,6 +2,9 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
+import NodeInspector, { type RichNodeData } from './NodeInspector';
+import FromPromptModal from './FromPromptModal';
+import type { WFNode as PromptNode, WFEdge as PromptEdge } from '@/lib/workflows/from-prompt';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,6 +17,16 @@ export type WFNode = {
   y: number;
   label: string;
   description?: string;
+  // Rich classifier — optional so legacy workflows still render. The
+  // NodeInspector side-panel edits these; the FromPromptModal
+  // populates them on import. See lib/skills/taxonomy.ts.
+  location?: string;
+  action?: string;
+  interaction?: string;
+  execution?: string;
+  prompt?: string;
+  integrationProvider?: string;
+  approvalRequired?: boolean;
 };
 
 export type WFEdge = {
@@ -142,6 +155,9 @@ export default function WorkflowBuilder({
   const [pan, setPan] = useState({ x: 60, y: 60 });
   const [zoom, setZoom] = useState(1);
   const [connectLine, setConnectLine] = useState<{ from: { x: number; y: number }; to: { x: number; y: number } } | null>(null);
+  // Inspector + "from prompt" bridging state.
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [promptModalOpen, setPromptModalOpen] = useState(false);
 
   // Drag & connect via refs to avoid stale closures in global listeners
   const dragRef = useRef<{ id: string; startX: number; startY: number; nodeX: number; nodeY: number } | null>(null);
@@ -359,6 +375,20 @@ export default function WorkflowBuilder({
         </span>
 
         <div className="ml-auto flex items-center gap-3">
+          {selected && nodes.find(n => n.id === selected && n.type !== 'start' && n.type !== 'end') && (
+            <button
+              onClick={() => setInspectorOpen(true)}
+              className="text-xs font-light px-3 py-1.5 rounded-lg transition-colors"
+              style={{
+                background: 'rgba(191,159,241,0.1)',
+                border: '1px solid rgba(191,159,241,0.25)',
+                color: '#BF9FF1',
+              }}
+              title="Open rich inspector for this step"
+            >
+              Inspect step
+            </button>
+          )}
           <span className="text-xs font-light tabular-nums" style={{ color: 'rgba(255,255,255,0.2)' }}>
             {nodes.length} {nodes.length === 1 ? 'node' : 'nodes'} · {edges.length} {edges.length === 1 ? 'edge' : 'edges'}
           </span>
@@ -385,6 +415,19 @@ export default function WorkflowBuilder({
         {/* ── Left palette ── */}
         <div className="flex flex-col gap-1 p-2.5 flex-shrink-0"
           style={{ width: 140, borderRight: '1px solid rgba(255,255,255,0.06)', background: '#0b0b0d' }}>
+          <button
+            onClick={() => setPromptModalOpen(true)}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-light mb-2 transition-all hover:opacity-80"
+            style={{
+              background: 'var(--brand-soft)',
+              border: '1px solid var(--brand-border)',
+              color: 'var(--brand)',
+            }}
+            title="Ask Nova to plan this workflow from a natural-language prompt"
+          >
+            <span style={{ fontSize: 13, lineHeight: 1 }}>✨</span>
+            From prompt
+          </button>
           <p className="text-xs px-2 py-1 mb-1 tracking-[0.1em]" style={{ color: 'rgba(255,255,255,0.2)' }}>NODES</p>
           {PALETTE.map(p => {
             const meta = NODE_META[p.type];
@@ -712,6 +755,45 @@ export default function WorkflowBuilder({
         )}
 
       </div>
+
+      {/* "From prompt" modal — bridges Project-plan world to the canvas. */}
+      <FromPromptModal
+        open={promptModalOpen}
+        onClose={() => setPromptModalOpen(false)}
+        onAccept={(newNodes: PromptNode[], newEdges: PromptEdge[], mode) => {
+          if (mode === 'replace') {
+            setNodes(newNodes as WFNode[]);
+            setEdges(newEdges as WFEdge[]);
+          } else {
+            // append: shift the new graph down by the current canvas
+            // content height so it doesn't overlap.
+            const maxY = nodes.reduce((m, n) => Math.max(m, n.y + NODE_H), 0);
+            const shifted = (newNodes as WFNode[]).map(n => ({ ...n, y: n.y + maxY + 60 }));
+            setNodes(prev => [...prev, ...shifted]);
+            setEdges(prev => [...prev, ...(newEdges as WFEdge[])]);
+          }
+          setPromptModalOpen(false);
+          setTimeout(() => fitView(), 80);
+        }}
+      />
+
+      {/* Rich step inspector — opens when the user asks to see node details. */}
+      <NodeInspector
+        workflowId={workflow.id}
+        node={inspectorOpen && selectedNode ? (selectedNode as RichNodeData) : null}
+        onChange={patch => {
+          if (!selected) return;
+          setNodes(prev => prev.map(n => (n.id === selected ? { ...n, ...patch } as WFNode : n)));
+        }}
+        onClose={() => setInspectorOpen(false)}
+        onDelete={() => {
+          if (!selected) return;
+          setNodes(prev => prev.filter(n => n.id !== selected));
+          setEdges(prev => prev.filter(e => e.source !== selected && e.target !== selected));
+          setSelected(null);
+          setInspectorOpen(false);
+        }}
+      />
     </div>
   );
 }
