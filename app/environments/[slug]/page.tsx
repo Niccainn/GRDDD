@@ -17,6 +17,7 @@ import ActionLedgerWidget from '@/components/environments/ActionLedgerWidget';
 import NovaLearningRibbon from '@/components/environments/NovaLearningRibbon';
 import RoiSummaryWidget from '@/components/environments/RoiSummaryWidget';
 import TeamAdoptionWidget from '@/components/environments/TeamAdoptionWidget';
+import TrustPrimer from '@/components/environments/TrustPrimer';
 import ProjectsWidget from '@/components/environments/ProjectsWidget';
 import ProjectLauncher from '@/components/projects/ProjectLauncher';
 
@@ -123,9 +124,15 @@ export default function EnvironmentOverview() {
           so screenshots of this page carry the product thesis on
           their own. Everything below is supplementary. */}
       <NovaLearningRibbon environmentId={environmentId} />
-      <NarrativeWidget environmentId={environmentId} environmentName={name} />
+      {/* Hero order change (Anthropic-review pass): Project Launcher
+          leads, because the interaction layer is the product. The
+          narrative + trust primer follow so the Environment page
+          reads as "what can I make Nova do" → "here's what Nova's
+          done" → "here's how it explains itself". */}
       <ProjectLauncher environmentId={environmentId} />
+      <TrustPrimer environmentId={environmentId} />
       <ProjectsWidget environmentId={environmentId} />
+      <NarrativeWidget environmentId={environmentId} environmentName={name} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ExceptionsWidget environmentId={environmentId} />
         <ActionLedgerWidget environmentId={environmentId} />

@@ -137,7 +137,10 @@ export default function WhyDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Why Nova did this"
-        className="fixed top-0 right-0 h-screen w-[420px] max-w-[92vw] z-50 flex flex-col"
+        // Full-screen on narrow viewports (below md), right-rail on
+        // desktop. Mobile users need to read the full trace without
+        // squinting or scrolling horizontally.
+        className="fixed top-0 right-0 h-screen w-screen md:w-[420px] md:max-w-[92vw] z-50 flex flex-col"
         style={{
           background: 'rgba(10,10,14,0.97)',
           backdropFilter: 'blur(40px)',

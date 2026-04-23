@@ -11,7 +11,7 @@ export default function Home() {
     applicationSubCategory: 'Operational Intelligence',
     operatingSystem: 'Web',
     url: 'https://www.grddd.com',
-    description: 'GRID is the adaptive workspace for growth. One environment where brand, operations, and intelligence operate as one system. Nova runs workflows, maps consequences, and turns every execution into operational memory.',
+    description: 'A workspace that acts. Type what you want done. Nova writes the plan, your tools do the work — Figma, Canva, Notion, Gmail, Slack, Meta Ads. Every step traces, every action explains itself, every override teaches Nova.',
     featureList: 'Environment, Systems, Workflows, Signals, Nova (intelligence layer), Predictive Consequence Mapping, Operational Playbook, Execution Review, Autonomy Trust Gradient, 110+ OAuth Integrations, System Health Monitoring, BYOK Anthropic API',
     offers: {
       '@type': 'Offer',
@@ -66,28 +66,62 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ═══ HERO ═══ */}
+      {/* ═══ HERO ═══
+          Interaction-layer-first hero. Leads with the product's
+          primary verb (type what you want done), followed by a
+          concrete example of the Project plan that falls out of it.
+          The pills used to describe capabilities; they now describe
+          the trust commitments that close enterprise deals. */}
       <section className="min-h-screen flex flex-col items-center justify-center px-5 md:px-8 pt-20 relative">
         <div className="text-center max-w-3xl">
           <p className="text-[10px] tracking-[0.18em] uppercase mb-6 animate-fade-in" style={{ color: 'var(--brand)', opacity: 0.85 }}>
-            The adaptive workspace for growth
+            The nervous system for your company
           </p>
           <h1 className="text-4xl md:text-6xl font-extralight tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            Management is a byproduct.<br />
-            <span style={{ color: 'var(--brand)' }}>Growth is the output.</span>
+            A workspace<br />
+            <span style={{ color: 'var(--brand)' }}>that acts.</span>
           </h1>
           <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-8 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
-            Your brand lives in three design tools. Your operations live in a project manager. Your intelligence lives in a chat window. GRID is the environment they share — where the system runs itself, and growth is what you ship.
+            Type what you want done. Nova writes the plan. Your tools do the work — Figma, Canva, Notion, Gmail, Slack, Meta Ads. You see every step, approve what matters, undo anything within 24 hours, and teach Nova when it was off.
           </p>
-          {/* Capability pills — reflect what's actually shipped and
-              demonstrable to a design partner today. Order is
-              roughly "biggest aha → smallest supporting claim". */}
+          {/* A concrete example of what one prompt produces. This
+              is the demo-in-words that the Project run page renders
+              literally. Screenshot-ready. */}
+          <div
+            className="rounded-2xl p-5 mb-8 text-left max-w-xl mx-auto animate-fade-in"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', animationDelay: '0.22s' }}
+          >
+            <p className="text-[10px] tracking-[0.16em] uppercase font-light mb-3" style={{ color: 'var(--brand)' }}>
+              One prompt, seven real steps
+            </p>
+            <p className="text-sm font-light mb-3" style={{ color: 'var(--text-1)' }}>
+              <span style={{ color: 'var(--text-3)' }}>You:</span> "Design a Meta ad campaign with Canva creative."
+            </p>
+            <div className="space-y-1.5">
+              {[
+                { t: 'Fetch creative brief', tool: 'Notion' },
+                { t: 'Draft three copy variants', tool: 'Claude' },
+                { t: 'Build static + story ad', tool: 'Canva' },
+                { t: 'Human review', tool: 'Gate' },
+                { t: 'Stage PAUSED campaign', tool: 'Meta Ads' },
+                { t: 'Send approval email', tool: 'Gmail' },
+              ].map((s, i) => (
+                <div key={i} className="flex items-center gap-2 text-[11px] font-light" style={{ color: 'var(--text-2)' }}>
+                  <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px]" style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text-3)' }}>{i + 1}</span>
+                  <span className="flex-1">{s.t}</span>
+                  <span className="text-[10px] tracking-wider uppercase" style={{ color: 'var(--text-3)' }}>{s.tool}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Trust commitments as pills — this is what closes the
+              enterprise pitch. Brand colors only, one line each. */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10 animate-fade-in" style={{ animationDelay: '0.25s' }}>
             {[
-              { label: 'One-prompt scaffolding', color: 'var(--brand)' },
-              { label: 'Per-system agents', color: 'var(--nova)' },
-              { label: 'Live integration sync', color: 'var(--info)' },
-              { label: 'Visible confidence', color: 'var(--warning)' },
+              { label: 'Every action explains itself', color: 'var(--brand)' },
+              { label: '24-hour undo window', color: 'var(--nova)' },
+              { label: 'Every override teaches Nova', color: 'var(--info)' },
+              { label: 'Built on Claude', color: 'var(--warning)' },
             ].map(pill => (
               <span key={pill.label} className="text-[10px] font-light px-3 py-1.5 rounded-full tracking-wide"
                 style={{ background: `${pill.color}10`, border: `1px solid ${pill.color}20`, color: pill.color }}>
@@ -100,8 +134,8 @@ export default function Home() {
               style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}>
               Request access
             </a>
-            <a href="#how" className="glass-pill px-5 md:px-8 py-3 md:py-3.5 text-sm font-light whitespace-nowrap" style={{ color: 'var(--text-2)' }}>
-              See the system
+            <a href="/pricing" className="glass-pill px-5 md:px-8 py-3 md:py-3.5 text-sm font-light whitespace-nowrap" style={{ color: 'var(--text-2)' }}>
+              See plans
             </a>
           </div>
         </div>

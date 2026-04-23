@@ -12,16 +12,16 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.grddd.com'),
   title: {
-    default: 'GRID — The adaptive workspace for growth',
+    default: 'GRID — The nervous system for your company',
     template: '%s | GRID',
   },
-  description: 'GRID is the adaptive workspace for growth. One environment where brand, operations, and intelligence operate as one system — reading your work, learning your patterns, and producing output that gets clearer every week.',
-  keywords: ['adaptive workspace', 'adaptive workspace for growth', 'AI workspace', 'intelligent workspace', 'adaptive work environment', 'AI operations layer', 'AI workflow automation', 'business operating system', 'operational intelligence platform', 'AI that learns', 'workflow quality scoring', 'operational playbook', 'consequence mapping', 'system health monitoring', 'Nova AI agent', 'BYOK AI platform', 'notion alternative', 'monday alternative', 'solo founder tools', 'small team operations'],
+  description: 'Type what you want done. Nova writes the plan. Your tools do the work. A living business OS where every AI action explains itself, reverses in one click, and teaches Nova what "good" looks like in your company.',
+  keywords: ['nervous system business OS', 'AI workspace', 'AI interaction layer', 'multi-tool AI', 'AI operations layer', 'AI workflow automation', 'business operating system', 'operational intelligence platform', 'AI that learns', 'workflow quality scoring', 'operational playbook', 'Nova AI agent', 'BYOK AI platform', 'Claude business OS', 'notion alternative', 'solo founder tools', 'small team operations'],
   authors: [{ name: 'GRID Systems Inc.' }],
   creator: 'GRID Systems Inc.',
   openGraph: {
-    title: 'GRID — The adaptive workspace for growth',
-    description: 'The adaptive workspace for growth. One environment where brand, operations, and intelligence operate as one — reading your work, learning your patterns, producing output that gets clearer every week.',
+    title: 'GRID — The nervous system for your company',
+    description: 'Type what you want done. Nova writes the plan, your tools do the work — Figma, Canva, Notion, Gmail, Slack, Meta Ads. Every step is traceable, reversible, and teaches Nova what "good" looks like in your company. Built on Claude.',
     url: 'https://www.grddd.com',
     siteName: 'GRID',
     locale: 'en_US',
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'GRID — The adaptive workspace for growth',
-    description: 'The adaptive workspace for growth. Brand, operations, and intelligence as one system. Built on Claude.',
+    title: 'GRID — The nervous system for your company',
+    description: 'Type what you want done. Nova writes the plan. Your tools do the work. Built on Claude.',
   },
   robots: {
     index: true,

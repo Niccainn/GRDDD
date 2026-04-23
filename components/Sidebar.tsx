@@ -82,9 +82,17 @@ const navSections: CollapsibleNavSection[] = [
   {
     label: '',
     items: [
+      // Projects is the interaction-layer hero — one prompt, multi-tool
+      // plan, human gates. Pulled up from Insights to primary nav so
+      // new users see the differentiator on day one.
+      { href: '/projects', label: 'Projects', icon: icons.workflows },
       { href: '/tasks', label: 'Tasks', icon: icons.tasks },
       { href: '/inbox', label: 'Inbox', icon: icons.inbox, badge: 'inbox' },
       { href: '/calendar', label: 'Calendar', icon: icons.calendar },
+      // LMS primitives — bidirectional learning loop. Promoted so the
+      // compounding story is visible without diving into APPS.
+      { href: '/learn', label: 'Learn', icon: icons.analytics },
+      { href: '/memory', label: 'Memory', icon: icons.documents },
     ],
   },
   {
@@ -117,17 +125,17 @@ const navSections: CollapsibleNavSection[] = [
         ],
       },
       {
+        // "Insights" collapses to advanced surfaces only. Dashboards
+        // intentionally removed — the Environment page is the
+        // canonical overview. Projects, Learn, and Memory were
+        // promoted to primary nav.
         label: 'Insights',
         items: [
-          { href: '/dashboards', label: 'Dashboards', icon: icons.dashboards },
           { href: '/analytics', label: 'Analytics', icon: icons.analytics },
           { href: '/reports', label: 'Reports', icon: icons.reports },
           { href: '/mastery', label: 'Mastery', icon: icons.analytics },
           { href: '/activity', label: 'Activity', icon: icons.activity },
           { href: '/audit', label: 'Audit', icon: icons.audit },
-          { href: '/learn', label: 'Nova Academy', icon: icons.analytics },
-          { href: '/memory', label: 'Memory', icon: icons.documents },
-          { href: '/projects', label: 'Projects', icon: icons.workflows },
           { href: '/skill-space', label: 'Skill Space', icon: icons.analytics },
         ],
       },
