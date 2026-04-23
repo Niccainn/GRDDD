@@ -75,14 +75,14 @@ export default function Home() {
       <section className="min-h-screen flex flex-col items-center justify-center px-5 md:px-8 pt-20 relative">
         <div className="text-center max-w-3xl">
           <p className="text-[10px] tracking-[0.18em] uppercase mb-6 animate-fade-in" style={{ color: 'var(--brand)', opacity: 0.85 }}>
-            The nervous system for your company
+            The adaptive workspace for growth
           </p>
           <h1 className="text-4xl md:text-6xl font-extralight tracking-tight leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            A workspace<br />
-            <span style={{ color: 'var(--brand)' }}>that acts.</span>
+            Management is a byproduct.<br />
+            <span style={{ color: 'var(--brand)' }}>Growth is the output.</span>
           </h1>
           <p className="text-base font-light leading-relaxed max-w-xl mx-auto mb-8 animate-fade-in" style={{ color: 'var(--text-2)', animationDelay: '0.2s' }}>
-            Type what you want done. Nova writes the plan. Your tools do the work — Figma, Canva, Notion, Gmail, Slack, Meta Ads. You see every step, approve what matters, undo anything within 24 hours, and teach Nova when it was off.
+            Your brand lives in three design tools. Your operations live in a project manager. Your intelligence lives in a chat window. GRID is the environment they share — where the system runs itself, and growth is what you ship.
           </p>
           {/* A concrete example of what one prompt produces. This
               is the demo-in-words that the Project run page renders
