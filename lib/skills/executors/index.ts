@@ -22,6 +22,12 @@ import {
   figmaCreateLogoExplorations as realFigmaCreateLogoExplorations,
   figmaExportAsset as realFigmaExportAsset,
 } from './figma';
+import { canvaCreateDesign as realCanvaCreateDesign } from './canva';
+import {
+  metaDraftCampaign as realMetaDraftCampaign,
+  googleAdsDraftCampaign as realGoogleAdsDraftCampaign,
+  linkedinDraftCampaign as realLinkedinDraftCampaign,
+} from './ads';
 
 type Executor = (args: { step: Step; project: Project }) => Promise<ExecutorResult>;
 
@@ -31,11 +37,7 @@ const DISPATCH: Record<string, Executor> = {
   'claude.draft_copy': claudeExec.draftCopy,
 
   // Simulated until the integration executors are wired.
-  'canva.create_design': simExec.canvaCreateDesign,
   'adobe.create_illustrator_file': simExec.adobeCreateIllustratorFile,
-  'meta_ads.draft_campaign': simExec.metaDraftCampaign,
-  'google_ads.draft_campaign': simExec.googleAdsDraftCampaign,
-  'linkedin_ads.draft_campaign': simExec.linkedinDraftCampaign,
   // Real — call the provider API if the integration is connected,
   // gracefully fall back to simulated mode otherwise.
   'notion.create_page': realNotionCreatePage,
@@ -50,6 +52,13 @@ const DISPATCH: Record<string, Executor> = {
   'figma.create_file': realFigmaCreateFile,
   'figma.create_logo_explorations': realFigmaCreateLogoExplorations,
   'figma.export_asset': realFigmaExportAsset,
+  'canva.create_design': realCanvaCreateDesign,
+  // Ads: Meta is a real PAUSED write; Google + LinkedIn validate the
+  // connection and deep-link to Campaign Manager (multi-step writes
+  // land in a later pass).
+  'meta_ads.draft_campaign': realMetaDraftCampaign,
+  'google_ads.draft_campaign': realGoogleAdsDraftCampaign,
+  'linkedin_ads.draft_campaign': realLinkedinDraftCampaign,
   // Still simulated until wired against the matching write path in
   // the client library.
   'notion.upload_asset': simExec.notionUploadAsset,

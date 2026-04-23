@@ -112,6 +112,50 @@ export async function getMetaAdsClient(integrationId: string, environmentId: str
     },
 
     /**
+     * Create a PAUSED draft campaign on the ad account. WRITE — the
+     * campaign is NEVER started by this call. The user reviews in
+     * Meta's UI and flips status to ACTIVE themselves, which is when
+     * Meta starts charging. No targeting or creatives are set here;
+     * those are resource-dependent follow-ups the user does manually
+     * (or through a phase 5 expansion of this executor).
+     *
+     * Objective defaults to OUTCOME_TRAFFIC because it is the safest
+     * broad objective when the project goal hasn't specified one.
+     * Meta's objective taxonomy as of v20:
+     *   OUTCOME_AWARENESS, OUTCOME_TRAFFIC, OUTCOME_ENGAGEMENT,
+     *   OUTCOME_LEADS, OUTCOME_APP_PROMOTION, OUTCOME_SALES.
+     */
+    async createDraftCampaign(args: {
+      name: string;
+      objective?: string;
+      specialAdCategories?: string[];
+    }): Promise<{ id: string; manageUrl: string }> {
+      const url = `${GRAPH_BASE}/${adAccountId}/campaigns`;
+      const body = new URLSearchParams({
+        name: args.name.slice(0, 100),
+        objective: args.objective ?? 'OUTCOME_TRAFFIC',
+        status: 'PAUSED',
+        special_ad_categories: JSON.stringify(args.specialAdCategories ?? []),
+      });
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Meta createDraftCampaign failed (${res.status}): ${text.slice(0, 300)}`);
+      }
+      const data = (await res.json()) as { id: string };
+      const manageUrl = `https://business.facebook.com/adsmanager/manage/campaigns?act=${adAccountId.replace('act_', '')}&selected_campaign_ids=${data.id}`;
+      return { id: data.id, manageUrl };
+    },
+
+    /**
      * Aggregate totals across the whole account for the same range.
      * This is the hot path for the Daily Paid Ads Review agent — one
      * call populates the Spend / ROAS / CTR metric blocks.
