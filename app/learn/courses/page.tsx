@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 type Enrollment = { id: string; status: string; progress: number; completedAt: string | null } | null;
 type Course = {
@@ -37,6 +38,7 @@ export default function CoursesPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
+      <SampleDataBanner />
       <div className="flex items-start justify-between gap-4">
         <div>
           <Link href="/learn" className="text-[10px] tracking-wider uppercase font-light hover:text-white/70" style={{ color: 'var(--text-3)' }}>

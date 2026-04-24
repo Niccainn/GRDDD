@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 type Goal = {
   id: string;
@@ -97,6 +98,7 @@ export default function GoalsPage() {
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
+      <SampleDataBanner />
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>

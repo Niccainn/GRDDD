@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 type Automation = {
   id: string;
@@ -102,6 +103,7 @@ export default function AutomationsPage() {
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
+      <SampleDataBanner />
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>

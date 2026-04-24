@@ -49,6 +49,32 @@ export async function DELETE() {
     },
   });
 
+  // Signals (source === 'sample' is the tag we apply at seed time)
+  await prisma.signal.deleteMany({
+    where: { environmentId: { in: envIds }, source: 'sample' },
+  });
+
+  // Meetings (title prefix is stable; description starts with [Sample]).
+  // ActionItem + LessonCompletion cascades fire via FK ON DELETE CASCADE.
+  await prisma.meeting.deleteMany({
+    where: {
+      environmentId: { in: envIds },
+      OR: [
+        { title: { startsWith: 'Sample ·' } },
+        { description: { startsWith: '[Sample]' } },
+      ],
+    },
+  });
+
+  // Courses — title prefix tag. Modules / lessons / enrollments / quizzes
+  // cascade via FK ON DELETE CASCADE.
+  await prisma.course.deleteMany({
+    where: {
+      environmentId: { in: envIds },
+      title: { startsWith: 'Sample ·' },
+    },
+  });
+
   // Also clean up any demo-seeded data from initial testing
   await prisma.task.deleteMany({
     where: {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 type MeetingEnv = { id: string; name: string; slug: string; color: string | null };
 type MeetingActionItemLite = { id: string; status: string };
@@ -66,6 +67,7 @@ export default function MeetingsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
+      <SampleDataBanner />
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>

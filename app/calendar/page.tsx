@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import QuickAddPopover from '@/components/calendar/QuickAddPopover';
 import EventDetailDrawer, { type DrawerEvent } from '@/components/calendar/EventDetailDrawer';
 import { bucketEventsByDay, nextFocusDay } from '@/lib/calendar/buckets';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 type CalendarEvent = {
   id: string;
@@ -321,6 +322,7 @@ export default function CalendarPage() {
 
   return (
     <div className="flex gap-6 p-8">
+      <SampleDataBanner />
       {/* ── Main calendar area ──────────────────────────────────────── */}
       <div className="flex-1 max-w-4xl">
         {/* Integration Connect Banner */}

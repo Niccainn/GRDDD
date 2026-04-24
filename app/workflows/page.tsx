@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 const AUTONOMY_LEVELS = [
   { name: 'Observe', color: 'rgba(255,255,255,0.35)' },
@@ -59,6 +60,7 @@ export default function WorkflowsPage() {
   return (
     <Suspense fallback={
       <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
+      <SampleDataBanner />
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-32 rounded-xl animate-pulse" style={{ background: 'var(--glass)' }} />
