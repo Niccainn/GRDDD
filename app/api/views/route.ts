@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Parse sort: "field:asc" or "field:desc"
-  let orderBy: Record<string, string> = {};
+  const orderBy: Record<string, string> = {};
   if (sortRaw) {
     const [field, dir] = sortRaw.split(':');
     if (field) orderBy[field] = dir === 'desc' ? 'desc' : 'asc';

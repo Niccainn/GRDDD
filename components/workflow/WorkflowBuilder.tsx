@@ -196,7 +196,7 @@ export default function WorkflowBuilder({
     // Slight delay to let canvas measure itself
     const t = setTimeout(() => fitView(), 80);
     return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   // ─── Global mouse/key events ───────────────────────────────────────────────

@@ -69,7 +69,7 @@ export async function PATCH(
     };
     // Advance cursor + mark the next eligible step as running (or
     // needs_approval if the default gate is on).
-    let cursor = stepIdx + 1;
+    const cursor = stepIdx + 1;
     if (cursor < updated.length) {
       const nextStep = updated[cursor];
       updated[cursor] = {

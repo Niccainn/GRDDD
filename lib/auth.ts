@@ -137,7 +137,7 @@ export async function signUp(
   try {
     await sendVerificationEmail(identity.id, name, email);
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.error('[signUp] sendVerificationEmail failed:', err);
   }
 

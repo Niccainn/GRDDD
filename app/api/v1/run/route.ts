@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   // Resolve the system
   let systemId = body.systemId;
-  let workflowId = body.workflowId;
+  const workflowId = body.workflowId;
 
   if (workflowId && !systemId) {
     const wf = await prisma.workflow.findUnique({

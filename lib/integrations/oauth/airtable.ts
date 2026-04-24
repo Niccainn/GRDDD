@@ -14,6 +14,12 @@
 
 import type { OAuthProvider, TokenResponse } from './base';
 import { buildRedirectUri } from './base';
+import { webcrypto as nodeWebcrypto } from 'node:crypto';
+
+// globalThis.crypto exists in the edge runtime + modern Node; the
+// import fallback is for legacy Node environments that run this code
+// (rare but non-zero).
+const cryptoImpl = (globalThis.crypto ?? nodeWebcrypto) as Crypto;
 
 export const AIRTABLE_PROVIDER: OAuthProvider = {
   id: 'airtable',
@@ -30,14 +36,13 @@ export const AIRTABLE_PROVIDER: OAuthProvider = {
 /** Generate a cryptographically random code_verifier for PKCE. */
 export function generateCodeVerifier(): string {
   const bytes = new Uint8Array(32);
-  (globalThis.crypto ?? require('node:crypto').webcrypto).getRandomValues(bytes);
+  cryptoImpl.getRandomValues(bytes);
   return Buffer.from(bytes).toString('base64url');
 }
 
 /** Compute S256 code_challenge from a code_verifier. */
 export async function computeCodeChallenge(verifier: string): Promise<string> {
-  const crypto = globalThis.crypto ?? require('node:crypto').webcrypto;
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const digest = await cryptoImpl.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
   return Buffer.from(digest).toString('base64url');
 }
 

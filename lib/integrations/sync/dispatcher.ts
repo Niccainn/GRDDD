@@ -127,7 +127,7 @@ export async function dispatchSync(
     // Don't leak provider-specific error text to callers — integrations
     // error all the time and the message can contain tokens. Log
     // server-side, return a generic reason.
-    // eslint-disable-next-line no-console
+     
     console.error(`[sync.${integration.provider}] fetch error`, err);
     return {
       ok: false,
