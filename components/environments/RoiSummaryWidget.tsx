@@ -12,6 +12,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import DataOriginTag from '@/components/widgets/DataOriginTag';
+import HelpBubble from '@/components/ui/HelpBubble';
 
 type PerSystem = {
   systemId: string;
@@ -67,12 +68,18 @@ export default function RoiSummaryWidget({ environmentId, environmentSlug }: { e
       style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
     >
       <div className="flex items-center justify-between mb-4">
-        <p
-          className="text-[10px] tracking-[0.18em] uppercase font-light"
-          style={{ color: 'var(--text-3)' }}
-        >
-          ROI · last 30 days
-        </p>
+        <div className="flex items-center gap-2">
+          <p
+            className="text-[10px] tracking-[0.18em] uppercase font-light"
+            style={{ color: 'var(--text-3)' }}
+          >
+            ROI · last 30 days
+          </p>
+          <HelpBubble
+            title="ROI attribution"
+            body="Goal values parsed from metric labels (hours → $85/hr loaded, $ → direct) against Nova cost from IntelligenceLog. Ratio > 1× means the work paid for itself. Add 'hours' or '$' to Goal metric labels for attribution."
+          />
+        </div>
         <div className="flex items-center gap-2">
           <DataOriginTag
             sources={['Goal (metric + current)', 'IntelligenceLog.cost']}

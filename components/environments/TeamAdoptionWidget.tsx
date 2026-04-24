@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import DataOriginTag from '@/components/widgets/DataOriginTag';
+import HelpBubble from '@/components/ui/HelpBubble';
 
 type Member = {
   identityId: string;
@@ -74,12 +75,18 @@ export default function TeamAdoptionWidget({ environmentId }: { environmentId: s
       style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
     >
       <div className="flex items-center justify-between mb-4">
-        <p
-          className="text-[10px] tracking-[0.18em] uppercase font-light"
-          style={{ color: 'var(--text-3)' }}
-        >
-          Team adoption · last 30 days
-        </p>
+        <div className="flex items-center gap-2">
+          <p
+            className="text-[10px] tracking-[0.18em] uppercase font-light"
+            style={{ color: 'var(--text-3)' }}
+          >
+            Team adoption · last 30 days
+          </p>
+          <HelpBubble
+            title="Team adoption telemetry"
+            body="Trust Score + override rate per member. Members diverging > 15 points from the team average get flagged — that's adoption risk surfacing before a rollout stalls. Owner-only view."
+          />
+        </div>
         <div className="flex items-center gap-2">
           <DataOriginTag
             sources={['ApprovalRequest', 'ExecutionReview', 'EnvironmentMembership']}
