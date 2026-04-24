@@ -20,8 +20,18 @@ import TeamAdoptionWidget from '@/components/environments/TeamAdoptionWidget';
 import TrustPrimer from '@/components/environments/TrustPrimer';
 import ProjectsWidget from '@/components/environments/ProjectsWidget';
 import ProjectLauncher from '@/components/projects/ProjectLauncher';
+import EnvironmentGlance from '@/components/environments/EnvironmentGlance';
 
 type DashboardData = {
+  environment: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    color: string | null;
+    owner: string;
+    createdAt: string;
+  };
   systems: {
     id: string;
     name: string;
@@ -119,6 +129,22 @@ export default function EnvironmentOverview() {
 
   return (
     <div className="space-y-4">
+      {/* Glance strip — the "who/what" of this environment in one
+          read. Sits above everything so users land on the profile,
+          not on widgets. */}
+      <EnvironmentGlance
+        name={data.environment.name}
+        slug={data.environment.slug}
+        description={data.environment.description}
+        color={data.environment.color}
+        owner={data.environment.owner}
+        systems={data.systems}
+        goals={data.goals}
+        signals={data.signals}
+        executions={data.executions}
+        novaLogs={data.novaLogs}
+        successRate={data.successRate}
+      />
       {/* Canonical artifact — the three surfaces that define the page:
           weekly narrative, exceptions feed, action ledger. They lead
           so screenshots of this page carry the product thesis on

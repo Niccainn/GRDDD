@@ -11,14 +11,7 @@ export async function GET(req: NextRequest) {
 
   const environmentId = req.nextUrl.searchParams.get('environmentId');
 
-  // When environmentId is omitted the caller is the global /meetings
-  // page, which lists everything the user can read across every env
-  // they belong to. Scoped reads stay strict.
-  const envFilter = environmentId
-    ? { id: environmentId }
-    : {};
-
-  const meetings = await prisma.meeting.findMany({
+  const courses = await prisma.course.findMany({
     where: {
       ...(environmentId ? { environmentId } : {}),
       environment: {
@@ -27,18 +20,45 @@ export async function GET(req: NextRequest) {
           { ownerId: identity.id },
           { memberships: { some: { identityId: identity.id } } },
         ],
-        ...envFilter,
       },
     },
     include: {
       environment: { select: { id: true, name: true, slug: true, color: true } },
-      actionItems: { select: { id: true, status: true } },
+      author: { select: { id: true, name: true } },
+      modules: {
+        orderBy: { order: 'asc' },
+        include: {
+          lessons: { select: { id: true }, orderBy: { order: 'asc' } },
+        },
+      },
+      enrollments: {
+        where: { identityId: identity.id },
+        select: { id: true, status: true, progress: true, completedAt: true },
+      },
     },
-    orderBy: { startTime: 'desc' },
-    take: 200,
+    orderBy: { createdAt: 'desc' },
   });
 
-  return Response.json({ meetings });
+  const shaped = courses.map(c => {
+    const totalLessons = c.modules.reduce((n, m) => n + m.lessons.length, 0);
+    const enrollment = c.enrollments[0] ?? null;
+    return {
+      id: c.id,
+      title: c.title,
+      summary: c.summary,
+      coverUrl: c.coverUrl,
+      published: c.published,
+      skillTag: c.skillTag,
+      environment: c.environment,
+      author: c.author,
+      totalLessons,
+      totalModules: c.modules.length,
+      enrollment,
+      createdAt: c.createdAt.toISOString(),
+    };
+  });
+
+  return Response.json({ courses: shaped });
 }
 
 export async function POST(req: NextRequest) {
@@ -47,31 +67,21 @@ export async function POST(req: NextRequest) {
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
 
   const body = await req.json();
-  const { title, description, startTime, endTime, location, videoLink, attendees, environmentId } = body;
-
+  const { title, summary, environmentId, skillTag } = body;
   if (!title?.trim()) return Response.json({ error: 'title required' }, { status: 400 });
-  if (!startTime) return Response.json({ error: 'startTime required' }, { status: 400 });
-  if (!endTime) return Response.json({ error: 'endTime required' }, { status: 400 });
   if (!environmentId) return Response.json({ error: 'environmentId required' }, { status: 400 });
 
-  // POST → CONTRIBUTOR+ (schedule meetings). VIEWERs cannot.
-  // assertCanWriteEnvironment throws a Response on failure, which
-  // Next.js propagates back as the response — no explicit catch.
   await assertCanWriteEnvironment(environmentId, identity.id);
 
-  const meeting = await prisma.meeting.create({
+  const course = await prisma.course.create({
     data: {
       title: title.trim(),
-      description: description?.trim() ?? null,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
-      location: location?.trim() ?? null,
-      videoLink: videoLink?.trim() ?? null,
-      attendees: Array.isArray(attendees) ? JSON.stringify(attendees) : null,
+      summary: summary?.trim() ?? null,
+      skillTag: skillTag?.trim() ?? null,
       environmentId,
-      creatorId: identity.id,
+      authorId: identity.id,
     },
   });
 
-  return Response.json({ meeting }, { status: 201 });
+  return Response.json({ course }, { status: 201 });
 }

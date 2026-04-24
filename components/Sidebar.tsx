@@ -91,6 +91,10 @@ const navSections: CollapsibleNavSection[] = [
       { href: '/tasks', label: 'Tasks', icon: icons.tasks },
       { href: '/inbox', label: 'Inbox', icon: icons.inbox, badge: 'inbox' },
       { href: '/calendar', label: 'Calendar', icon: icons.calendar },
+      // Meetings — transcription + summary + action items that can
+      // be promoted into Tasks/Signals/Goals. The wedge vs Sana: a
+      // meeting doesn't just get summarized, it causes work.
+      { href: '/meetings', label: 'Meetings', icon: icons.calendar },
       // LMS primitives — bidirectional learning loop. Promoted so the
       // compounding story is visible without diving into APPS.
       { href: '/learn', label: 'Learn', icon: icons.analytics },

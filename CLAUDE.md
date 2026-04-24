@@ -5,7 +5,7 @@ contributors) working in this codebase. Keep it short, keep it honest.
 
 ## What GRID is
 
-GRID is a **nervous system for a company** — a living business OS that reads
+GRID is a **workspace that acts** — a living business OS that reads
 every surface (docs, calendar, email, finance, code), acts with calibrated
 autonomy via Nova, and proves its work. Not a dashboard. Not a chatbot. Not a
 workflow builder. A substrate that sits underneath all three.

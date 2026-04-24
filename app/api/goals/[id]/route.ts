@@ -1,9 +1,44 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { assertCanWriteGoal, assertCanAdminGoal } from '@/lib/auth/ownership';
+import { assertCanWriteGoal, assertCanAdminGoal, assertCanReadGoal } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { createNotification } from '@/lib/notifications';
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const identity = await getAuthIdentity();
+  const { id } = await params;
+  await assertCanReadGoal(id, identity.id);
+
+  const goal = await prisma.goal.findUnique({
+    where: { id },
+    include: {
+      system: { select: { id: true, name: true, color: true } },
+      environment: { select: { id: true, name: true, slug: true } },
+    },
+  });
+  if (!goal) return Response.json({ error: 'Not found' }, { status: 404 });
+
+  return Response.json({
+    id: goal.id,
+    title: goal.title,
+    description: goal.description,
+    metric: goal.metric,
+    target: goal.target,
+    current: goal.current,
+    status: goal.status,
+    progress: goal.progress,
+    dueDate: goal.dueDate?.toISOString() ?? null,
+    systemId: goal.systemId,
+    system: goal.system,
+    environment: goal.environment,
+    createdAt: goal.createdAt.toISOString(),
+    updatedAt: goal.updatedAt.toISOString(),
+  });
+}
 
 export async function PATCH(
   req: NextRequest,

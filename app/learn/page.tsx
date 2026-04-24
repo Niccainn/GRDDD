@@ -126,6 +126,18 @@ export default function LearnPage() {
         <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
           Every answer you give Nova trains it. Every action Nova takes trains you. Come back here when either of you needs a nudge.
         </p>
+        <div className="flex items-center gap-2 mt-4">
+          <Link href="/learn/courses"
+            className="text-[11px] font-light px-3 py-1.5 rounded-full transition-all"
+            style={{ background: 'rgba(191,159,241,0.06)', border: '1px solid rgba(191,159,241,0.2)', color: '#BF9FF1' }}>
+            Courses →
+          </Link>
+          <Link href="/learn/author"
+            className="text-[11px] font-light px-3 py-1.5 rounded-full transition-colors hover:bg-white/[0.04]"
+            style={{ border: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+            Author
+          </Link>
+        </div>
       </div>
 
       {/* Today's lesson */}
