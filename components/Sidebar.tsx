@@ -7,6 +7,8 @@ import { useAuth } from './AuthProvider';
 import ThemeToggle from './ThemeToggle';
 import NotificationBell from './NotificationBell';
 import { useEnvironmentBrand } from './EnvironmentBrand';
+import PinnedSidebarSection from './PinnedSidebarSection';
+import PinToggleButton from './PinToggleButton';
 
 // ── Icons ────────────────────────────────────────────────────────────
 const icons = {
@@ -387,6 +389,8 @@ export default function Sidebar() {
               {/* Dynamic systems section — injected after the first section (Home/Nova) */}
               {si === 0 && !envSlug && (
                 <div className="mt-4">
+                  {/* Pinned nav — user-customizable, reads from localStorage */}
+                  <PinnedSidebarSection />
                   <p className="text-[10px] tracking-[0.16em] font-light px-3 mb-1.5" style={{ color: 'var(--text-3)' }}>
                     YOUR SYSTEMS
                   </p>
