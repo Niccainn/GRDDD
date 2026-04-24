@@ -845,3 +845,8 @@ textarea:focus-visible {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* Hide native scrollbar while keeping overflow-x:auto behavior — used
+   on mobile tab strips where chrome scrollbars would steal pixels. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
