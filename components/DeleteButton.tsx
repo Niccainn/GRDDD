@@ -45,7 +45,7 @@ export default function DeleteButton({
   if (confirming) {
     return (
       <span className="inline-flex items-center gap-1.5" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
-        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Delete?</span>
+        <span className="text-xs" style={{ color: 'var(--text-3)' }}>Delete?</span>
         <button
           onClick={handleDelete}
           disabled={loading}
@@ -57,7 +57,7 @@ export default function DeleteButton({
         <button
           onClick={e => { e.preventDefault(); e.stopPropagation(); setConfirming(false); }}
           className="text-xs px-2 py-0.5 rounded"
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }}
+          style={{ background: 'var(--glass)', color: 'var(--text-3)' }}
         >
           No
         </button>
@@ -73,8 +73,8 @@ export default function DeleteButton({
       // on touch devices and hidden from anyone unfamiliar with the
       // hover-reveal pattern — multiple users reported "there's no
       // delete button."
-      className="text-xs font-light transition-colors opacity-50 hover:opacity-100"
-      style={{ color: 'rgba(255,120,120,0.7)' }}
+      className="text-xs font-light transition-colors opacity-70 hover:opacity-100"
+      style={{ color: '#E04E4E' }}
       aria-label="Delete"
     >
       Delete

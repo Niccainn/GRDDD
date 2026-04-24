@@ -5,6 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/components/Toast';
 import AutonomyConfig from '@/components/AutonomyConfig';
 import SettingsNav from '@/components/SettingsNav';
+import AutosaveChip from '@/components/ui/AutosaveChip';
 
 type Profile = {
   id: string;
@@ -22,6 +23,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [tab, setTab] = useState<'profile' | 'autonomy'>('profile');
   const [environmentId, setEnvironmentId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -51,6 +54,7 @@ export default function ProfilePage() {
       return;
     }
     setSaving(true);
+    setSaveState('saving');
     try {
       const res = await fetch('/api/settings/profile', {
         method: 'PATCH',
@@ -63,9 +67,12 @@ export default function ProfilePage() {
       }
       const updated = await res.json();
       setProfile((prev) => (prev ? { ...prev, ...updated } : prev));
+      setLastSavedAt(new Date().toISOString());
+      setSaveState('saved');
       toast('Profile updated');
       refresh();
     } catch (e) {
+      setSaveState('error');
       toast(e instanceof Error ? e.message : 'Failed to update', 'error');
     } finally {
       setSaving(false);
@@ -324,7 +331,10 @@ export default function ProfilePage() {
           </p>
         )}
 
-        {/* Save button */}
+        {/* Save button + autosave indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <AutosaveChip state={saveState} lastSavedAt={lastSavedAt} />
+        </div>
         <button
           onClick={handleSave}
           disabled={saving || name === profile?.name}

@@ -496,27 +496,30 @@ export default function Sidebar() {
                       const isNova = item.accent;
                       const showBadge = item.badge === 'inbox' && inboxUnread > 0;
                       return (
-                        <Link key={item.href} href={item.href}
-                          className="flex items-center gap-3 px-3 py-2 text-sm transition-all"
-                          style={{
-                            color: active
-                              ? isNova ? 'var(--nova)' : 'var(--text-1)'
-                              : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
-                            background: active
-                              ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
-                              : 'transparent',
-                            borderRadius: 'var(--radius-sm)',
-                          }}>
-                          <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
-                          <span className="font-light tracking-wide">{item.label}</span>
-                          {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
-                          {showBadge && (
-                            <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
-                              style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
-                              {inboxUnread}
-                            </span>
-                          )}
-                        </Link>
+                        <div key={item.href} className="group relative flex items-center">
+                          <Link href={item.href}
+                            className="flex items-center gap-3 px-3 py-2 text-sm transition-all flex-1 min-w-0"
+                            style={{
+                              color: active
+                                ? isNova ? 'var(--nova)' : 'var(--text-1)'
+                                : isNova ? 'rgba(191,159,241,0.4)' : 'var(--text-3)',
+                              background: active
+                                ? isNova ? 'var(--nova-soft)' : 'var(--glass-active)'
+                                : 'transparent',
+                              borderRadius: 'var(--radius-sm)',
+                            }}>
+                            <span style={{ opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+                            <span className="font-light tracking-wide">{item.label}</span>
+                            {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: isNova ? 'var(--nova)' : 'var(--brand)', opacity: 0.5 }} />}
+                            {showBadge && (
+                              <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-light"
+                                style={{ background: 'var(--nova-soft)', color: 'var(--nova)', border: '1px solid rgba(191,159,241,0.2)' }}>
+                                {inboxUnread}
+                              </span>
+                            )}
+                          </Link>
+                          <PinToggleButton href={item.href} label={item.label} />
+                        </div>
                       );
                     })}
                   </div>
