@@ -163,9 +163,12 @@ export default function MeetingsPage() {
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0 text-[10px] font-light" style={{ color: 'var(--text-3)' }}>
                   {attendees.length > 0 && <span>{attendees.length} attendee{attendees.length === 1 ? '' : 's'}</span>}
-                  {m.transcript && <span style={{ color: '#BF9FF1' }}>Transcribed</span>}
-                  {openItems > 0 && <span style={{ color: '#F5D76E' }}>{openItems} open item{openItems === 1 ? '' : 's'}</span>}
-                  {promoted > 0 && <span style={{ color: '#C8F26B' }}>{promoted} promoted</span>}
+                  {m.transcript && <span className="px-1.5 py-0.5 rounded-full"
+                    style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.25)', color: 'var(--nova, #BF9FF1)' }}>Transcribed</span>}
+                  {openItems > 0 && <span className="px-1.5 py-0.5 rounded-full"
+                    style={{ background: 'rgba(245,215,110,0.1)', border: '1px solid rgba(245,215,110,0.25)', color: '#8a6d00' }}>{openItems} open</span>}
+                  {promoted > 0 && <span className="px-1.5 py-0.5 rounded-full"
+                    style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-border)', color: 'var(--brand)' }}>{promoted} promoted</span>}
                 </div>
               </div>
             </Link>

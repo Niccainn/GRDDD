@@ -124,7 +124,7 @@ export default function CoursesPage() {
                 <span>{c.totalModules} module{c.totalModules === 1 ? '' : 's'}</span>
                 <span>·</span>
                 <span>{c.totalLessons} lesson{c.totalLessons === 1 ? '' : 's'}</span>
-                {c.skillTag && <><span>·</span><span style={{ color: '#BF9FF1' }}>skill: {c.skillTag}</span></>}
+                {c.skillTag && <><span>·</span><span style={{ color: 'var(--nova, #BF9FF1)' }}>skill: {c.skillTag}</span></>}
               </div>
               {c.enrollment && (
                 <div className="mt-3">
