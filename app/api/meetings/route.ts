@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
+import { assertCanWriteEnvironment } from '@/lib/auth/ownership';
 
 export async function GET(req: NextRequest) {
   const identity = await getAuthIdentity();
@@ -13,8 +14,17 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: 'environmentId required' }, { status: 400 });
   }
 
+  // Read widens to any member of the environment — meetings are team
+  // calendar data, not owner-only.
   const env = await prisma.environment.findFirst({
-    where: { id: environmentId, ownerId: identity.id, deletedAt: null },
+    where: {
+      id: environmentId,
+      deletedAt: null,
+      OR: [
+        { ownerId: identity.id },
+        { memberships: { some: { identityId: identity.id } } },
+      ],
+    },
     select: { id: true },
   });
   if (!env) return Response.json({ error: 'Not found' }, { status: 404 });
@@ -40,11 +50,10 @@ export async function POST(req: NextRequest) {
   if (!endTime) return Response.json({ error: 'endTime required' }, { status: 400 });
   if (!environmentId) return Response.json({ error: 'environmentId required' }, { status: 400 });
 
-  const env = await prisma.environment.findFirst({
-    where: { id: environmentId, ownerId: identity.id, deletedAt: null },
-    select: { id: true },
-  });
-  if (!env) return Response.json({ error: 'Not found' }, { status: 404 });
+  // POST → CONTRIBUTOR+ (schedule meetings). VIEWERs cannot.
+  // assertCanWriteEnvironment throws a Response on failure, which
+  // Next.js propagates back as the response — no explicit catch.
+  await assertCanWriteEnvironment(environmentId, identity.id);
 
   const meeting = await prisma.meeting.create({
     data: {

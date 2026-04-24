@@ -1,5 +1,8 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { assertOwnsEnvironment, assertOwnsSystem } from '@/lib/auth/ownership';
+import {
+  assertCanWriteEnvironment,
+  assertCanWriteSystem,
+} from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -13,10 +16,9 @@ export async function POST(req: NextRequest) {
   if (!name || !systemId || !environmentId) {
     return Response.json({ error: 'Missing fields' }, { status: 400 });
   }
-  if (!identity) {
-  }
-  await assertOwnsEnvironment(environmentId, identity.id);
-  await assertOwnsSystem(systemId, identity.id);
+  // POST (create workflow) → CONTRIBUTOR+ on both the target env and system.
+  await assertCanWriteEnvironment(environmentId, identity.id);
+  await assertCanWriteSystem(systemId, identity.id);
   const env = await prisma.environment.findUnique({ where: { id: environmentId }, select: { name: true } });
   const workflow = await prisma.workflow.create({
     data: { name, status: 'DRAFT', systemId, environmentId, creatorId: identity.id, stages: JSON.stringify([]) },
