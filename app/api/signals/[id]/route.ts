@@ -1,5 +1,10 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { assertOwnsSignal, assertOwnsSystem, assertOwnsWorkflow } from '@/lib/auth/ownership';
+import {
+  assertCanWriteSignal,
+  assertCanAdminSignal,
+  assertCanWriteSystem,
+  assertCanWriteWorkflow,
+} from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -12,13 +17,15 @@ export async function PATCH(
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
-  await assertOwnsSignal(id, identity.id);
+  // PATCH → CONTRIBUTOR+ (triage, priority bumps, routing). Admin
+  // reserved for destructive DELETE below.
+  await assertCanWriteSignal(id, identity.id);
   const body = await req.json();
   if (body.systemId !== undefined && body.systemId !== null) {
-    await assertOwnsSystem(body.systemId, identity.id);
+    await assertCanWriteSystem(body.systemId, identity.id);
   }
   if (body.workflowId !== undefined && body.workflowId !== null) {
-    await assertOwnsWorkflow(body.workflowId, identity.id);
+    await assertCanWriteWorkflow(body.workflowId, identity.id);
   }
 
   const signal = await prisma.signal.update({
@@ -59,7 +66,8 @@ export async function DELETE(
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
-  await assertOwnsSignal(id, identity.id);
+  // DELETE → ADMIN+ only.
+  await assertCanAdminSignal(id, identity.id);
   await prisma.signal.delete({ where: { id } });
   return Response.json({ deleted: true });
 }

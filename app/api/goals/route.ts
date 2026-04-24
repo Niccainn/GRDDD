@@ -1,5 +1,8 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { assertOwnsEnvironment, assertOwnsSystem } from '@/lib/auth/ownership';
+import {
+  assertCanWriteEnvironment,
+  assertCanWriteSystem,
+} from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -54,8 +57,9 @@ export async function POST(req: NextRequest) {
 
   if (!identity) return Response.json({ error: 'Identity not found' }, { status: 404 });
 
-  await assertOwnsEnvironment(environmentId, identity.id);
-  await assertOwnsSystem(systemId, identity.id);
+  // POST (create goal) → CONTRIBUTOR+ on env and system.
+  await assertCanWriteEnvironment(environmentId, identity.id);
+  await assertCanWriteSystem(systemId, identity.id);
 
   const goal = await prisma.goal.create({
     data: {
