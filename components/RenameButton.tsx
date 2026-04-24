@@ -72,9 +72,9 @@ export default function RenameButton({
           }}
           className="text-xs font-light px-2 py-1 rounded focus:outline-none"
           style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            color: 'white',
+            background: 'var(--glass)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text-1)',
             width: 140,
           }}
         />
@@ -94,7 +94,7 @@ export default function RenameButton({
           type="button"
           onClick={e => { e.preventDefault(); e.stopPropagation(); setEditing(false); setValue(currentName); }}
           className="text-xs px-2 py-0.5 rounded"
-          style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)' }}
+          style={{ background: 'var(--glass)', color: 'var(--text-3)' }}
         >
           Cancel
         </button>
@@ -105,8 +105,8 @@ export default function RenameButton({
   return (
     <button
       onClick={e => { e.preventDefault(); e.stopPropagation(); setEditing(true); }}
-      className="text-xs font-light transition-colors opacity-50 hover:opacity-100"
-      style={{ color: 'rgba(200,200,255,0.7)' }}
+      className="text-xs font-light transition-colors opacity-70 hover:opacity-100"
+      style={{ color: 'var(--text-2)' }}
       aria-label="Rename"
     >
       Rename

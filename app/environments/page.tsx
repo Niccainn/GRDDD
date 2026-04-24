@@ -40,11 +40,11 @@ export default async function EnvironmentsPage() {
             required
             placeholder="New environment name"
             className="text-sm font-light px-3 py-2 rounded-lg focus:outline-none transition-all"
-            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'white', width: '200px' }}
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'var(--text-1)', width: '200px' }}
           />
           <button type="submit"
             className="text-xs font-light px-3 py-2 rounded-lg transition-all"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
+            style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
             Create
           </button>
         </form>
@@ -69,7 +69,7 @@ export default async function EnvironmentsPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-2.5">
                     {env.color && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: env.color }} />}
-                    <p className="text-sm font-light group-hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    <p className="text-sm font-light transition-colors" style={{ color: 'var(--text-1)' }}>
                       {env.name}
                     </p>
                   </div>

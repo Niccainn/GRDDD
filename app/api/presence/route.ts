@@ -55,10 +55,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await req.json();
-  const page = body.page as string;
+  // Fail-safe: empty / malformed bodies should not error-log. The
+  // browser sometimes sends an empty POST during tab unload.
+  const body = await req.json().catch(() => ({} as Record<string, unknown>));
+  const page = typeof body?.page === 'string' ? body.page : null;
 
-  if (!page || typeof page !== 'string') {
+  if (!page) {
     return NextResponse.json({ error: 'page is required' }, { status: 400 });
   }
 
