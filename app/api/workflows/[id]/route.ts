@@ -1,5 +1,9 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { assertOwnsWorkflow } from '@/lib/auth/ownership';
+import {
+  assertOwnsWorkflow,
+  assertCanWriteWorkflow,
+  assertCanAdminWorkflow,
+} from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -10,6 +14,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
+  // GET keeps owner-only read for now — widening reads to all
+  // members is a separate policy call that needs content-masking
+  // thought (workflow.config can hold credentials).
   await assertOwnsWorkflow(id, identity.id);
   const workflow = await prisma.workflow.findUnique({
     where: { id },
@@ -38,7 +45,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
-  await assertOwnsWorkflow(id, identity.id);
+  // Read still uses assertOwnsWorkflow for the GET below, but writes
+  // open up to ADMIN + CONTRIBUTOR per the tiered access policy.
+  await assertCanWriteWorkflow(id, identity.id);
   const body = await req.json();
 
   // Validate nodes and edges structure if provided
@@ -118,7 +127,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
-  await assertOwnsWorkflow(id, identity.id);
+  // DELETE is admin-tier: ADMIN + OWNER only, not CONTRIBUTOR.
+  await assertCanAdminWorkflow(id, identity.id);
   await prisma.workflow.delete({ where: { id } });
   return Response.json({ deleted: true });
 }

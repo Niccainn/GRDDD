@@ -259,6 +259,179 @@ export async function assertCanWriteEnvironment(
 }
 
 /**
+ * Assert ADMIN-or-better access on the environment. Used for
+ * destructive mutations (delete, bulk changes) where CONTRIBUTOR
+ * should NOT be sufficient.
+ */
+export async function assertCanAdminEnvironment(
+  environmentId: string,
+  identityId: string
+) {
+  const env = await prisma.environment.findFirst({
+    where: {
+      id: environmentId,
+      deletedAt: null,
+      OR: [
+        { ownerId: identityId },
+        {
+          memberships: {
+            some: { identityId, role: 'ADMIN' },
+          },
+        },
+      ],
+    },
+  });
+  if (!env) throw UNAUTHORIZED();
+  return env;
+}
+
+// ─── Child-model WRITE guards ───────────────────────────────────────────
+// Mirror the assertCanWriteEnvironment pattern for the four models
+// whose mutations need to be open to CONTRIBUTOR+ (not just OWNER).
+// Each guard does one `findFirst` that composes the env-access check;
+// callers get a 404 (never 403) on insufficient role to avoid leaking
+// resource existence.
+
+const WRITE_ROLES = { in: ['ADMIN', 'CONTRIBUTOR'] } as const;
+const ADMIN_ROLES = { in: ['ADMIN'] } as const;
+
+export async function assertCanWriteSystem(systemId: string, identityId: string) {
+  const system = await prisma.system.findFirst({
+    where: {
+      id: systemId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId, role: WRITE_ROLES } } },
+        ],
+      },
+    },
+  });
+  if (!system) throw UNAUTHORIZED();
+  return system;
+}
+
+export async function assertCanAdminSystem(systemId: string, identityId: string) {
+  const system = await prisma.system.findFirst({
+    where: {
+      id: systemId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId, role: ADMIN_ROLES } } },
+        ],
+      },
+    },
+  });
+  if (!system) throw UNAUTHORIZED();
+  return system;
+}
+
+export async function assertCanWriteWorkflow(workflowId: string, identityId: string) {
+  const workflow = await prisma.workflow.findFirst({
+    where: {
+      id: workflowId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId, role: WRITE_ROLES } } },
+        ],
+      },
+    },
+  });
+  if (!workflow) throw UNAUTHORIZED();
+  return workflow;
+}
+
+export async function assertCanAdminWorkflow(workflowId: string, identityId: string) {
+  const workflow = await prisma.workflow.findFirst({
+    where: {
+      id: workflowId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId, role: ADMIN_ROLES } } },
+        ],
+      },
+    },
+  });
+  if (!workflow) throw UNAUTHORIZED();
+  return workflow;
+}
+
+export async function assertCanWriteGoal(goalId: string, identityId: string) {
+  const goal = await prisma.goal.findFirst({
+    where: {
+      id: goalId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId, role: WRITE_ROLES } } },
+        ],
+      },
+    },
+  });
+  if (!goal) throw UNAUTHORIZED();
+  return goal;
+}
+
+export async function assertCanAdminGoal(goalId: string, identityId: string) {
+  const goal = await prisma.goal.findFirst({
+    where: {
+      id: goalId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId, role: ADMIN_ROLES } } },
+        ],
+      },
+    },
+  });
+  if (!goal) throw UNAUTHORIZED();
+  return goal;
+}
+
+export async function assertCanWriteSignal(signalId: string, identityId: string) {
+  const signal = await prisma.signal.findFirst({
+    where: {
+      id: signalId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId, role: WRITE_ROLES } } },
+        ],
+      },
+    },
+  });
+  if (!signal) throw UNAUTHORIZED();
+  return signal;
+}
+
+export async function assertCanAdminSignal(signalId: string, identityId: string) {
+  const signal = await prisma.signal.findFirst({
+    where: {
+      id: signalId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId, role: ADMIN_ROLES } } },
+        ],
+      },
+    },
+  });
+  if (!signal) throw UNAUTHORIZED();
+  return signal;
+}
+
+/**
  * Shared `where` fragment for list endpoints that should include
  * resources from environments the identity owns OR is a member of
  * (any role, including VIEWER — read access).
