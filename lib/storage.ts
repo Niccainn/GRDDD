@@ -151,7 +151,7 @@ function getS3Adapter(): Promise<StorageAdapter> {
       // Dynamic import — the SDK is an optional dependency. The variable
       // indirection prevents TypeScript from statically resolving the module.
       const sdkModule = '@aws-sdk/client-s3';
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
       const mod: any = await import(/* webpackIgnore: true */ sdkModule);
       const { S3Client, PutObjectCommand, DeleteObjectCommand } = mod;
 

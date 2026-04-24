@@ -61,7 +61,7 @@ export async function logError(p: LogPayload): Promise<void> {
   } catch (err) {
     // Never let the error log swallow the original error. If the
     // AppError table itself is unreachable, fall back to console.
-    // eslint-disable-next-line no-console
+     
     console.error('[logError] failed to persist:', err, 'original:', p);
   }
 }

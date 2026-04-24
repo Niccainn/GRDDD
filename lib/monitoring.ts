@@ -50,13 +50,13 @@ async function loadSentry(): Promise<unknown> {
           tracesSampleRate: 0.1,
         });
       } catch (err) {
-        // eslint-disable-next-line no-console
+         
         console.error('[monitoring] Sentry init failed:', err);
       }
       return mod;
     }).catch((err) => {
       // Package not installed — drop back to no-op quietly.
-      // eslint-disable-next-line no-console
+       
       console.warn('[monitoring] @sentry/node not installed, using console fallback:', err instanceof Error ? err.message : String(err));
       return null;
     });
@@ -74,7 +74,7 @@ export async function captureException(
 ): Promise<void> {
   const message = err instanceof Error ? err.message : String(err);
   // Always log locally so devs see it in the terminal.
-  // eslint-disable-next-line no-console
+   
   console.error('[monitoring]', message, context, err);
 
   if (!isEnabled()) return;
@@ -103,7 +103,7 @@ export async function captureException(
       sentry.captureException(err);
     });
   } catch (innerErr) {
-    // eslint-disable-next-line no-console
+     
     console.error('[monitoring] captureException failed:', innerErr);
   }
 }
@@ -118,7 +118,7 @@ export async function captureMessage(
   level: Level = 'info',
   context: CaptureContext = {}
 ): Promise<void> {
-  // eslint-disable-next-line no-console
+   
   console.log(`[monitoring:${level}]`, message, context);
 
   if (!isEnabled()) return;
@@ -146,7 +146,7 @@ export async function captureMessage(
       sentry.captureMessage(message, level);
     });
   } catch (innerErr) {
-    // eslint-disable-next-line no-console
+     
     console.error('[monitoring] captureMessage failed:', innerErr);
   }
 }

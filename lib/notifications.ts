@@ -38,7 +38,7 @@ export async function createNotification(input: CreateNotificationInput) {
       },
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.error('[createNotification] failed:', err);
     return null;
   }
@@ -63,7 +63,7 @@ export async function createNotifications(
       })),
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.error('[createNotifications] failed:', err);
   }
 }

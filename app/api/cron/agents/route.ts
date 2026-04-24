@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
   try {
     purgedLogs = await purgeOldLogs(90);
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.error('[cron] purgeOldLogs failed:', err);
   }
 

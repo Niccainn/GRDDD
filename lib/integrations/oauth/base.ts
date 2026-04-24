@@ -17,6 +17,12 @@
  * per-provider bugs we'd hit by encoding differently for each.
  */
 
+import { webcrypto as nodeWebcrypto } from 'node:crypto';
+
+// globalThis.crypto is present in the edge runtime + modern Node; the
+// import fallback covers older Node runtimes that run this code.
+const cryptoImpl = (globalThis.crypto ?? nodeWebcrypto) as Crypto;
+
 export type OAuthProvider = {
   id: string;
   authorizeUrl: string;
@@ -141,6 +147,6 @@ export async function refreshAccessToken(
 export function generateState(): string {
   // Crypto-quality randomness; base64url without padding.
   const bytes = new Uint8Array(24);
-  (globalThis.crypto ?? require('node:crypto').webcrypto).getRandomValues(bytes);
+  cryptoImpl.getRandomValues(bytes);
   return Buffer.from(bytes).toString('base64url');
 }

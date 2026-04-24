@@ -21,7 +21,6 @@ export default function PersistentNovaBar() {
   const abortRef = useRef<AbortController | null>(null);
 
   const isNovaPage = pathname === '/nova';
-  if (isNovaPage) return null;
 
   const reset = () => {
     setQuery('');
@@ -99,6 +98,10 @@ export default function PersistentNovaBar() {
   useEffect(() => {
     if (expanded && inputRef.current) inputRef.current.focus();
   }, [expanded]);
+
+  // Early return AFTER all hooks are called, to satisfy the
+  // rules-of-hooks lint — same hook order on every render.
+  if (isNovaPage) return null;
 
   const hasResponse = response || tools.length > 0 || error;
 

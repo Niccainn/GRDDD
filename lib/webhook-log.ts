@@ -37,7 +37,7 @@ export function logWebhookSignatureFailure(args: {
 }): void {
   const { provider, path, req, rawBody, reason } = args;
   const bodyHash = createHash('sha256').update(rawBody).digest('hex').slice(0, 16);
-  // eslint-disable-next-line no-console
+   
   console.warn(
     JSON.stringify({
       event: 'webhook_sig_fail',

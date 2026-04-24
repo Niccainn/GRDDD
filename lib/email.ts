@@ -40,7 +40,7 @@ export async function sendEmail(args: SendEmailArgs): Promise<SendEmailResult> {
     // (enumeration safety), so the user sees "check your email" and
     // nothing arrives. Log to AppError so ops can see the backlog
     // without breaking the enumeration property.
-    // eslint-disable-next-line no-console
+     
     console.log('[email] skipped (RESEND_API_KEY unset):', args.subject, '→', args.to);
     await logEmailFailure({
       reason: 'unconfigured',

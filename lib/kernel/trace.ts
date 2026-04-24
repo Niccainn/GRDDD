@@ -139,7 +139,7 @@ export class Trace {
         },
       });
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error('[trace.persist] failed:', err);
     }
   }

@@ -17,7 +17,7 @@ const registry = new Map<string, ToolDefinition>();
 
 export function registerTool<TArgs, TResult>(tool: ToolDefinition<TArgs, TResult>) {
   if (registry.has(tool.name)) {
-    // eslint-disable-next-line no-console
+     
     console.warn(`[tool.registry] overwriting existing tool: ${tool.name}`);
   }
   registry.set(tool.name, tool as unknown as ToolDefinition);

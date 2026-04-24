@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Generate unique slug
-  let baseSlug = slugify(name);
+  const baseSlug = slugify(name);
   let slug = baseSlug;
   let attempt = 0;
   while (true) {

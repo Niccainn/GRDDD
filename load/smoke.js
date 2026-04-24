@@ -104,7 +104,7 @@ export function handleSummary(data) {
     failure_rate: f?.rate?.toFixed(4) ?? '?',
     thresholds_passed: Object.values(data.thresholds ?? {}).every(t => !t.fails),
   };
-  // eslint-disable-next-line no-undef
+   
   console.log('\n[k6 summary]', JSON.stringify(summary, null, 2));
   return { stdout: '' };
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import type { FormField } from '@/lib/forms';
 
 type PublicForm = {
@@ -146,13 +147,13 @@ export default function PublicFormPage() {
             </p>
           </div>
           <div className="text-center mt-6">
-            <a
+            <Link
               href="/"
               className="text-[10px] font-light transition-colors"
               style={{ color: 'rgba(255,255,255,0.2)' }}
             >
               Powered by GRID
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -238,13 +239,13 @@ export default function PublicFormPage() {
 
         {/* Footer */}
         <div className="text-center mt-6">
-          <a
+          <Link
             href="/"
             className="text-[10px] font-light transition-colors"
             style={{ color: 'rgba(255,255,255,0.2)' }}
           >
             Powered by GRID
-          </a>
+          </Link>
         </div>
       </div>
     </div>
