@@ -216,6 +216,31 @@ export async function createSession(identityId: string) {
     expires: expiresAt,
   });
 
+  // Cache the user's primary environment slug in a readable cookie so
+  // middleware can short-circuit `/` and `/dashboard` directly to
+  // `/environments/<slug>` without a second client-side hop. Non-
+  // sensitive (slugs are public once shared) and httpOnly not needed —
+  // middleware is the only reader.
+  const primaryEnv = await prisma.environment.findFirst({
+    where: {
+      deletedAt: null,
+      OR: [
+        { ownerId: identityId },
+        { memberships: { some: { identityId } } },
+      ],
+    },
+    orderBy: { createdAt: 'asc' },
+    select: { slug: true },
+  });
+  if (primaryEnv?.slug) {
+    cookieStore.set('grid_env_slug', primaryEnv.slug, {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      expires: expiresAt,
+    });
+  }
+
   const identityFull = await prisma.identity.findUnique({ where: { id: identityId } });
   return { id: identityFull!.id, name: identityFull!.name, email: identityFull!.email, onboardedAt: identityFull!.onboardedAt };
 }
