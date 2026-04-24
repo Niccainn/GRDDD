@@ -189,7 +189,7 @@ export async function eraseUserData(identityId: string) {
   // intelligence, webhooks, executions, etc with each delete.
   for (const env of ownedEnvironments) {
     await prisma.environment.delete({ where: { id: env.id } }).catch((err) => {
-      // eslint-disable-next-line no-console
+       
       console.error('[erase] failed to delete environment', env.id, err);
     });
   }

@@ -139,7 +139,7 @@ export async function sendResetEmail(identityId: string, name: string, email: st
   const link = `${appUrl()}/reset-password?token=${encodeURIComponent(raw)}`;
 
   if (!isEmailConfigured()) {
-    // eslint-disable-next-line no-console
+     
     console.log('[password-reset] dev fallback — reset link:', link);
     // Return the link so the caller (gated by NODE_ENV !== 'production')
     // can surface it in the UI during local development.

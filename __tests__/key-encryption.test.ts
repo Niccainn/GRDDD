@@ -9,7 +9,7 @@ beforeAll(() => {
   process.env.GRID_ENCRYPTION_KEY = crypto.randomBytes(32).toString('base64');
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 let mod: typeof import('../lib/crypto/key-encryption');
 beforeAll(async () => {
   mod = await import('../lib/crypto/key-encryption');

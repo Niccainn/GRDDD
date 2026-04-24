@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 import { getWorkflow, specDepth, specToolCount } from '@/lib/workflows';
 import { getAuthIdentityOrNull } from '@/lib/auth';
 import WorkflowRunner from './WorkflowRunner';
@@ -23,13 +24,13 @@ export default async function WorkflowDetailPage({
   return (
     <div className="min-h-screen ambient-bg px-6 py-16">
       <div className="max-w-4xl mx-auto">
-        <a
+        <Link
           href="/marketplace"
           className="text-xs mb-6 inline-block font-light"
           style={{ color: 'var(--text-3)' }}
         >
           ← Marketplace
-        </a>
+        </Link>
 
         <header className="mb-10">
           <p className="text-xs uppercase tracking-widest mb-3" style={{ color: 'var(--text-3)' }}>

@@ -28,7 +28,7 @@ export async function GET() {
   } catch (err) {
     // Never leak DB error details (may contain connection strings or
     // internal topology). Log server-side, return opaque error to caller.
-    // eslint-disable-next-line no-console
+     
     console.error('[health] database check failed:', err);
     checks.database = { status: 'error', message: 'Connection failed', ms: Date.now() - dbStart };
   }
