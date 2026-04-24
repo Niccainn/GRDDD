@@ -6,6 +6,7 @@ import SettingsNav from '@/components/SettingsNav';
 
 type ThemeMode = 'dark' | 'light' | 'system';
 type DateFormat = 'relative' | 'short' | 'long';
+type NotificationCadence = 'immediate' | 'hourly' | 'daily';
 
 type Prefs = {
   theme: ThemeMode;
@@ -15,6 +16,7 @@ type Prefs = {
   executionAlerts: boolean;
   mentionAlerts: boolean;
   dateFormat: DateFormat;
+  notificationCadence: NotificationCadence;
 };
 
 const STORAGE_PREFIX = 'grid:prefs:';
@@ -29,6 +31,7 @@ function loadPrefs(): Prefs {
       executionAlerts: true,
       mentionAlerts: true,
       dateFormat: 'relative',
+      notificationCadence: 'immediate',
     };
   }
   return {
@@ -39,6 +42,8 @@ function loadPrefs(): Prefs {
     executionAlerts: localStorage.getItem(STORAGE_PREFIX + 'executionAlerts') !== 'false',
     mentionAlerts: localStorage.getItem(STORAGE_PREFIX + 'mentionAlerts') !== 'false',
     dateFormat: (localStorage.getItem(STORAGE_PREFIX + 'dateFormat') as DateFormat) ?? 'relative',
+    notificationCadence:
+      (localStorage.getItem(STORAGE_PREFIX + 'notificationCadence') as NotificationCadence) ?? 'immediate',
   };
 }
 
@@ -50,6 +55,7 @@ function savePrefs(prefs: Prefs) {
   localStorage.setItem(STORAGE_PREFIX + 'executionAlerts', String(prefs.executionAlerts));
   localStorage.setItem(STORAGE_PREFIX + 'mentionAlerts', String(prefs.mentionAlerts));
   localStorage.setItem(STORAGE_PREFIX + 'dateFormat', prefs.dateFormat);
+  localStorage.setItem(STORAGE_PREFIX + 'notificationCadence', prefs.notificationCadence);
 }
 
 type Env = { id: string; name: string; slug: string };
@@ -271,6 +277,44 @@ export default function PreferencesPage() {
             </button>
           </div>
         ))}
+
+        {/* Delivery cadence — Slack/Linear pattern */}
+        <div style={{ padding: '16px 0 4px 0' }}>
+          <p style={{ color: 'var(--text-2)', fontWeight: 300, fontSize: 14, marginBottom: 4 }}>
+            Delivery cadence
+          </p>
+          <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 12, marginBottom: 12 }}>
+            Immediate pings, hourly roll-up, or a single daily digest.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['immediate', 'hourly', 'daily'] as const).map(opt => {
+              const active = prefs.notificationCadence === opt;
+              const labelMap = { immediate: 'Immediate', hourly: 'Hourly digest', daily: 'Daily digest' };
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => update({ notificationCadence: opt })}
+                  style={{
+                    flex: 1,
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    fontSize: 12,
+                    fontWeight: 300,
+                    textAlign: 'center',
+                    background: active ? 'rgba(200,242,107,0.08)' : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${active ? 'rgba(200,242,107,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                    color: active ? '#C8F26B' : 'var(--text-2)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {labelMap[opt]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Date format */}

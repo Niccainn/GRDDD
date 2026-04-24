@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Breadcrumb from './Breadcrumb';
+import ActivityButton from './ActivityButton';
+import AutosaveChip from './ui/AutosaveChip';
 import ConsequenceMap from './ConsequenceMap';
 import ExecutionCheckpoint from './ExecutionCheckpoint';
 import AttributionPanel from './AttributionPanel';
@@ -62,6 +64,8 @@ export default function WorkflowDetailClient({
   const [editStages, setEditStages] = useState<string[]>(initial.stages);
   const [newStage, setNewStage] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [showRunModal, setShowRunModal] = useState(false);
   const [runInput, setRunInput] = useState('');
@@ -91,15 +95,24 @@ export default function WorkflowDetailClient({
   async function handleSaveEdit() {
     if (!editName.trim()) return;
     setSaving(true);
-    const res = await fetch(`/api/workflows/${workflow.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editName.trim(), description: editDescription.trim() || null, stages: editStages }),
-    });
-    const updated = await res.json();
-    setWorkflow(w => ({ ...w, name: updated.name, description: updated.description, stages: updated.stages ?? [] }));
-    setSaving(false);
-    setEditing(false);
+    setSaveState('saving');
+    try {
+      const res = await fetch(`/api/workflows/${workflow.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName.trim(), description: editDescription.trim() || null, stages: editStages }),
+      });
+      if (!res.ok) throw new Error(`status_${res.status}`);
+      const updated = await res.json();
+      setWorkflow(w => ({ ...w, name: updated.name, description: updated.description, stages: updated.stages ?? [] }));
+      setLastSavedAt(new Date().toISOString());
+      setSaveState('saved');
+      setEditing(false);
+    } catch {
+      setSaveState('error');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleRun(inputText?: string) {
@@ -242,14 +255,17 @@ export default function WorkflowDetailClient({
             <>
               <button onClick={handleSaveEdit} disabled={saving}
                 className="text-xs font-light px-3 py-1.5 rounded-lg"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}>
-                {saving ? 'Saving···' : 'Save'}
+                style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'var(--text-2)' }}>
+                {saving ? 'Saving…' : 'Save'}
               </button>
-              <button onClick={() => setEditing(false)} className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.3)' }}>Cancel</button>
+              <button onClick={() => setEditing(false)} className="text-xs font-light" style={{ color: 'var(--text-3)' }}>Cancel</button>
             </>
           ) : (
-            <button onClick={() => setEditing(true)} className="text-xs font-light" style={{ color: 'rgba(255,255,255,0.3)' }}>Edit</button>
+            <button onClick={() => setEditing(true)} className="text-xs font-light" style={{ color: 'var(--text-3)' }}>Edit</button>
           )}
+
+          <AutosaveChip state={saveState} lastSavedAt={lastSavedAt} compact />
+          <ActivityButton entityType="Workflow" entityId={workflow.id} entityLabel={workflow.name} />
 
           <button onClick={handleDuplicate} disabled={duplicating}
             className="text-xs font-light transition-colors disabled:opacity-40"
