@@ -10,10 +10,10 @@ export default function LegalFooter() {
     >
       <div className="max-w-5xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <svg width="14" height="18" viewBox="0 0 79 100" fill="none" style={{ opacity: 0.3 }}>
-            <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2"/>
-            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2"/>
-            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2"/>
+          <svg width="14" height="18" viewBox="0 0 79 100" fill="none" style={{ opacity: 0.3, color: 'var(--text-1)' }}>
+            <rect x="2" y="2" width="75" height="96" rx="8" stroke="currentColor" strokeWidth="2"/>
+            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="currentColor" strokeWidth="2"/>
+            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="currentColor" strokeWidth="2"/>
           </svg>
           <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
             GRID Systems Inc.

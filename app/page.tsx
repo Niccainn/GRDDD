@@ -44,12 +44,12 @@ export default function Home() {
 
       {/* ═══ NAV ═══ */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 py-4 md:py-5"
-        style={{ backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', background: 'rgba(8,8,12,0.7)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        style={{ backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', background: 'var(--nav-bg)', borderBottom: '1px solid var(--nav-border)' }}>
         <div className="flex items-center gap-2.5">
-          <svg width="24" height="31" viewBox="0 0 79 100" fill="none">
-            <rect x="2" y="2" width="75" height="96" rx="8" stroke="white" strokeWidth="2"/>
-            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2"/>
-            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2"/>
+          <svg width="24" height="31" viewBox="0 0 79 100" fill="none" style={{ color: 'var(--text-1)' }}>
+            <rect x="2" y="2" width="75" height="96" rx="8" stroke="currentColor" strokeWidth="2"/>
+            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="currentColor" strokeWidth="2"/>
+            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="currentColor" strokeWidth="2"/>
           </svg>
           <span className="text-sm font-light tracking-[0.18em]" style={{ color: 'var(--text-2)' }}>GRID</span>
         </div>
