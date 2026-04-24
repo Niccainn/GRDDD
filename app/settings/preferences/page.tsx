@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/components/Toast';
 import SettingsNav from '@/components/SettingsNav';
 
-type ThemeMode = 'dark' | 'light' | 'system';
+// 'system' was dropped intentionally — GRID is a dark-brand product
+// and a mobile device set to light mode should not flip the app to
+// light on first visit. Users can still explicitly choose light.
+type ThemeMode = 'dark' | 'light';
 type DateFormat = 'relative' | 'short' | 'long';
 type NotificationCadence = 'immediate' | 'hourly' | 'daily';
 
@@ -35,7 +38,10 @@ function loadPrefs(): Prefs {
     };
   }
   return {
-    theme: (localStorage.getItem('grid:theme') as ThemeMode) ?? 'dark',
+    // Coerce any legacy 'system' value (or any non-light string) back
+    // to the dark default so users who previously opted into system
+    // theme don't get light-flipped on devices that prefer light.
+    theme: localStorage.getItem('grid:theme') === 'light' ? 'light' : 'dark',
     defaultEnv: localStorage.getItem(STORAGE_PREFIX + 'defaultEnv') ?? '',
     emailNotifications: localStorage.getItem(STORAGE_PREFIX + 'emailNotifications') !== 'false',
     inAppNotifications: localStorage.getItem(STORAGE_PREFIX + 'inAppNotifications') !== 'false',
@@ -81,15 +87,9 @@ export default function PreferencesPage() {
     setPrefs(next);
     savePrefs(next);
 
-    // Apply theme immediately
+    // Apply theme immediately.
     if (partial.theme) {
-      const root = document.documentElement;
-      if (partial.theme === 'system') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-      } else {
-        root.setAttribute('data-theme', partial.theme);
-      }
+      document.documentElement.setAttribute('data-theme', partial.theme);
     }
 
     toast('Preference saved');
@@ -98,7 +98,6 @@ export default function PreferencesPage() {
   const themeOptions: { value: ThemeMode; label: string }[] = [
     { value: 'dark', label: 'Dark' },
     { value: 'light', label: 'Light' },
-    { value: 'system', label: 'System' },
   ];
 
   const dateOptions: { value: DateFormat; label: string; example: string }[] = [
