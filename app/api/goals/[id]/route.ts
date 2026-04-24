@@ -1,5 +1,5 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { assertOwnsGoal } from '@/lib/auth/ownership';
+import { assertCanWriteGoal, assertCanAdminGoal } from '@/lib/auth/ownership';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -13,7 +13,8 @@ export async function PATCH(
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
-  await assertOwnsGoal(id, identity.id);
+  // PATCH → CONTRIBUTOR+ (ADMIN + OWNER + CONTRIBUTOR can edit goals).
+  await assertCanWriteGoal(id, identity.id);
   const body = await req.json();
 
   const goal = await prisma.goal.update({
@@ -66,7 +67,8 @@ export async function DELETE(
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { id } = await params;
-  await assertOwnsGoal(id, identity.id);
+  // DELETE → ADMIN+ (ADMIN + OWNER only).
+  await assertCanAdminGoal(id, identity.id);
   await prisma.goal.delete({ where: { id } });
   return Response.json({ deleted: true });
 }
