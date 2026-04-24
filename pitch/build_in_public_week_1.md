@@ -13,7 +13,7 @@ Every company has three AI problems nobody sells a cure for:
 2. CFOs can't tell if any of it is working.
 3. New users don't know what they want.
 
-We think the cure is a **nervous system** — a substrate that reads your
+We think the cure is a **substrate** — something that reads your
 company, acts with your permission, and proves its work. Not a dashboard, not
 a chatbot, not another workflow builder. Something underneath all three.
 
@@ -72,7 +72,7 @@ a chatbot, not another workflow builder. Something underneath all three.
 
 ## The artifact
 
-If you want to see what a nervous system for a company looks like, the
+If you want to see what a workspace that acts looks like, the
 product is live. Ask for an invite and run your own Monday narrative next
 week.
 

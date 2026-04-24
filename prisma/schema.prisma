@@ -96,6 +96,8 @@ model Identity {
   consentLogs            ConsentLog[] @relation("ConsentLog")
   canvases               Canvas[]
   createdMeetings        Meeting[]          @relation("MeetingCreator")
+  authoredCourses        Course[]           @relation("CourseAuthor")
+  enrollments            Enrollment[]       @relation("CourseEnrollment")
   sentInvitations        EnvironmentInvitation[] @relation("InvitationSender")
 
   @@index([emailHash])
@@ -220,6 +222,7 @@ model Environment {
   crossDomainInsights CrossDomainInsight[]
   canvases     Canvas[]
   meetings     Meeting[]
+  courses      Course[]
   invitations  EnvironmentInvitation[]
 
   @@index([ownerId])
@@ -1101,15 +1104,48 @@ model Meeting {
   attendees   String?  // JSON array of email strings
   status      String   @default("SCHEDULED") // SCHEDULED | CANCELLED | DONE
 
+  /// Meeting intelligence — transcript markdown with speaker blocks,
+  /// auto-summary (decisions + context), and a recording pointer.
+  /// Populated by the transcription adapter (mock in alpha, Whisper/
+  /// Anthropic live later). Null until processing completes.
+  transcript   String?
+  summary      String?
+  recordingUrl String?
+
   environmentId String
   environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 
   creatorId String
   creator   Identity @relation("MeetingCreator", fields: [creatorId], references: [id])
 
+  actionItems MeetingActionItem[]
+
   @@index([environmentId])
   @@index([startTime])
   @@index([creatorId])
+}
+
+/// Action item extracted from a meeting. The wedge vs Sana: each item
+/// can be promoted into a real Task / Signal / Project that Nova can
+/// execute. `promotedToType` + `promotedToId` hold the back-reference
+/// after promotion so the meeting view can link out.
+model MeetingActionItem {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  text   String
+  order  Int    @default(0)
+  status String @default("OPEN") // OPEN | DONE | PROMOTED | DISMISSED
+
+  promotedToType String? // TASK | SIGNAL | PROJECT | GOAL
+  promotedToId   String?
+
+  meetingId String
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@index([status])
 }
 
 model TaskComment {
@@ -1634,7 +1670,7 @@ model TimeEntry {
 }
 
 // ===============================================
-// NOVA MEMORY — Second Brain
+// NOVA MEMORY — Continuity
 // Persistent context that makes Nova smarter over time.
 // Stores brand voice, market insights, user corrections,
 // strategic context, and learned preferences. This is what
@@ -2228,4 +2264,152 @@ model Canvas {
   @@index([environmentId])
   @@index([ownerId])
   @@index([environmentId, position])
+}
+
+// ===============================================
+// LEARN — Course authoring + enrollment
+// The GRID wedge vs Sana Learn: completing a lesson fires
+// `grid:skill-advanced` which promotes the learner's node in the
+// SkillSpace graph (see lib/events). Learning and skill fluency share
+// one graph rather than being separate products.
+// ===============================================
+
+model Course {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title     String
+  summary   String?
+  coverUrl  String?
+  published Boolean  @default(false)
+
+  /// Optional tag that maps course completion into a skill node. When
+  /// set, completing all lessons fires a skill-advance event with this
+  /// tag as the skill identifier.
+  skillTag String?
+
+  environmentId String
+  environment   Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   Identity @relation("CourseAuthor", fields: [authorId], references: [id])
+
+  modules     Module[]
+  enrollments Enrollment[]
+
+  @@index([environmentId])
+  @@index([authorId])
+  @@index([published])
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title String
+  order Int    @default(0)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessons Lesson[]
+
+  @@index([courseId])
+  @@index([courseId, order])
+}
+
+model Lesson {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title String
+  /// Markdown body rendered in the lesson player.
+  body             String
+  videoUrl         String?
+  estimatedMinutes Int?
+  order            Int     @default(0)
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  quiz        Quiz?
+  completions LessonCompletion[]
+
+  @@index([moduleId])
+  @@index([moduleId, order])
+}
+
+model Quiz {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  passingScore Int @default(70)
+
+  lessonId String @unique
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  questions QuizQuestion[]
+}
+
+model QuizQuestion {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  prompt String
+  /// MCQ | FREE
+  type   String @default("MCQ")
+  /// JSON array of choice strings (MCQ only).
+  choices       String?
+  /// For MCQ: index of the correct choice as a string. For FREE: an
+  /// exemplar answer used as a grading reference.
+  correctAnswer String?
+  order         Int    @default(0)
+
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  status      String    @default("ENROLLED") // ENROLLED | COMPLETED | DROPPED
+  progress    Int       @default(0) // 0-100
+  completedAt DateTime?
+
+  identityId String
+  identity   Identity @relation("CourseEnrollment", fields: [identityId], references: [id], onDelete: Cascade)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  completions LessonCompletion[]
+
+  @@unique([identityId, courseId])
+  @@index([courseId])
+  @@index([status])
+}
+
+model LessonCompletion {
+  id          String   @id @default(cuid())
+  completedAt DateTime @default(now())
+
+  /// Quiz score 0-100 if the lesson had a quiz, else null.
+  quizScore Int?
+
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, lessonId])
+  @@index([lessonId])
 }

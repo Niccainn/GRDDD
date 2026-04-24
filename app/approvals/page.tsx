@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import RequestApproval from '@/components/RequestApproval';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 type ApprovalStep = {
   order: number;
@@ -263,6 +264,7 @@ export default function ApprovalsPage() {
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
+      <SampleDataBanner />
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>

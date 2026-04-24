@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 
 /**
- * Seeds sample NovaMemory records to demonstrate the Second Brain feature.
+ * Seeds sample NovaMemory records to demonstrate the Continuity surface.
  */
 export async function seedNovaMemories(environmentId: string) {
   const memories = [

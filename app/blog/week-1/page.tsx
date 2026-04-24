@@ -60,8 +60,8 @@ export default function Week1Page() {
               of it is working. New users don&rsquo;t know what they want.
             </p>
             <p>
-              We think the cure is a <strong>nervous system</strong> — a substrate
-              that reads your company, acts with your permission, and proves its
+              We think the cure is a <strong>substrate</strong> — something that
+              reads your company, acts with your permission, and proves its
               work. Not a dashboard. Not a chatbot. Not another workflow builder.
               Something underneath all three.
             </p>
@@ -196,7 +196,7 @@ export default function Week1Page() {
               The artifact
             </p>
             <p>
-              If you want to see what a nervous system for a company looks like, the
+              If you want to see what a workspace that acts looks like, the
               product is live. Request access below and run your own Monday
               narrative next week.
             </p>

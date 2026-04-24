@@ -10,28 +10,32 @@ export async function GET(req: NextRequest) {
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
 
   const environmentId = req.nextUrl.searchParams.get('environmentId');
-  if (!environmentId) {
-    return Response.json({ error: 'environmentId required' }, { status: 400 });
-  }
 
-  // Read widens to any member of the environment — meetings are team
-  // calendar data, not owner-only.
-  const env = await prisma.environment.findFirst({
-    where: {
-      id: environmentId,
-      deletedAt: null,
-      OR: [
-        { ownerId: identity.id },
-        { memberships: { some: { identityId: identity.id } } },
-      ],
-    },
-    select: { id: true },
-  });
-  if (!env) return Response.json({ error: 'Not found' }, { status: 404 });
+  // When environmentId is omitted the caller is the global /meetings
+  // page, which lists everything the user can read across every env
+  // they belong to. Scoped reads stay strict.
+  const envFilter = environmentId
+    ? { id: environmentId }
+    : {};
 
   const meetings = await prisma.meeting.findMany({
-    where: { environmentId },
-    orderBy: { startTime: 'asc' },
+    where: {
+      ...(environmentId ? { environmentId } : {}),
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identity.id },
+          { memberships: { some: { identityId: identity.id } } },
+        ],
+        ...envFilter,
+      },
+    },
+    include: {
+      environment: { select: { id: true, name: true, slug: true, color: true } },
+      actionItems: { select: { id: true, status: true } },
+    },
+    orderBy: { startTime: 'desc' },
+    take: 200,
   });
 
   return Response.json({ meetings });

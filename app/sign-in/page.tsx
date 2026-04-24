@@ -71,7 +71,7 @@ function SignInInner() {
   return (
     <AuthLayout
       title="Sign in to GRID"
-      subtitle="The nervous system for your company"
+      subtitle="A workspace that acts"
       footer={
         <>
           New to GRID?{' '}
