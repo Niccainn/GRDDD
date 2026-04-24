@@ -428,12 +428,20 @@ function buildToolHint(
   live: boolean,
 ): string {
   const connected = Object.keys(ctx.integrationByProvider);
-  if (connected.length === 0) {
-    return '\nNo external integrations are currently connected to this environment. You may call tools, but they will return simulated results — narrate outcomes as "would do X" rather than claiming X happened.';
-  }
   const mode = live ? 'LIVE' : 'DRY-RUN';
-  return `\nConnected integrations: ${connected.join(', ')}.
-Write-side tool calls (post, create, comment) run in ${mode} mode. ${live
+  const header = `
+Available tool surface:
+- 8 hand-wired tools for Slack / Notion / GitHub / Figma (prefer these for their named providers).
+- \`integration_list\` — discover every other supported integration and the method names available on each. 89 providers, 220+ methods.
+- \`integration_call\` — invoke any method on any supported integration by (provider, method, args). Use \`integration_list\` first if unsure.
+`;
+  if (connected.length === 0) {
+    return `${header}
+No integrations are currently connected in this environment. Tool calls will return simulated results — narrate outcomes as "would do X" rather than claiming X happened.`;
+  }
+  return `${header}
+Connected integrations in this environment: ${connected.join(', ')}.
+Write-side calls (post, create, comment, update, delete) run in ${mode} mode. ${live
     ? 'Side effects WILL happen.'
-    : 'Results are simulated; narrate outcomes as proposed actions.'}`;
+    : 'Writes are simulated; narrate outcomes as proposed actions. Reads run live.'}`;
 }

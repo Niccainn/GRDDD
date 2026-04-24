@@ -14,6 +14,7 @@
 
 import { prisma } from '@/lib/db';
 import { TOOLS, type ToolContext, resolveToolByClaudeName } from './registry';
+import { INTEGRATION_CATALOG } from '@/lib/integrations/catalog';
 
 export type ToolInvocation = {
   id: string;
@@ -64,18 +65,54 @@ export async function dispatchTool(
   }
 
   const { id: toolId, entry } = match;
-  const connected = Boolean(ctx.integrationByProvider[entry.provider]);
-  const shouldSimulate = !connected || (entry.write && !opts.live);
+
+  // Meta-tools resolve their real target from input.
+  //   integration_list → always runs (no side-effects, no provider gating)
+  //   integration_call → resolves provider/method; gating follows the
+  //                      underlying method's write flag, not the meta
+  //                      tool's placeholder `write: true`.
+  let effectiveProvider = entry.provider;
+  let effectiveWrite = entry.write;
+  let effectiveToolId = toolId;
+  if (toolId === 'catalog.list') {
+    // Always-safe: inventory query. Run the handler unconditionally.
+    try {
+      const result = await entry.handler(input, ctx);
+      return {
+        id, toolId, claudeName, provider: 'catalog',
+        input, result, live: true, startedAt, ms: Date.now() - started,
+      };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'unknown_error';
+      return {
+        id, toolId, claudeName, provider: 'catalog',
+        input, result: { error: msg }, live: false,
+        reason: 'error', startedAt, ms: Date.now() - started, error: msg,
+      };
+    }
+  }
+  if (toolId === 'catalog.call') {
+    const callProvider = String(input.provider ?? '');
+    const callMethod = String(input.method ?? '');
+    const catalogEntry = INTEGRATION_CATALOG[callProvider];
+    const methodMeta = catalogEntry?.methods.find(m => m.name === callMethod);
+    effectiveProvider = callProvider;
+    effectiveWrite = methodMeta?.write ?? true; // unknown = treat as write, safe default
+    effectiveToolId = `${callProvider}.${callMethod}`;
+  }
+
+  const connected = Boolean(ctx.integrationByProvider[effectiveProvider]);
+  const shouldSimulate = !connected || (effectiveWrite && !opts.live);
   const reason = !connected
     ? 'not_connected'
-    : entry.write && !opts.live
+    : effectiveWrite && !opts.live
       ? 'policy_dryrun'
       : undefined;
 
   if (shouldSimulate) {
     return {
-      id, toolId, claudeName, provider: entry.provider,
-      input, result: simulatedResult(toolId, input, reason ?? 'not_connected'),
+      id, toolId: effectiveToolId, claudeName, provider: effectiveProvider,
+      input, result: simulatedResult(effectiveToolId, input, reason ?? 'not_connected'),
       live: false, reason, startedAt, ms: Date.now() - started,
     };
   }
@@ -83,13 +120,13 @@ export async function dispatchTool(
   try {
     const result = await entry.handler(input, ctx);
     return {
-      id, toolId, claudeName, provider: entry.provider,
+      id, toolId: effectiveToolId, claudeName, provider: effectiveProvider,
       input, result, live: true, startedAt, ms: Date.now() - started,
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'unknown_error';
     return {
-      id, toolId, claudeName, provider: entry.provider,
+      id, toolId: effectiveToolId, claudeName, provider: effectiveProvider,
       input, result: { error: msg }, live: true,
       startedAt, ms: Date.now() - started, error: msg,
     };
@@ -138,8 +175,16 @@ function simulatedResult(toolId: string, input: Record<string, unknown>, reason:
       return { simulated: true, reason, name: 'Simulated Figma File', pages: [{ id: '0:1', name: 'Page 1' }] };
     case 'figma.getTextContent':
       return { simulated: true, reason, textNodes: [{ nodeId: '0:2', text: 'Simulated text content.' }] };
-    default:
-      return { simulated: true, reason };
+    default: {
+      // Meta-call path: toolId is "<provider>.<method>". Return a
+      // shaped fallback that tells Claude what would have happened
+      // without pretending it did.
+      const [provider, method] = toolId.split('.');
+      return {
+        simulated: true, reason,
+        preview: `Would call ${method ?? toolId} on ${provider ?? 'integration'} with provided args.`,
+      };
+    }
   }
 }
 
