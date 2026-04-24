@@ -119,14 +119,16 @@ export default function EnvironmentGlance({
         </div>
       </div>
 
-      {/* Stats row */}
+      {/* Stats row — 2-col on mobile with the 5th item spanning full
+          width so there's no awkward empty cell; 5-col flat on
+          desktop. */}
       <div className="relative grid grid-cols-2 md:grid-cols-5 gap-px rounded-xl overflow-hidden"
         style={{ background: 'var(--glass-border)' }}>
-        {stats.map(stat => (
+        {stats.map((stat, i) => (
           <Link
             key={stat.label}
             href={stat.href}
-            className="px-4 py-3 transition-colors hover:bg-white/[0.02]"
+            className={`px-4 py-3 transition-colors hover:bg-white/[0.02] ${i === stats.length - 1 && stats.length % 2 === 1 ? 'col-span-2 md:col-span-1' : ''}`}
             style={{ background: 'var(--bg)' }}
           >
             <div className="text-[10px] tracking-wider uppercase font-light mb-1" style={{ color: 'var(--text-3)' }}>
