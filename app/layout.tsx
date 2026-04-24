@@ -65,9 +65,38 @@ export const viewport: Viewport = {
   themeColor: '#08080C',
 };
 
+/**
+ * Theme init script — runs synchronously in <head> before any paint.
+ *
+ * Default is dark, full stop. Only flips to light if the user has
+ * explicitly chosen it from the preferences UI (either legacy
+ * `grid-theme` key from the ThemeToggle or the canonical `grid:theme`
+ * key from /settings/preferences). System `prefers-color-scheme` is
+ * DELIBERATELY IGNORED — the brand is dark; a phone set to light mode
+ * should not automatically flip GRID to light the first time a user
+ * opens it.
+ *
+ * Inlining this is the only way to avoid a FOUC between SSR render
+ * and client hydration.
+ */
+const THEME_INIT_SCRIPT = `
+(function () {
+  try {
+    var stored = localStorage.getItem('grid:theme') || localStorage.getItem('grid-theme');
+    var theme = stored === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch (_) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} data-theme="dark">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="noise">
         <LayoutShell>{children}</LayoutShell>
         <ConsentGatedAnalytics />

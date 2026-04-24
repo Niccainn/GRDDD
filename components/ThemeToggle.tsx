@@ -5,7 +5,7 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
-    const stored = localStorage.getItem('grid-theme') as 'dark' | 'light' | null;
+    const stored = localStorage.getItem('grid:theme') as 'dark' | 'light' | null;
     if (stored) {
       setTheme(stored);
       document.documentElement.setAttribute('data-theme', stored);
@@ -16,7 +16,7 @@ export default function ThemeToggle() {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
     document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('grid-theme', next);
+    localStorage.setItem('grid:theme', next);
   }
 
   return (
