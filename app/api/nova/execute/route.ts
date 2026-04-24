@@ -29,8 +29,15 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
   }
 
-  // Ownership check — ensures the caller owns this system's environment
-  await assertOwnsSystem(systemId, identity.id);
+  // Ownership check — ensures the caller owns this system's environment.
+  // assertOwnsSystem throws a Response on failure; catch and return it so
+  // Next.js doesn't collapse it into an empty 500 body.
+  try {
+    await assertOwnsSystem(systemId, identity.id);
+  } catch (err) {
+    if (err instanceof Response) return err;
+    throw err;
+  }
 
   const [system, workflow] = await Promise.all([
     prisma.system.findUnique({
