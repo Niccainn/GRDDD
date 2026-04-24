@@ -33,11 +33,11 @@ export default function AuthLayout({
             viewBox="0 0 79 100"
             fill="none"
             aria-label="GRID"
-            style={{ opacity: 0.7 }}
+            style={{ opacity: 0.7, color: 'var(--text-1)' }}
           >
-            <rect x="2" y="2" width="75" height="96" rx="10" stroke="white" strokeWidth="2" />
-            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="white" strokeWidth="2" />
-            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="white" strokeWidth="2" />
+            <rect x="2" y="2" width="75" height="96" rx="10" stroke="currentColor" strokeWidth="2" />
+            <path d="M 27 2 L 27 90 Q 27 98 35 98" stroke="currentColor" strokeWidth="2" />
+            <path d="M 52 2 L 52 90 Q 52 98 60 98" stroke="currentColor" strokeWidth="2" />
           </svg>
         </div>
 

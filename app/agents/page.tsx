@@ -14,6 +14,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 type AgentListItem = {
   id: string;
@@ -54,6 +55,7 @@ export default function AgentsPage() {
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
+      <SampleDataBanner />
       <div className="flex items-start justify-between mb-8 max-w-5xl">
         <div>
           <h1 className="text-2xl font-extralight tracking-tight mb-1">Agents</h1>

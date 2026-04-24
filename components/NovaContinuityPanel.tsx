@@ -47,7 +47,7 @@ function confidenceColor(c: number) {
   return '#E54B4B';
 }
 
-export default function NovaSecondBrainPanel({
+export default function NovaContinuityPanel({
   open,
   onClose,
 }: {
@@ -195,7 +195,7 @@ export default function NovaSecondBrainPanel({
                     margin: 0,
                   }}
                 >
-                  Nova Second Brain
+                  Nova Continuity
                 </h2>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
                   {total} {total === 1 ? 'memory' : 'memories'} stored

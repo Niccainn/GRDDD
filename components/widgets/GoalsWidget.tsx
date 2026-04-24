@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import Widget from './Widget';
 
 type Goal = {
@@ -66,7 +67,7 @@ export default function GoalsWidget({ goals }: GoalsWidgetProps) {
           const color = statusColor(goal.status);
 
           return (
-            <div key={goal.id} className="glass-deep rounded-xl p-4">
+            <Link key={goal.id} href={`/goals/${goal.id}`} className="glass-deep rounded-xl p-4 block transition-colors hover:bg-white/[0.02]">
               {/* Title + status tag */}
               <div className="flex items-start justify-between gap-2 mb-2">
                 <span className="text-sm font-light leading-snug" style={{ color: 'var(--text-1)' }}>
@@ -105,7 +106,7 @@ export default function GoalsWidget({ goals }: GoalsWidgetProps) {
                   {pct}%
                 </span>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

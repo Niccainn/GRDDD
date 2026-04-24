@@ -156,27 +156,42 @@ export default function OperatePage() {
   }, []);
 
   useEffect(() => {
+    // Be defensive: auth failures (401) and DB failures (500) both
+    // return empty or non-JSON bodies. A blind `.json()` here throws
+    // a SyntaxError that blanks the whole page. Guard on `r.ok` and
+    // wrap the parse in try/catch so one bad response doesn't kill
+    // the render.
     fetch('/api/operate-data')
-      .then(r => r.json())
+      .then(async r => {
+        if (!r.ok) throw new Error(`operate-data ${r.status}`);
+        const text = await r.text();
+        try { return JSON.parse(text); } catch { throw new Error('operate-data: non-JSON body'); }
+      })
       .then(d => {
-        setSystems(d.systems);
-        setActivity(d.activity);
+        setSystems(d.systems ?? []);
+        setActivity(d.activity ?? []);
         setExecutions(d.executions ?? []);
-        setWfStats(d.workflows);
-        setAvgHealth(d.avgHealth);
-        // Pull the Display name from /settings/profile — shown in
-        // the greeting below. Falls back to firstName for older API
-        // responses that don't yet include displayName.
+        setWfStats(d.workflows ?? null);
+        setAvgHealth(d.avgHealth ?? null);
         setDisplayName(d.user?.displayName ?? d.user?.firstName ?? null);
-        setLoaded(true);
-        // Default to activity tab if there's nova activity, else runs
         if ((d.activity ?? []).length > 0) setFeedTab('activity');
-      });
+      })
+      .catch(() => {
+        // Leave state at defaults; the render path handles loaded-but-empty.
+      })
+      .finally(() => setLoaded(true));
+
     // Fetch the user's primary env so the scaffold widget has a target.
     fetch('/api/environments')
-      .then(r => r.json())
-      .then((envs: { id: string }[]) => {
-        if (Array.isArray(envs) && envs.length > 0) setPrimaryEnvId(envs[0].id);
+      .then(async r => {
+        if (!r.ok) return null;
+        const text = await r.text();
+        try { return JSON.parse(text); } catch { return null; }
+      })
+      .then(body => {
+        // Accept both shapes: legacy `[{id}]` and current `{environments: [...]}`.
+        const envs = Array.isArray(body) ? body : Array.isArray(body?.environments) ? body.environments : [];
+        if (envs.length > 0) setPrimaryEnvId(envs[0].id);
       })
       .catch(() => {});
   }, []);

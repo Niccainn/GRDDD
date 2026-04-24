@@ -10,6 +10,8 @@
   --bg: #000000;
   --bg-subtle: #060608;
   --bg-elevated: #0b0b0e;
+  --nav-bg: rgba(8, 8, 12, 0.7);
+  --nav-border: rgba(255, 255, 255, 0.04);
 
   /* ─── Glass system ─── */
   --glass: rgba(255, 255, 255, 0.025);
@@ -86,6 +88,8 @@
   --bg: #f2f2f5;
   --bg-subtle: #f7f7fa;
   --bg-elevated: #fafafe;
+  --nav-bg: rgba(255, 255, 255, 0.7);
+  --nav-border: rgba(0, 0, 0, 0.06);
 
   --glass: rgba(255, 255, 255, 0.55);
   --glass-hover: rgba(255, 255, 255, 0.7);

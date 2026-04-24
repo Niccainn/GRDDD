@@ -290,6 +290,104 @@ export async function createSampleData(
   }
 
   // ------------------------------------------------------------------
+  // SIGNALS (inbox)
+  // Every tagged with source 'sample' so the DELETE handler can
+  // scoop them up cleanly.
+  // ------------------------------------------------------------------
+  const signalDefs = [
+    {
+      title: 'Stripe webhook delivery failed',
+      body: 'The billing webhook retried 3 times and gave up. Likely endpoint outage — investigate.',
+      priority: 'HIGH',
+      status: 'UNREAD',
+    },
+    {
+      title: 'Meta Ads campaign reached daily cap',
+      body: 'Q2 Launch campaign hit daily spend cap at 2:14pm. Creative is converting — consider lifting cap.',
+      priority: 'NORMAL',
+      status: 'UNREAD',
+    },
+    {
+      title: 'New client form submitted',
+      body: 'Acme Corp submitted the intake form. Nova drafted a reply — review before sending.',
+      priority: 'LOW',
+      status: 'READ',
+    },
+  ];
+  for (const sig of signalDefs) {
+    await prisma.signal.create({
+      data: {
+        ...sig,
+        source: 'sample',
+        systemId,
+        environmentId,
+      },
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // MEETINGS (with transcript + action items)
+  // ------------------------------------------------------------------
+  const sampleMeeting = await prisma.meeting.create({
+    data: {
+      title: 'Sample · Weekly growth review',
+      description: '[Sample] Weekly sync covering campaigns, pipeline, and priorities.',
+      startTime: hoursAgo(48),
+      endTime: hoursAgo(47),
+      attendees: JSON.stringify(['alex@acme.com', 'jordan@acme.com', 'sam@acme.com']),
+      status: 'DONE',
+      transcript:
+        '**Alex** — Thanks everyone for joining. Let\'s walk through this week\'s growth numbers.\n\n**Jordan** — Campaign performance is up 18% week-over-week. The Meta Ads creative from last Friday is working.\n\n**Sam** — I\'ve drafted a retrospective memo. Want me to share it before Monday?\n\n**Alex** — Yes. Let\'s also queue a follow-up thread in #growth to keep the team aligned.',
+      summary:
+        '[Sample] Weekly growth is up 18% week-over-week. Sam will share the retrospective before Monday. Alex will queue a follow-up thread in #growth.',
+      environmentId,
+      creatorId: identityId,
+    },
+  });
+  await prisma.meetingActionItem.createMany({
+    data: [
+      { meetingId: sampleMeeting.id, text: 'Sam to share the retrospective memo before Monday', order: 0 },
+      { meetingId: sampleMeeting.id, text: 'Alex to queue a follow-up thread in #growth', order: 1 },
+      { meetingId: sampleMeeting.id, text: 'Schedule a deep-dive on Meta Ads creative', order: 2 },
+    ],
+  });
+
+  // ------------------------------------------------------------------
+  // COURSES (so /learn/courses isn't empty on first visit)
+  // ------------------------------------------------------------------
+  const sampleCourse = await prisma.course.create({
+    data: {
+      title: 'Sample · Running a weekly growth review',
+      summary: '[Sample] A 3-lesson primer on how Nova thinks about growth ops. Clone and edit to customise for your team.',
+      published: true,
+      skillTag: 'growth-review',
+      environmentId,
+      authorId: identityId,
+    },
+  });
+  const sampleModule = await prisma.module.create({
+    data: { title: 'The weekly review loop', order: 0, courseId: sampleCourse.id },
+  });
+  await prisma.lesson.createMany({
+    data: [
+      {
+        moduleId: sampleModule.id,
+        order: 0,
+        title: 'Why weekly cadence beats daily dashboards',
+        body: '[Sample] Daily dashboards are noise. Weekly reviews compress signal into action.\n\nKey moves:\n- Pick 3 metrics you actually act on\n- Write one paragraph on what changed\n- Identify one decision to make next week',
+        estimatedMinutes: 6,
+      },
+      {
+        moduleId: sampleModule.id,
+        order: 1,
+        title: 'Writing a review that produces decisions',
+        body: '[Sample] A review is not a report. It is a forcing function for a decision.\n\nTemplate:\n1. What moved\n2. Why it moved\n3. What we\'ll do next week because of it',
+        estimatedMinutes: 8,
+      },
+    ],
+  });
+
+  // ------------------------------------------------------------------
   // SYSTEM HEALTH
   // ------------------------------------------------------------------
   await prisma.systemState.create({

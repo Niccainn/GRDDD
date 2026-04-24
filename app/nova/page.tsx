@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import NovaSecondBrainPanel from '@/components/NovaSecondBrainPanel';
+import NovaContinuityPanel from '@/components/NovaContinuityPanel';
 
 // ─── Markdown renderer ────────────────────────────────────────────────────────
 function renderInline(text: string): React.ReactNode {
@@ -94,7 +94,7 @@ export default function NovaPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Second Brain panel
+  // Continuity panel — Nova's persistent context across sessions.
   const [brainOpen, setBrainOpen] = useState(false);
 
   // Logs state
@@ -261,7 +261,7 @@ export default function NovaPage() {
             )}
             <button
               onClick={() => setBrainOpen(true)}
-              title="Nova Second Brain"
+              title="Nova Continuity"
               className="flex items-center justify-center transition-all"
               style={{
                 width: '34px',
@@ -603,7 +603,7 @@ export default function NovaPage() {
           )}
         </div>
       </div>
-      <NovaSecondBrainPanel open={brainOpen} onClose={() => setBrainOpen(false)} />
+      <NovaContinuityPanel open={brainOpen} onClose={() => setBrainOpen(false)} />
     </div>
   );
 }

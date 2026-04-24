@@ -20,8 +20,18 @@ import TeamAdoptionWidget from '@/components/environments/TeamAdoptionWidget';
 import TrustPrimer from '@/components/environments/TrustPrimer';
 import ProjectsWidget from '@/components/environments/ProjectsWidget';
 import ProjectLauncher from '@/components/projects/ProjectLauncher';
+import EnvironmentGlance from '@/components/environments/EnvironmentGlance';
 
 type DashboardData = {
+  environment: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    color: string | null;
+    owner: string;
+    createdAt: string;
+  };
   systems: {
     id: string;
     name: string;
@@ -119,6 +129,22 @@ export default function EnvironmentOverview() {
 
   return (
     <div className="space-y-4">
+      {/* Glance strip — the "who/what" of this environment in one
+          read. Sits above everything so users land on the profile,
+          not on widgets. */}
+      <EnvironmentGlance
+        name={data.environment.name}
+        slug={data.environment.slug}
+        description={data.environment.description}
+        color={data.environment.color}
+        owner={data.environment.owner}
+        systems={data.systems}
+        goals={data.goals}
+        signals={data.signals}
+        executions={data.executions}
+        novaLogs={data.novaLogs}
+        successRate={data.successRate}
+      />
       {/* Canonical artifact — the three surfaces that define the page:
           weekly narrative, exceptions feed, action ledger. They lead
           so screenshots of this page carry the product thesis on
@@ -141,11 +167,18 @@ export default function EnvironmentOverview() {
         <RoiSummaryWidget environmentId={environmentId} environmentSlug={slug} />
         <TeamAdoptionWidget environmentId={environmentId} />
       </div>
+      {/* Primary surfaces — system health + running work + open goals.
+          Everything below the fold is now opt-in via the
+          <MoreWidgetsDisclosure /> so first-load reads as three-lane
+          wedge (narrative · exceptions · ledger) + health + activity,
+          not a 15-card dashboard. */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SystemHealthWidget systems={data.systems} />
         <ActivityFeedWidget novaLogs={data.novaLogs} signals={data.signals} />
         <WorkflowKanbanWidget executions={data.executions} />
         {data.goals.length > 0 && <GoalsWidget goals={data.goals} />}
+      </div>
+      <MoreWidgetsDisclosure>
         <IntegrationsWidget environmentId={environmentId} />
         <ReflectiveInsightsWidget environmentId={environmentId} />
         <MasteryWidget environmentId={environmentId} />
@@ -154,6 +187,49 @@ export default function EnvironmentOverview() {
           analytics={data.campaignAnalytics}
           successRate={data.successRate}
         />
+      </MoreWidgetsDisclosure>
+    </div>
+  );
+}
+
+/**
+ * Collapsible section that hides the 5 secondary widgets behind a
+ * single click. First-load reads as the wedge (narrative, exceptions,
+ * action ledger, health, activity) instead of 15 cards. Power users
+ * who want the full dashboard click once; new users don't drown.
+ *
+ * Kept inline (not a separate component file) because it's specific
+ * to this page's widget inventory and doesn't belong in the shared
+ * UI primitives.
+ */
+function MoreWidgetsDisclosure({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <div className="flex items-center justify-center">
+        <button
+          onClick={() => setOpen(true)}
+          className="text-[11px] font-light px-4 py-2 rounded-full transition-colors hover:bg-white/[0.04]"
+          style={{ border: '1px solid var(--glass-border)', color: 'var(--text-2)' }}
+        >
+          Show integrations, insights &amp; analytics
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {children}
+      </div>
+      <div className="flex items-center justify-center">
+        <button
+          onClick={() => setOpen(false)}
+          className="text-[10px] font-light transition-colors hover:text-white/70"
+          style={{ color: 'var(--text-3)' }}
+        >
+          Collapse
+        </button>
       </div>
     </div>
   );

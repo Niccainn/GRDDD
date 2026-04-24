@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { Project } from '@/lib/projects/types';
 import { PROJECT_TEMPLATES } from '@/lib/projects/templates';
+import SampleDataBanner from '@/components/SampleDataBanner';
 
 type EnvRow = { id: string; name: string; slug: string; color: string | null };
 
@@ -86,6 +87,7 @@ export default function ProjectsIndexPage() {
 
   return (
     <div className="px-4 md:px-10 py-8 md:py-12 max-w-4xl mx-auto">
+      <SampleDataBanner />
       <p className="text-[10px] tracking-[0.18em] uppercase font-light mb-2" style={{ color: 'var(--text-3)' }}>
         Projects
       </p>

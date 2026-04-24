@@ -33,7 +33,7 @@ scoped to the authenticated user's repos.
 `GET /search/issues?q=review-requested:<user>`.
 
 ### 2. Linear ⭐
-**Why:** product teams use this as their nervous system. Cycle
+**Why:** product teams use this as their operational substrate. Cycle
 updates + issue changes are the highest-density signals.
 **Endpoint:** GraphQL `viewer.assignedIssues(filter: { updatedAt: { gt: $since } })`.
 **Token:** already stored per the OAuth start flow.

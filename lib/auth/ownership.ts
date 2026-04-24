@@ -292,8 +292,8 @@ export async function assertCanAdminEnvironment(
 // callers get a 404 (never 403) on insufficient role to avoid leaking
 // resource existence.
 
-const WRITE_ROLES = { in: ['ADMIN', 'CONTRIBUTOR'] } as const;
-const ADMIN_ROLES = { in: ['ADMIN'] } as const;
+const WRITE_ROLES = { in: ['ADMIN', 'CONTRIBUTOR'] };
+const ADMIN_ROLES = { in: ['ADMIN'] };
 
 export async function assertCanWriteSystem(systemId: string, identityId: string) {
   const system = await prisma.system.findFirst({
@@ -361,6 +361,23 @@ export async function assertCanAdminWorkflow(workflowId: string, identityId: str
   });
   if (!workflow) throw UNAUTHORIZED();
   return workflow;
+}
+
+export async function assertCanReadGoal(goalId: string, identityId: string) {
+  const goal = await prisma.goal.findFirst({
+    where: {
+      id: goalId,
+      environment: {
+        deletedAt: null,
+        OR: [
+          { ownerId: identityId },
+          { memberships: { some: { identityId } } },
+        ],
+      },
+    },
+  });
+  if (!goal) throw UNAUTHORIZED();
+  return goal;
 }
 
 export async function assertCanWriteGoal(goalId: string, identityId: string) {

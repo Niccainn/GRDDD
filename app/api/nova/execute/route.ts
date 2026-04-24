@@ -8,10 +8,13 @@ import { audit } from '@/lib/audit';
 import { computeHealthScore } from '@/lib/health';
 import { trackUsage } from '@/lib/billing/usage';
 import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
+import { runClaudeWithTools } from '@/lib/nova/tools/run-with-tools';
+import { loadToolContext, isLiveToolsEnabled, type ToolInvocation } from '@/lib/nova/tools/dispatch';
 
 export type ExecuteEvent =
   | { type: 'stage_start'; stage: string; index: number }
   | { type: 'stage_text'; text: string }
+  | { type: 'tool_invocation'; invocation: ToolInvocation }
   | { type: 'stage_done'; index: number; output: string }
   | { type: 'done'; executionId: string; tokens: number }
   | { type: 'error'; message: string };
@@ -26,8 +29,15 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
   }
 
-  // Ownership check — ensures the caller owns this system's environment
-  await assertOwnsSystem(systemId, identity.id);
+  // Ownership check — ensures the caller owns this system's environment.
+  // assertOwnsSystem throws a Response on failure; catch and return it so
+  // Next.js doesn't collapse it into an empty 500 body.
+  try {
+    await assertOwnsSystem(systemId, identity.id);
+  } catch (err) {
+    if (err instanceof Response) return err;
+    throw err;
+  }
 
   const [system, workflow] = await Promise.all([
     prisma.system.findUnique({
@@ -64,6 +74,14 @@ export async function POST(req: NextRequest) {
       try {
         let totalTokens = 0;
         const stageOutputs: { stage: string; output: string }[] = [];
+        const allInvocations: ToolInvocation[] = [];
+
+        // Tool context — which integrations are connected to this env,
+        // plus the global live-tools flag (defaults off, so writes are
+        // safely simulated unless NOVA_TOOLS_LIVE=1).
+        const toolCtx = await loadToolContext(system.environmentId);
+        const live = isLiveToolsEnabled();
+        const toolHint = buildToolHint(toolCtx, live);
 
         if (workflowStages.length === 0) {
           // No stages — just do a single analysis pass
@@ -71,21 +89,26 @@ export async function POST(req: NextRequest) {
 
           const systemPrompt = `You are Nova, operating inside the ${system.name} system (${system.environment.name}).
 Your job is to process and respond to work requests with actionable, specific output.
-Be direct. Produce real work — not descriptions of work.`;
+Be direct. Produce real work — not descriptions of work.
+${toolHint}`;
 
-          const stream = anthropic.messages.stream({
+          const result = await runClaudeWithTools({
+            client: anthropic,
             model: 'claude-opus-4-6',
-            max_tokens: 1500,
+            maxTokens: 1500,
             system: systemPrompt,
             messages: [{ role: 'user', content: input }],
+            ctx: toolCtx,
+            live,
+            onText: t => send({ type: 'stage_text', text: t }),
           });
-
-          let stageOut = '';
-          stream.on('text', t => { stageOut += t; send({ type: 'stage_text', text: t }); });
-          const final = await stream.finalMessage();
-          totalTokens += final.usage.input_tokens + final.usage.output_tokens;
-          send({ type: 'stage_done', index: 0, output: stageOut });
-          stageOutputs.push({ stage: 'Analysis', output: stageOut });
+          totalTokens += result.usage.input_tokens + result.usage.output_tokens;
+          for (const inv of result.invocations) {
+            allInvocations.push(inv);
+            send({ type: 'tool_invocation', invocation: inv });
+          }
+          send({ type: 'stage_done', index: 0, output: result.text });
+          stageOutputs.push({ stage: 'Analysis', output: result.text });
         } else {
           // Process each stage sequentially
           for (let i = 0; i < workflowStages.length; i++) {
@@ -240,19 +263,23 @@ ${input}
 **${stage} stage instructions:**
 ${specificInstruction}`;
 
-            const stream = anthropic.messages.stream({
+            const result = await runClaudeWithTools({
+              client: anthropic,
               model: 'claude-sonnet-4-6',
-              max_tokens: 2500,
-              system: systemPrompt,
+              maxTokens: 2500,
+              system: systemPrompt + '\n' + toolHint,
               messages: [{ role: 'user', content: stagePrompt }],
+              ctx: toolCtx,
+              live,
+              onText: t => send({ type: 'stage_text', text: t }),
             });
-
-            let stageOut = '';
-            stream.on('text', t => { stageOut += t; send({ type: 'stage_text', text: t }); });
-            const final = await stream.finalMessage();
-            totalTokens += final.usage.input_tokens + final.usage.output_tokens;
-            stageOutputs.push({ stage, output: stageOut });
-            send({ type: 'stage_done', index: i, output: stageOut });
+            totalTokens += result.usage.input_tokens + result.usage.output_tokens;
+            for (const inv of result.invocations) {
+              allInvocations.push(inv);
+              send({ type: 'tool_invocation', invocation: inv });
+            }
+            stageOutputs.push({ stage, output: result.text });
+            send({ type: 'stage_done', index: i, output: result.text });
 
             // Update execution progress in DB
             await prisma.execution.update({
@@ -261,7 +288,7 @@ ${specificInstruction}`;
                 currentStage: i + 1,
                 status: i + 1 >= workflowStages.length ? 'COMPLETED' : 'RUNNING',
                 output: i + 1 >= workflowStages.length
-                  ? JSON.stringify(stageOutputs)
+                  ? JSON.stringify({ stages: stageOutputs, invocations: allInvocations, live })
                   : null,
                 ...(i + 1 >= workflowStages.length ? { completedAt: new Date() } : {}),
               },
@@ -269,8 +296,14 @@ ${specificInstruction}`;
           }
         }
 
-        // Final persist
-        const fullOutput = JSON.stringify(stageOutputs);
+        // Final persist — output JSON now carries both stageOutputs
+        // AND the collected tool invocations so the Execution detail
+        // UI can render both without a schema migration.
+        const fullOutput = JSON.stringify({
+          stages: stageOutputs,
+          invocations: allInvocations,
+          live,
+        });
         await prisma.execution.update({
           where: { id: executionId },
           data: { status: 'COMPLETED', output: fullOutput, completedAt: new Date() },
@@ -388,4 +421,34 @@ Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusa
       'Connection': 'keep-alive',
     },
   });
+}
+
+/**
+ * Tell Claude what's actually wired up in this environment so it
+ * reaches for tools that will succeed. Without this, Claude might
+ * call github_* when GitHub isn't connected and every call ends up
+ * simulated. Also surfaces the dry-run policy so Claude writes
+ * `(dry-run)` language in its narrative when writes won't fire live.
+ */
+function buildToolHint(
+  ctx: { integrationByProvider: Record<string, string> },
+  live: boolean,
+): string {
+  const connected = Object.keys(ctx.integrationByProvider);
+  const mode = live ? 'LIVE' : 'DRY-RUN';
+  const header = `
+Available tool surface:
+- 8 hand-wired tools for Slack / Notion / GitHub / Figma (prefer these for their named providers).
+- \`integration_list\` — discover every other supported integration and the method names available on each. 89 providers, 220+ methods.
+- \`integration_call\` — invoke any method on any supported integration by (provider, method, args). Use \`integration_list\` first if unsure.
+`;
+  if (connected.length === 0) {
+    return `${header}
+No integrations are currently connected in this environment. Tool calls will return simulated results — narrate outcomes as "would do X" rather than claiming X happened.`;
+  }
+  return `${header}
+Connected integrations in this environment: ${connected.join(', ')}.
+Write-side calls (post, create, comment, update, delete) run in ${mode} mode. ${live
+    ? 'Side effects WILL happen.'
+    : 'Writes are simulated; narrate outcomes as proposed actions. Reads run live.'}`;
 }

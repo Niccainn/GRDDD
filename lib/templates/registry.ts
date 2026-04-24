@@ -189,7 +189,7 @@ export const TEMPLATES: SystemTemplate[] = [
   {
     id: 'ops-command',
     name: 'Operations Command',
-    description: 'Central nervous system for daily operations — tasks, reviews, and process health.',
+    description: 'Central hub for daily operations — tasks, reviews, and process health.',
     category: 'operations',
     icon: '⚙️',
     color: '#7193ED',

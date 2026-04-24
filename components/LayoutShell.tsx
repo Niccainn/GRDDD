@@ -43,7 +43,21 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   const isAuthRoute = AUTH_ROUTES.some(r => pathname.startsWith(r));
   const isHome = pathname === '/';
-  const showChrome = user && !isAuthRoute;
+  // Detect the session cookie client-side so the chrome renders even
+  // when /api/auth/me transiently fails (DB hiccup, 5xx on a cold
+  // start). Without this, a logged-in user hitting /dashboard with a
+  // flaky backend sees the public-layout branch — no sidebar, no
+  // Nova bar, nothing. Middleware still redirects truly-unauth'd
+  // visitors on the next navigation, so the optimistic branch is
+  // safe: worst case we render the sidebar for a half-second before
+  // a redirect.
+  const [hasSessionCookie, setHasSessionCookie] = useState(false);
+  useEffect(() => {
+    const has = typeof document !== 'undefined'
+      && document.cookie.split(';').some(c => c.trim().startsWith('grid_session='));
+    setHasSessionCookie(has);
+  }, [pathname]);
+  const showChrome = (user || hasSessionCookie) && !isAuthRoute && !isHome;
 
   if (loading && !isAuthRoute && !isHome) {
     return (

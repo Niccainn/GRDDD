@@ -6,6 +6,20 @@ import Link from 'next/link';
 
 type StageOutput = { stage: string; output: string };
 
+type ToolInvocation = {
+  id: string;
+  toolId: string;
+  claudeName: string;
+  provider: string;
+  input: Record<string, unknown>;
+  result: unknown;
+  live: boolean;
+  reason?: string;
+  startedAt: string;
+  ms: number;
+  error?: string;
+};
+
 type ValidationData = {
   score: number;
   issues: string[];
@@ -68,6 +82,7 @@ export default function ExecutionDetailPage() {
   const router = useRouter();
   const [execution, setExecution] = useState<ExecutionData | null>(null);
   const [stageOutputs, setStageOutputs] = useState<StageOutput[]>([]);
+  const [invocations, setInvocations] = useState<ToolInvocation[]>([]);
   const [streamingStage, setStreamingStage] = useState<{ index: number; stage: string; text: string } | null>(null);
   const [running, setRunning] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -116,7 +131,15 @@ export default function ExecutionDetailPage() {
         if (data.output) {
           try {
             const parsed = JSON.parse(data.output);
-            if (Array.isArray(parsed)) setStageOutputs(parsed);
+            // Two shapes in the wild:
+            //   - legacy: [{ stage, output }, ...]
+            //   - current: { stages: [...], invocations: [...], live }
+            if (Array.isArray(parsed)) {
+              setStageOutputs(parsed);
+            } else if (parsed && typeof parsed === 'object') {
+              if (Array.isArray(parsed.stages)) setStageOutputs(parsed.stages);
+              if (Array.isArray(parsed.invocations)) setInvocations(parsed.invocations);
+            }
           } catch { /* plain text output */ }
         }
         setLoaded(true);
@@ -168,6 +191,8 @@ export default function ExecutionDetailPage() {
           } else if (event.type === 'stage_done') {
             setStageOutputs(prev => [...prev, { stage: event.stage ?? streamingStage?.stage ?? '', output: event.output }]);
             setStreamingStage(null);
+          } else if (event.type === 'tool_invocation') {
+            setInvocations(prev => [...prev, event.invocation]);
           } else if (event.type === 'done') {
             setTokens(event.tokens);
             setExecution(prev => prev ? { ...prev, status: 'COMPLETED' } : null);
@@ -351,6 +376,63 @@ export default function ExecutionDetailPage() {
                 </div>
               )}
               <div ref={bottomRef} />
+            </div>
+          )}
+
+          {/* Tool invocations — the actual work Nova did on external
+              systems this run. Each card shows whether it fired live
+              or was simulated (dry-run or missing integration), the
+              inputs Nova decided to use, and the adapter's response.
+              This is the trust theater: read/decided/skipped on a page. */}
+          {invocations.length > 0 && (
+            <div className="space-y-2 mt-6">
+              <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>
+                TOOL INVOCATIONS · <span className="tabular-nums">{invocations.length}</span>
+                <span className="ml-2" style={{ color: 'var(--text-3)' }}>
+                  ({invocations.filter(i => i.live).length} live · {invocations.filter(i => !i.live).length} simulated)
+                </span>
+              </p>
+              {invocations.map(inv => {
+                const live = inv.live;
+                const err = Boolean(inv.error);
+                const accent = err ? '#FF6B6B' : live ? '#C8F26B' : '#F5D76E';
+                const accentSoft = err ? 'rgba(255,107,107,0.08)' : live ? 'rgba(200,242,107,0.06)' : 'rgba(245,215,110,0.06)';
+                return (
+                  <div key={inv.id} className="rounded-xl overflow-hidden"
+                    style={{ border: `1px solid ${accent}33` }}>
+                    <div className="flex items-center justify-between gap-3 px-4 py-2.5"
+                      style={{ background: accentSoft, borderBottom: `1px solid ${accent}22` }}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: accent }} />
+                        <span className="text-xs font-light tabular-nums" style={{ color: accent }}>
+                          {inv.toolId}
+                        </span>
+                        <span className="text-[10px] font-light px-1.5 py-0.5 rounded-full"
+                          style={{
+                            background: live ? 'rgba(200,242,107,0.1)' : 'rgba(245,215,110,0.1)',
+                            border: `1px solid ${live ? 'rgba(200,242,107,0.25)' : 'rgba(245,215,110,0.25)'}`,
+                            color: live ? '#C8F26B' : '#F5D76E',
+                          }}>
+                          {err ? 'error' : live ? 'live' : inv.reason === 'not_connected' ? 'dry-run · not connected' : 'dry-run · policy'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-light tabular-nums" style={{ color: 'var(--text-3)' }}>
+                        {inv.ms}ms
+                      </span>
+                    </div>
+                    <div className="px-4 py-3 space-y-2 text-xs font-light font-mono" style={{ color: 'var(--text-2)' }}>
+                      <div>
+                        <span className="text-[10px] tracking-wider uppercase mr-2" style={{ color: 'var(--text-3)' }}>Input</span>
+                        <code className="whitespace-pre-wrap break-all">{JSON.stringify(inv.input, null, 2)}</code>
+                      </div>
+                      <div>
+                        <span className="text-[10px] tracking-wider uppercase mr-2" style={{ color: 'var(--text-3)' }}>Result</span>
+                        <code className="whitespace-pre-wrap break-all">{JSON.stringify(inv.result, null, 2).slice(0, 1200)}</code>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
