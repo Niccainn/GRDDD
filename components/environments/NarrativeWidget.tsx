@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from 'react';
 import DataOriginTag from '@/components/widgets/DataOriginTag';
+import HelpBubble from '@/components/ui/HelpBubble';
 
 type Props = { environmentId: string; environmentName: string };
 
@@ -55,12 +56,19 @@ export default function NarrativeWidget({ environmentId, environmentName }: Prop
     >
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p
-            className="text-[10px] tracking-[0.18em] uppercase font-light mb-1"
-            style={{ color: 'var(--text-3)' }}
-          >
-            Weekly narrative · {environmentName}
-          </p>
+          <div className="flex items-center gap-2 mb-1">
+            <p
+              className="text-[10px] tracking-[0.18em] uppercase font-light"
+              style={{ color: 'var(--text-3)' }}
+            >
+              Weekly narrative · {environmentName}
+            </p>
+            <HelpBubble
+              title="The weekly narrative"
+              body="Every Monday Nova writes a five-sentence memo about this Environment — drawn from seven days of audit log, signals, and goal deltas. It's the artifact the team forwards to the CEO."
+              learnMoreHref="/blog/week-1"
+            />
+          </div>
           {data?.generatedAt && (
             <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
               Generated {new Date(data.generatedAt).toLocaleString(undefined, {

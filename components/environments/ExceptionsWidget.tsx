@@ -9,6 +9,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import DataOriginTag from '@/components/widgets/DataOriginTag';
+import HelpBubble from '@/components/ui/HelpBubble';
 
 type Row = {
   id: string;
@@ -54,12 +55,18 @@ export default function ExceptionsWidget({ environmentId }: { environmentId: str
       style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
     >
       <div className="flex items-center justify-between mb-4">
-        <p
-          className="text-[10px] tracking-[0.18em] uppercase font-light"
-          style={{ color: 'var(--text-3)' }}
-        >
-          What needs attention
-        </p>
+        <div className="flex items-center gap-2">
+          <p
+            className="text-[10px] tracking-[0.18em] uppercase font-light"
+            style={{ color: 'var(--text-3)' }}
+          >
+            What needs attention
+          </p>
+          <HelpBubble
+            title="Exceptions feed"
+            body="Ranked by severity, not date. Unions high-priority signals, failed executions, and at-risk goals into one list. The thing a COO would want every morning."
+          />
+        </div>
         <div className="flex items-center gap-2">
           <DataOriginTag
             sources={['Signal', 'Execution (failed)', 'Goal (at risk)']}

@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import WhyDrawer from './WhyDrawer';
 import DataOriginTag from '@/components/widgets/DataOriginTag';
+import HelpBubble from '@/components/ui/HelpBubble';
 
 type Row = {
   id: string;
@@ -56,12 +57,18 @@ export default function ActionLedgerWidget({ environmentId }: { environmentId: s
         style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}
       >
         <div className="flex items-center justify-between mb-4">
-          <p
-            className="text-[10px] tracking-[0.18em] uppercase font-light"
-            style={{ color: 'var(--text-3)' }}
-          >
-            Action ledger
-          </p>
+          <div className="flex items-center gap-2">
+            <p
+              className="text-[10px] tracking-[0.18em] uppercase font-light"
+              style={{ color: 'var(--text-3)' }}
+            >
+              Action ledger
+            </p>
+            <HelpBubble
+              title="The action ledger"
+              body="Every action Nova or a teammate took in this Environment. Click any row to see the full reasoning, what Nova read, the tools called, and a one-click undo if it's within the 24-hour window."
+            />
+          </div>
           <div className="flex items-center gap-2">
             <DataOriginTag
               sources={['IntelligenceLog', 'AuditLog (high-signal actions)']}
