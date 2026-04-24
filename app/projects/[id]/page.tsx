@@ -14,6 +14,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import type { Project, Step, StepStatus, ToolSlug } from '@/lib/projects/types';
 import BackToEnvironment from '@/components/BackToEnvironment';
+import ActivityButton from '@/components/ActivityButton';
+import FirstProjectTour from '@/components/FirstProjectTour';
 
 const TOOL_COLOR: Record<ToolSlug, string> = {
   figma: '#E879F9',
@@ -110,12 +112,16 @@ export default function ProjectRunPage() {
 
   return (
     <div className="px-4 md:px-10 py-8 md:py-12 max-w-4xl mx-auto">
-      <BackToEnvironment environmentId={project.environmentId} />
+      <div className="flex items-start justify-between mb-2 gap-3">
+        <BackToEnvironment environmentId={project.environmentId} />
+        <ActivityButton entityType="Workflow" entityId={project.id} entityLabel={project.goal.slice(0, 60)} />
+      </div>
       {/* Header */}
       <p className="text-[10px] tracking-[0.18em] uppercase font-light mb-2" style={{ color: 'var(--text-3)' }}>
         Project · {project.status.replace('_', ' ')}
       </p>
       <h1
+        data-tour="project-goal"
         className="text-2xl md:text-3xl font-extralight tracking-tight mb-2"
         style={{ color: 'var(--text-1)', letterSpacing: '-0.02em' }}
       >
@@ -139,7 +145,7 @@ export default function ProjectRunPage() {
       <NarrativeBlock projectId={project.id} />
 
       {/* Steps */}
-      <section className="mb-10 space-y-3">
+      <section data-tour="project-plan" className="mb-10 space-y-3">
         {project.plan.map(step => (
           <StepCard
             key={step.id}
@@ -221,6 +227,7 @@ export default function ProjectRunPage() {
           ))}
         </div>
       </section>
+      <FirstProjectTour />
     </div>
   );
 }
