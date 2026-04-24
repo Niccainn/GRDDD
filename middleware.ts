@@ -207,14 +207,35 @@ export function middleware(req: NextRequest) {
   const session = req.cookies.get('grid_session')?.value;
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
     if (session && (pathname === '/' || pathname === '/sign-in' || pathname === '/sign-up')) {
-      // Resolve final destination in one hop to avoid redirect chains
+      // Resolve final destination in one hop to avoid redirect chains.
+      // Priority: unfinished onboarding > cached primary env > generic /dashboard.
+      // The env slug cookie is set by createSession() (see lib/auth.ts)
+      // so signed-in users land on their workspace without a client-side hop.
       const onboarded = req.cookies.get('grid_onboarded')?.value;
-      const dest = onboarded ? '/dashboard' : '/welcome';
+      const envSlug = req.cookies.get('grid_env_slug')?.value;
+      const dest = !onboarded
+        ? '/welcome'
+        : envSlug
+          ? `/environments/${envSlug}`
+          : '/dashboard';
       return withSecurityHeaders(
         NextResponse.redirect(new URL(dest, req.url))
       );
     }
     return withCacheControl(withSecurityHeaders(NextResponse.next()), pathname);
+  }
+
+  // Short-circuit: /dashboard → /environments/<slug> when we already
+  // know the primary env. The dashboard page itself does this client-
+  // side via useEnsureWorkspace; handling it in middleware removes the
+  // flash of dashboard → redirect that shows up on slow phones.
+  if (session && pathname === '/dashboard') {
+    const envSlug = req.cookies.get('grid_env_slug')?.value;
+    if (envSlug) {
+      return withSecurityHeaders(
+        NextResponse.redirect(new URL(`/environments/${envSlug}`, req.url))
+      );
+    }
   }
 
   // Allow static files and generated assets (icon, apple-icon, opengraph-image, etc.)
