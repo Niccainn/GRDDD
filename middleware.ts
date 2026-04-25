@@ -202,15 +202,14 @@ export function middleware(req: NextRequest) {
     return withCacheControl(withSecurityHeaders(NextResponse.next()), pathname);
   }
 
-  // Allow public paths — but redirect authenticated users away from
-  // marketing pages (/, /sign-in, /sign-up) into the app.
+  // Allow public paths. `/` is the marketing landing and stays public
+  // even for signed-in users — the apex domain is the brand surface
+  // and reviewers, returning visitors, and shared links should reach
+  // it regardless of session state. Sign-in/sign-up still redirect for
+  // signed-in users (no point in showing those forms when authed).
   const session = req.cookies.get('grid_session')?.value;
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
-    if (session && (pathname === '/' || pathname === '/sign-in' || pathname === '/sign-up')) {
-      // Resolve final destination in one hop to avoid redirect chains.
-      // Priority: unfinished onboarding > cached primary env > generic /dashboard.
-      // The env slug cookie is set by createSession() (see lib/auth.ts)
-      // so signed-in users land on their workspace without a client-side hop.
+    if (session && (pathname === '/sign-in' || pathname === '/sign-up')) {
       const onboarded = req.cookies.get('grid_onboarded')?.value;
       const envSlug = req.cookies.get('grid_env_slug')?.value;
       const dest = !onboarded
