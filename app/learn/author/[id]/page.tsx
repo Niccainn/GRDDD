@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { fetchObject } from '@/lib/api/safe-fetch';
 
 type Question = { id?: string; prompt: string; choices: string[]; correctAnswer: string };
 type Lesson = {
@@ -34,7 +35,9 @@ export default function CourseAuthorPage() {
 
   const load = useCallback(() => {
     if (!id) return;
-    fetch(`/api/courses/${id}`).then(r => r.json()).then(d => setCourse(d.course)).finally(() => setLoaded(true));
+    fetchObject<{ course?: Course }>(`/api/courses/${id}`)
+      .then(d => setCourse(d?.course ?? null))
+      .finally(() => setLoaded(true));
   }, [id]);
 
   useEffect(() => { load(); }, [load]);

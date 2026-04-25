@@ -6,6 +6,7 @@ import SampleDataBanner from '@/components/SampleDataBanner';
 import BulkActionBar from '@/components/ui/BulkActionBar';
 import ContextMenu from '@/components/ui/ContextMenu';
 import { useMultiSelect } from '@/lib/hooks/use-multi-select';
+import { fetchArray } from '@/lib/api/safe-fetch';
 
 type Goal = {
   id: string;
@@ -52,15 +53,13 @@ export default function GoalsPage() {
   const [environments, setEnvironments] = useState<{ id: string; name: string }[]>([]);
 
   const load = useCallback(() => {
-    fetch('/api/goals')
-      .then(r => r.json())
-      .then(d => { setGoals(d); setLoaded(true); });
+    fetchArray<Goal>('/api/goals').then(d => { setGoals(d); setLoaded(true); });
   }, []);
 
   useEffect(() => {
     load();
-    fetch('/api/systems').then(r => r.json()).then(setSystems).catch(() => {});
-    fetch('/api/environments').then(r => r.json()).then(setEnvironments).catch(() => {});
+    fetchArray<{ id: string; name: string; color: string | null }>('/api/systems').then(setSystems);
+    fetchArray<{ id: string; name: string }>('/api/environments').then(setEnvironments);
   }, [load]);
 
   const filtered = goals.filter(g => !statusFilter || g.status === statusFilter);

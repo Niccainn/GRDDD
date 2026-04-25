@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { fetchArray } from '@/lib/api/safe-fetch';
 
 type Asset = {
   id: string;
@@ -352,7 +353,7 @@ export default function AssetLibraryPage() {
 
   useEffect(() => {
     load();
-    fetch('/api/environments').then(r => r.json()).then(setEnvironments).catch(() => {});
+    fetchArray<Env>('/api/environments').then(setEnvironments);
   }, [load]);
 
   // Apply type filter locally

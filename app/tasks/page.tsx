@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 import SampleDataBanner from '@/components/SampleDataBanner';
 import { useMultiSelect } from '@/lib/hooks/use-multi-select';
+import { fetchArray, safeFetch } from '@/lib/api/safe-fetch';
 
 type TaskUser = { id: string; name: string; avatar: string | null };
 type TaskSystem = { id: string; name: string; color: string | null };
@@ -130,19 +131,39 @@ function TasksPageInner() {
     const params = new URLSearchParams();
     if (envFilter) params.set('environmentId', envFilter);
     if (statusFilter) params.set('status', statusFilter);
-    fetch(`/api/tasks?${params}`)
-      .then(r => r.json())
-      .then(d => { setTasks(d.tasks); setCounts(d.counts); setLoaded(true); });
+    safeFetch<{ tasks: Task[]; counts: Record<string, number> }>(
+      `/api/tasks?${params}`,
+      undefined,
+      {
+        fallback: { tasks: [], counts: {} },
+        validate: d => {
+          if (!d || typeof d !== 'object') return null;
+          const obj = d as { tasks?: unknown; counts?: unknown };
+          return {
+            tasks: Array.isArray(obj.tasks) ? (obj.tasks as Task[]) : [],
+            counts: obj.counts && typeof obj.counts === 'object'
+              ? (obj.counts as Record<string, number>)
+              : {},
+          };
+        },
+      },
+    ).then(d => { setTasks(d.tasks); setCounts(d.counts); setLoaded(true); });
   }, [envFilter, statusFilter]);
 
   useEffect(() => {
     load();
-    fetch('/api/environments').then(r => r.json()).then(envs => {
-      const safe = Array.isArray(envs) ? envs : [];
-      setEnvironments(safe);
-      if (safe.length > 0 && !form.environmentId) setForm(f => ({ ...f, environmentId: safe[0].id }));
-    }).catch(() => {});
-    fetch('/api/team').then(r => r.json()).then(d => setMembers(d.members ?? d ?? [])).catch(() => {});
+    fetchArray<{ id: string; name: string }>('/api/environments').then(envs => {
+      setEnvironments(envs);
+      if (envs.length > 0 && !form.environmentId) setForm(f => ({ ...f, environmentId: envs[0].id }));
+    });
+    safeFetch<{ id: string; name: string }[]>('/api/team', undefined, {
+      fallback: [],
+      validate: d => {
+        if (Array.isArray(d)) return d as { id: string; name: string }[];
+        const inner = (d as { members?: unknown })?.members;
+        return Array.isArray(inner) ? (inner as { id: string; name: string }[]) : null;
+      },
+    }).then(setMembers);
   }, [load]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter tasks client-side by search + priority
