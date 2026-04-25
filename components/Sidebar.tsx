@@ -165,8 +165,12 @@ export default function Sidebar() {
   // Detect environment context
   const envMatch = pathname.match(/^\/environments\/([^/]+)/);
   const envSlug = envMatch ? envMatch[1] : null;
+  // Real env name comes from /api/environments — see effect below.
+  // Fall back to a title-cased slug while the fetch is in flight or
+  // for unauthed callers (where the API returns 401/error).
+  const [envRealName, setEnvRealName] = useState<string | null>(null);
   const envDisplayName = envSlug
-    ? envSlug.charAt(0).toUpperCase() + envSlug.slice(1).replace(/-/g, ' ')
+    ? envRealName ?? (envSlug.charAt(0).toUpperCase() + envSlug.slice(1).replace(/-/g, ' '))
     : null;
 
   const isActive = (href: string) => {
@@ -182,10 +186,12 @@ export default function Sidebar() {
     {
       label: '',
       items: [
-        // Inside an env, Overview *is* home — no second "Home" link
-        // pointing at the global /dashboard. That made both Home and
-        // Nova look inactive (neither matched the active route) and
-        // sent users out of their workspace on click.
+        // Home points at /dashboard — the cross-environment home base.
+        // It will read as inactive when the user is inside an env, but
+        // that's correct route-active state, not a bug. The link gives
+        // users a one-click escape out of env context without having
+        // to reach for "All Environments".
+        { href: '/dashboard', label: 'Home', icon: icons.home },
         { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
       ],
     },
@@ -264,6 +270,33 @@ export default function Sidebar() {
       window.removeEventListener('grid:environments-changed', handler);
     };
   }, []);
+
+  // Resolve the real env name for the header pill. Without this, the
+  // sidebar showed a title-cased slug ("Grddd 63xg") that survived a
+  // rename — and the slug-derived name never matched what the env
+  // page itself rendered.
+  useEffect(() => {
+    if (!envSlug) {
+      setEnvRealName(null);
+      return;
+    }
+    let cancelled = false;
+    const load = () => {
+      fetch('/api/environments').then(r => r.ok ? r.json() : null).then(d => {
+        if (cancelled) return;
+        const list = Array.isArray(d) ? d : Array.isArray(d?.environments) ? d.environments : [];
+        const match = list.find((e: { slug: string; name: string }) => e.slug === envSlug);
+        setEnvRealName(match?.name ?? null);
+      }).catch(() => {});
+    };
+    load();
+    const handler = () => load();
+    window.addEventListener('grid:environments-changed', handler);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('grid:environments-changed', handler);
+    };
+  }, [envSlug]);
 
   useEffect(() => {
     fetch('/api/signals?limit=1').then(r => r.json()).then(d => setInboxUnread(d.unreadCount ?? 0)).catch(() => {});
