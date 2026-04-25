@@ -10,8 +10,19 @@ export default function SampleDataBanner({ onClear }: { onClear?: () => void }) 
   const [cleared, setCleared] = useState(false);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem(DISMISSED_KEY);
-    if (!dismissed) setVisible(true);
+    // Two gates before showing:
+    //  1. The user hasn't dismissed it before (localStorage).
+    //  2. The server confirms sample-tagged data actually exists for
+    //     this user. Without #2 the banner mounted for unauthenticated
+    //     visitors and for users who never had sample data — both
+    //     looked like a leak ("Why am I being told I'm in demo mode?").
+    if (localStorage.getItem(DISMISSED_KEY)) return;
+    let cancelled = false;
+    fetch('/api/sample-data')
+      .then(r => r.ok ? r.json() : { hasSampleData: false })
+      .then(d => { if (!cancelled && d?.hasSampleData) setVisible(true); })
+      .catch(() => { /* unauth or 5xx → don't show */ });
+    return () => { cancelled = true; };
   }, []);
 
   if (!visible) return null;
