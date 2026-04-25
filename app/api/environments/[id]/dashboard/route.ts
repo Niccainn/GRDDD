@@ -1,5 +1,6 @@
 import { getAuthIdentity } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { decryptPII } from '@/lib/crypto/pii-encryption';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -102,7 +103,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       slug: environment.slug,
       description: environment.description,
       color: environment.color,
-      owner: environment.owner.name,
+      owner: decryptPII(environment.owner.name ?? 'Owner'),
       createdAt: environment.createdAt.toISOString(),
     },
     systems: systems.map(s => ({
