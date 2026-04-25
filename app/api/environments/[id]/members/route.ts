@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
+import { decryptPII } from '@/lib/crypto/pii-encryption';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const identity = await getAuthIdentity();
@@ -30,8 +31,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   // Owner is always first, not in memberships table
   const owner = {
     id: env.owner.id,
-    name: env.owner.name,
-    email: env.owner.email,
+    name: decryptPII(env.owner.name ?? 'Owner'),
+    email: env.owner.email ? decryptPII(env.owner.email) : null,
     role: 'OWNER',
     membershipId: null,
     joinedAt: null,
@@ -39,8 +40,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const members = memberships.map(m => ({
     id: m.identity.id,
-    name: m.identity.name,
-    email: m.identity.email,
+    name: m.identity.name ? decryptPII(m.identity.name) : null,
+    email: m.identity.email ? decryptPII(m.identity.email) : null,
     avatar: m.identity.avatar,
     role: m.role,
     membershipId: m.id,
