@@ -80,7 +80,7 @@ export default function LearnPage() {
         fetch('/api/learn/lesson').then(r => r.json()),
         fetch('/api/memory?days=14&limit=12').then(r => r.json()),
       ]);
-      setFluency(fRes);
+      setFluency(fRes && Array.isArray(fRes.scores) ? fRes : null);
       setLesson(lRes.lesson);
       setRecent(Array.isArray(mRes.items) ? mRes.items : []);
     } finally {

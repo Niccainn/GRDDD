@@ -134,9 +134,9 @@ export default function RoiSummaryWidget({ environmentId, environmentSlug }: { e
               {fmtUsd(data.totalValue)} returned on {fmtUsd(data.totalCost)} in Nova cost
             </span>
           </div>
-          {data.perSystem.length > 0 && (
+          {(data.perSystem ?? []).length > 0 && (
             <div className="space-y-1 mb-2">
-              {data.perSystem.slice(0, 4).map(s => (
+              {(data.perSystem ?? []).slice(0, 4).map(s => (
                 <div key={s.systemId} className="flex items-center gap-2">
                   <span
                     className="w-1.5 h-1.5 rounded-full flex-shrink-0"
