@@ -292,7 +292,11 @@ export default function Sidebar() {
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 md:hidden"
-          style={{ background: 'rgba(0,0,0,0.6)' }}
+          style={{
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
           onClick={() => setMobileOpen(false)}
         />
       )}
