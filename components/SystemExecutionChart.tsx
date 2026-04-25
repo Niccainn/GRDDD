@@ -36,11 +36,12 @@ export default function SystemExecutionChart({ systemId }: { systemId: string })
     fetch(`/api/systems/${systemId}/executions`)
       .then(r => r.json())
       .then(data => {
-        setChart(data.chart);
-        setRecent(data.recent);
-        setTotal(data.total);
+        setChart(Array.isArray(data?.chart) ? data.chart : []);
+        setRecent(Array.isArray(data?.recent) ? data.recent : []);
+        setTotal(typeof data?.total === 'number' ? data.total : 0);
         setLoaded(true);
-      });
+      })
+      .catch(() => setLoaded(true));
   }, [systemId]);
 
   const maxVal = Math.max(...chart.map(d => d.completed + d.failed + d.running), 1);

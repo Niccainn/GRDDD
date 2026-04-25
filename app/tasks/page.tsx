@@ -137,8 +137,9 @@ function TasksPageInner() {
   useEffect(() => {
     load();
     fetch('/api/environments').then(r => r.json()).then(envs => {
-      setEnvironments(envs);
-      if (envs.length > 0 && !form.environmentId) setForm(f => ({ ...f, environmentId: envs[0].id }));
+      const safe = Array.isArray(envs) ? envs : [];
+      setEnvironments(safe);
+      if (safe.length > 0 && !form.environmentId) setForm(f => ({ ...f, environmentId: safe[0].id }));
     }).catch(() => {});
     fetch('/api/team').then(r => r.json()).then(d => setMembers(d.members ?? d ?? [])).catch(() => {});
   }, [load]); // eslint-disable-line react-hooks/exhaustive-deps
