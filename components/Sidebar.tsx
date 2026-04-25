@@ -182,7 +182,10 @@ export default function Sidebar() {
     {
       label: '',
       items: [
-        { href: '/dashboard', label: 'Home', icon: icons.home },
+        // Inside an env, Overview *is* home — no second "Home" link
+        // pointing at the global /dashboard. That made both Home and
+        // Nova look inactive (neither matched the active route) and
+        // sent users out of their workspace on click.
         { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
       ],
     },
