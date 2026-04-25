@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import SampleDataBanner from '@/components/SampleDataBanner';
+import BulkActionBar from '@/components/ui/BulkActionBar';
+import ContextMenu from '@/components/ui/ContextMenu';
+import { useMultiSelect } from '@/lib/hooks/use-multi-select';
 
 type Goal = {
   id: string;
@@ -62,6 +65,13 @@ export default function GoalsPage() {
 
   const filtered = goals.filter(g => !statusFilter || g.status === statusFilter);
 
+  const filteredIds = useMemo(() => filtered.map(g => g.id), [filtered]);
+  const { selected, isSelected, toggle, clear } = useMultiSelect(filteredIds);
+  const [bulkRunning, setBulkRunning] = useState(false);
+
+  // Clear selection when filter flips
+  useEffect(() => { clear(); }, [statusFilter, clear]);
+
   const byStatus: Record<string, Goal[]> = {};
   for (const g of filtered) {
     if (!byStatus[g.status]) byStatus[g.status] = [];
@@ -94,6 +104,41 @@ export default function GoalsPage() {
       body: JSON.stringify({ status }),
     });
     setGoals(prev => prev.map(g => g.id === id ? { ...g, status } : g));
+  }
+
+  async function bulkSetStatus(status: string) {
+    const ids = Array.from(selected);
+    setBulkRunning(true);
+    await Promise.all(
+      ids.map(id =>
+        fetch(`/api/goals/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        }).catch(() => null),
+      ),
+    );
+    setGoals(prev => prev.map(g => (ids.includes(g.id) ? { ...g, status } : g)));
+    clear();
+    setBulkRunning(false);
+  }
+
+  async function bulkDelete() {
+    const ids = Array.from(selected);
+    if (!confirm(`Delete ${ids.length} goal${ids.length === 1 ? '' : 's'}? This cannot be undone.`)) return;
+    setBulkRunning(true);
+    await Promise.all(
+      ids.map(id => fetch(`/api/goals/${id}`, { method: 'DELETE' }).catch(() => null)),
+    );
+    setGoals(prev => prev.filter(g => !ids.includes(g.id)));
+    clear();
+    setBulkRunning(false);
+  }
+
+  async function deleteSingle(id: string) {
+    if (!confirm('Delete this goal? This cannot be undone.')) return;
+    await fetch(`/api/goals/${id}`, { method: 'DELETE' }).catch(() => null);
+    setGoals(prev => prev.filter(g => g.id !== id));
   }
 
   return (
@@ -173,9 +218,38 @@ export default function GoalsPage() {
                 </div>
                 <div className="space-y-2">
                   {groupGoals.map(goal => (
-                    <div key={goal.id} className="px-5 py-4 rounded-xl"
-                      style={{ background: 'var(--glass)', border: `1px solid ${meta.color}18` }}>
+                    <ContextMenu
+                      key={goal.id}
+                      items={[
+                        { label: 'Mark as Achieved', onSelect: () => setStatus(goal.id, 'ACHIEVED') },
+                        { label: 'Mark as On Track', onSelect: () => setStatus(goal.id, 'ON_TRACK') },
+                        { label: 'Mark as At Risk',  onSelect: () => setStatus(goal.id, 'AT_RISK') },
+                        { label: 'Mark as Behind',   onSelect: () => setStatus(goal.id, 'BEHIND') },
+                        { separator: true },
+                        { label: 'Delete', tone: 'danger', onSelect: () => deleteSingle(goal.id) },
+                      ]}
+                    >
+                    <div className="px-5 py-4 rounded-xl transition-colors"
+                      style={{
+                        background: isSelected(goal.id) ? `${meta.color}10` : 'var(--glass)',
+                        border: `1px solid ${isSelected(goal.id) ? `${meta.color}40` : `${meta.color}18`}`,
+                      }}>
                       <div className="flex items-start gap-4">
+                        {/* Selection checkbox */}
+                        <div
+                          className="flex-shrink-0 mt-1 cursor-pointer"
+                          onClick={e => toggle(goal.id, e.shiftKey)}
+                          aria-label={`Select goal ${goal.title}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected(goal.id)}
+                            readOnly
+                            tabIndex={-1}
+                            className="w-3.5 h-3.5 cursor-pointer accent-current"
+                            style={{ accentColor: meta.color }}
+                          />
+                        </div>
                         {/* System dot */}
                         <div className="flex-shrink-0 mt-1">
                           <Link href={`/systems/${goal.systemId}`}>
@@ -240,6 +314,7 @@ export default function GoalsPage() {
                         </div>
                       </div>
                     </div>
+                    </ContextMenu>
                   ))}
                 </div>
               </div>
@@ -247,6 +322,20 @@ export default function GoalsPage() {
           })}
         </div>
       )}
+
+      {/* Bulk action bar — appears when goals are selected. Right-click
+          a single goal for the same actions on one item via ContextMenu. */}
+      <BulkActionBar
+        count={selected.size}
+        itemLabel="goal"
+        onClear={clear}
+        actions={[
+          { label: 'Mark Achieved',  onAction: () => bulkSetStatus('ACHIEVED'),  disabled: bulkRunning, tone: 'primary' },
+          { label: 'Mark On Track',  onAction: () => bulkSetStatus('ON_TRACK'),  disabled: bulkRunning },
+          { label: 'Mark Cancelled', onAction: () => bulkSetStatus('CANCELLED'), disabled: bulkRunning },
+          { label: 'Delete',         onAction: bulkDelete,                       disabled: bulkRunning, tone: 'danger' },
+        ]}
+      />
     </div>
   );
 }
