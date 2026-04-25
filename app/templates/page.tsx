@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { SystemTemplate, TemplateCategory } from '@/lib/templates/registry';
 import { CATEGORY_META } from '@/lib/templates/registry';
+import { fetchArray, fetchObject } from '@/lib/api/safe-fetch';
 
 type InstallState = { templateId: string; status: 'idle' | 'picking' | 'installing' | 'done'; error?: string };
 
@@ -16,8 +17,10 @@ export default function TemplatesPage() {
   const [install, setInstall] = useState<InstallState>({ templateId: '', status: 'idle' });
 
   useEffect(() => {
-    fetch('/api/templates').then(r => r.json()).then(d => setTemplates(d.templates ?? [])).catch(() => {});
-    fetch('/api/environments').then(r => r.json()).then(d => setEnvironments(d)).catch(() => {});
+    fetchObject<{ templates?: SystemTemplate[] }>('/api/templates').then(d =>
+      setTemplates(Array.isArray(d?.templates) ? d!.templates! : []),
+    );
+    fetchArray<{ id: string; name: string }>('/api/environments').then(setEnvironments);
   }, []);
 
   const filtered = templates.filter(t => {

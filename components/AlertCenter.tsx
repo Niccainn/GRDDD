@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import { fetchObject } from '@/lib/api/safe-fetch';
 
 type Alert = {
   id: string;
@@ -26,14 +27,12 @@ export default function AlertCenter() {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/alerts')
-      .then(r => r.json())
-      .then(d => setAlerts(d.alerts ?? []));
-
-    // Refresh every 60s
-    const t = setInterval(() => {
-      fetch('/api/alerts').then(r => r.json()).then(d => setAlerts(d.alerts ?? []));
-    }, 60_000);
+    const load = () =>
+      fetchObject<{ alerts?: Alert[] }>('/api/alerts').then(d =>
+        setAlerts(Array.isArray(d?.alerts) ? d!.alerts! : []),
+      );
+    load();
+    const t = setInterval(load, 60_000);
     return () => clearInterval(t);
   }, []);
 
