@@ -182,7 +182,10 @@ export default function Sidebar() {
     {
       label: '',
       items: [
-        { href: '/dashboard', label: 'Home', icon: icons.home },
+        // Inside an env, Overview *is* home — no second "Home" link
+        // pointing at the global /dashboard. That made both Home and
+        // Nova look inactive (neither matched the active route) and
+        // sent users out of their workspace on click.
         { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
       ],
     },
@@ -289,7 +292,11 @@ export default function Sidebar() {
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 md:hidden"
-          style={{ background: 'rgba(0,0,0,0.6)' }}
+          style={{
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
           onClick={() => setMobileOpen(false)}
         />
       )}
