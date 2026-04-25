@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { fetchObject } from '@/lib/api/safe-fetch';
 
 type Author = { id: string; name: string; avatar: string | null };
 type Reply = { id: string; body: string; createdAt: string; author: Author };
@@ -88,7 +89,7 @@ export default function CommentThread({ entityType, entityId }: CommentThreadPro
 
   useEffect(() => {
     loadComments();
-    fetch('/api/me').then(r => r.json()).then(d => setCurrentUserId(d.id ?? '')).catch(() => {});
+    fetchObject<{ id?: string }>('/api/me').then(d => setCurrentUserId(d?.id ?? ''));
   }, [entityType, entityId]);
 
   async function loadComments() {
