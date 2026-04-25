@@ -61,11 +61,12 @@ prisma/dev.db-journal
 .env.preview
 .env.development
 
-# Private / partnership correspondence — keep in ~/Documents/grid-private/
-pitch/anthropic_partnership_brief.md
-pitch/*partnership*
-pitch/*_private.md
-pitch/private/
+# Pitch / fundraising / sales material lives in a separate private
+# project (~/projects/grid-private/). The repo is public — anything
+# under pitch/ is treated as private by default.
+pitch/
+public/UX_AUDIT.txt
+public/*_AUDIT*
 
 # Admin surfaces — internal-only operator tooling, kept out of
 # the public repo. Archived under ~/Documents/grid-private/admin/.
