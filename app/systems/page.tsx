@@ -38,7 +38,7 @@ export default async function SystemsPage() {
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       <div className="mb-10">
         <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Systems</h1>
-        <p className="text-xs" style={{ color: 'var(--text-3)' }}>The core functions that power your organisation</p>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>The core functions that power your organization</p>
       </div>
 
       {environments.length === 0 ? (
