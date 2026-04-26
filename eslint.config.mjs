@@ -58,6 +58,39 @@ const eslintConfig = defineConfig([
       "react-hooks/refs": "warn",
       "react-hooks/preserve-manual-memoization": "warn",
       "react-hooks/set-state-in-effect": "warn",
+
+      // Ban the crash-prone fetch pattern that hit four list pages
+      // (#33) and forced a 14-site sweep (#39). The shape:
+      //
+      //     fetch(url).then(r => r.json()).then(d => setX(d))
+      //
+      // crashes on any non-2xx, malformed JSON, or shape mismatch
+      // because setX lands a value that doesn't match its declared
+      // type, and the next render blows up on .map / .length.
+      //
+      // Use lib/api/safe-fetch (fetchArray, fetchObject, safeFetch)
+      // instead — it wraps fetch+json+validate+fallback so caller
+      // can't forget any layer.
+      //
+      // Whitelist for the helper file itself — see overrides below.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "CallExpression[callee.property.name='then'][arguments.0.type='ArrowFunctionExpression'][arguments.0.body.type='CallExpression'][arguments.0.body.callee.property.name='json']",
+          message:
+            "Avoid fetch().then(r => r.json()) — crashes on non-2xx or shape mismatch. Use fetchArray / fetchObject / safeFetch from @/lib/api/safe-fetch (see PR #38).",
+        },
+      ],
+    },
+  },
+  // The safe-fetch helper itself legitimately calls r.json() inside
+  // .then() — that's the whole point of the wrapper. Excluding it
+  // from the rule that exists to point everyone else at it.
+  {
+    files: ["lib/api/safe-fetch.ts"],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   },
 ]);

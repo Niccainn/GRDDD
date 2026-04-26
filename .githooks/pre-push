@@ -1,0 +1,67 @@
+#!/bin/sh
+# pre-push: catch TypeScript errors locally before they reach Vercel.
+#
+# Why this exists:
+#   PR #42 in this repo's history was a one-character type error in
+#   app/docs/page.tsx that broke every Vercel build for ~30 minutes
+#   while three subsequent merges (PRs #39, #40, #41) silently failed
+#   to deploy. By the time we noticed, prod had been stuck on stale
+#   code through three 'successful' merges.
+#
+# What this hook does:
+#   Mirrors the Vercel build's type-check pipeline locally:
+#     1. `prisma generate` so generated types are current (Vercel does
+#        this before next build; without it, ~13 false-positive type
+#        errors fire from the extended-client typings).
+#     2. `tsc --noEmit` to catch anything `next build` would catch.
+#     3. Filters .next/types/ stale-cache noise — those validators
+#        are auto-generated and can reference files that have been
+#        deleted; Vercel rebuilds .next from scratch every time.
+#
+# How to skip (don't):
+#   `git push --no-verify` bypasses this hook. Reserve for genuine
+#   emergencies — bypassing means you're shipping a known type error.
+#
+# Activation:
+#   This file lives under .githooks/ (checked into the repo). The
+#   `prepare` script in package.json runs
+#       git config core.hooksPath .githooks
+#   on `npm install`, so anyone who clones + installs gets it
+#   automatically. To opt out locally:
+#       git config --unset core.hooksPath
+#
+# Why pre-push and not pre-commit:
+#   tsc takes ~10-15s on this codebase. Running it on every commit
+#   would interrupt flow. Running once at push time is the cheapest
+#   place to catch the error before it leaves the developer's
+#   machine.
+
+set -e
+
+echo "→ prisma generate (sync extended-client types)..."
+npx --no-install prisma generate >/dev/null 2>&1
+
+echo "→ tsc --noEmit (catch type errors before Vercel does)..."
+# `.next/types/` validators reference auto-generated paths that go
+# stale when files move; Vercel rebuilds .next from scratch each
+# time so those errors never surface there. Filter locally to match.
+ERRORS=$(npx --no-install tsc --noEmit 2>&1 | grep "error TS" | grep -v "^\.next/" || true)
+
+if [ -z "$ERRORS" ]; then
+  echo "✓ tsc clean — pushing"
+  exit 0
+fi
+
+echo ""
+echo "✗ Type errors found:"
+echo ""
+echo "$ERRORS" | head -10
+echo ""
+COUNT=$(echo "$ERRORS" | wc -l | tr -d ' ')
+if [ "$COUNT" -gt 10 ]; then
+  echo "... and $((COUNT - 10)) more"
+fi
+echo ""
+echo "Fix them or rebase, then push again."
+echo "To bypass (NOT recommended): git push --no-verify"
+exit 1
