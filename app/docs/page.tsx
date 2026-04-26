@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { fetchArray } from '@/lib/api/safe-fetch';
 
 type DocItem = {
   id: string;
@@ -86,7 +87,7 @@ export default function DocsPage() {
 
   useEffect(() => {
     load();
-    fetch('/api/environments').then(r => r.json()).then(setEnvironments).catch(() => {});
+    fetchArray<{ id: string; name: string }>('/api/environments').then(setEnvironments);
   }, [load]);
 
   const createDoc = async (parentId?: string) => {

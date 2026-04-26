@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { fetchArray, safeFetch } from '@/lib/api/safe-fetch';
 
 type TaskUser = { id: string; name: string; avatar: string | null };
 type TaskSystem = { id: string; name: string; color: string | null };
@@ -107,10 +108,15 @@ export default function TasksBoardPage() {
 
   useEffect(() => {
     load();
-    fetch('/api/environments').then(r => r.json()).then(envs => {
-      setEnvironments(envs);
-    }).catch(() => {});
-    fetch('/api/team').then(r => r.json()).then(d => setMembers(d.members ?? d ?? [])).catch(() => {});
+    fetchArray<{ id: string; name: string }>('/api/environments').then(setEnvironments);
+    safeFetch<{ id: string; name: string }[]>('/api/team', undefined, {
+      fallback: [],
+      validate: d => {
+        if (Array.isArray(d)) return d as { id: string; name: string }[];
+        const inner = (d as { members?: unknown })?.members;
+        return Array.isArray(inner) ? (inner as { id: string; name: string }[]) : null;
+      },
+    }).then(setMembers);
   }, [load]);
 
   // Focus quick-add input when opened

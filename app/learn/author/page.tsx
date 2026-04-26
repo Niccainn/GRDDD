@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { fetchObject, safeFetch } from '@/lib/api/safe-fetch';
 
 type Course = {
   id: string;
@@ -24,13 +25,23 @@ export default function AuthorIndexPage() {
   const [showCreate, setShowCreate] = useState(false);
 
   const load = useCallback(() => {
-    fetch('/api/courses').then(r => r.json()).then(d => setCourses(d.courses ?? [])).finally(() => setLoaded(true));
+    fetchObject<{ courses?: Course[] }>('/api/courses')
+      .then(d => setCourses(Array.isArray(d?.courses) ? d!.courses! : []))
+      .finally(() => setLoaded(true));
   }, []);
 
   useEffect(() => {
     load();
-    fetch('/api/environments').then(r => r.json()).then(d => setEnvironments(Array.isArray(d.environments) ? d.environments : d ?? [])).catch(() => {});
-    fetch('/api/auth/me').then(r => r.json()).then(d => setMe(d.identity?.id ?? d.id ?? null)).catch(() => {});
+    safeFetch<Environment[]>('/api/environments', undefined, {
+      fallback: [],
+      validate: d => {
+        if (Array.isArray(d)) return d as Environment[];
+        const inner = (d as { environments?: unknown })?.environments;
+        return Array.isArray(inner) ? (inner as Environment[]) : null;
+      },
+    }).then(setEnvironments);
+    fetchObject<{ identity?: { id?: string }; id?: string }>('/api/auth/me')
+      .then(d => setMe(d?.identity?.id ?? d?.id ?? null));
   }, [load]);
 
   const mine = courses.filter(c => me && c.author.id === me);

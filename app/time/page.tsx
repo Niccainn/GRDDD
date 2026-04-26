@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { formatDuration, parseDuration, minutesToDecimal } from '@/lib/time';
+import { fetchArray, safeFetch } from '@/lib/api/safe-fetch';
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -125,11 +126,22 @@ export default function TimeTrackingPage() {
 
   useEffect(() => {
     loadEntries();
-    fetch('/api/environments').then(r => r.json()).then(d => setEnvironments(Array.isArray(d) ? d : [])).catch(() => {});
-    fetch('/api/tasks').then(r => r.json()).then(d => {
-      const list = Array.isArray(d) ? d : d?.tasks ?? [];
-      setTasks(list.map((t: { id: string; title: string }) => ({ id: t.id, title: t.title })));
-    }).catch(() => {});
+    fetchArray<{ id: string; name: string }>('/api/environments').then(setEnvironments);
+    safeFetch<{ id: string; title: string }[]>(
+      '/api/tasks',
+      undefined,
+      {
+        fallback: [],
+        validate: d => {
+          const list = Array.isArray(d)
+            ? d
+            : Array.isArray((d as { tasks?: unknown })?.tasks)
+              ? (d as { tasks: { id: string; title: string }[] }).tasks
+              : null;
+          return list ? list.map(t => ({ id: t.id, title: t.title })) : null;
+        },
+      },
+    ).then(setTasks);
   }, [loadEntries]);
 
   const tabs = [

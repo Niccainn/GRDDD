@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 import SampleDataBanner from '@/components/SampleDataBanner';
+import { useMultiSelect } from '@/lib/hooks/use-multi-select';
+import { fetchArray, safeFetch } from '@/lib/api/safe-fetch';
 
 type TaskUser = { id: string; name: string; avatar: string | null };
 type TaskSystem = { id: string; name: string; color: string | null };
@@ -106,8 +108,8 @@ function TasksPageInner() {
   const debouncedSearch = useDebounce(searchText, 300);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Bulk selection
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Bulk selection — hook provides shift-click range selection over the
+  // visible tasks. We pass the live filteredTasks order in below.
   const [bulkAction, setBulkAction] = useState(false);
 
   // Create form
@@ -129,19 +131,39 @@ function TasksPageInner() {
     const params = new URLSearchParams();
     if (envFilter) params.set('environmentId', envFilter);
     if (statusFilter) params.set('status', statusFilter);
-    fetch(`/api/tasks?${params}`)
-      .then(r => r.json())
-      .then(d => { setTasks(d.tasks); setCounts(d.counts); setLoaded(true); });
+    safeFetch<{ tasks: Task[]; counts: Record<string, number> }>(
+      `/api/tasks?${params}`,
+      undefined,
+      {
+        fallback: { tasks: [], counts: {} },
+        validate: d => {
+          if (!d || typeof d !== 'object') return null;
+          const obj = d as { tasks?: unknown; counts?: unknown };
+          return {
+            tasks: Array.isArray(obj.tasks) ? (obj.tasks as Task[]) : [],
+            counts: obj.counts && typeof obj.counts === 'object'
+              ? (obj.counts as Record<string, number>)
+              : {},
+          };
+        },
+      },
+    ).then(d => { setTasks(d.tasks); setCounts(d.counts); setLoaded(true); });
   }, [envFilter, statusFilter]);
 
   useEffect(() => {
     load();
-    fetch('/api/environments').then(r => r.json()).then(envs => {
-      const safe = Array.isArray(envs) ? envs : [];
-      setEnvironments(safe);
-      if (safe.length > 0 && !form.environmentId) setForm(f => ({ ...f, environmentId: safe[0].id }));
-    }).catch(() => {});
-    fetch('/api/team').then(r => r.json()).then(d => setMembers(d.members ?? d ?? [])).catch(() => {});
+    fetchArray<{ id: string; name: string }>('/api/environments').then(envs => {
+      setEnvironments(envs);
+      if (envs.length > 0 && !form.environmentId) setForm(f => ({ ...f, environmentId: envs[0].id }));
+    });
+    safeFetch<{ id: string; name: string }[]>('/api/team', undefined, {
+      fallback: [],
+      validate: d => {
+        if (Array.isArray(d)) return d as { id: string; name: string }[];
+        const inner = (d as { members?: unknown })?.members;
+        return Array.isArray(inner) ? (inner as { id: string; name: string }[]) : null;
+      },
+    }).then(setMembers);
   }, [load]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter tasks client-side by search + priority
@@ -157,10 +179,18 @@ function TasksPageInner() {
     return result;
   }, [tasks, debouncedSearch, priorityFilter]);
 
+  const filteredIds = useMemo(() => filteredTasks.map(t => t.id), [filteredTasks]);
+  const {
+    selected: selectedIds,
+    toggle: toggleSelectHook,
+    clear: clearSelection,
+    selectAll: selectAllHook,
+  } = useMultiSelect(filteredIds);
+
   // Clear selection when filters change
   useEffect(() => {
-    setSelectedIds(new Set());
-  }, [debouncedSearch, statusFilter, priorityFilter, envFilter]);
+    clearSelection();
+  }, [debouncedSearch, statusFilter, priorityFilter, envFilter, clearSelection]);
 
   async function createTask(e: React.FormEvent) {
     e.preventDefault();
@@ -194,20 +224,17 @@ function TasksPageInner() {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...data as Partial<Task> } : t));
   }
 
-  // Bulk actions
-  function toggleSelect(id: string) {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  }
+  // Bulk actions — wrappers preserve the original component API while
+  // routing through useMultiSelect. The hook adds shift-click range
+  // select, which the row click handlers can opt into by forwarding
+  // the shiftKey flag.
+  const toggleSelect = (id: string, shift = false) => toggleSelectHook(id, shift);
 
   function toggleSelectAll() {
     if (selectedIds.size === filteredTasks.length) {
-      setSelectedIds(new Set());
+      clearSelection();
     } else {
-      setSelectedIds(new Set(filteredTasks.map(t => t.id)));
+      selectAllHook();
     }
   }
 
@@ -224,7 +251,7 @@ function TasksPageInner() {
         )
       );
       addToast(`Updated ${selectedIds.size} task${selectedIds.size > 1 ? 's' : ''} to ${STATUS_LABEL[status]}`, 'success');
-      setSelectedIds(new Set());
+      clearSelection();
       load();
     } catch {
       addToast('Failed to update tasks', 'error');
@@ -245,7 +272,7 @@ function TasksPageInner() {
         )
       );
       addToast(`Updated ${selectedIds.size} task${selectedIds.size > 1 ? 's' : ''} to ${PRIORITY_LABEL[priority]}`, 'success');
-      setSelectedIds(new Set());
+      clearSelection();
       load();
     } catch {
       addToast('Failed to update tasks', 'error');
@@ -263,7 +290,7 @@ function TasksPageInner() {
         )
       );
       addToast(`Deleted ${selectedIds.size} task${selectedIds.size > 1 ? 's' : ''}`, 'success');
-      setSelectedIds(new Set());
+      clearSelection();
       load();
     } catch {
       addToast('Failed to delete tasks', 'error');
@@ -510,7 +537,7 @@ function TasksPageInner() {
 
           {/* Clear selection */}
           <button
-            onClick={() => setSelectedIds(new Set())}
+            onClick={() => clearSelection()}
             className="text-xs font-light px-2 py-1.5 transition-all hover:opacity-80"
             style={{ color: 'var(--text-3)' }}>
             Clear

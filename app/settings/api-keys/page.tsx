@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import SettingsNav from '@/components/SettingsNav';
+import { fetchArray } from '@/lib/api/safe-fetch';
 
 type ApiKey = {
   id: string;
@@ -40,7 +41,7 @@ export default function ApiKeysPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetch('/api/keys').then(r => r.json()).then(d => { setKeys(d); setLoaded(true); });
+    fetchArray<ApiKey>('/api/keys').then(d => { setKeys(d); setLoaded(true); });
   }, []);
 
   async function handleCreate(e: React.FormEvent) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { fetchObject } from '@/lib/api/safe-fetch';
 
 type ApprovalStep = {
   order: number;
@@ -42,7 +43,7 @@ export default function QuickApprove({
   const [showRequest, setShowRequest] = useState(false);
 
   useEffect(() => {
-    fetch('/api/me').then(r => r.json()).then(u => setUserId(u.id)).catch(() => {});
+    fetchObject<{ id?: string }>('/api/me').then(u => setUserId(u?.id ?? ''));
 
     fetch(`/api/approvals?type=${entityType}`)
       .then(r => r.json())
