@@ -12,6 +12,7 @@ import { NextResponse } from 'next/server';
 import { completeGoogleOAuth, upsertGoogleIdentity } from '@/lib/auth/google';
 import { createSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getPostAuthDestination } from '@/lib/auth/post-auth-destination';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -46,26 +47,26 @@ export async function GET(req: Request) {
 
     await createSession(identityId);
 
-    // New accounts always go through /welcome so we can collect
-    // workspace details. Returning users honor the `next` from the
-    // original sign-in page so they land where they intended.
-    // We also route returning users who haven't finished onboarding
-    // (e.g. closed the tab mid-wizard) back to /welcome.
-    let destinationPath = next;
+    // Resolve onboarded state. New accounts are never onboarded.
+    // Returning users may have an Identity row with onboardedAt set
+    // (full wizard complete) or null (closed tab mid-wizard) — both
+    // get the same treatment via the shared helper below.
     let isOnboarded = false;
-    if (isNew) {
-      destinationPath = '/welcome';
-    } else {
+    if (!isNew) {
       const identity = await prisma.identity.findUnique({
         where: { id: identityId },
         select: { onboardedAt: true },
       });
-      if (!identity?.onboardedAt) {
-        destinationPath = '/welcome';
-      } else {
-        isOnboarded = true;
-      }
+      isOnboarded = Boolean(identity?.onboardedAt);
     }
+
+    // Single source of truth — see lib/auth/post-auth-destination.
+    // Onboarding gate is non-bypassable; respects safe `next` for
+    // deep-linked sign-ins; falls back to /dashboard.
+    const destinationPath = getPostAuthDestination({
+      next,
+      onboarded: isOnboarded,
+    });
 
     const response = NextResponse.redirect(new URL(destinationPath, req.url));
     if (isOnboarded) {

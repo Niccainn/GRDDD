@@ -15,6 +15,7 @@ import {
   fetchProfile,
 } from '@/lib/oauth';
 import { upsertOAuthIdentity, createSessionForIdentity } from '@/lib/auth';
+import { getPostAuthDestination } from '@/lib/auth/post-auth-destination';
 
 const STATE_COOKIE_PREFIX = 'grid_oauth_state_';
 
@@ -56,7 +57,14 @@ export async function GET(
 
     await createSessionForIdentity(identity.id);
 
-    const res = NextResponse.redirect(new URL('/dashboard', req.url));
+    // Single source of truth — see lib/auth/post-auth-destination.
+    // Honors ?next= override, routes un-onboarded users to /welcome,
+    // otherwise lands on /dashboard.
+    const dest = getPostAuthDestination({
+      next: url.searchParams.get('next'),
+      onboarded: Boolean(identity.onboardedAt),
+    });
+    const res = NextResponse.redirect(new URL(dest, req.url));
     res.cookies.delete(`${STATE_COOKIE_PREFIX}${providerId}`);
     return res;
   } catch (err) {

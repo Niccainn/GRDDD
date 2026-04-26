@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getPostAuthDestination } from '@/lib/auth/post-auth-destination';
 
 // Public paths — accessible without an authenticated session.
 // Legal pages (privacy, terms) MUST be public: users need to read them
@@ -210,13 +211,11 @@ export function middleware(req: NextRequest) {
   const session = req.cookies.get('grid_session')?.value;
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
     if (session && (pathname === '/sign-in' || pathname === '/sign-up')) {
-      const onboarded = req.cookies.get('grid_onboarded')?.value;
-      const envSlug = req.cookies.get('grid_env_slug')?.value;
-      const dest = !onboarded
-        ? '/welcome'
-        : envSlug
-          ? `/environments/${envSlug}`
-          : '/dashboard';
+      // Single source of truth — see lib/auth/post-auth-destination.
+      const dest = getPostAuthDestination({
+        next: req.nextUrl.searchParams.get('next'),
+        onboarded: Boolean(req.cookies.get('grid_onboarded')?.value),
+      });
       return withSecurityHeaders(
         NextResponse.redirect(new URL(dest, req.url))
       );
