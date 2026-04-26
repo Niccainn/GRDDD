@@ -45,23 +45,18 @@ function SignInInner() {
         return;
       }
       refresh();
-      // After sign-in: land the user on their primary Environment
-      // rather than the generic /dashboard — that's the canonical
-      // artifact of the product and every other surface is reachable
-      // from it. Honor an explicit ?next= override (OAuth callbacks,
-      // deep-links) ahead of the environment lookup.
-      let target = next;
-      if (target === '/dashboard') {
-        try {
-          const list = await fetch('/api/environments').then(r => r.json());
-          const envs = Array.isArray(list) ? list : list?.environments ?? [];
-          const first = envs[0];
-          if (first?.slug) target = `/environments/${first.slug}`;
-        } catch {
-          /* fall back to /dashboard */
-        }
-      }
-      router.push(target);
+      // After sign-in: land the user on /dashboard — the cross-
+      // environment home with the summary widgets, Nova prompt,
+      // sample-data banner, etc. Earlier behaviour fetched envs and
+      // jumped directly to /environments/<first-slug>, which buried
+      // the home page entirely (a user who'd ever signed in could
+      // never see it again without ?stay=1). The Environment is one
+      // sidebar click away from the home; the home is not reachable
+      // by URL navigation if we redirect away from it.
+      //
+      // ?next= still overrides — OAuth callbacks and deep-links
+      // depend on it.
+      router.push(next);
     } catch {
       setError('Connection error');
       setLoading(false);
