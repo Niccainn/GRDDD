@@ -255,10 +255,13 @@ export default function OperatePage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="stat-number tracking-tight mb-1 flex items-center gap-2 flex-wrap">
-            <span>{getGreeting()}</span>
+            {/* Comma is glued to the greeting word so when the h1 wraps
+                on narrow screens, the line break falls AFTER the comma
+                ("Good evening,\nNicole") rather than before it
+                (",\nNicole"). */}
+            <span>{getGreeting()}{(editingName || greetingName) ? ',' : ''}</span>
             {editingName ? (
               <span className="inline-flex items-center gap-2">
-                <span>,</span>
                 <input
                   autoFocus
                   value={nameDraft}
@@ -288,7 +291,7 @@ export default function OperatePage() {
                 className="transition-opacity hover:opacity-80 cursor-pointer"
                 style={{ font: 'inherit', letterSpacing: 'inherit', color: 'inherit', background: 'transparent', border: 'none', padding: 0 }}
               >
-                , {greetingName}
+                {greetingName}
               </button>
             ) : (
               <button
