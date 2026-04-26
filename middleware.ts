@@ -224,18 +224,13 @@ export function middleware(req: NextRequest) {
     return withCacheControl(withSecurityHeaders(NextResponse.next()), pathname);
   }
 
-  // Short-circuit: /dashboard → /environments/<slug> when we already
-  // know the primary env. The dashboard page itself does this client-
-  // side via useEnsureWorkspace; handling it in middleware removes the
-  // flash of dashboard → redirect that shows up on slow phones.
-  if (session && pathname === '/dashboard') {
-    const envSlug = req.cookies.get('grid_env_slug')?.value;
-    if (envSlug) {
-      return withSecurityHeaders(
-        NextResponse.redirect(new URL(`/environments/${envSlug}`, req.url))
-      );
-    }
-  }
+  // /dashboard is the cross-environment home; we no longer redirect
+  // away from it. Earlier behaviour bounced /dashboard →
+  // /environments/<slug> via grid_env_slug cookie, which made the
+  // home page unreachable for any returning user. The companion
+  // client-side <DashboardEnvironmentRedirect /> was removed in
+  // PR #40; this is the matching middleware-side removal that
+  // PR #40 missed. Env detail is one sidebar click away.
 
   // Allow static files and generated assets (icon, apple-icon, opengraph-image, etc.)
   if (
