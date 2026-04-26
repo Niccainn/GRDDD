@@ -87,7 +87,7 @@ export default function DocsPage() {
 
   useEffect(() => {
     load();
-    fetchArray<{ id: string; name: string }>('/api/environments').then(setEnvironments);
+    fetchArray<EnvOption>('/api/environments').then(setEnvironments);
   }, [load]);
 
   const createDoc = async (parentId?: string) => {
