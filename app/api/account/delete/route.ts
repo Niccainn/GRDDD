@@ -79,6 +79,16 @@ export async function POST(req: NextRequest) {
       const sessionsResult = await tx.session.deleteMany({ where: { identityId: identity.id } });
       deletedSessions = sessionsResult.count;
 
+      // Audit logs are kept for compliance — they're not cascaded.
+      // But actorId / actorName are plain strings that would otherwise
+      // preserve the deleted user's identity in historical records.
+      // Anonymize them (GDPR Art. 17 best-practice) while keeping the
+      // structural row for audit integrity.
+      await tx.auditLog.updateMany({
+        where: { actorId: identity.id },
+        data: { actorId: null, actorName: '[deleted]' },
+      });
+
       // Finally, the Identity row itself. Cascades to owned environments
       // (everything under them), API keys, memberships, any
       // identity-scoped row with onDelete: Cascade.
