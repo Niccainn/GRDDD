@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { getAuthIdentity } from '@/lib/auth';
+import { getAuthIdentity, getAuthIdentityOrNull } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DeleteEnvironmentTrigger from '@/components/DeleteEnvironmentTrigger';
@@ -28,7 +28,8 @@ async function getEnvironments(ownerId: string) {
 }
 
 export default async function EnvironmentsPage() {
-  const identity = await getAuthIdentity();
+  const identity = await getAuthIdentityOrNull();
+  if (!identity) redirect('/signin');
   const environments = await getEnvironments(identity.id);
 
   return (
