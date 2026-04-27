@@ -168,7 +168,10 @@ export default function ConsentBanner() {
               className="w-full mt-3 py-2 text-xs font-light rounded-full"
               style={{
                 background: 'var(--brand)',
-                color: '#fff',
+                // Same contrast fix as the Accept button above —
+                // black on aurora-lime is the established pattern.
+                color: '#000',
+                fontWeight: 400,
               }}
             >
               Save preferences
@@ -193,7 +196,11 @@ export default function ConsentBanner() {
             className="flex-1 py-2 text-xs font-light rounded-full transition-colors"
             style={{
               background: 'var(--brand)',
-              color: '#fff',
+              // Black on aurora-lime for WCAG AA contrast — white on
+              // the brand color drops to ~2.4:1 (fails AA). Black
+              // hits ~13:1.
+              color: '#000',
+              fontWeight: 400,
             }}
           >
             Accept
