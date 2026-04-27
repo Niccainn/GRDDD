@@ -14,7 +14,7 @@
 
 import { prisma } from '@/lib/db';
 import { TOOLS, type ToolContext, resolveToolByClaudeName } from './registry';
-import { INTEGRATION_CATALOG } from '@/lib/integrations/catalog';
+import { INTEGRATION_CATALOG, getCatalogEntry } from '@/lib/integrations/catalog';
 
 export type ToolInvocation = {
   id: string;
@@ -94,7 +94,11 @@ export async function dispatchTool(
   if (toolId === 'catalog.call') {
     const callProvider = String(input.provider ?? '');
     const callMethod = String(input.method ?? '');
-    const catalogEntry = INTEGRATION_CATALOG[callProvider];
+    // Use getCatalogEntry, not direct index — registry IDs (snake_case)
+    // need alias resolution to match catalog keys (kebab-case). Without
+    // this, write tools for google_drive / meta_ads / etc silently
+    // routed to simulation because the entry lookup returned undefined.
+    const catalogEntry = getCatalogEntry(callProvider);
     const methodMeta = catalogEntry?.methods.find(m => m.name === callMethod);
     effectiveProvider = callProvider;
     effectiveWrite = methodMeta?.write ?? true; // unknown = treat as write, safe default

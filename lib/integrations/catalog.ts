@@ -107,6 +107,51 @@ export type AdapterGetter = (integrationId: string, environmentId: string) => Pr
 export type CatalogMethod = { name: string; write: boolean };
 export type CatalogEntry = { label: string; getter: AdapterGetter; methods: CatalogMethod[] };
 
+/**
+ * Registry IDs (lib/integrations/registry.ts) use snake_case as the
+ * canonical Integration.provider value stored in the DB. Catalog
+ * entries below use kebab-case to match the client filenames under
+ * lib/integrations/clients/.
+ *
+ * Without an alias map, a user connecting "Google Drive" would land
+ * an Integration row with provider='google_drive', then Nova's
+ * dispatch (lib/nova/tools/dispatch.ts) would look up the catalog
+ * by 'google_drive' and find nothing — every write tool call would
+ * silently route to simulation.
+ *
+ * Resolve always goes registry-ID → catalog-key, never the reverse.
+ * If new providers are added, they should match registry IDs in the
+ * catalog directly to avoid more aliases. This map is a compatibility
+ * shim, not a long-term pattern.
+ */
+const REGISTRY_TO_CATALOG_ALIASES: Record<string, string> = {
+  'activecampaign':         'activecamp',
+  'fly':                    'fly-io',
+  'google_ads':             'google-ads',
+  'google_analytics':       'google-analytics',
+  'google_calendar':        'google-calendar',
+  'google_drive':           'google-drive',
+  'google_search_console':  'google-search-console',
+  'google_workspace':       'google-workspace',
+  'lemonsqueezy':           'lemon-squeezy',
+  'linkedin_ads':           'linkedin-ads',
+  'meta_ads':               'meta-ads',
+  'microsoft_outlook':      'microsoft-outlook',
+  'microsoft_teams':        'microsoft-teams',
+  'mongodb':                'mongodb-atlas',
+  'tiktok_ads':             'tiktok-ads',
+};
+
+/**
+ * Look up a catalog entry by either registry ID (snake_case) or
+ * catalog key (kebab-case). Use this everywhere instead of indexing
+ * INTEGRATION_CATALOG directly so registry-ID consumers don't 404.
+ */
+export function getCatalogEntry(provider: string): CatalogEntry | undefined {
+  const canonical = REGISTRY_TO_CATALOG_ALIASES[provider] ?? provider;
+  return INTEGRATION_CATALOG[canonical];
+}
+
 export const INTEGRATION_CATALOG: Record<string, CatalogEntry> = {
   'activecamp': {
     label: 'ActiveCampaign',
