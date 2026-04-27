@@ -13,6 +13,7 @@
  */
 
 import { getActiveCampaignClient } from '@/lib/integrations/clients/activecamp';
+import { getAdobeCcClient } from '@/lib/integrations/clients/adobe-cc';
 import { getAnthropicClient } from '@/lib/integrations/clients/anthropic';
 import { getAirtableClient } from '@/lib/integrations/clients/airtable';
 import { getAmplitudeClient } from '@/lib/integrations/clients/amplitude';
@@ -144,6 +145,9 @@ const REGISTRY_TO_CATALOG_ALIASES: Record<string, string> = {
   'microsoft_teams':        'microsoft-teams',
   'mongodb':                'mongodb-atlas',
   'tiktok_ads':             'tiktok-ads',
+  // Adobe registry id is `adobe_creative_cloud` (matching Adobe's
+  // own naming) but the client filename is the shorter `adobe-cc`.
+  'adobe_creative_cloud':   'adobe-cc',
 };
 
 /**
@@ -157,6 +161,15 @@ export function getCatalogEntry(provider: string): CatalogEntry | undefined {
 }
 
 export const INTEGRATION_CATALOG: Record<string, CatalogEntry> = {
+  'adobe-cc': {
+    label: 'Adobe Creative Cloud',
+    getter: getAdobeCcClient,
+    methods: [
+      { name: 'listLibraries', write: false },
+      { name: 'listLibraryElements', write: false },
+      { name: 'searchStock', write: false },
+    ],
+  },
   'anthropic': {
     label: 'Anthropic',
     getter: getAnthropicClient,
