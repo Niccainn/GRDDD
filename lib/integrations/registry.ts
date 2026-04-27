@@ -1018,7 +1018,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#ff0000',
     scopes: ['openid', 'creative_sdk'],
     requiredEnvVars: ['ADOBE_CLIENT_ID', 'ADOBE_CLIENT_SECRET'],
-    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
+    implemented: true,
     glyph: '⬘',
   },
   {
