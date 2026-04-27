@@ -168,7 +168,10 @@ export default function ConsentBanner() {
               className="w-full mt-3 py-2 text-xs font-light rounded-full"
               style={{
                 background: 'var(--brand)',
-                color: '#fff',
+                // Same contrast fix as the Accept button above —
+                // black on aurora-lime is the established pattern.
+                color: '#000',
+                fontWeight: 400,
               }}
             >
               Save preferences
