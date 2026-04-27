@@ -50,6 +50,26 @@ export async function assertOwnsEnvironment(
 }
 
 /**
+ * Variant of assertOwnsEnvironment that also matches soft-deleted
+ * (trashed) envs. Use this only on routes that legitimately need to
+ * touch the trash — restore, hard-purge, impact-summary — never on
+ * read paths that surface env data into the active app.
+ *
+ * Same 404-on-mismatch posture as the regular check; an attacker
+ * still can't tell if an id exists.
+ */
+export async function assertOwnsEnvironmentIncludingTrashed(
+  environmentId: string,
+  identityId: string
+) {
+  const env = await prisma.environment.findFirst({
+    where: { id: environmentId, ownerId: identityId },
+  });
+  if (!env) throw UNAUTHORIZED();
+  return env;
+}
+
+/**
  * Assert that `identityId` owns the system with id `systemId` via its
  * parent environment. Returns the system row (including its
  * environmentId) on success.

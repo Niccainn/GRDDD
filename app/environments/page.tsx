@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import DeleteButton from '@/components/DeleteButton';
+import DeleteEnvironmentTrigger from '@/components/DeleteEnvironmentTrigger';
 import RenameButton from '@/components/RenameButton';
 
 export const dynamic = 'force-dynamic';
@@ -31,7 +31,14 @@ export default async function EnvironmentsPage() {
       <div className="flex items-start justify-between mb-10">
         <div>
           <h1 className="text-xl md:text-2xl font-extralight tracking-tight mb-1">Environments</h1>
-          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Workspaces for your teams, departments, or business areas</p>
+          <p className="text-xs flex items-center gap-3" style={{ color: 'var(--text-3)' }}>
+            <span>Workspaces for your teams, departments, or business areas</span>
+            <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
+            <Link href="/environments/trash" className="hover:underline transition-colors"
+              style={{ color: 'var(--text-3)' }}>
+              View trash
+            </Link>
+          </p>
         </div>
 
         <form action={createEnvironment} className="flex items-center gap-2">
@@ -88,7 +95,7 @@ export default async function EnvironmentsPage() {
                 <div className="flex items-center gap-3">
                   <span className="text-xs" style={{ color: 'var(--text-3)' }}>{env.systems.length} system{env.systems.length !== 1 ? 's' : ''}</span>
                   <RenameButton id={env.id} type="environments" currentName={env.name} />
-                  <DeleteButton id={env.id} type="environments" />
+                  <DeleteEnvironmentTrigger id={env.id} name={env.name} variant="danger" />
                 </div>
               </div>
             </div>
