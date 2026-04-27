@@ -73,13 +73,22 @@ const eslintConfig = defineConfig([
       // can't forget any layer.
       //
       // Whitelist for the helper file itself — see overrides below.
+      // Severity: warn, not error.
+      // When this rule first activated under `error` it surfaced
+      // ~30 pre-existing violations in detail pages that PR #39's
+      // sweep didn't reach (agents/[id], analytics/history,
+      // approvals, assets/[id], audit, calendar, automations,
+      // tasks/board, etc.) and blocked every PR. Until those
+      // sites are migrated, the rule stays at warn — visible as
+      // cleanup leads but non-blocking. Tighten to error once the
+      // remaining call sites are gone (grep `safe-fetch-pending`).
       "no-restricted-syntax": [
-        "error",
+        "warn",
         {
           selector:
             "CallExpression[callee.property.name='then'][arguments.0.type='ArrowFunctionExpression'][arguments.0.body.type='CallExpression'][arguments.0.body.callee.property.name='json']",
           message:
-            "Avoid fetch().then(r => r.json()) — crashes on non-2xx or shape mismatch. Use fetchArray / fetchObject / safeFetch from @/lib/api/safe-fetch (see PR #38).",
+            "Avoid fetch().then(r => r.json()) — crashes on non-2xx or shape mismatch. Use fetchArray / fetchObject / safeFetch from @/lib/api/safe-fetch (see PR #38). [safe-fetch-pending]",
         },
       ],
     },

@@ -35,8 +35,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Rate limit even in dev so local test loops can't DOS the DB.
+  // CI shares a single runner IP and runs ~13 smoke tests with up
+  // to 3 retries each, so 5/hr was too tight (returned 429s mid-
+  // suite). The endpoint is already gated by isDemoEnabled() so
+  // prod traffic can't hit it; bumping to 100/hr keeps the
+  // defense-in-depth without false-positive blocking.
   const ip = clientIp(req);
-  const rl = rateLimit(`demo:${ip}`, 5, 60 * 60 * 1000);
+  const rl = rateLimit(`demo:${ip}`, 100, 60 * 60 * 1000);
   if (!rl.allowed) {
     return Response.json(
       { error: 'Too many demo workspaces from this address.' },

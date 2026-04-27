@@ -52,8 +52,28 @@ jobs:
   # the specific regressions covered.
   e2e:
     runs-on: ubuntu-latest
+
+    # Real Postgres because prisma/schema.prisma is configured for
+    # postgresql; the SQLite file URL the lint-test-build job uses
+    # works there because vitest mocks the client, but Playwright
+    # hits real /api/* endpoints that go through Prisma.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: grid_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     env:
-      DATABASE_URL: file:./test.db
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/grid_test
       GRID_ENCRYPTION_KEY: test-key-for-ci-only-32chars!!
       ANTHROPIC_API_KEY: sk-ant-test-placeholder
       GRID_CRON_TOKEN: test-cron-token

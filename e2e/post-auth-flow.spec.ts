@@ -32,6 +32,11 @@ test.describe('post-auth landing', () => {
   test('/dashboard does not redirect to env page (regression: PR #43)', async ({ page }) => {
     await signInAsDemo(page);
 
+    // Navigate first so page.url() is a real URL — addCookies()
+    // rejects domain/path pairs derived from about:blank, and using
+    // the `url` form needs a non-empty origin.
+    await page.goto('/');
+
     // Set the cookie that earlier middleware used to bounce
     // /dashboard → /environments/<slug>. PR #43 removed the
     // redirect; this test guards it from coming back.
@@ -39,8 +44,7 @@ test.describe('post-auth landing', () => {
       {
         name: 'grid_env_slug',
         value: 'fake-trap-env',
-        domain: new URL(page.url() || 'http://localhost:3000').hostname,
-        path: '/',
+        url: page.url(),
       },
     ]);
 
