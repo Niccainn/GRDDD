@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumb from '@/components/Breadcrumb';
 import EnvironmentTabs from '@/components/EnvironmentTabs';
-import DeleteButton from '@/components/DeleteButton';
+import DeleteEnvironmentTrigger from '@/components/DeleteEnvironmentTrigger';
 import RenameButton from '@/components/RenameButton';
 import ShareEnvironmentButton from '@/components/ShareEnvironmentButton';
 import PresenceStack from '@/components/presence/PresenceStack';
@@ -142,7 +142,12 @@ export default function EnvironmentWorkspaceLayout({ children }: { children: Rea
               <ActivityButton entityType="Environment" entityId={env.id} entityLabel={env.name} />
               <ShareEnvironmentButton environmentId={env.id} />
               <RenameButton id={env.id} type="environments" currentName={env.name} />
-              <DeleteButton id={env.id} type="environments" redirectTo="/environments" />
+              <DeleteEnvironmentTrigger
+                id={env.id}
+                name={env.name}
+                redirectTo="/environments"
+                variant="danger"
+              />
             </div>
             <div className="flex md:hidden items-center gap-2">
               <PresenceStack environmentId={env.id} />
