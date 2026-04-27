@@ -19,12 +19,17 @@ async function createEnvironment(formData: FormData) {
   redirect('/environments');
 }
 
-async function getEnvironments() {
-  return prisma.environment.findMany({ include: { owner: true, systems: true }, orderBy: { createdAt: 'desc' } });
+async function getEnvironments(ownerId: string) {
+  return prisma.environment.findMany({
+    where: { ownerId, deletedAt: null },
+    include: { owner: true, systems: true },
+    orderBy: { createdAt: 'desc' },
+  });
 }
 
 export default async function EnvironmentsPage() {
-  const environments = await getEnvironments();
+  const identity = await getAuthIdentity();
+  const environments = await getEnvironments(identity.id);
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
