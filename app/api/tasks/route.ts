@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
 import { assertCanWriteEnvironment } from '@/lib/auth/ownership';
+import { decryptIdentityFields } from '@/lib/crypto/identity-pii';
 
 // GET /api/tasks — list tasks with filters
 export async function GET(req: NextRequest) {
@@ -66,7 +67,17 @@ export async function GET(req: NextRequest) {
   const counts: Record<string, number> = {};
   statusCounts.forEach((s: { status: string; _count: number }) => { counts[s.status] = s._count; });
 
-  return NextResponse.json({ tasks, counts });
+  // Decrypt PII on related Identity rows. The Prisma extension only
+  // auto-decrypts when the top-level model is Identity; relation
+  // fetches (creator, assignee) need explicit unwrap. See
+  // lib/crypto/identity-pii.
+  const tasksDecrypted = tasks.map(t => ({
+    ...t,
+    creator: decryptIdentityFields(t.creator),
+    assignee: decryptIdentityFields(t.assignee),
+  }));
+
+  return NextResponse.json({ tasks: tasksDecrypted, counts });
 }
 
 // POST /api/tasks — create a task
@@ -142,5 +153,12 @@ export async function POST(req: NextRequest) {
     }).catch(() => {});
   }
 
-  return NextResponse.json(task, { status: 201 });
+  return NextResponse.json(
+    {
+      ...task,
+      creator: decryptIdentityFields(task.creator),
+      assignee: decryptIdentityFields(task.assignee),
+    },
+    { status: 201 },
+  );
 }

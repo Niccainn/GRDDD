@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthIdentity } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { saveFile, deleteFile, StorageError } from '@/lib/storage';
+import { decryptIdentityFields } from '@/lib/crypto/identity-pii';
 
 const envOwnershipFilter = (identityId: string) => ({
   deletedAt: null,
@@ -96,7 +97,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(attachments);
+    return NextResponse.json(
+      attachments.map(a => ({ ...a, identity: decryptIdentityFields(a.identity) })),
+    );
   } catch (err) {
     if (err instanceof Response) return err;
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -149,7 +152,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(attachment, { status: 201 });
+    return NextResponse.json(
+      { ...attachment, identity: decryptIdentityFields(attachment.identity) },
+      { status: 201 },
+    );
   } catch (err) {
     if (err instanceof Response) return err;
     if (err instanceof StorageError) {

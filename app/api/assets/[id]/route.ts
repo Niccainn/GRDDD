@@ -2,6 +2,7 @@ import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 import { deleteFile } from '@/lib/storage';
+import { decryptIdentityFields } from '@/lib/crypto/identity-pii';
 
 export async function GET(
   _request: Request,
@@ -32,7 +33,14 @@ export async function GET(
     return Response.json({ error: 'Asset not found' }, { status: 404 });
   }
 
-  return Response.json(asset);
+  return Response.json({
+    ...asset,
+    identity: decryptIdentityFields(asset.identity),
+    versions: asset.versions.map(v => ({
+      ...v,
+      identity: decryptIdentityFields(v.identity),
+    })),
+  });
 }
 
 export async function PATCH(
