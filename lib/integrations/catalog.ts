@@ -13,6 +13,7 @@
  */
 
 import { getActiveCampaignClient } from '@/lib/integrations/clients/activecamp';
+import { getAnthropicClient } from '@/lib/integrations/clients/anthropic';
 import { getAirtableClient } from '@/lib/integrations/clients/airtable';
 import { getAmplitudeClient } from '@/lib/integrations/clients/amplitude';
 import { getAsanaClient } from '@/lib/integrations/clients/asana';
@@ -68,6 +69,9 @@ import { getMixpanelClient } from '@/lib/integrations/clients/mixpanel';
 import { getMondayClient } from '@/lib/integrations/clients/monday';
 import { getMongoDBAtlasClient } from '@/lib/integrations/clients/mongodb-atlas';
 import { getMuxClient } from '@/lib/integrations/clients/mux';
+import { getOpenAIClient } from '@/lib/integrations/clients/openai';
+import { getResendClient } from '@/lib/integrations/clients/resend';
+import { getElevenLabsClient } from '@/lib/integrations/clients/elevenlabs';
 import { getNetlifyClient } from '@/lib/integrations/clients/netlify';
 import { getNotionClient } from '@/lib/integrations/clients/notion';
 import { getOneDriveClient } from '@/lib/integrations/clients/onedrive';
@@ -153,6 +157,39 @@ export function getCatalogEntry(provider: string): CatalogEntry | undefined {
 }
 
 export const INTEGRATION_CATALOG: Record<string, CatalogEntry> = {
+  'anthropic': {
+    label: 'Anthropic',
+    getter: getAnthropicClient,
+    methods: [
+      { name: 'listModels', write: false },
+      { name: 'completion', write: true },
+    ],
+  },
+  'openai': {
+    label: 'OpenAI',
+    getter: getOpenAIClient,
+    methods: [
+      { name: 'listModels', write: false },
+      { name: 'chatCompletion', write: true },
+    ],
+  },
+  'elevenlabs': {
+    label: 'ElevenLabs',
+    getter: getElevenLabsClient,
+    methods: [
+      { name: 'listVoices', write: false },
+      { name: 'getAccountInfo', write: false },
+      { name: 'textToSpeech', write: true },
+    ],
+  },
+  'resend': {
+    label: 'Resend',
+    getter: getResendClient,
+    methods: [
+      { name: 'listDomains', write: false },
+      { name: 'sendEmail', write: true },
+    ],
+  },
   'activecamp': {
     label: 'ActiveCampaign',
     getter: getActiveCampaignClient,

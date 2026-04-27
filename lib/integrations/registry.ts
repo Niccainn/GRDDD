@@ -751,7 +751,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 're_xxxxxxxx' },
     ],
     requiredEnvVars: [],
-    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
+    implemented: true,
     glyph: '⊹',
   },
 
@@ -1331,7 +1331,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'sk-xxxxxx', helper: 'platform.openai.com → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
+    implemented: true,
     glyph: '⬡',
   },
   {
@@ -1346,7 +1346,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'sk-ant-xxxxxx', helper: 'console.anthropic.com → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
+    implemented: true,
     glyph: '⬢',
   },
   {
@@ -1361,7 +1361,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Profile → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
+    implemented: true,
     glyph: '⬣',
   },
   {

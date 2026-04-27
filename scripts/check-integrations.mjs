@@ -80,8 +80,50 @@ function parseCatalog() {
   return { keys, aliases };
 }
 
+// Pull every registry provider's authType so we can check OAuth
+// coverage separately.
+function parseRegistryAuthTypes() {
+  const src = readSrc('lib/integrations/registry.ts');
+  const lines = src.split('\n');
+  const types = {};
+  for (let i = 0; i < lines.length; i++) {
+    const idMatch = lines[i].match(/id:\s*'([a-z0-9_-]+)'/);
+    if (!idMatch) continue;
+    for (let j = i + 1; j < Math.min(i + 12, lines.length); j++) {
+      const m = lines[j].match(/authType:\s*'([a-z_]+)'/);
+      if (m) { types[idMatch[1]] = m[1]; break; }
+    }
+  }
+  return types;
+}
+
+// Pull every OAuth provider wired in the start route. The route
+// imports them as XXX_PROVIDER consts and dispatches by case.
+function parseOAuthStartRoute() {
+  const src = readSrc('app/api/integrations/oauth/[provider]/start/route.ts');
+  const wired = new Set();
+  // Match `case 'shopify':` style dispatches
+  const caseRe = /case\s*'([a-z0-9_-]+)'/g;
+  let m;
+  while ((m = caseRe.exec(src))) wired.add(m[1]);
+  // Match imported XXX_PROVIDER constants — heuristic: convert
+  // SHOPIFY_PROVIDER → shopify, GOOGLE_DRIVE_PROVIDER → google_drive
+  const importRe = /([A-Z][A-Z0-9_]*)_PROVIDER/g;
+  while ((m = importRe.exec(src))) {
+    wired.add(m[1].toLowerCase());
+  }
+  // Match `provider === 'shopify'` style dispatches (for providers
+  // that don't use the *_PROVIDER constant pattern, e.g. airtable
+  // and shopify use a build*AuthorizeUrl helper instead).
+  const eqRe = /provider\s*===?\s*'([a-z0-9_-]+)'/g;
+  while ((m = eqRe.exec(src))) wired.add(m[1]);
+  return wired;
+}
+
 const registry = parseRegistry();
+const authTypes = parseRegistryAuthTypes();
 const { keys: catalogKeys, aliases } = parseCatalog();
+const oauthWired = parseOAuthStartRoute();
 
 const errors = [];
 const warnings = [];
@@ -109,6 +151,23 @@ for (const k of catalogKeys) {
     warnings.push(
       `catalog entry "${k}" has no registry ID pointing at it. ` +
       `Likely orphaned — either add to registry or remove from catalog.`,
+    );
+  }
+}
+
+// Each OAuth provider in the registry must be wired in the start
+// route. If not, clicking Connect → 500 or "no handler". This
+// catches the bug where someone adds `authType: 'oauth'` to a
+// registry entry but forgets the start-route case statement.
+for (const p of registry) {
+  if (!p.implemented) continue;
+  if (authTypes[p.id] !== 'oauth') continue;
+  if (!oauthWired.has(p.id)) {
+    errors.push(
+      `oauth provider "${p.id}" has no handler in ` +
+      `app/api/integrations/oauth/[provider]/start/route.ts. ` +
+      `Connect-flow will 500. Add a case branch + import the *_PROVIDER ` +
+      `constant from lib/integrations/oauth/<provider>.ts.`,
     );
   }
 }

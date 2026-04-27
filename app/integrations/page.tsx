@@ -74,14 +74,17 @@ export default function IntegrationsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [configModal, setConfigModal] = useState<ProviderSummary | null>(null);
+  // null = unknown (still loading); false = simulation mode; true = live writes
+  const [liveWritesEnabled, setLiveWritesEnabled] = useState<boolean | null>(null);
 
   // Load environments + providers once.
   useEffect(() => {
     (async () => {
       try {
-        const [envRes, provRes] = await Promise.all([
+        const [envRes, provRes, healthRes] = await Promise.all([
           fetch('/api/environments'),
           fetch('/api/integrations/providers'),
+          fetch('/api/integrations/health'),
         ]);
         if (envRes.ok) {
           const envs = (await envRes.json()) as Environment[];
@@ -93,6 +96,10 @@ export default function IntegrationsPage() {
           const data = (await provRes.json()) as { providers: ProviderSummary[]; categories: CategoryDef[] };
           setProviders(data.providers);
           setCategories(data.categories);
+        }
+        if (healthRes.ok) {
+          const data = (await healthRes.json()) as { liveWritesEnabled: boolean };
+          setLiveWritesEnabled(Boolean(data.liveWritesEnabled));
         }
       } catch (err) {
         setToast({ kind: 'err', text: err instanceof Error ? err.message : 'Failed to load' });
@@ -354,6 +361,36 @@ export default function IntegrationsPage() {
   return (
     <div className="px-4 md:px-12 py-6 md:py-12 min-h-screen">
       <div className="max-w-6xl">
+        {/* Simulation-mode banner — surfaces when NOVA_TOOLS_LIVE
+            isn't set on the server. Critical context for users
+            evaluating "did Nova actually post that to Slack?". The
+            actions still appear successful in the UI (the simulator
+            returns success), so without this banner the user would
+            see a green check and think it worked. */}
+        {liveWritesEnabled === false && (
+          <div
+            className="mb-6 rounded-xl px-4 py-3 flex items-start gap-3"
+            style={{
+              background: 'rgba(245,215,110,0.06)',
+              border: '1px solid rgba(245,215,110,0.18)',
+            }}
+            role="status"
+          >
+            <span
+              className="text-[10px] tracking-[0.14em] uppercase font-light flex-shrink-0 mt-0.5"
+              style={{ color: '#F5D76E' }}
+            >
+              Simulation mode
+            </span>
+            <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-2)' }}>
+              Nova's write tools are returning simulated success. Real adapter calls
+              (post a Slack message, create a Notion page, etc.) are not firing on
+              this server. Set <code style={{ color: 'var(--text-1)', fontFamily: 'inherit' }}>NOVA_TOOLS_LIVE=1</code> in
+              your environment to enable live writes.
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 animate-fade-in flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
