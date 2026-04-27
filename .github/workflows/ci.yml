@@ -45,3 +45,54 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # Smoke E2E — guards the redirect-loop and list-page-crash bug
+  # classes that took 6+ PRs to unwind in the 2026-04-26 session.
+  # See e2e/post-auth-flow.spec.ts and e2e/list-pages.spec.ts for
+  # the specific regressions covered.
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./test.db
+      GRID_ENCRYPTION_KEY: test-key-for-ci-only-32chars!!
+      ANTHROPIC_API_KEY: sk-ant-test-placeholder
+      GRID_CRON_TOKEN: test-cron-token
+      GRID_WEBHOOK_TOKEN: test-webhook-token
+      # Enables /api/auth/demo so the smoke fixture can mint a
+      # session without going through the full sign-up/email-verify
+      # flow. Demo identities are sandbox-only and can't sign back
+      # in (no passwordHash) — see app/api/auth/demo/route.ts.
+      GRID_ENABLE_DEMO: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply schema to test DB
+        run: npx prisma db push --skip-generate
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke
+        # Playwright's webServer block in playwright.config.ts runs
+        # `npm run build && npm run start` automatically when CI=true.
+        run: npx playwright test
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

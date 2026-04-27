@@ -14,7 +14,7 @@ import AxeBuilder from '@axe-core/playwright';
 test.describe('landing page', () => {
   test('renders hero and waitlist CTA', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(/business works/i);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/management is a byproduct/i);
     // Nav "Get early access" anchor + form both present
     await expect(page.locator('a[href="#waitlist"]').first()).toBeVisible();
   });
