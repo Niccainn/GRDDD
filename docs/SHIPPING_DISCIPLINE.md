@@ -134,3 +134,5 @@ By the time the user noticed, three production deploys had been blocked
 for 30+ minutes and the user-facing flow was broken. The pre-push hook
 + required check would have stopped this at PR #39, before #40, #41,
 #42 even got authored.
+
+<!-- ruleset 15604389 active 2026-04-27 -->
