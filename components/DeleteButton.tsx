@@ -15,13 +15,20 @@ export default function DeleteButton({
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleDelete(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     setLoading(true);
-    await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
+    setError(null);
+    const res = await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
     setLoading(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(String(body.error ?? `Delete failed (${res.status})`));
+      return;
+    }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(`grid:${type}-changed`));
       // Deleting an Environment cascades to its Systems (and Workflows),
@@ -45,7 +52,7 @@ export default function DeleteButton({
   if (confirming) {
     return (
       <span className="inline-flex items-center gap-1.5" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
-        <span className="text-xs" style={{ color: 'var(--text-3)' }}>Delete?</span>
+        <span className="text-xs" style={{ color: error ? '#FF7070' : 'var(--text-3)' }}>{error ?? 'Delete?'}</span>
         <button
           onClick={handleDelete}
           disabled={loading}

@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { getAuthIdentity } from '@/lib/auth';
+import { getAuthIdentity, getAuthIdentityOrNull } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DeleteButton from '@/components/DeleteButton';
@@ -29,9 +29,18 @@ async function createSystem(formData: FormData) {
 }
 
 export default async function SystemsPage() {
+  const identity = await getAuthIdentityOrNull();
+  if (!identity) redirect('/signin');
   const [environments, systems] = await Promise.all([
-    prisma.environment.findMany({ orderBy: { createdAt: 'desc' } }),
-    prisma.system.findMany({ include: { environment: true, _count: { select: { workflows: true } } }, orderBy: { createdAt: 'desc' } }),
+    prisma.environment.findMany({
+      where: { ownerId: identity.id, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.system.findMany({
+      where: { environment: { ownerId: identity.id, deletedAt: null }, deletedAt: null },
+      include: { environment: true, _count: { select: { workflows: true } } },
+      orderBy: { createdAt: 'desc' },
+    }),
   ]);
 
   return (
