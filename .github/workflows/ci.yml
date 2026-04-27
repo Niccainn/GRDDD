@@ -37,6 +37,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Integration registry / catalog alignment
+        # Fails if a registry provider claims implemented:true but
+        # has no catalog entry (or alias). See scripts/check-integrations.mjs
+        # — prevents the misleading "this integration is available"
+        # surface on /integrations.
+        run: npm run check:integrations
+
       - name: Run tests
         run: npm test
 

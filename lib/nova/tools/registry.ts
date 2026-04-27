@@ -15,7 +15,7 @@ import { getSlackClient } from '@/lib/integrations/clients/slack';
 import { getNotionClient } from '@/lib/integrations/clients/notion';
 import { getGitHubClient } from '@/lib/integrations/clients/github';
 import { getFigmaClient } from '@/lib/integrations/clients/figma';
-import { INTEGRATION_CATALOG, catalogSummary } from '@/lib/integrations/catalog';
+import { INTEGRATION_CATALOG, catalogSummary, getCatalogEntry } from '@/lib/integrations/catalog';
 
 export type ToolContext = {
   environmentId: string;
@@ -284,7 +284,10 @@ export const TOOLS: Record<string, ToolEntry> = {
       const provider = String(input.provider ?? '');
       const method = String(input.method ?? '');
       const args = (input.args ?? {}) as Record<string, unknown>;
-      const entry = INTEGRATION_CATALOG[provider];
+      // Resolves registry-ID (snake_case) to catalog-key (kebab-case)
+      // so Nova can use either form. See REGISTRY_TO_CATALOG_ALIASES
+      // in lib/integrations/catalog.ts.
+      const entry = getCatalogEntry(provider);
       if (!entry) throw new Error(`catalog:unknown_provider:${provider}`);
       const methodMeta = entry.methods.find(m => m.name === method);
       if (!methodMeta) throw new Error(`catalog:unknown_method:${provider}.${method}`);

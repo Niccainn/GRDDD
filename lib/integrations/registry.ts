@@ -459,7 +459,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'appPassword', label: 'App-specific password', type: 'password', placeholder: 'xxxx-xxxx-xxxx-xxxx', helper: 'Generate at appleid.apple.com > Security > App-Specific Passwords.' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '◳',
   },
   {
@@ -476,7 +476,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'password', label: 'Password', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '◱',
   },
   {
@@ -526,7 +526,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#017737',
     scopes: [],
     requiredEnvVars: ['PIPEDRIVE_CLIENT_ID', 'PIPEDRIVE_CLIENT_SECRET'],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '◗',
   },
   {
@@ -538,7 +538,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#e42527',
     scopes: ['ZohoCRM.modules.ALL'],
     requiredEnvVars: ['ZOHO_CLIENT_ID', 'ZOHO_CLIENT_SECRET'],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '◑',
   },
   {
@@ -554,7 +554,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Settings → API Settings' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '◒',
   },
   {
@@ -569,7 +569,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'api_xxxxxx', helper: 'Settings → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '◓',
   },
 
@@ -751,7 +751,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 're_xxxxxxxx' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⊹',
   },
 
@@ -1018,7 +1018,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#ff0000',
     scopes: ['openid', 'creative_sdk'],
     requiredEnvVars: ['ADOBE_CLIENT_ID', 'ADOBE_CLIENT_SECRET'],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⬘',
   },
   {
@@ -1030,7 +1030,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#fdad00',
     scopes: [],
     requiredEnvVars: ['SKETCH_CLIENT_ID', 'SKETCH_CLIENT_SECRET'],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '◇',
   },
 
@@ -1109,7 +1109,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Settings → Integrations → API' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⊟',
   },
   {
@@ -1124,7 +1124,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Settings → API' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⊠',
   },
   {
@@ -1299,7 +1299,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#fedd00',
     scopes: [],
     requiredEnvVars: ['RIPPLING_CLIENT_ID', 'RIPPLING_CLIENT_SECRET'],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⊠',
   },
   {
@@ -1331,7 +1331,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'sk-xxxxxx', helper: 'platform.openai.com → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⬡',
   },
   {
@@ -1346,7 +1346,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', placeholder: 'sk-ant-xxxxxx', helper: 'console.anthropic.com → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⬢',
   },
   {
@@ -1361,7 +1361,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password', helper: 'Profile → API Keys' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⬣',
   },
   {
@@ -1376,7 +1376,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiToken', label: 'API token', type: 'password', helper: 'Account Settings → API Tokens' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⬠',
   },
 
@@ -1393,7 +1393,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'webhookUrl', label: 'Webhook URL', type: 'text', placeholder: 'https://hooks.zapier.com/hooks/catch/…', helper: 'Trigger → Webhooks by Zapier → Catch Hook' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⚡',
   },
   {
@@ -1409,7 +1409,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'region', label: 'Region', type: 'text', placeholder: 'us1 or eu1' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⚙',
   },
   {
@@ -1425,7 +1425,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'apiKey', label: 'API key', type: 'password' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations
     glyph: '⟐',
   },
 
@@ -1487,7 +1487,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
     accentColor: '#362d59',
     scopes: ['project:read', 'event:read'],
     requiredEnvVars: ['SENTRY_CLIENT_ID', 'SENTRY_CLIENT_SECRET'],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⊗',
   },
   {
@@ -1651,7 +1651,7 @@ export const PROVIDERS: IntegrationProviderDef[] = [
       { name: 'region', label: 'Region', type: 'text', placeholder: 'us-east-1' },
     ],
     requiredEnvVars: [],
-    implemented: true,
+    implemented: false, // [TODO] adapter not yet built — see scripts/check-integrations,
     glyph: '⊞',
   },
   {
