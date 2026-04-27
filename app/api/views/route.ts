@@ -2,6 +2,7 @@ import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
+import { decryptPII } from '@/lib/crypto/pii-encryption';
 import type { EntityType } from '@/lib/views';
 import { getColumnDefs } from '@/lib/views';
 
@@ -121,8 +122,9 @@ async function queryTasks(
     description: t.description,
     status: t.status,
     priority: t.priority,
-    assignee: t.assignee?.name ?? '',
-    creator: t.creator?.name ?? '',
+    // Identity fields are PII-encrypted at rest; decrypt before render.
+    assignee: t.assignee?.name ? decryptPII(t.assignee.name) : '',
+    creator: t.creator?.name ? decryptPII(t.creator.name) : '',
     dueDate: t.dueDate?.toISOString() ?? null,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),

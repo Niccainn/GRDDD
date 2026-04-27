@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAuthIdentity } from '@/lib/auth';
 import { assertCanWriteEnvironment } from '@/lib/auth/ownership';
+import { decryptIdentityFields } from '@/lib/crypto/identity-pii';
 
 // GET /api/tasks/:id — get a single task with subtasks and comments
 export async function GET(
@@ -48,7 +49,15 @@ export async function GET(
     return NextResponse.json({ error: 'Task not found' }, { status: 404 });
   }
 
-  return NextResponse.json(task);
+  return NextResponse.json({
+    ...task,
+    creator: decryptIdentityFields(task.creator),
+    assignee: decryptIdentityFields(task.assignee),
+    subtasks: task.subtasks.map(s => ({
+      ...s,
+      assignee: decryptIdentityFields(s.assignee),
+    })),
+  });
 }
 
 // PATCH /api/tasks/:id — update a task
@@ -123,7 +132,11 @@ export async function PATCH(
     },
   });
 
-  return NextResponse.json(updated);
+  return NextResponse.json({
+    ...updated,
+    creator: decryptIdentityFields(updated.creator),
+    assignee: decryptIdentityFields(updated.assignee),
+  });
 }
 
 // DELETE /api/tasks/:id — soft delete a task

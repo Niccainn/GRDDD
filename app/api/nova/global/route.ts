@@ -3,6 +3,7 @@ import { rateLimitNovaStrict } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
+import { decryptPII } from '@/lib/crypto/pii-encryption';
 import type { NovaEvent } from '@/lib/nova';
 import { selectAvailableTools } from '@/lib/integrations/tools';
 import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
@@ -183,7 +184,9 @@ async function executeInternalTool(name: string, input: Record<string, unknown>,
       return {
         result: tasks.map(t => ({
           id: t.id, title: t.title, status: t.status, priority: t.priority,
-          assignee: t.assignee?.name ?? null, system: t.system?.name ?? null,
+          // Identity.name is PII-encrypted at rest; decrypt before render.
+          assignee: t.assignee?.name ? decryptPII(t.assignee.name) : null,
+          system: t.system?.name ?? null,
           environment: t.environment.name, dueDate: t.dueDate,
         })),
         summary: `${tasks.length} tasks loaded`,
