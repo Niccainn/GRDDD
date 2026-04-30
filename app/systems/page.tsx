@@ -3,6 +3,15 @@ import { getAuthIdentity, getAuthIdentityOrNull } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DeleteButton from '@/components/DeleteButton';
+import AutonomyBadge, { type AutonomyTier } from '@/components/AutonomyBadge';
+
+// Map AutonomyConfig.level (0-4) to the badge's named tiers. The
+// numeric form is internal; the tier name is what the user sees.
+const LEVEL_TO_TIER: AutonomyTier[] = ['Observe', 'Suggest', 'Act', 'Autonomous', 'Self-Direct'];
+function tierForLevel(level: number | undefined): AutonomyTier {
+  if (level == null || level < 0 || level > 4) return 'Suggest';
+  return LEVEL_TO_TIER[level];
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +31,30 @@ async function createSystem(formData: FormData) {
   const environmentId = formData.get('environmentId') as string;
   if (!name || !environmentId) return;
   const identity = await getAuthIdentity();
+  // Verify the env belongs to the caller before binding the creatorId
+  // here. Without this guard, a crafted form post could create
+  // systems under a foreign env's id.
+  const env = await prisma.environment.findFirst({
+    where: { id: environmentId, ownerId: identity.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!env) return;
   const system = await prisma.system.create({
     data: { name, description, color, environmentId, creatorId: identity.id, healthScore: Math.random() * 0.3 + 0.7 }
   });
+  // Pillar 3: every System is born with a calibrated autonomy
+  // setting. Default level 1 (Suggest) — Nova drafts, the human
+  // approves. Users adjust on the System detail page or settings;
+  // the dial is visible from the moment the System exists.
+  await prisma.autonomyConfig.create({
+    data: {
+      scopeType: 'system',
+      scopeId: system.id,
+      scopeLabel: system.name,
+      level: 1,
+      environmentId,
+    },
+  }).catch(() => {/* non-fatal — config can be created on first edit */});
   redirect(`/systems/${system.id}`);
 }
 
@@ -42,6 +72,19 @@ export default async function SystemsPage() {
       orderBy: { createdAt: 'desc' },
     }),
   ]);
+
+  // Pillar 3: pull the autonomy level for every System on this page
+  // in one round-trip and key it by scopeId so the card render can
+  // surface the dial inline. Older systems without a config row
+  // default to Suggest.
+  const autonomyConfigs = systems.length > 0
+    ? await prisma.autonomyConfig.findMany({
+        where: { scopeType: 'system', scopeId: { in: systems.map(s => s.id) } },
+        select: { scopeId: true, level: true },
+      })
+    : [];
+  const autonomyByScope = new Map<string, number>();
+  for (const c of autonomyConfigs) autonomyByScope.set(c.scopeId, c.level);
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
@@ -106,9 +149,15 @@ export default async function SystemsPage() {
                       </p>
                       {s.description && <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{s.description}</p>}
                     </Link>
-                    <div className="flex items-center justify-between px-5 pb-4">
-                      <p className="text-xs" style={{ color: 'var(--text-3)' }}>{s.environment.name}</p>
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between px-5 pb-4 gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <p className="text-xs truncate" style={{ color: 'var(--text-3)' }}>{s.environment.name}</p>
+                        {/* Pillar 3: every System carries its current
+                            autonomy tier as a visible chip. Tooltip on
+                            hover explains what the tier permits. */}
+                        <AutonomyBadge tier={tierForLevel(autonomyByScope.get(s.id))} />
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
                         <span className="text-xs" style={{ color: 'var(--text-3)' }}>{s._count.workflows} {s._count.workflows === 1 ? 'workflow' : 'workflows'}</span>
                         <DeleteButton id={s.id} type="systems" />
                       </div>
