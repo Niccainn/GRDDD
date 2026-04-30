@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import SampleDataBanner from '@/components/SampleDataBanner';
+import NovaTrace from '@/components/NovaTrace';
 
 type Signal = {
   id: string;
@@ -581,6 +582,19 @@ export default function InboxPage() {
                       {signal.workflow && ` · ${signal.workflow.name}`}
                     </p>
                   )}
+                  {/* Inline Nova trace — pillar 2: every artifact Nova
+                      touched shows the read·decided·skipped strip without
+                      requiring an expand. Wrapper stops the click from
+                      toggling the row. */}
+                  {signal.novaRouting && (
+                    <div className="mt-2" onClick={e => e.stopPropagation()}>
+                      <NovaTrace data={{
+                        decided: signal.novaRouting.reasoning,
+                        confidence: signal.novaRouting.confidence,
+                        read: signal.system ? [`system: ${signal.system.name}`] : [],
+                      }} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Meta */}
@@ -606,18 +620,6 @@ export default function InboxPage() {
                     <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
                       {signal.body}
                     </p>
-                  )}
-
-                  {/* Nova routing info */}
-                  {signal.novaRouting && (
-                    <div className="px-3 py-2 rounded-lg text-xs"
-                      style={{ background: 'rgba(200,242,107,0.05)', border: '1px solid rgba(200,242,107,0.15)' }}>
-                      <span style={{ color: '#C8F26B' }}>Nova: </span>
-                      <span style={{ color: 'rgba(255,255,255,0.5)' }}>{signal.novaRouting.reasoning}</span>
-                      <span className="ml-2 text-xs" style={{ color: 'rgba(200,242,107,0.5)' }}>
-                        {Math.round((signal.novaRouting.confidence ?? 0) * 100)}% confidence
-                      </span>
-                    </div>
                   )}
 
                   {/* Actions */}
