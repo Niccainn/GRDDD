@@ -132,10 +132,13 @@ export default function IntegrationsPage() {
   // and env-missing ("Setup required"). The operator-setup banner
   // still surfaces them at the page level, so admins know what's
   // outstanding without every user seeing a wall of dim cards.
+  // Show every implemented provider, even ones whose server-side env
+  // vars haven't been set up yet — those render as dim "Setup required"
+  // cards so users can see the full surface area. Truly unimplemented
+  // providers stay hidden.
   const filtered = useMemo(() => {
     return providers.filter(p => {
       if (!p.implemented) return false;
-      if (!p.envReady) return false;
       if (category !== 'all' && p.category !== category) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -162,7 +165,7 @@ export default function IntegrationsPage() {
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const p of providers) {
-      if (!p.implemented || !p.envReady) continue;
+      if (!p.implemented) continue;
       if (search) {
         const q = search.toLowerCase();
         if (!p.name.toLowerCase().includes(q) && !p.tagline.toLowerCase().includes(q) && !p.categoryLabel.toLowerCase().includes(q)) continue;

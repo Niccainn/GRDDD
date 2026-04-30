@@ -9,8 +9,14 @@ export async function GET() {
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
 
+  // Scope through environment.ownerId AND identityId — same defense
+  // as automations. A stale form pointing at a foreign env would
+  // otherwise leak that env's name through.
   const forms = await prisma.form.findMany({
-    where: { identityId: identity.id },
+    where: {
+      identityId: identity.id,
+      environment: { ownerId: identity.id, deletedAt: null },
+    },
     include: {
       environment: { select: { name: true } },
       _count: { select: { submissions: true } },
