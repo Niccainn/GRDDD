@@ -59,6 +59,17 @@ function formatAction(action: string): string {
   return action.replace('.', ' · ').replace(/_/g, ' ');
 }
 
+// Pillar 5 wire: which audit actions are eligible for "Teach Nova"
+// review. Limited to cases where Nova actually made a decision —
+// not user-driven CRUD. The `nova.memory_updated` action is excluded
+// because that's the override itself; teaching about a teaching
+// becomes recursive without value.
+function isNovaDecision(entry: AuditEntry): boolean {
+  if (entry.actorType === 'nova') return true;
+  if (entry.action === 'nova.memory_updated') return false;
+  return entry.action.startsWith('nova.') || entry.action.startsWith('execution.');
+}
+
 export default function AuditPage() {
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [total, setTotal] = useState(0);
@@ -67,7 +78,39 @@ export default function AuditPage() {
   const [filterAction, setFilterAction] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  // Teach-Nova drawer state. Null when no row is in teach mode.
+  const [teaching, setTeaching] = useState<string | null>(null);
+  const [lesson, setLesson] = useState('');
+  const [teachSaving, setTeachSaving] = useState(false);
+  const [teachSaved, setTeachSaved] = useState<string | null>(null);
+  const [teachError, setTeachError] = useState<string | null>(null);
   const LIMIT = 50;
+
+  async function submitLesson(auditLogId: string) {
+    if (!lesson.trim()) return;
+    setTeachSaving(true);
+    setTeachError(null);
+    try {
+      const res = await fetch('/api/memory/from-override', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auditLogId, lesson: lesson.trim() }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setTeachError(String(body.error ?? `Save failed (${res.status})`));
+        return;
+      }
+      const data = await res.json();
+      setTeachSaved(data.id);
+      setLesson('');
+      setTeaching(null);
+    } catch {
+      setTeachError('Network error. Try again.');
+    } finally {
+      setTeachSaving(false);
+    }
+  }
 
   const load = useCallback(() => {
     const params = new URLSearchParams({
@@ -262,6 +305,80 @@ export default function AuditPage() {
 
                       {/* Expanded detail */}
                       {isOpen && renderDiff(entry)}
+
+                      {/* Teach Nova — pillar 5: every override on a
+                          Nova-driven row becomes a NovaMemory. The
+                          button only appears on Nova-decision rows
+                          and only when the row is expanded. */}
+                      {isOpen && isNovaDecision(entry) && (
+                        <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                          {teaching === entry.id ? (
+                            <div onClick={e => e.stopPropagation()} className="space-y-2">
+                              <p className="text-xs tracking-[0.12em] uppercase font-light"
+                                style={{ color: 'rgba(200,242,107,0.6)' }}>
+                                Teach Nova
+                              </p>
+                              <textarea
+                                autoFocus
+                                value={lesson}
+                                onChange={e => setLesson(e.target.value)}
+                                placeholder="What should Nova have done instead? Next time…"
+                                rows={3}
+                                className="w-full text-sm font-light px-3 py-2 rounded-lg outline-none resize-none"
+                                style={{
+                                  background: 'rgba(255,255,255,0.03)',
+                                  border: '1px solid var(--glass-border)',
+                                  color: 'var(--text-1)',
+                                }}
+                              />
+                              {teachError && (
+                                <p className="text-xs font-light" style={{ color: '#FF6B6B' }}>{teachError}</p>
+                              )}
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => { setTeaching(null); setLesson(''); setTeachError(null); }}
+                                  disabled={teachSaving}
+                                  className="text-xs font-light px-3 py-1.5 rounded-lg disabled:opacity-40"
+                                  style={{ color: 'var(--text-3)' }}>
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => submitLesson(entry.id)}
+                                  disabled={teachSaving || !lesson.trim()}
+                                  className="text-xs font-light px-3 py-1.5 rounded-lg transition-all disabled:opacity-30"
+                                  style={{
+                                    background: 'rgba(200,242,107,0.12)',
+                                    border: '1px solid rgba(200,242,107,0.3)',
+                                    color: '#C8F26B',
+                                  }}>
+                                  {teachSaving ? 'Saving…' : 'Save as memory'}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={e => {
+                                e.stopPropagation();
+                                setTeaching(entry.id);
+                                setTeachSaved(null);
+                                setTeachError(null);
+                              }}
+                              className="text-xs font-light px-3 py-1.5 rounded-lg transition-all"
+                              style={{
+                                background: 'rgba(200,242,107,0.06)',
+                                border: '1px solid rgba(200,242,107,0.18)',
+                                color: '#C8F26B',
+                              }}>
+                              Teach Nova about this
+                            </button>
+                          )}
+                          {teachSaved && teaching === null && (
+                            <p className="mt-2 text-xs font-light" style={{ color: 'rgba(200,242,107,0.6)' }}>
+                              Saved. Nova will use this next time.
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
