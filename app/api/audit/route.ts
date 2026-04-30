@@ -15,25 +15,48 @@ export async function GET(req: NextRequest) {
   const envId  = searchParams.get('environmentId') ?? '';
   const search = searchParams.get('search') ?? '';
 
-  const logs = await prisma.auditLog.findMany({
-    where: {
-      ...(action ? { action: { contains: action } } : {}),
-      ...(entity ? { entity } : {}),
-      ...(envId  ? { environmentId: envId } : {}),
-      ...(search ? {
+  // Tenant scope: AuditLog has no FK relation to Environment in
+  // schema, so we resolve the user's owned env IDs first and use
+  // an `in` filter alongside the actorId match. Without this the
+  // page returned every tenant's audit history, including the
+  // global count.
+  const ownedEnvs = await prisma.environment.findMany({
+    where: { ownerId: identity.id, deletedAt: null },
+    select: { id: true },
+  });
+  const ownedEnvIds = ownedEnvs.map(e => e.id);
+  const tenantScope = {
+    OR: [
+      { actorId: identity.id },
+      ...(ownedEnvIds.length ? [{ environmentId: { in: ownedEnvIds } }] : []),
+    ],
+  };
+
+  const where = {
+    AND: [
+      tenantScope,
+      ...(action ? [{ action: { contains: action } }] : []),
+      ...(entity ? [{ entity }] : []),
+      ...(envId  ? [{ environmentId: envId }] : []),
+      ...(search ? [{
         OR: [
           { entityName: { contains: search } },
           { actorName:  { contains: search } },
           { action:     { contains: search } },
         ],
-      } : {}),
-    },
-    orderBy: { createdAt: 'desc' },
-    take: limit,
-    skip: offset,
-  });
+      }] : []),
+    ],
+  };
 
-  const total = await prisma.auditLog.count();
+  const [logs, total] = await Promise.all([
+    prisma.auditLog.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.auditLog.count({ where }),
+  ]);
 
   return Response.json({ logs, total });
 }
