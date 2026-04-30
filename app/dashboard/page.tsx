@@ -12,6 +12,7 @@ import ReviewNudgeBanner from '@/components/ReviewNudgeBanner';
 
 // Lazy-load below-fold widgets to reduce LCP
 const CrossDomainInsights = dynamic(() => import('@/components/CrossDomainInsights'), { ssr: false });
+const UpcomingLane = dynamic(() => import('@/components/widgets/UpcomingLane'), { ssr: false });
 const ActivitySummary = dynamic(() => import('@/components/ActivitySummary'), { ssr: false });
 const LiveScaffoldWidget = dynamic(() => import('@/components/widgets/LiveScaffoldWidget'), { ssr: false });
 const ValueMeterWidget = dynamic(() => import('@/components/widgets/ValueMeterWidget'), { ssr: false });
@@ -478,9 +479,6 @@ export default function OperatePage() {
         <ValueMeterWidget environmentId={primaryEnvId} className="mb-8" />
       )}
 
-      {/* Cross-Domain Intelligence */}
-      {loaded && <CrossDomainInsights className="mb-8" />}
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Systems panel */}
         <div data-tour="systems-panel" className="col-span-1">
@@ -573,6 +571,10 @@ export default function OperatePage() {
 
         {/* Activity / Runs feed */}
         <div className="col-span-1 md:col-span-2">
+          {/* About to do — pillar 1, phase A: scheduled automations.
+              Component returns null when there's nothing scheduled,
+              so the dashboard doesn't earn space with empty zero-states. */}
+          <UpcomingLane className="mb-6" />
           {/* Tab switcher */}
           <div className="flex items-center gap-1 mb-4">
             {(['runs', 'activity'] as const).map(tab => (
@@ -728,6 +730,18 @@ export default function OperatePage() {
           )}
         </div>
       </div>
+
+      {/* Cross-Domain Intelligence — moved to the bottom in the
+          home-as-verb framing. Pillar 1 puts the user's actionable
+          surfaces (about to do · just did · needs you for) at the
+          top; system-level analytics like cross-domain correlations
+          live below the fold where the user goes when they're done
+          with today's work. The previous placement above the
+          systems panel pushed every user's actionable lanes
+          downscreen for a panel that, on a fresh account, mostly
+          rendered demo rows. Demo seed leak fixed in /api/insights
+          /cross-domain (no more null-env fallback). */}
+      {loaded && <CrossDomainInsights className="mt-10" />}
     </div>
   );
 }
