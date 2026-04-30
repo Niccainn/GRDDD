@@ -35,15 +35,19 @@ export async function GET(req: NextRequest) {
 
   const envIds = await getOwnedEnvIds(identity.id);
 
+  // Tenant scope: only the caller's owned environments. Previously
+  // we also surfaced rows with `environmentId: null` as "legacy/demo
+  // seed data" — but those leaked the same mockup insights to every
+  // account, breaking the per-user "one truth" model the dashboard
+  // depends on. Demo rows belong in onboarding, not in every signed-
+  // in user's intelligence panel.
+  if (envIds.length === 0) return Response.json([]);
+
   const insights = await prisma.crossDomainInsight.findMany({
     where: {
       ...(category ? { category } : {}),
       ...(severity ? { severity } : {}),
-      // Tenant scope: owned environments OR legacy demo rows (null env).
-      OR: [
-        { environmentId: { in: envIds } },
-        { environmentId: null },
-      ],
+      environmentId: { in: envIds },
     },
     orderBy: { createdAt: 'desc' },
     take: Math.min(Number.isFinite(limit) && limit > 0 ? limit : 50, 100),
