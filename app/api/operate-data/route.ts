@@ -25,8 +25,15 @@ export async function GET() {
     select: { onboardedAt: true },
   });
 
+  // Tenant scope: every dashboard query must filter through
+  // environment.ownerId. Without these the dashboard leaked every
+  // user's systems, workflows, and executions globally — a hard
+  // privacy regression.
+  const envScope = { environment: { ownerId: identity.id, deletedAt: null } };
+
   const [systems, logs, workflows, recentExecutions] = await Promise.all([
     prisma.system.findMany({
+      where: { ...envScope, deletedAt: null },
       include: {
         environment: true,
         systemState: true,
@@ -36,16 +43,18 @@ export async function GET() {
       orderBy: { updatedAt: 'desc' },
     }),
     prisma.intelligenceLog.findMany({
-      where: { action: 'nova_query' },
+      where: { action: 'nova_query', system: envScope },
       include: { system: { select: { id: true, name: true, color: true } } },
       orderBy: { createdAt: 'desc' },
       take: 20,
     }),
     prisma.workflow.findMany({
+      where: { system: envScope },
       include: { system: { select: { name: true } } },
       orderBy: { updatedAt: 'desc' },
     }),
     prisma.execution.findMany({
+      where: { system: envScope },
       include: {
         system: { select: { id: true, name: true, color: true } },
         workflow: { select: { id: true, name: true } },

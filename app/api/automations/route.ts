@@ -11,9 +11,14 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const envId = searchParams.get('envId') ?? undefined;
 
+  // Scope through environment.ownerId AND identityId. The identityId
+  // alone is insufficient — stale rows from past tests can have an
+  // identityId match but point at an environment the user no longer
+  // owns, leaking that env's name into the automations list.
   const automations = await prisma.automation.findMany({
     where: {
       identityId: identity.id,
+      environment: { ownerId: identity.id, deletedAt: null },
       ...(envId ? { environmentId: envId } : {}),
     },
     include: {
