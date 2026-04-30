@@ -39,6 +39,36 @@ export default function ActionLedgerWidget({ environmentId }: { environmentId: s
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [undone, setUndone] = useState<Set<string>>(new Set());
+  const [undoing, setUndoing] = useState<Set<string>>(new Set());
+  const [undoError, setUndoError] = useState<Record<string, string>>({});
+
+  // Pillar 4: undo lives at the act site as a one-click action,
+  // not buried inside the WhyDrawer. The drawer still hosts the full
+  // undo flow with confirmation; this surfaces the same endpoint
+  // inline for the reversible rows.
+  async function inlineUndo(rowId: string) {
+    setUndoing(prev => new Set(prev).add(rowId));
+    setUndoError(prev => { const next = { ...prev }; delete next[rowId]; return next; });
+    try {
+      const res = await fetch(
+        `/api/environments/${environmentId}/actions/${encodeURIComponent(rowId)}/undo`,
+        { method: 'POST' },
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const msg = res.status === 410
+          ? 'Window expired'
+          : String(body.error ?? `Failed (${res.status})`);
+        setUndoError(prev => ({ ...prev, [rowId]: msg }));
+        return;
+      }
+      setUndone(prev => new Set(prev).add(rowId));
+    } catch {
+      setUndoError(prev => ({ ...prev, [rowId]: 'Network error' }));
+    } finally {
+      setUndoing(prev => { const next = new Set(prev); next.delete(rowId); return next; });
+    }
+  }
 
   useEffect(() => {
     fetch(`/api/environments/${environmentId}/actions?limit=15`)
@@ -123,6 +153,33 @@ export default function ActionLedgerWidget({ environmentId }: { environmentId: s
                       style={{ color: '#FF8C8C', background: 'rgba(255,107,107,0.06)' }}
                     >
                       Undone
+                    </span>
+                  )}
+                  {/* Inline undo — pillar 4. One click on reversible
+                      rows; the WhyDrawer still hosts the full trace
+                      view but isn't required for the reversal itself. */}
+                  {!isUndone && r.reversible && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={e => { e.stopPropagation(); if (!undoing.has(r.id)) inlineUndo(r.id); }}
+                      onKeyDown={e => {
+                        if ((e.key === 'Enter' || e.key === ' ') && !undoing.has(r.id)) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          inlineUndo(r.id);
+                        }
+                      }}
+                      className="text-[10px] font-light tracking-wider uppercase px-2 py-0.5 rounded-full transition-colors cursor-pointer"
+                      style={{
+                        color: undoError[r.id] ? '#FF8C8C' : '#C8F26B',
+                        background: undoError[r.id] ? 'rgba(255,107,107,0.06)' : 'rgba(200,242,107,0.06)',
+                        border: `1px solid ${undoError[r.id] ? 'rgba(255,107,107,0.18)' : 'rgba(200,242,107,0.18)'}`,
+                        opacity: undoing.has(r.id) ? 0.5 : 1,
+                      }}
+                      title={undoError[r.id] ?? 'Undo within 24h window'}
+                    >
+                      {undoing.has(r.id) ? '…' : (undoError[r.id] ?? 'Undo')}
                     </span>
                   )}
                   <span className="text-[10px] font-light flex-shrink-0" style={{ color: 'var(--text-3)' }}>
