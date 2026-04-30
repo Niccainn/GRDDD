@@ -100,7 +100,7 @@ export default function UseCasesPage() {
             GRID adapts to any workflow. Tell us what you&apos;re building.
           </p>
           <Link
-            href="/sign-up"
+            href="/#waitlist"
             className="inline-block px-8 py-3.5 text-sm font-light rounded-full transition-all"
             style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}
           >

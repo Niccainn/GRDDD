@@ -179,7 +179,7 @@ export default async function CompareSlugPage({ params }: { params: Promise<{ sl
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link
-              href="/sign-up"
+              href="/#waitlist"
               className="px-8 py-3.5 text-sm font-light rounded-full transition-all"
               style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}
             >

@@ -192,7 +192,7 @@ export default async function UseCaseSlugPage({ params }: { params: Promise<{ sl
             Join the early access program and see GRID in action.
           </p>
           <Link
-            href="/sign-up"
+            href="/#waitlist"
             className="inline-block px-8 py-3.5 text-sm font-light rounded-full transition-all"
             style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}
           >

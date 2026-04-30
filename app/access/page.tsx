@@ -138,7 +138,7 @@ export default function AccessPage() {
             style={{ color: 'var(--text-2)' }}>
             Sign in
           </Link>
-          <Link href="/sign-up" className="text-xs font-light px-5 py-2.5 rounded-full transition-all"
+          <Link href="/#waitlist" className="text-xs font-light px-5 py-2.5 rounded-full transition-all"
             style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}>
             Get started free
           </Link>
@@ -168,7 +168,7 @@ export default function AccessPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/sign-up" className="w-full sm:w-auto px-8 py-3.5 text-sm font-normal rounded-full text-center transition-all"
+            <Link href="/#waitlist" className="w-full sm:w-auto px-8 py-3.5 text-sm font-normal rounded-full text-center transition-all"
               style={{ background: 'var(--brand)', color: '#000' }}>
               Start building — it&apos;s free
             </Link>
@@ -312,7 +312,7 @@ export default function AccessPage() {
             Free to start. No credit card required. Your workspace is ready in 30 seconds.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/sign-up" className="w-full sm:w-auto px-8 py-3.5 text-sm font-normal rounded-full text-center transition-all"
+            <Link href="/#waitlist" className="w-full sm:w-auto px-8 py-3.5 text-sm font-normal rounded-full text-center transition-all"
               style={{ background: 'var(--brand)', color: '#000' }}>
               Create your workspace
             </Link>

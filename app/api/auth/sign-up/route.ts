@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { signUp } from '@/lib/auth';
 import { rateLimitSignUpByIpDistributed } from '@/lib/rate-limit';
 import { recordConsent } from '@/lib/consent/log';
+import { isPublicSignupEnabled } from '@/lib/feature-flags';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 12;
@@ -15,6 +16,16 @@ function clientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Closed-beta gate. In production, public self-service signup is
+  // OFF — accounts are provisioned manually from the waitlist. This
+  // returns 403 before any rate-limit or DB call so the cost of a
+  // bot probe is one short response.
+  if (!isPublicSignupEnabled()) {
+    return Response.json(
+      { error: 'Public signup is not available. Join the waitlist for an invite.' },
+      { status: 403 },
+    );
+  }
   // Per-IP signup rate limit. 4 signups / hour stops bot farms from
   // squatting accounts faster than email verification can react. The
   // distributed limiter shares state across Vercel instances when
