@@ -23,10 +23,34 @@ async function getOwnedEnvIds(identityId: string): Promise<string[]> {
   return envs.map(e => e.id);
 }
 
+// One-shot cleanup of pre-tenant-isolation demo rows. The schema
+// allows null environmentId for backward compat, but the seed used
+// to create rows with no env which leaked into every user's view.
+// We now filter them out at read time AND delete them on the first
+// authed call per server process — after the first sweep, no rows
+// match this query so the call is a free no-op. After every server
+// instance has run it once, the orphan rows are permanently gone.
+let orphansSwept = false;
+async function sweepOrphanInsightsOnce(): Promise<void> {
+  if (orphansSwept) return;
+  orphansSwept = true;
+  try {
+    await prisma.crossDomainInsight.deleteMany({ where: { environmentId: null } });
+  } catch {
+    // Non-fatal — cleanup retries on next server boot. Don't fail the
+    // user's GET because of a transient DB hiccup on a maintenance op.
+    orphansSwept = false;
+  }
+}
+
 export async function GET(req: NextRequest) {
   const identity = await getAuthIdentity();
   const rl = rateLimitApi(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
+
+  // Background cleanup — runs once per server boot, idempotent
+  // afterward. Doesn't block the response.
+  sweepOrphanInsightsOnce();
 
   const { searchParams } = new URL(req.url);
   const category = searchParams.get('category') ?? undefined;
