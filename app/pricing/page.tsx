@@ -123,7 +123,7 @@ export default function PricingPage() {
           <Link href="/#product" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Product</Link>
           <Link href="/pricing" className="hidden md:inline text-xs font-light" style={{ color: 'var(--text-1)' }}>Pricing</Link>
           <Link href="/sign-in" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Sign in</Link>
-          <Link href="/sign-up" className="text-xs font-light px-4 py-2 rounded-full transition-all"
+          <Link href="/#waitlist" className="text-xs font-light px-4 py-2 rounded-full transition-all"
             style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-border)', color: 'var(--brand)' }}>
             Get started
           </Link>
@@ -188,7 +188,7 @@ export default function PricingPage() {
               </div>
 
               <Link
-                href="/sign-up"
+                href="/#waitlist"
                 style={{
                   display: 'block',
                   textAlign: 'center',
@@ -318,7 +318,7 @@ export default function PricingPage() {
             Start free. No credit card required.
           </p>
           <Link
-            href="/sign-up"
+            href="/#waitlist"
             style={{
               display: 'inline-block',
               background: 'var(--brand)',
