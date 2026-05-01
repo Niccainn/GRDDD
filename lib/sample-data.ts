@@ -2,7 +2,6 @@ import { prisma } from '@/lib/db';
 import { seedAutonomyConfigs } from '@/lib/seed-autonomy';
 import { seedNovaMemories } from '@/lib/seed-nova-memories';
 import { seedConsequences } from '@/lib/seed-consequences';
-import { seedCrossDomainInsights } from '@/lib/seed-cross-domain';
 import { seedReflections } from '@/lib/seed-reflections';
 
 /**
@@ -417,7 +416,13 @@ export async function createSampleData(
   // ------------------------------------------------------------------
   // CROSS-DOMAIN INSIGHTS
   // ------------------------------------------------------------------
-  await seedCrossDomainInsights();
+  // Intentionally NOT seeded for new accounts. Cross-domain insights
+  // must be derived from the user's actual data — not pre-populated
+  // demo rows. The previous implementation created rows with
+  // environmentId=null, which leaked the same mockup insights into
+  // every signed-in account's dashboard panel. Real insights flow
+  // from POST /api/insights/cross-domain once Nova has analyzed the
+  // user's environments. Empty state is correct for new accounts.
 
   // ------------------------------------------------------------------
   // AUTONOMY CONFIGS (trust gradient)
