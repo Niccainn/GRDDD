@@ -120,11 +120,16 @@ export async function POST(request: Request) {
       ? JSON.stringify(tagsRaw.split(',').map(t => t.trim()).filter(Boolean))
       : '[]';
 
-    // For version uploads
+    // For version uploads. Parent must belong to the caller AND live in
+    // the same environment as the new version — otherwise an attacker
+    // could attach a version to a foreign tenant's asset by passing
+    // their parent id, polluting their version history.
     const parentId = (formData.get('parentId') as string) || null;
     let version = 1;
     if (parentId) {
-      const parent = await prisma.asset.findUnique({ where: { id: parentId } });
+      const parent = await prisma.asset.findFirst({
+        where: { id: parentId, identityId: identity.id, environmentId },
+      });
       if (!parent) {
         return Response.json({ error: 'Parent asset not found' }, { status: 404 });
       }
