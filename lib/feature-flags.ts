@@ -16,9 +16,27 @@
  * bypass email verification and create throwaway Identities on demand,
  * which is a spam and data-leak vector if exposed to the public.
  */
+/**
+ * `NODE_ENV !== 'production'` is the standard guard, but Vercel sets
+ * NODE_ENV=production on every preview/staging build too — so a raw
+ * NODE_ENV check would block dev affordances on staging where you
+ * want them. We branch on `VERCEL_ENV` (`production` | `preview` |
+ * `development`) to keep dev / preview opt-in by default while leaving
+ * the real production deploy locked. Both flags require an explicit
+ * env var override to enable in real prod.
+ */
+function isProductionDeploy(): boolean {
+  // VERCEL_ENV is set by Vercel; falls back to NODE_ENV for non-Vercel
+  // hosts (self-hosted Docker, CI). When neither is `production`, we're
+  // in dev / preview / CI and the dev affordance is allowed.
+  const vercelEnv = process.env.VERCEL_ENV;
+  if (vercelEnv) return vercelEnv === 'production';
+  return process.env.NODE_ENV === 'production';
+}
+
 export function isDemoEnabled(): boolean {
   if (process.env.GRID_ENABLE_DEMO === '1') return true;
-  return process.env.NODE_ENV !== 'production';
+  return !isProductionDeploy();
 }
 
 /**
@@ -39,5 +57,5 @@ export function isDemoEnabled(): boolean {
  */
 export function isPublicSignupEnabled(): boolean {
   if (process.env.GRID_PUBLIC_SIGNUP === '1') return true;
-  return process.env.NODE_ENV !== 'production';
+  return !isProductionDeploy();
 }
