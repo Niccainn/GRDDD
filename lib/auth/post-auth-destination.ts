@@ -42,6 +42,8 @@
  *     buried the home page; we explicitly don't repeat that.
  */
 
+import { isSafeRedirect } from './safe-redirect';
+
 export type PostAuthOptions = {
   /** The `?next=` param if any. Honored as-is when set. */
   next?: string | null;
@@ -70,12 +72,11 @@ export function getPostAuthDestination(opts: PostAuthOptions): string {
     return '/welcome';
   }
 
-  // 2. Explicit ?next= override. Validate it's a safe relative path
-  //    to prevent open-redirect attacks — if someone passes
-  //    `?next=https://evil.com` or `?next=//evil.com`, fall through
-  //    to /dashboard.
+  // 2. Explicit ?next= override. Validate via the central
+  //    isSafeRedirect helper to keep open-redirect logic in one
+  //    place — see lib/auth/safe-redirect.ts.
   const next = opts.next?.trim();
-  if (next && next.startsWith('/') && !next.startsWith('//')) {
+  if (isSafeRedirect(next)) {
     return next;
   }
 

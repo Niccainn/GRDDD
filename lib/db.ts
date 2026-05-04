@@ -151,6 +151,32 @@ function createPrismaClient() {
         },
       },
 
+      // Audit log immutability — application-level guard against
+      // accidental UPDATE / DELETE / updateMany / deleteMany on the
+      // AuditLog model. The audit trail's value depends on append-only
+      // semantics; if a future route opens an edit path the trace
+      // becomes mutable evidence with no defensible chain. The
+      // legitimate path that anonymizes actorId on account-deletion
+      // bypasses this guard via $executeRaw (see app/api/account/
+      // delete/route.ts).
+      auditLog: {
+        async update() {
+          throw new Error('AuditLog is append-only — UPDATE blocked');
+        },
+        async updateMany() {
+          throw new Error('AuditLog is append-only — UPDATE blocked');
+        },
+        async delete() {
+          throw new Error('AuditLog is append-only — DELETE blocked');
+        },
+        async deleteMany() {
+          throw new Error('AuditLog is append-only — DELETE blocked');
+        },
+        async upsert() {
+          throw new Error('AuditLog is append-only — UPSERT blocked');
+        },
+      },
+
       intelligenceLog: {
         async create({ args, query }) {
           encryptIntelligenceLogData(args.data as Record<string, unknown>)
