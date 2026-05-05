@@ -13,10 +13,12 @@ export async function GET(
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
 
   const { id } = await params;
-  await assertOwnsInvoice(id, identity.id);
-
-  const invoice = await prisma.invoice.findUnique({ where: { id } });
-  if (!invoice) return Response.json({ error: 'Not found' }, { status: 404 });
+  // assertOwnsInvoice returns the row when access passes — using its
+  // result drops the redundant findUnique below and removes a code-
+  // smell pattern flagged in the security audit. If the assert is
+  // ever removed by mistake, the route fails closed instead of
+  // silently exposing a foreign tenant's row.
+  const invoice = await assertOwnsInvoice(id, identity.id);
 
   return Response.json({
     id: invoice.id,

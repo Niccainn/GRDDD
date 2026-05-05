@@ -31,6 +31,7 @@ import crypto from 'node:crypto';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { hashEmail } from '@/lib/crypto/email-hash';
+import { safeRedirect } from './safe-redirect';
 
 export const GOOGLE_STATE_COOKIE = 'grid_oauth_state';
 const STATE_TTL_SECONDS = 10 * 60; // 10 minutes — long enough for slow consent, short enough to limit replay window
@@ -77,8 +78,9 @@ export async function beginGoogleOAuth(next?: string): Promise<string> {
   const challenge = sha256(verifier);
 
   // Sanitize `next`: only relative paths on our own site are allowed.
-  // This prevents the state cookie from carrying an off-site redirect.
-  const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
+  // Centralised in lib/auth/safe-redirect.ts so the rule stays
+  // identical across every redirect-capable surface.
+  const safeNext = safeRedirect(next, '/dashboard');
 
   const payload = JSON.stringify({ state, verifier, next: safeNext });
   const cookieStore = await cookies();
