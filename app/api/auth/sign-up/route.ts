@@ -3,6 +3,7 @@ import { signUp } from '@/lib/auth';
 import { rateLimitSignUpByIpDistributed } from '@/lib/rate-limit';
 import { recordConsent } from '@/lib/consent/log';
 import { isPublicSignupEnabled } from '@/lib/feature-flags';
+import { consumeInvite, validateInviteToken } from '@/lib/auth/invites';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 12;
@@ -16,11 +17,41 @@ function clientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Parse early so we can read the optional inviteToken before the
+  // closed-beta gate decides whether to allow this request through.
+  let body: {
+    name?: string;
+    email?: string;
+    password?: string;
+    inviteToken?: string;
+    consentTosPrivacy?: boolean;
+    consentMarketing?: boolean;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return Response.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
   // Closed-beta gate. In production, public self-service signup is
-  // OFF — accounts are provisioned manually from the waitlist. This
-  // returns 403 before any rate-limit or DB call so the cost of a
-  // bot probe is one short response.
-  if (!isPublicSignupEnabled()) {
+  // OFF — accounts are provisioned manually from the waitlist via
+  // /api/admin/invites. A valid invite token unlocks signup even when
+  // public signup is otherwise disabled. The token is bound to a
+  // specific email address; the consume step in the transaction below
+  // verifies that match.
+  const inviteToken = typeof body.inviteToken === 'string' ? body.inviteToken : '';
+  let invitePreValidated = null as Awaited<ReturnType<typeof validateInviteToken>>;
+  if (inviteToken) {
+    invitePreValidated = await validateInviteToken(inviteToken);
+    // Bad token + closed gate = 403, same as no token. Don't tell a
+    // bot whether the token format is wrong vs. used vs. expired.
+    if (!invitePreValidated && !isPublicSignupEnabled()) {
+      return Response.json(
+        { error: 'Public signup is not available. Join the waitlist for an invite.' },
+        { status: 403 },
+      );
+    }
+  } else if (!isPublicSignupEnabled()) {
     return Response.json(
       { error: 'Public signup is not available. Join the waitlist for an invite.' },
       { status: 403 },
@@ -40,17 +71,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let body: { name?: string; email?: string; password?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return Response.json({ error: 'Invalid request body' }, { status: 400 });
-  }
-
-  const { name, email, password, consentTosPrivacy, consentMarketing } = body as {
-    name?: string; email?: string; password?: string;
-    consentTosPrivacy?: boolean; consentMarketing?: boolean;
-  };
+  const { name, email, password, consentTosPrivacy, consentMarketing } = body;
 
   if (!name || !email || !password) {
     return Response.json({ error: 'Name, email, and password are required' }, { status: 400 });
@@ -76,6 +97,20 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // If the request carried an invite token AND the gate let us
+    // through because of it, lock in the email match before we touch
+    // the auth DB. consumeInvite throws on mismatch / expired / used,
+    // which we surface as a 400 — the user needs to know to use the
+    // address the invite was bound to.
+    if (invitePreValidated) {
+      try {
+        await consumeInvite({ rawToken: inviteToken, signupEmail: email });
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Invite invalid';
+        return Response.json({ error: message }, { status: 400 });
+      }
+    }
+
     const result = await signUp(name, email, password);
 
     // SEC-07 — same response shape for new + existing addresses so an
