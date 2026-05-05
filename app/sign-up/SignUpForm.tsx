@@ -30,18 +30,29 @@ function scorePassword(pw: string): { label: string; tone: string; pct: number }
   return map[score];
 }
 
-export default function SignUpForm() {
+type SignUpFormProps = {
+  /** Set when the visitor arrived via /sign-up?invite=<token> and the
+   *  token validated server-side. The form prefills + locks the email
+   *  field and forwards the token to the API. */
+  inviteEmail?: string | null;
+  inviteToken?: string | null;
+};
+
+export default function SignUpForm(props: SignUpFormProps = {}) {
   return (
     <Suspense fallback={<AuthLayout title="Get started with GRID" subtitle="See how your business actually works"><div className="h-64" /></AuthLayout>}>
-      <SignUpInner />
+      <SignUpInner {...props} />
     </Suspense>
   );
 }
 
-function SignUpInner() {
+function SignUpInner({ inviteEmail, inviteToken }: SignUpFormProps) {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  // When invited, the email is bound to the token — let the user see
+  // it but not edit it. The API re-validates on submit.
+  const [email, setEmail] = useState(inviteEmail ?? '');
   const [password, setPassword] = useState('');
+  const isInvited = Boolean(inviteEmail && inviteToken);
   // GDPR Art. 7 — the ToS/Privacy checkbox is required; marketing is
   // strictly optional (default off) and has its own audit row.
   const [consentTosPrivacy, setConsentTosPrivacy] = useState(false);
@@ -65,7 +76,14 @@ function SignUpInner() {
       const res = await fetch('/api/auth/sign-up', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, consentTosPrivacy, consentMarketing }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          consentTosPrivacy,
+          consentMarketing,
+          ...(inviteToken ? { inviteToken } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -148,7 +166,17 @@ function SignUpInner() {
             placeholder="you@company.com"
             autoComplete="email"
             required
+            // Invited users sign up with the address the invite was
+            // bound to — the API rejects mismatches anyway, locking
+            // the field saves the user from having to discover that.
+            readOnly={isInvited}
+            style={isInvited ? { opacity: 0.7, cursor: 'not-allowed' } : undefined}
           />
+          {isInvited && (
+            <p className="text-[11px] mt-1.5 font-light" style={{ color: 'rgba(200,242,107,0.7)' }}>
+              ✓ Invited address — bound to your invite link.
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="password" className="block text-xs mb-2 font-light" style={{ color: 'var(--text-3)' }}>
