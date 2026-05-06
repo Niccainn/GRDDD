@@ -1,0 +1,660 @@
+'use client';
+/**
+ * /welcome — onboarding (Phase 2).
+ *
+ * Three steps:
+ *   1. Wedge picker — "What do you want Grid to run for you?"
+ *   2. Connect required integration(s)
+ *   3. Atrium builds the System live (streamed narration)
+ *
+ * On success: redirect to /systems/[id] with the populated System.
+ * Never redirects to /dashboard — per spec, the user lands on their
+ * working system, not an empty home.
+ */
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
+import { shippedWedges, type Wedge, wedgeById } from './wedges';
+import ImportWizard from '@/components/ImportWizard';
+import WidgetPicker from '@/components/onboarding/WidgetPicker';
+import InterviewStep from '@/components/onboarding/InterviewStep';
+import { writeHiddenPresets, type DepartmentId } from '@/lib/widgets/department-catalog';
+
+type Step = 'interview' | 'wedge' | 'connect' | 'customize' | 'build' | 'import' | 'done';
+
+type Proposal = {
+  system: { name: string; description: string; color: string };
+  goals: { title: string; metric: string; target: string }[];
+  workflow: { name: string; stages: string[] };
+  escalationRule: string;
+  summaryForUser: string;
+};
+
+/**
+ * Mapping from a shipped wedge to the department catalog the
+ * customize step should draw from. A wedge can declare its
+ * department directly (new Wedge.department field) or fall back to
+ * this mapping when the field is omitted.
+ */
+const WEDGE_TO_DEPARTMENT: Record<string, DepartmentId> = {
+  'inbox-triage': 'operations',
+  'calendar-defense': 'operations',
+  'content-pipeline': 'marketing',
+  'client-onboarding': 'operations',
+  'invoice-capture': 'finance',
+  custom: 'general',
+};
+
+export default function WelcomeClient() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const wedges = shippedWedges();
+
+  // Default to the interview — the blank-prompt problem is the
+  // biggest activation failure in AI products. Users who can't
+  // describe what they want can always answer five short questions.
+  const [step, setStep] = useState<Step>('interview');
+  const [wedgeId, setWedgeId] = useState<string | null>(null);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
+  const [environmentId, setEnvironmentId] = useState<string | null>(null);
+  const [buildLines, setBuildLines] = useState<string[]>([]);
+  const [error, setError] = useState('');
+  // Hidden preset IDs the user picked at the customize step. Persisted
+  // once the build completes and we know the new System's id.
+  const [hiddenPresets, setHiddenPresets] = useState<string[]>([]);
+
+  // Bootstrap the user's default environment so Connect buttons can
+  // hit /api/integrations/oauth/[provider]/start?environmentId=…
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/environments')
+      .then(r => r.json())
+      .then(list => {
+        const envs = Array.isArray(list) ? list : list?.environments ?? [];
+        if (envs.length > 0) setEnvironmentId(envs[0].id);
+      })
+      .catch(() => {});
+  }, [user]);
+
+  const wedge = wedgeId ? wedgeById(wedgeId) : undefined;
+
+  useEffect(() => {
+    // If user returns from an OAuth redirect with ?wedge=X&step=connect,
+    // restore the flow mid-stride. The integration callback appends
+    // ?from=onboarding&wedge=<id> per PHASE_2_ONBOARDING.md.
+    const params = new URLSearchParams(window.location.search);
+    const fromParam = params.get('from');
+    const wedgeParam = params.get('wedge');
+    if (fromParam === 'onboarding' && wedgeParam) {
+      setWedgeId(wedgeParam);
+      setStep('connect');
+    }
+  }, []);
+
+  // Poll integration status while on the connect step.
+  useEffect(() => {
+    if (step !== 'connect' || !wedge) return;
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const res = await fetch('/api/integrations');
+        const data = await res.json();
+        const ids: string[] = Array.isArray(data)
+          ? data.filter((i: { connected?: boolean }) => i.connected).map((i: { id: string }) => i.id)
+          : [];
+        if (!cancelled) setConnectedIntegrations(ids);
+      } catch {
+        /* non-fatal; user can still retry */
+      }
+    };
+    check();
+    const t = setInterval(check, 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [step, wedge]);
+
+  const allIntegrationsReady =
+    wedge && wedge.integrations.every(i => connectedIntegrations.includes(i));
+
+  function pickWedge(w: Wedge) {
+    setWedgeId(w.id);
+    // After picking a wedge: integrations first if any, then always
+    // the customize step where the user picks their widgets, then the
+    // build step streams the actual scaffold.
+    setStep(w.integrations.length === 0 ? 'customize' : 'connect');
+  }
+
+  function startBuild() {
+    if (!wedge) return;
+    setBuildLines([]);
+    setStep('build');
+    const es = new EventSource(`/api/onboarding/build-stream?wedge=${wedge.id}`);
+    es.onmessage = evt => {
+      try {
+        const msg = JSON.parse(evt.data);
+        if (msg.type === 'step') {
+          setBuildLines(prev => [...prev, msg.text]);
+        } else if (msg.type === 'done') {
+          es.close();
+          // Persist the customize-step selections against the new
+          // System id so HideablePanel / HiddenPanelsChip pick them up
+          // when the user lands on /systems/[id].
+          if (msg.systemId && hiddenPresets.length > 0) {
+            try {
+              writeHiddenPresets(msg.systemId, new Set(hiddenPresets));
+            } catch {
+              /* non-fatal */
+            }
+          }
+          // Mark onboardedAt so middleware stops redirecting back here.
+          fetch('/api/onboarding/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: user?.name ?? '',
+              workspaceName: (user?.name ?? 'My') + ' Workspace',
+              template: 'blank',
+            }),
+          }).finally(() => {
+            setStep('done');
+            setTimeout(() => router.push(`/systems/${msg.systemId}`), 900);
+          });
+        } else if (msg.type === 'error') {
+          setError(msg.message || 'Build failed');
+          es.close();
+        }
+      } catch {
+        /* ignore malformed frames */
+      }
+    };
+    es.onerror = () => {
+      es.close();
+      setError('Connection to build stream lost.');
+    };
+  }
+
+  if (authLoading) {
+    return (
+      <Shell>
+        <div className="text-center text-sm" style={{ color: 'var(--text-3)' }}>
+          Loading…
+        </div>
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell>
+      {step === 'interview' && (
+        <InterviewStep
+          onSkipToTemplates={() => setStep('wedge')}
+          onProposal={p => {
+            setProposal(p);
+            // Treat the interview proposal as a "custom" wedge so the
+            // downstream connect/customize/build flow still works.
+            // We wire the proposal's summary into the build stream as
+            // context; for now we route through the existing custom
+            // wedge since its builder is zero-integration.
+            setWedgeId('custom');
+            setStep('customize');
+          }}
+        />
+      )}
+
+      {step === 'wedge' && (
+        <WedgeStep
+          wedges={wedges}
+          onPick={pickWedge}
+          onImport={() => setStep('import')}
+        />
+      )}
+
+      {step === 'connect' && wedge && (
+        <ConnectStep
+          wedge={wedge}
+          connectedIntegrations={connectedIntegrations}
+          environmentId={environmentId}
+          onBack={() => setStep('wedge')}
+          onContinue={() => setStep('customize')}
+          allReady={!!allIntegrationsReady}
+        />
+      )}
+
+      {step === 'customize' && wedge && (
+        <WidgetPicker
+          departmentId={wedge.department ?? WEDGE_TO_DEPARTMENT[wedge.id] ?? 'general'}
+          systemId={null}
+          onBack={() => setStep(wedge.integrations.length === 0 ? 'wedge' : 'connect')}
+          onContinue={hidden => {
+            setHiddenPresets(hidden);
+            startBuild();
+          }}
+        />
+      )}
+
+      {step === 'build' && wedge && (
+        <BuildStep lines={buildLines} error={error} wedge={wedge} />
+      )}
+
+      {step === 'import' && environmentId && (
+        <ImportWizard
+          environmentId={environmentId}
+          onBack={() => setStep('wedge')}
+          onComplete={() => router.push('/dashboard')}
+        />
+      )}
+      {step === 'import' && !environmentId && (
+        <div className="text-center">
+          <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+            Preparing your workspace…
+          </p>
+        </div>
+      )}
+
+      {step === 'done' && (
+        <div className="text-center">
+          <p className="text-sm" style={{ color: 'var(--text-2)' }}>
+            Taking you to your System…
+          </p>
+        </div>
+      )}
+    </Shell>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6 py-12 ambient-bg">
+      <div className="w-full max-w-2xl">{children}</div>
+    </div>
+  );
+}
+
+// ─── Step 1: Wedge picker ────────────────────────────────────────────
+
+function WedgeStep({
+  wedges,
+  onPick,
+  onImport,
+}: {
+  wedges: Wedge[];
+  onPick: (w: Wedge) => void;
+  onImport: () => void;
+}) {
+  return (
+    <div>
+      <h1 className="text-2xl font-light mb-2" style={{ color: 'var(--text-1)' }}>
+        What do you want Grid to run for you?
+      </h1>
+      <p className="text-sm mb-8" style={{ color: 'var(--text-3)' }}>
+        Describe your work below — or pick a recurring job.
+      </p>
+
+      <PromptComposer />
+
+      <p
+        className="text-[10px] tracking-[0.15em] mt-10 mb-4"
+        style={{ color: 'var(--text-3)' }}
+      >
+        OR PICK A STARTING POINT
+      </p>
+
+      <div className="space-y-2">
+        {wedges.map(w => (
+          <button
+            key={w.id}
+            onClick={() => onPick(w)}
+            className="w-full text-left p-4 rounded-xl transition-all"
+            style={{
+              background: 'var(--glass)',
+              border: '1px solid var(--glass-border)',
+            }}
+          >
+            <div className="flex items-baseline justify-between mb-1">
+              <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
+                {w.title}
+              </span>
+              <span className="text-[10px] tracking-wide" style={{ color: 'var(--text-3)' }}>
+                ~{w.minutes} min
+              </span>
+            </div>
+            <p className="text-xs mb-2" style={{ color: 'var(--text-3)' }}>
+              {w.oneLiner}
+            </p>
+            {w.integrations.length > 0 && (
+              <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>
+                Connects: {w.integrations.join(', ')}
+              </p>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <p
+        className="text-[10px] tracking-[0.15em] mt-10 mb-4"
+        style={{ color: 'var(--text-3)' }}
+      >
+        ALREADY RUNNING SOMEWHERE ELSE?
+      </p>
+
+      <button
+        onClick={onImport}
+        className="w-full text-left p-4 rounded-xl transition-all"
+        style={{
+          background: 'var(--glass)',
+          border: '1px solid var(--glass-border)',
+        }}
+      >
+        <div className="flex items-baseline justify-between mb-1">
+          <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
+            Import from Notion, Asana, Monday, or CSV
+          </span>
+          <span className="text-[10px] tracking-wide" style={{ color: 'var(--text-3)' }}>
+            ~5 min
+          </span>
+        </div>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
+          Bring your existing tasks and projects into Grid — Atrium will map them
+          to Systems and workflows.
+        </p>
+      </button>
+    </div>
+  );
+}
+
+// ─── Prompt-to-Environment composer ──────────────────────────────────
+//
+// Single prompt → Atrium emits a full scaffold (Systems + Workflows +
+// Canvas). The apple-tier moment: user types "I run a 5-person
+// design agency on Notion + Gmail + Stripe", tap Build, watch Atrium
+// stream the construction, land on a populated canvas.
+
+function PromptComposer() {
+  const router = useRouter();
+  const [value, setValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+  const [narration, setNarration] = useState<string[]>([]);
+
+  async function submit() {
+    if (value.trim().length < 10 || loading) return;
+    setLoading(true);
+    setErr('');
+    setNarration([]);
+
+    // Streaming scaffold — SSE narrates each step. Falls back to
+    // the synchronous POST when the description is too long for a
+    // URL or EventSource isn't available.
+    const useStream =
+      typeof window !== 'undefined' &&
+      typeof EventSource !== 'undefined' &&
+      encodeURIComponent(value).length < 1800;
+
+    if (useStream) {
+      const es = new EventSource(
+        `/api/onboarding/scaffold/stream?description=${encodeURIComponent(value)}`,
+      );
+      es.onmessage = evt => {
+        try {
+          const msg = JSON.parse(evt.data);
+          if (msg.type === 'step') {
+            setNarration(prev => [...prev, msg.text]);
+          } else if (msg.type === 'done') {
+            es.close();
+            const firstSystemId = msg.systemIds?.[0];
+            setTimeout(() => {
+              if (firstSystemId) router.push(`/systems/${firstSystemId}`);
+              else router.push('/dashboard');
+            }, 700);
+          } else if (msg.type === 'error') {
+            setErr(msg.message || 'Scaffold failed');
+            es.close();
+            setLoading(false);
+          }
+        } catch {
+          /* ignore malformed frames */
+        }
+      };
+      es.onerror = () => {
+        es.close();
+        setErr('Connection to scaffold stream lost.');
+        setLoading(false);
+      };
+      return;
+    }
+
+    // Fallback: synchronous POST.
+    try {
+      const res = await fetch('/api/onboarding/scaffold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: value }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? 'Scaffold failed');
+      const firstSystemId = data.systemIds?.[0];
+      if (firstSystemId) router.push(`/systems/${firstSystemId}`);
+      else router.push('/dashboard');
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Something went wrong');
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        background: 'var(--glass)',
+        border: '1px solid var(--glass-border)',
+      }}
+    >
+      <textarea
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit();
+        }}
+        placeholder={
+          "e.g. I run a 5-person design agency with 12 active clients. We use Notion, Gmail, Stripe, and Figma. I want Grid to handle client onboarding, weekly status updates, and financials."
+        }
+        rows={4}
+        disabled={loading}
+        className="w-full bg-transparent text-sm font-light resize-none outline-none"
+        style={{ color: 'var(--text-1)' }}
+      />
+      <div className="flex items-center justify-between mt-3">
+        <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
+          {loading ? 'Atrium is designing your workspace…' : '⌘⏎ to build'}
+        </span>
+        <button
+          onClick={submit}
+          disabled={value.trim().length < 10 || loading}
+          className="px-4 py-2 rounded-xl text-xs font-medium transition-all"
+          style={{
+            background:
+              value.trim().length >= 10 && !loading ? 'var(--brand)' : 'var(--glass)',
+            color:
+              value.trim().length >= 10 && !loading ? '#000' : 'var(--text-3)',
+            opacity: value.trim().length >= 10 && !loading ? 1 : 0.5,
+            cursor:
+              value.trim().length >= 10 && !loading ? 'pointer' : 'not-allowed',
+          }}
+        >
+          {loading ? 'Building…' : 'Let Atrium build it'}
+        </button>
+      </div>
+      {err && (
+        <p className="text-xs mt-2" style={{ color: '#FF6B6B' }}>
+          {err}
+        </p>
+      )}
+
+      {narration.length > 0 && (
+        <div
+          className="mt-4 pt-4"
+          style={{
+            borderTop: '1px solid var(--glass-border)',
+            fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+            fontSize: 11,
+            lineHeight: 1.7,
+          }}
+        >
+          {narration.map((line, i) => (
+            <div
+              key={i}
+              style={{
+                color: i === narration.length - 1 ? 'var(--text-1)' : 'var(--text-3)',
+                animation: 'fadeIn 300ms ease',
+              }}
+            >
+              <span style={{ color: 'var(--brand)', marginRight: 8 }}>✓</span>
+              {line}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Step 2: Connect integrations ────────────────────────────────────
+
+function ConnectStep({
+  wedge,
+  connectedIntegrations,
+  environmentId,
+  onBack,
+  onContinue,
+  allReady,
+}: {
+  wedge: Wedge;
+  connectedIntegrations: string[];
+  environmentId: string | null;
+  onBack: () => void;
+  onContinue: () => void;
+  allReady: boolean;
+}) {
+  const returnTo = `/welcome?from=onboarding&wedge=${wedge.id}`;
+  return (
+    <div>
+      <button
+        onClick={onBack}
+        className="text-xs mb-4"
+        style={{ color: 'var(--text-3)' }}
+      >
+        ← Pick a different wedge
+      </button>
+      <h1 className="text-2xl font-light mb-2" style={{ color: 'var(--text-1)' }}>
+        Connect your tools
+      </h1>
+      <p className="text-sm mb-8" style={{ color: 'var(--text-3)' }}>
+        {wedge.title} needs access to {wedge.integrations.length === 1 ? 'one service' : 'a few services'}.
+        If you prefer not to grant access, pick a different wedge.
+      </p>
+
+      <div className="space-y-2 mb-8">
+        {wedge.integrations.map(id => {
+          const connected = connectedIntegrations.includes(id);
+          return (
+            <div
+              key={id}
+              className="flex items-center justify-between p-4 rounded-xl"
+              style={{
+                background: 'var(--glass)',
+                border: '1px solid var(--glass-border)',
+              }}
+            >
+              <span className="text-sm" style={{ color: 'var(--text-1)' }}>
+                {id}
+              </span>
+              {connected ? (
+                <span className="text-xs" style={{ color: 'var(--brand)' }}>
+                  ✓ Connected
+                </span>
+              ) : environmentId ? (
+                <a
+                  href={`/api/integrations/oauth/${id}/start?environmentId=${environmentId}&redirect=${encodeURIComponent(returnTo)}`}
+                  className="text-xs px-3 py-1.5 rounded-lg"
+                  style={{
+                    background: 'var(--brand)',
+                    color: '#000',
+                  }}
+                >
+                  Connect
+                </a>
+              ) : (
+                <span className="text-xs" style={{ color: 'var(--text-3)' }}>
+                  Preparing…
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={onContinue}
+        disabled={!allReady}
+        className="w-full py-3 rounded-xl text-sm font-medium transition-all"
+        style={{
+          background: allReady ? 'var(--brand)' : 'var(--glass)',
+          color: allReady ? '#000' : 'var(--text-3)',
+          opacity: allReady ? 1 : 0.5,
+          cursor: allReady ? 'pointer' : 'not-allowed',
+        }}
+      >
+        Let Atrium build it
+      </button>
+    </div>
+  );
+}
+
+// ─── Step 3: Atrium builds live ────────────────────────────────────────
+
+function BuildStep({ lines, error, wedge }: { lines: string[]; error: string; wedge: Wedge }) {
+  return (
+    <div>
+      <p className="text-xs tracking-[0.15em] mb-2" style={{ color: 'var(--text-3)' }}>
+        NOVA IS BUILDING
+      </p>
+      <h1 className="text-2xl font-light mb-8" style={{ color: 'var(--text-1)' }}>
+        {wedge.systemName}
+      </h1>
+      <div className="space-y-2 font-mono text-sm">
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            className="flex items-start gap-2"
+            style={{
+              color: 'var(--text-2)',
+              animation: 'fadeIn 300ms ease',
+            }}
+          >
+            <span style={{ color: 'var(--brand)' }}>✓</span>
+            <span>{line}</span>
+          </div>
+        ))}
+        {lines.length < wedge.buildSteps.length && !error && (
+          <div className="flex items-start gap-2" style={{ color: 'var(--text-3)' }}>
+            <span>…</span>
+          </div>
+        )}
+      </div>
+      {error && (
+        <p className="mt-6 text-sm" style={{ color: '#FF6B6B' }}>
+          {error}
+        </p>
+      )}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
