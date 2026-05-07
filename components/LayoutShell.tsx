@@ -17,6 +17,7 @@ import BottomNav from './BottomNav';
 import SkipLink from './SkipLink';
 import LegalFooter from './LegalFooter';
 import PersistentNovaBar from './PersistentNovaBar';
+import SimulationModeIndicator from './SimulationModeIndicator';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up', '/access', '/welcome'];
 
@@ -97,6 +98,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </main>
         <PersistentNovaBar />
         <BottomNav />
+        {/* Persistent simulation-mode pill — only renders when
+            NOVA_TOOLS_LIVE is unset on the server. The trust contract
+            requires the user to know on every page whether Nova's
+            actions are real or sandboxed. */}
+        <SimulationModeIndicator />
       </div>
     </EnvironmentBrandProvider>
   );
