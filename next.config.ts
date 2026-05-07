@@ -34,4 +34,28 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 };
 
-export default nextConfig;
+// Wrap the config with Sentry's build plugin when SENTRY_DSN is set.
+// Without the DSN we ship vanilla Next so dev / preview builds aren't
+// burdened with a sourcemap upload pass that has nowhere to go.
+async function buildConfig(): Promise<NextConfig> {
+  if (!process.env.SENTRY_DSN || !process.env.SENTRY_AUTH_TOKEN) {
+    return nextConfig;
+  }
+  const { withSentryConfig } = await import('@sentry/nextjs');
+  return withSentryConfig(nextConfig, {
+    // Sentry org + project are required to upload sourcemaps. The
+    // auth token (SENTRY_AUTH_TOKEN) is read by the plugin from env.
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    // Suppress build-time logs unless something actually fails. Vercel
+    // build logs are noisy enough.
+    silent: true,
+    // Strip Sentry imports from the client bundle when DSN is absent
+    // so users never download dead code.
+    disableLogger: true,
+  });
+}
+
+// Next.js can take a sync or async config function. We use the async
+// variant so the import('@sentry/nextjs') happens once at boot.
+export default buildConfig();
