@@ -55,19 +55,37 @@ export default function ConsentBanner() {
   if (!visible) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-live="polite"
-      aria-label="Cookie consent"
-      className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50"
-      style={{
-        animation: 'consent-slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-      }}
-    >
+    <>
+      {/* Mobile-only scrim — dims content behind the card so the
+          glass panel reads cleanly over busy hero gradients.
+          pointer-events:none keeps the page below interactive. */}
+      <div
+        aria-hidden
+        className="sm:hidden fixed inset-0 z-40 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          animation: 'consent-scrim-in 0.4s ease-out forwards',
+        }}
+      />
+      <div
+        role="dialog"
+        aria-live="polite"
+        aria-label="Cookie consent"
+        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50"
+        style={{
+          animation: 'consent-slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        }}
+      >
       <style>{`
         @keyframes consent-slide-up {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes consent-scrim-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
       `}</style>
 
@@ -207,6 +225,7 @@ export default function ConsentBanner() {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
