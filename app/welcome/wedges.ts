@@ -23,10 +23,10 @@ export type Wedge = {
   oneLiner: string;
   integrations: string[]; // integration IDs required for this wedge
   minutes: number; // honest estimate end-to-end
-  systemName: string; // name given to the System Nova will create
+  systemName: string; // name given to the System Atrium will create
   systemColor: string;
   workflowName: string;
-  /** Steps Nova will stream as it builds. Pre-warmed templates — honest theatre. */
+  /** Steps Atrium will stream as it builds. Pre-warmed templates — honest theatre. */
   buildSteps: string[];
   shipped: boolean; // gate — don't show unshipped wedges
   /** Which department's widget catalog the customize step should draw from. */
@@ -37,7 +37,7 @@ export const WEDGES: Wedge[] = [
   {
     id: 'inbox-triage',
     title: 'Inbox triage & reply drafting',
-    oneLiner: 'Nova sorts your inbox and drafts replies in your voice.',
+    oneLiner: 'Atrium sorts your inbox and drafts replies in your voice.',
     integrations: ['google_workspace'],
     minutes: 3,
     systemName: 'Inbox Triage',
@@ -55,7 +55,7 @@ export const WEDGES: Wedge[] = [
   {
     id: 'calendar-defense',
     title: 'Founder calendar defense',
-    oneLiner: 'Nova declines low-value meetings and protects your focus time.',
+    oneLiner: 'Atrium declines low-value meetings and protects your focus time.',
     integrations: ['google_calendar'],
     minutes: 3,
     systemName: 'Calendar Defense',

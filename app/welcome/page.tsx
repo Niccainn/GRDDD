@@ -5,7 +5,7 @@
  * Three steps:
  *   1. Wedge picker — "What do you want Grid to run for you?"
  *   2. Connect required integration(s)
- *   3. Nova builds the System live (streamed narration)
+ *   3. Atrium builds the System live (streamed narration)
  *
  * On success: redirect to /systems/[id] with the populated System.
  * Never redirects to /dashboard — per spec, the user lands on their
@@ -357,7 +357,7 @@ function WedgeStep({
           </span>
         </div>
         <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-          Bring your existing tasks and projects into Grid — Nova will map them
+          Bring your existing tasks and projects into Grid — Atrium will map them
           to Systems and workflows.
         </p>
       </button>
@@ -367,9 +367,9 @@ function WedgeStep({
 
 // ─── Prompt-to-Environment composer ──────────────────────────────────
 //
-// Single prompt → Nova emits a full scaffold (Systems + Workflows +
+// Single prompt → Atrium emits a full scaffold (Systems + Workflows +
 // Canvas). The apple-tier moment: user types "I run a 5-person
-// design agency on Notion + Gmail + Stripe", tap Build, watch Nova
+// design agency on Notion + Gmail + Stripe", tap Build, watch Atrium
 // stream the construction, land on a populated canvas.
 
 function PromptComposer() {
@@ -468,7 +468,7 @@ function PromptComposer() {
       />
       <div className="flex items-center justify-between mt-3">
         <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
-          {loading ? 'Nova is designing your workspace…' : '⌘⏎ to build'}
+          {loading ? 'Atrium is designing your workspace…' : '⌘⏎ to build'}
         </span>
         <button
           onClick={submit}
@@ -484,7 +484,7 @@ function PromptComposer() {
               value.trim().length >= 10 && !loading ? 'pointer' : 'not-allowed',
           }}
         >
-          {loading ? 'Building…' : 'Let Nova build it'}
+          {loading ? 'Building…' : 'Let Atrium build it'}
         </button>
       </div>
       {err && (
@@ -607,13 +607,13 @@ function ConnectStep({
           cursor: allReady ? 'pointer' : 'not-allowed',
         }}
       >
-        Let Nova build it
+        Let Atrium build it
       </button>
     </div>
   );
 }
 
-// ─── Step 3: Nova builds live ────────────────────────────────────────
+// ─── Step 3: Atrium builds live ────────────────────────────────────────
 
 function BuildStep({ lines, error, wedge }: { lines: string[]; error: string; wedge: Wedge }) {
   return (

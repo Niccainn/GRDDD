@@ -3,7 +3,7 @@
  *
  * The contract: given a connected Integration row, pull items updated
  * since `since`, convert each to a normalised SyncItem, and return
- * them. The caller persists each as a Signal for Nova to triage.
+ * them. The caller persists each as a Signal for Atrium to triage.
  *
  * Each provider gets its own fetcher. The dispatcher is a switch so
  * adding a provider is O(1) — implement SyncFetcher, add one line
@@ -27,7 +27,7 @@ export type SyncItem = {
   sourceId: string;
   /** What to show in the inbox. */
   title: string;
-  /** Longer context — Nova reads this when triaging. */
+  /** Longer context — Atrium reads this when triaging. */
   body?: string;
   /** "info" | "warning" | "critical" — mapped from provider urgency. */
   priority?: string;
@@ -35,7 +35,7 @@ export type SyncItem = {
   occurredAt?: Date;
   /** Deep link back to the source system for the human reviewer. */
   sourceUrl?: string;
-  /** Raw extra fields Nova can use — JSON-serialised into Signal.metadata-ish free text. */
+  /** Raw extra fields Atrium can use — JSON-serialised into Signal.metadata-ish free text. */
   metadata?: Record<string, unknown>;
 };
 

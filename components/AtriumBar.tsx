@@ -82,7 +82,7 @@ function ToolPill({ tool }: { tool: ToolCall }) {
   );
 }
 
-export default function NovaBar({
+export default function AtriumBar({
   systemId,
   systemName,
   recentLogs,
@@ -161,7 +161,7 @@ export default function NovaBar({
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? 'Nova failed');
+        setError(data.error ?? 'Atrium failed');
         setStreaming(false);
         return;
       }
@@ -241,7 +241,7 @@ export default function NovaBar({
           ];
 
         case 'done':
-          // Refresh memory in background — Nova may have updated it
+          // Refresh memory in background — Atrium may have updated it
           fetch(`/api/nova/memory?systemId=${systemId}`)
             .then(r => r.json())
             .then(d => { if (d.memory) setMemory(d.memory); });
@@ -286,7 +286,7 @@ export default function NovaBar({
           </svg>
         </div>
         <div>
-          <span className="text-sm font-light">Nova</span>
+          <span className="text-sm font-light">Atrium</span>
           <span className="text-xs ml-2" style={{ color: 'var(--text-3)' }}>{systemName}</span>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -297,7 +297,7 @@ export default function NovaBar({
                 background: showMemory ? 'rgba(191,159,241,0.1)' : 'transparent',
                 color: showMemory ? '#BF9FF1' : 'rgba(255,255,255,0.2)',
               }}
-              title="Nova's persistent memory for this system">
+              title="Atrium's persistent memory for this system">
               <span style={{ fontSize: '10px' }}>◈</span> memory
             </button>
           )}
@@ -419,7 +419,7 @@ export default function NovaBar({
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask Nova anything about this system···"
+          placeholder="Ask Atrium anything about this system···"
           rows={2}
           disabled={streaming}
           className="w-full text-sm font-light px-4 py-3 pr-12 rounded-xl focus:outline-none resize-none transition-all"

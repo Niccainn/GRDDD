@@ -43,7 +43,7 @@ async function createSystem(formData: FormData) {
     data: { name, description, color, environmentId, creatorId: identity.id, healthScore: Math.random() * 0.3 + 0.7 }
   });
   // Pillar 3: every System is born with a calibrated autonomy
-  // setting. Default level 1 (Suggest) — Nova drafts, the human
+  // setting. Default level 1 (Suggest) — Atrium drafts, the human
   // approves. Users adjust on the System detail page or settings;
   // the dial is visible from the moment the System exists.
   await prisma.autonomyConfig.create({

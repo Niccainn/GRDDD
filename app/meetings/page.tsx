@@ -75,7 +75,7 @@ export default function MeetingsPage() {
             Meetings
           </h1>
           <p className="text-sm font-light mt-1" style={{ color: 'var(--text-3)' }}>
-            Every meeting becomes a transcript, a summary, and action items Nova can execute.
+            Every meeting becomes a transcript, a summary, and action items Atrium can execute.
           </p>
         </div>
         <button
@@ -123,7 +123,7 @@ export default function MeetingsPage() {
       {loaded && visible.length === 0 && (
         <div className="glass-deep rounded-xl p-8 text-center">
           <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-            No {tab} meetings. Schedule one to let Nova capture, summarize, and turn talk into work.
+            No {tab} meetings. Schedule one to let Atrium capture, summarize, and turn talk into work.
           </p>
         </div>
       )}

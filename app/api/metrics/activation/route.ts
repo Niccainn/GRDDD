@@ -10,8 +10,8 @@
  *   2. sevenDayRetention — did the user come back within 7 days of
  *      their first session? Computed from distinct active days in
  *      AuditLog.
- *   3. overrideRate — fraction of Nova actions the user overrode or
- *      rejected over the last 30 days. Rising override rate = Nova
+ *   3. overrideRate — fraction of Atrium actions the user overrode or
+ *      rejected over the last 30 days. Rising override rate = Atrium
  *      drifting from the user's intent.
  *
  * No third-party analytics service — everything is read from the data
@@ -38,7 +38,7 @@ export async function GET() {
   const since30 = new Date(now - 30 * MS_PER_DAY);
   const since7 = new Date(now - 7 * MS_PER_DAY);
 
-  // 1 — days to first accepted Nova action.
+  // 1 — days to first accepted Atrium action.
   // Proxy: first ApprovalRequest or ExecutionReview with a positive
   // signal created by this identity. Falls back to null if never.
   const signUp = await prisma.identity.findUnique({

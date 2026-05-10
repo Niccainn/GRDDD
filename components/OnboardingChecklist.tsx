@@ -100,7 +100,7 @@ export default function OnboardingChecklist() {
     {
       id: 'name',
       label: 'Add your name',
-      description: 'How Nova and the dashboard address you.',
+      description: 'How Atrium and the dashboard address you.',
       href: '/settings',
       done: !!user?.name && !user.name.startsWith('pii:'),
     },
@@ -114,7 +114,7 @@ export default function OnboardingChecklist() {
     {
       id: 'anthropic',
       label: 'Connect your Anthropic API key',
-      description: 'BYOK — your key, your billing. Nova won\u2019t run without it.',
+      description: 'BYOK — your key, your billing. Atrium won\u2019t run without it.',
       href: '/settings/ai',
       done: hasKey === true,
     },
@@ -128,7 +128,7 @@ export default function OnboardingChecklist() {
     {
       id: 'integration',
       label: 'Connect your first integration',
-      description: 'Slack, Calendar, Notion — Nova moves across your stack.',
+      description: 'Slack, Calendar, Notion — Atrium moves across your stack.',
       href: '/integrations',
       done: integrationsConnected > 0,
     },

@@ -1,10 +1,10 @@
 /**
  * GET /api/environments/[id]/actions
  *
- * Action ledger feed for the Environment page: the last N things Nova
+ * Action ledger feed for the Environment page: the last N things Atrium
  * did inside this Environment. Unifies two sources:
  *
- *   - IntelligenceLog (Nova tool calls, queries, draft generations)
+ *   - IntelligenceLog (Atrium tool calls, queries, draft generations)
  *     joined via system.environmentId
  *   - AuditLog (higher-level mutations: workflow.created, approval.made,
  *     execution.failed, etc.) joined via environmentId directly
@@ -116,8 +116,8 @@ export async function GET(
       id: `intel:${l.id}`,
       source: 'nova',
       action: l.action,
-      summary: firstLine || 'Nova action',
-      actor: 'Nova',
+      summary: firstLine || 'Atrium action',
+      actor: 'Atrium',
       createdAt: l.createdAt.toISOString(),
       systemId: l.systemId,
       systemName: l.system?.name ?? null,

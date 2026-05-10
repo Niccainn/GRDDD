@@ -2,7 +2,7 @@
  * GET /api/onboarding/scaffold/stream?description=...
  *
  * SSE variant of /api/onboarding/scaffold. Emits narration events
- * while Nova plans + we create rows, then a final "done" event
+ * while Atrium plans + we create rows, then a final "done" event
  * with the ids the client needs to redirect.
  *
  * Events:
@@ -103,7 +103,7 @@ export async function GET(req: Request) {
         await step('Opening your Environment', 300);
         await step('Designing the right Systems…', 500);
 
-        // LLM call — Nova plans the scaffold.
+        // LLM call — Atrium plans the scaffold.
         const { client } = await getAnthropicClientForEnvironment(env.id);
         const msg = await client.messages.create({
           model: SCAFFOLD_MODEL,

@@ -168,7 +168,7 @@ export const googleAdsDraftCampaign: Executor = async ({ step, project }) => {
         outputs: {
           mode: 'staged',
           manageUrl,
-          note: 'Google Ads campaign creation is multi-step (budget + campaign + ad group). Nova has verified the account connection and deep-linked you to the manager.',
+          note: 'Google Ads campaign creation is multi-step (budget + campaign + ad group). Atrium has verified the account connection and deep-linked you to the manager.',
         },
       },
       artifacts: [artifact],
@@ -261,7 +261,7 @@ export const linkedinDraftCampaign: Executor = async ({ step, project }) => {
           mode: 'staged',
           manageUrl,
           accountId,
-          note: 'LinkedIn Ads campaign creation requires a Campaign Group and is multi-step. Nova has verified the account and deep-linked you to Campaign Manager.',
+          note: 'LinkedIn Ads campaign creation requires a Campaign Group and is multi-step. Atrium has verified the account and deep-linked you to Campaign Manager.',
         },
       },
       artifacts: [artifact],

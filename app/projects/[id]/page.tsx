@@ -275,7 +275,7 @@ function NarrativeBlock({ projectId }: { projectId: string }) {
         className="text-[10px] tracking-[0.18em] uppercase font-light mb-2"
         style={{ color: '#BF9FF1' }}
       >
-        Nova's take
+        Atrium's take
         {source === 'fallback' ? ' · template' : ''}
       </p>
       <p className="text-sm font-light leading-relaxed" style={{ color: 'var(--text-1)' }}>

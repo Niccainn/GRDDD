@@ -14,7 +14,7 @@ import MasteryWidget from '@/components/widgets/MasteryWidget';
 import NarrativeWidget from '@/components/environments/NarrativeWidget';
 import ExceptionsWidget from '@/components/environments/ExceptionsWidget';
 import ActionLedgerWidget from '@/components/environments/ActionLedgerWidget';
-import NovaLearningRibbon from '@/components/environments/NovaLearningRibbon';
+import AtriumLearningRibbon from '@/components/environments/AtriumLearningRibbon';
 import RoiSummaryWidget from '@/components/environments/RoiSummaryWidget';
 import TeamAdoptionWidget from '@/components/environments/TeamAdoptionWidget';
 import TrustPrimer from '@/components/environments/TrustPrimer';
@@ -149,11 +149,11 @@ export default function EnvironmentOverview() {
           weekly narrative, exceptions feed, action ledger. They lead
           so screenshots of this page carry the product thesis on
           their own. Everything below is supplementary. */}
-      <NovaLearningRibbon environmentId={environmentId} />
+      <AtriumLearningRibbon environmentId={environmentId} />
       {/* Hero order change (Anthropic-review pass): Project Launcher
           leads, because the interaction layer is the product. The
           narrative + trust primer follow so the Environment page
-          reads as "what can I make Nova do" → "here's what Nova's
+          reads as "what can I make Atrium do" → "here's what Atrium's
           done" → "here's how it explains itself". */}
       <ProjectLauncher environmentId={environmentId} />
       <TrustPrimer environmentId={environmentId} />

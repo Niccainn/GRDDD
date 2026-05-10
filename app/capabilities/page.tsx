@@ -56,23 +56,23 @@ const ROWS: Row[] = [
     surfaceName: 'WhyDrawer on every action',
     surfaceRoute: '/environments/[slug]',
     note:
-      'Click any Nova action in the ledger. Drawer shows what Nova read, what tool it called, what it produced, tokens and cost. KernelTrace + IntelligenceLog, no black boxes.',
+      'Click any Atrium action in the ledger. Drawer shows what Atrium read, what tool it called, what it produced, tokens and cost. KernelTrace + IntelligenceLog, no black boxes.',
     status: 'live',
   },
   {
     capability: 'Persistent memory per organization',
-    surfaceName: 'Nova Memory + Mastery Insights',
+    surfaceName: 'Atrium Memory + Mastery Insights',
     surfaceRoute: '/memory',
     note:
-      'NovaMemory holds user-taught corrections; MasteryInsight holds patterns Nova derived from execution reviews; OperationalPlaybook holds the regenerated "how work actually runs" doc. All org-scoped.',
+      'NovaMemory holds user-taught corrections; MasteryInsight holds patterns Atrium derived from execution reviews; OperationalPlaybook holds the regenerated "how work actually runs" doc. All org-scoped.',
     status: 'live',
   },
   {
     capability: 'Bidirectional teaching loop (user ↔ model)',
-    surfaceName: 'Nova Academy',
+    surfaceName: 'Atrium Academy',
     surfaceRoute: '/learn',
     note:
-      'Four fluency capabilities (delegation, review, context-giving, trust-calibration) scored from aggregates. Daily lesson biased to the weakest. Every answer writes a NovaMemory entry future Nova calls RAG against.',
+      'Four fluency capabilities (delegation, review, context-giving, trust-calibration) scored from aggregates. Daily lesson biased to the weakest. Every answer writes a NovaMemory entry future Atrium calls RAG against.',
     status: 'live',
   },
   {
@@ -80,7 +80,7 @@ const ROWS: Row[] = [
     surfaceName: 'Onboarding build step',
     surfaceRoute: '/welcome',
     note:
-      'Nova streams scaffold progress as it creates the System and Workflow. Real steps, real writes, rendered one line at a time.',
+      'Atrium streams scaffold progress as it creates the System and Workflow. Real steps, real writes, rendered one line at a time.',
     status: 'live',
   },
   {
@@ -88,7 +88,7 @@ const ROWS: Row[] = [
     surfaceName: '24-hour undo window',
     surfaceRoute: '/environments/[slug]',
     note:
-      'Every autonomous action gets an AuditLog undo path and a NovaMemory user_correction on reversal. Future Nova calls factor in the correction.',
+      'Every autonomous action gets an AuditLog undo path and a NovaMemory user_correction on reversal. Future Atrium calls factor in the correction.',
     status: 'live',
   },
   {
@@ -101,7 +101,7 @@ const ROWS: Row[] = [
   },
   {
     capability: 'Override reason capture (structured)',
-    surfaceName: 'Teach Nova pill row',
+    surfaceName: 'Teach Atrium pill row',
     surfaceRoute: '/environments/[slug]',
     note:
       'Three override categories plus one-line context, per rejected action. Written to NovaMemory as type=user_correction with category set.',

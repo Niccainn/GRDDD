@@ -31,7 +31,7 @@ const DATA_CLASSES: DataClass[] = [
   {
     id: 'read_content',
     label: 'Read content',
-    description: 'Letting Nova read the body of messages, documents, events.',
+    description: 'Letting Atrium read the body of messages, documents, events.',
   },
   {
     id: 'read_metadata',
@@ -45,7 +45,7 @@ const DATA_CLASSES: DataClass[] = [
   },
   {
     id: 'share_with_nova',
-    label: 'Share with Nova memory',
+    label: 'Share with Atrium memory',
     description: 'Store excerpts in NovaMemory so future calls can reference them.',
   },
 ];
@@ -126,7 +126,7 @@ export default function ConsentPage() {
           Scoped consent
         </h1>
         <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-          A row per connected integration, a column per data class. You decide what Nova can see and do, per source.
+          A row per connected integration, a column per data class. You decide what Atrium can see and do, per source.
         </p>
       </div>
 

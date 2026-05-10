@@ -45,7 +45,7 @@ export default function ProjectsWidget({ environmentId }: { environmentId: strin
         <div className="flex items-center gap-2">
           <DataOriginTag
             sources={['Execution (output.kind=project)']}
-            computed="Nova-planned multi-step initiatives. Each step has a tool, a status, and a human-review gate where relevant."
+            computed="Atrium-planned multi-step initiatives. Each step has a tool, a status, and a human-review gate where relevant."
           />
           <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
             {loading ? '' : projects.length === 0 ? 'None yet' : `${projects.length} tracked`}
@@ -61,10 +61,10 @@ export default function ProjectsWidget({ environmentId }: { environmentId: strin
       ) : projects.length === 0 ? (
         <div className="py-6">
           <p className="text-xs font-light mb-1" style={{ color: 'var(--text-2)' }}>
-            Ready for Nova to run a real project?
+            Ready for Atrium to run a real project?
           </p>
           <p className="text-[11px] font-light leading-relaxed" style={{ color: 'var(--text-3)' }}>
-            A project is a multi-tool initiative — design, campaign, onboarding — where Nova plans the steps, opens the tools, and pauses for your review at every checkpoint.
+            A project is a multi-tool initiative — design, campaign, onboarding — where Atrium plans the steps, opens the tools, and pauses for your review at every checkpoint.
           </p>
         </div>
       ) : (

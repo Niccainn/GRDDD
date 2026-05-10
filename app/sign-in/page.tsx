@@ -46,7 +46,7 @@ function SignInInner() {
       }
       refresh();
       // After sign-in: land the user on /dashboard — the cross-
-      // environment home with the summary widgets, Nova prompt,
+      // environment home with the summary widgets, Atrium prompt,
       // sample-data banner, etc. Earlier behaviour fetched envs and
       // jumped directly to /environments/<first-slug>, which buried
       // the home page entirely (a user who'd ever signed in could

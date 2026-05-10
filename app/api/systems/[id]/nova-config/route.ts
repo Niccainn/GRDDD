@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await prisma.intelligence.create({
       data: {
         type: 'AI_AGENT',
-        name: 'Nova',
+        name: 'Atrium',
         systemId: id,
         environmentId: system.environmentId,
         creatorId: identity.id,

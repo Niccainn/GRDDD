@@ -1,7 +1,7 @@
 /**
  * claude.* executors — pure LLM reasoning with no external tool
  * side-effects. Outputs persist back into the project's artifact
- * list so the user can click through and read what Nova produced.
+ * list so the user can click through and read what Atrium produced.
  */
 
 import { randomUUID } from 'node:crypto';
@@ -47,7 +47,7 @@ async function callClaude(
 }
 
 const SUMMARIZE_SYSTEM = [
-  'You are Nova, writing in the house memo voice.',
+  'You are Atrium, writing in the house memo voice.',
   'Short sentences. Concrete nouns. No adverbs like "seamlessly".',
   'Return plain text — no markdown headers, no bullets unless asked.',
 ].join('\n');
@@ -72,7 +72,7 @@ export const summarize: Executor = async ({ step, project }) => {
     // Deterministic fallback so the flow completes without a key.
     const artifact: Artifact = {
       id: randomUUID(),
-      name: `${step.title} — Nova memo`,
+      name: `${step.title} — Atrium memo`,
       kind: 'document',
       tool: 'claude',
       url: null,
@@ -90,7 +90,7 @@ export const summarize: Executor = async ({ step, project }) => {
 
   const artifact: Artifact = {
     id: randomUUID(),
-    name: `${step.title} — Nova memo`,
+    name: `${step.title} — Atrium memo`,
     kind: 'document',
     tool: 'claude',
     url: null,
@@ -109,7 +109,7 @@ export const summarize: Executor = async ({ step, project }) => {
 };
 
 const DRAFT_COPY_SYSTEM = [
-  'You are Nova, drafting short-form copy for marketing, product, or brand.',
+  'You are Atrium, drafting short-form copy for marketing, product, or brand.',
   'Return three distinct options separated by a blank line.',
   'Each option: at most two sentences. Concrete language. No hype words.',
   'Voice: the house memo — matter-of-fact, operator-grade.',

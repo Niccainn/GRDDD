@@ -1,7 +1,7 @@
 /**
  * GET /api/onboarding/build-stream?wedge=<wedgeId>
  *
- * Server-sent events. Streams Nova's "construction" narration as
+ * Server-sent events. Streams Atrium's "construction" narration as
  * the System + Workflow are created. Pre-warmed templates — the
  * DB writes happen in one call; the stream paces the lines out
  * for the hero moment. Honest theatre.

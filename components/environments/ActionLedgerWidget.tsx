@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * ActionLedgerWidget — "last 20 things Nova did here." This is the
+ * ActionLedgerWidget — "last 20 things Atrium did here." This is the
  * trust layer made visible on the page itself. Clicking any row
  * opens the WhyDrawer with the full trace.
  */
@@ -96,7 +96,7 @@ export default function ActionLedgerWidget({ environmentId }: { environmentId: s
             </p>
             <HelpBubble
               title="The action ledger"
-              body="Every action Nova or a teammate took in this Environment. Click any row to see the full reasoning, what Nova read, the tools called, and a one-click undo if it's within the 24-hour window."
+              body="Every action Atrium or a teammate took in this Environment. Click any row to see the full reasoning, what Atrium read, the tools called, and a one-click undo if it's within the 24-hour window."
             />
           </div>
           <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function ActionLedgerWidget({ environmentId }: { environmentId: s
               computed="Unioned, sorted by recency. Click any row to see the full trace (reasoning, tools called, tokens, cost)."
             />
             <span className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-              Click any row · Nova explains
+              Click any row · Atrium explains
             </span>
           </div>
         </div>

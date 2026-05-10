@@ -3,7 +3,7 @@
  *
  * A widget is a *rendering adapter* over existing Grid entities.
  * It does NOT introduce new data — it frames what the user already has
- * (Systems, Workflows, Integrations, Nova outputs, Signals) so each
+ * (Systems, Workflows, Integrations, Atrium outputs, Signals) so each
  * one can be composed onto a canvas like an iPhone home-screen tile.
  *
  * Schema is deliberately small. Every widget is:
@@ -21,7 +21,7 @@ export type WidgetKind =
   | 'feed'          // rolling list of items — TODAY feed style (2x2, 4x2, 4x4)
   | 'system'        // a System at a glance (2x1, 2x2)
   | 'integration'   // integration status + last sync (1x1, 2x1)
-  | 'nova-output'   // any Nova response pinned as a widget (2x2, 4x2)
+  | 'nova-output'   // any Atrium response pinned as a widget (2x2, 4x2)
   | 'chart'         // stub for Phase 6+ (2x2, 4x2)
   | 'custom';       // user-composed widget via WidgetDesigner
 

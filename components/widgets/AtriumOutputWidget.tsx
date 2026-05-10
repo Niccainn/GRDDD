@@ -1,15 +1,15 @@
 'use client';
 /**
- * NovaOutputWidget — any Nova response pinned to a canvas.
+ * AtriumOutputWidget — any Atrium response pinned to a canvas.
  *
- * The "pin this answer" verb. Once a Nova response is pinned, it
+ * The "pin this answer" verb. Once a Atrium response is pinned, it
  * lives on the canvas and auto-refreshes per its refresh policy.
- * Most Nova answers are pinned at 2×2; long outputs upsize to 4×2.
+ * Most Atrium answers are pinned at 2×2; long outputs upsize to 4×2.
  */
 import WidgetFrame from './WidgetFrame';
 import type { WidgetSpec } from '@/lib/widgets/registry';
 
-type NovaOutputWidgetProps = {
+type AtriumOutputWidgetProps = {
   spec: WidgetSpec;
   output: {
     headline: string;
@@ -24,14 +24,14 @@ type NovaOutputWidgetProps = {
   onOpen?: () => void;
 };
 
-export default function NovaOutputWidget({
+export default function AtriumOutputWidget({
   spec,
   output,
   editMode,
   onRemove,
   menuItems,
   onOpen,
-}: NovaOutputWidgetProps) {
+}: AtriumOutputWidgetProps) {
   const confidencePct =
     output.confidence != null ? Math.round(output.confidence * 100) : null;
 
@@ -64,7 +64,7 @@ export default function NovaOutputWidget({
               fontWeight: 400,
             }}
           >
-            Nova
+            Atrium
           </p>
           <p
             style={{

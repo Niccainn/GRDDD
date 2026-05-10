@@ -4,7 +4,7 @@
  * IntegrationCard — the universal primitive for showing "something
  * from a connected tool" anywhere in the app. Used in three places:
  *
- *   1. Nova chat turns (when Nova returns data from an integration)
+ *   1. Atrium chat turns (when Atrium returns data from an integration)
  *   2. Environment widget grid (when a widget surfaces recent files)
  *   3. Shareable report pages (future — same card, public context)
  *
@@ -113,7 +113,7 @@ export default function IntegrationCard({
         backdropFilter: 'blur(20px)',
       }}
     >
-      {/* Optional thumbnail — always present if Nova fetched one so the
+      {/* Optional thumbnail — always present if Atrium fetched one so the
           card reads as "a real thing" rather than an abstract reference. */}
       {thumbnailUrl && !peeking && (
         <div
@@ -231,7 +231,7 @@ export default function IntegrationCard({
 }
 
 /**
- * IntegrationCardList — compact grid renderer when Nova returns
+ * IntegrationCardList — compact grid renderer when Atrium returns
  * multiple cards (e.g., "list your recent Figma files"). Keeps the
  * chat transcript scannable: one header row + stacked mini-cards.
  */

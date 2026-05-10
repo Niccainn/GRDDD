@@ -2,7 +2,7 @@ import { getAuthIdentity } from '@/lib/auth';
 import { rateLimitApi } from '@/lib/rate-limit';
 /**
  * POST /api/reports
- * Nova generates a structured org-level health and status report.
+ * Atrium generates a structured org-level health and status report.
  * Returns a streaming SSE response.
  */
 import { NextRequest } from 'next/server';
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
 
   const reportType = type === 'weekly' ? 'Weekly Operations Report' : type === 'health' ? 'System Health Review' : 'Status Report';
 
-  const prompt = `You are Nova, the intelligence engine for GRID. Generate a comprehensive ${reportType}.
+  const prompt = `You are Atrium, the intelligence engine for GRID. Generate a comprehensive ${reportType}.
 
 ## Organisation Data
 

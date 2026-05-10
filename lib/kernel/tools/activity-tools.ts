@@ -1,7 +1,7 @@
 /**
  * Kernel tools — Activity & Memory
  *
- * These expose Nova's own history + memory surface back to Nova so it
+ * These expose Atrium's own history + memory surface back to Atrium so it
  * can reason about recent runs and record distilled learnings. Note
  * that `record_memory` writes into the KernelMemory table via the
  * kernel memory module, so it benefits from the auto-reinforcement
@@ -15,7 +15,7 @@ import { recordMemory } from '../memory';
 registerTool({
   name: 'get_activity',
   description:
-    'Retrieve recent Nova trace history and execution records for this system.',
+    'Retrieve recent Atrium trace history and execution records for this system.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -68,7 +68,7 @@ registerTool({
 registerTool({
   name: 'record_memory',
   description:
-    'Save important context, decisions, patterns, or caveats to persistent tenant memory. Nova will recall this across future sessions. Use sparingly for things that should actually transcend a single conversation.',
+    'Save important context, decisions, patterns, or caveats to persistent tenant memory. Atrium will recall this across future sessions. Use sparingly for things that should actually transcend a single conversation.',
   inputSchema: {
     type: 'object',
     properties: {

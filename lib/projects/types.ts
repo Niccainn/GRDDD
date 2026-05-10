@@ -1,5 +1,5 @@
 /**
- * Project primitive — a multi-day, multi-tool initiative Nova runs
+ * Project primitive — a multi-day, multi-tool initiative Atrium runs
  * with human checkpoints.
  *
  * A Project is persisted as a regular Execution on a lightweight
@@ -19,7 +19,7 @@
 
 export type StepStatus =
   | 'pending'        // not started
-  | 'running'        // Nova is executing this step right now
+  | 'running'        // Atrium is executing this step right now
   | 'needs_approval' // waiting on human sign-off
   | 'done'
   | 'skipped'

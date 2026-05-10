@@ -4,7 +4,7 @@
  * InterviewStep — the five-question onboarding interview.
  *
  * Replaces the blank-prompt problem ("describe your work"). After
- * the user fills the five fields, Nova proposes a starter System,
+ * the user fills the five fields, Atrium proposes a starter System,
  * Goals, and Workflow. The proposal is editable before the user
  * commits to the build.
  */
@@ -47,7 +47,7 @@ export default function InterviewStep({ onProposal, onSkipToTemplates }: Props) 
         body: JSON.stringify(answers),
       });
       if (!res.ok) {
-        setError('Nova could not shape the answers right now. Try again or use a template.');
+        setError('Atrium could not shape the answers right now. Try again or use a template.');
         return;
       }
       const data = await res.json();
@@ -62,7 +62,7 @@ export default function InterviewStep({ onProposal, onSkipToTemplates }: Props) 
     return (
       <div className="w-full">
         <p className="text-[10px] tracking-[0.18em] uppercase font-light mb-2" style={{ color: 'var(--text-3)' }}>
-          {source === 'nova' ? "Nova's proposal" : 'Starter proposal'}
+          {source === 'nova' ? "Atrium's proposal" : 'Starter proposal'}
         </p>
         <h1 className="text-2xl md:text-3xl font-extralight tracking-tight mb-3" style={{ color: 'var(--text-1)', letterSpacing: '-0.02em' }}>
           Here's what I heard
@@ -190,10 +190,10 @@ export default function InterviewStep({ onProposal, onSkipToTemplates }: Props) 
         Interview · five short answers
       </p>
       <h1 className="text-2xl md:text-3xl font-extralight tracking-tight mb-3" style={{ color: 'var(--text-1)', letterSpacing: '-0.02em' }}>
-        Tell Nova about your work
+        Tell Atrium about your work
       </h1>
       <p className="text-sm font-light leading-relaxed mb-6" style={{ color: 'var(--text-2)' }}>
-        One sentence per question. Nova reads these once and uses them forever — so be specific, not polished.
+        One sentence per question. Atrium reads these once and uses them forever — so be specific, not polished.
       </p>
 
       <div className="space-y-5 mb-6">
@@ -253,7 +253,7 @@ export default function InterviewStep({ onProposal, onSkipToTemplates }: Props) 
             color: '#C8F26B',
           }}
         >
-          {submitting ? 'Nova is reading…' : 'Nova, read this →'}
+          {submitting ? 'Atrium is reading…' : 'Atrium, read this →'}
         </button>
       </div>
     </div>

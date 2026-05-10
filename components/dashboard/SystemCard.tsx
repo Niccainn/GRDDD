@@ -1,7 +1,7 @@
 'use client';
 /**
  * Small System card — used in Modes B + C.
- * Shows name, health, last Nova action, autonomy mode.
+ * Shows name, health, last Atrium action, autonomy mode.
  */
 import Link from 'next/link';
 

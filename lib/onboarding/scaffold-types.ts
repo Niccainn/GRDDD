@@ -1,7 +1,7 @@
 /**
  * Prompt-to-Environment — shared types for the scaffold flow.
  *
- * A single paragraph from the user → Nova emits this shape →
+ * A single paragraph from the user → Atrium emits this shape →
  * the server walks it to create Systems, placeholder Workflows,
  * Canvas layout, and suggested integrations (not auto-connected;
  * the user still approves each OAuth).

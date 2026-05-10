@@ -1,6 +1,6 @@
 /**
  * Project planner — turns a natural-language goal into a concrete
- * step-by-step plan Nova can execute.
+ * step-by-step plan Atrium can execute.
  *
  * Uses Claude (haiku model) to select skills from the registry and
  * order them. Falls back to a deterministic template plan if no
@@ -54,7 +54,7 @@ function heuristicPlan(goal: string): Step[] {
 
   if (g.includes('meta') || g.includes('ad ') || g.includes('campaign')) {
     push('Pull creative brief from Notion', 'notion', 'notion.fetch_document', 'Campaign inherits the positioning already agreed.');
-    push('Draft three headline + body copy variants', 'claude', 'claude.draft_copy', 'Three variants so the user picks, Nova learns which wins.');
+    push('Draft three headline + body copy variants', 'claude', 'claude.draft_copy', 'Three variants so the user picks, Atrium learns which wins.');
     push('Design static + story ad in Canva', 'canva', 'canva.create_design', 'On-brand creative pulled from the brand kit.', true);
     push('Human review of creative', 'human', 'human.review', 'Visual approval before spend.', true);
     push('Draft Meta ad campaign', 'meta_ads', 'meta_ads.draft_campaign', 'Campaign + ad set + creative — drafted, not launched.', true);
@@ -96,7 +96,7 @@ export async function planProject(goal: string): Promise<{ plan: Step[]; source:
   }
 
   const systemPrompt = [
-    'You are Nova, a business operator that plans multi-tool projects.',
+    'You are Atrium, a business operator that plans multi-tool projects.',
     'Given a natural-language goal, return a JSON array of 3–10 steps using only skill ids from the menu.',
     '',
     'Each step MUST be:',
@@ -179,7 +179,7 @@ export async function planProject(goal: string): Promise<{ plan: Step[]; source:
         at: now,
         stepId: null,
         source: 'nova',
-        message: `Nova planned ${plan.length} steps across ${new Set(plan.map(p => p.tool)).size} tools.`,
+        message: `Atrium planned ${plan.length} steps across ${new Set(plan.map(p => p.tool)).size} tools.`,
       },
     };
   } catch {

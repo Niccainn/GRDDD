@@ -2,9 +2,9 @@
  * POST /api/memory/from-override
  *
  * Closes the LMS-replacement loop (pillar 5 of the cognition-platform
- * framing): when a user corrects Nova on /audit — "this routing was
+ * framing): when a user corrects Atrium on /audit — "this routing was
  * wrong", "don't do this again", "next time, X" — that override
- * becomes a NovaMemory of type `user_correction`. The next Nova call
+ * becomes a NovaMemory of type `user_correction`. The next Atrium call
  * for the same scope reads the correction as context.
  *
  * Without this wire, /audit is a passive log and overrides never
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   const title = lesson.slice(0, 80).replace(/[.!?]+$/, '');
 
   // Category mirrors the audit action's first segment ("workflow",
-  // "execution", "nova"). Lets future Nova calls filter to the
+  // "execution", "nova"). Lets future Atrium calls filter to the
   // relevant correction-class without scanning every memory.
   const category = log.action.split('.')[0] ?? null;
 

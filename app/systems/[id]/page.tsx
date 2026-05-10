@@ -3,12 +3,12 @@ import { getAuthIdentity } from '@/lib/auth';
 import { decryptPII } from '@/lib/crypto/pii-encryption';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import NovaBar from '@/components/NovaBar';
+import AtriumBar from '@/components/AtriumBar';
 import InlineEdit from '@/components/InlineEdit';
 import DeleteButton from '@/components/DeleteButton';
 import ActivityButton from '@/components/ActivityButton';
 import SystemExecutionChart from '@/components/SystemExecutionChart';
-import NovaMemoryPanel from '@/components/NovaMemoryPanel';
+import AtriumMemoryPanel from '@/components/AtriumMemoryPanel';
 import SystemContextDocs from '@/components/SystemContextDocs';
 import SystemGoals from '@/components/SystemGoals';
 import Breadcrumb from '@/components/Breadcrumb';
@@ -154,9 +154,9 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
         )}
       </div>
 
-      {/* Nova */}
+      {/* Atrium */}
       <div className="mb-8 rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <NovaBar systemId={system.id} systemName={system.name} recentLogs={novaLogs} />
+        <AtriumBar systemId={system.id} systemName={system.name} recentLogs={novaLogs} />
       </div>
 
       {/* Signals — inbound events for this system */}
@@ -233,7 +233,7 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
           {system.workflows.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
               <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No workflows yet</p>
-              <p className="text-xs" style={{ color: 'var(--text-3)' }}>Use Nova above or create one manually</p>
+              <p className="text-xs" style={{ color: 'var(--text-3)' }}>Use Atrium above or create one manually</p>
             </div>
           ) : (
             <SystemWorkflowsView workflows={system.workflows.map(w => ({
@@ -287,9 +287,9 @@ export default async function SystemDetailPage({ params }: { params: Promise<{ i
             <SystemGoals systemId={system.id} environmentId={system.environmentId} />
           </HideablePanel>
 
-          {/* Nova memory */}
+          {/* Atrium memory */}
           <HideablePanel systemId={system.id} presetId="core:nova-memory">
-            <NovaMemoryPanel systemId={system.id} />
+            <AtriumMemoryPanel systemId={system.id} />
           </HideablePanel>
 
           {/* Context docs */}

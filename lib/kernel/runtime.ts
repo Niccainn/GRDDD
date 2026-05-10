@@ -1,5 +1,5 @@
 /**
- * Nova Kernel — Runtime
+ * Atrium Kernel — Runtime
  *
  * The agentic loop. Given a KernelRequest, this:
  *

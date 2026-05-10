@@ -59,7 +59,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       take: 10,
     }),
 
-    // Nova activity
+    // Atrium activity
     prisma.intelligenceLog.findMany({
       where: {
         action: 'nova_query',

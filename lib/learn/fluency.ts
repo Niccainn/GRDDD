@@ -1,10 +1,10 @@
 /**
- * Fluency computation — the user-side of the Nova LMS.
+ * Fluency computation — the user-side of the Atrium LMS.
  *
- * "Mastery" in this codebase already refers to Nova's mastery of a
- * workflow (MasteryInsight model — principles Nova has learned about
+ * "Mastery" in this codebase already refers to Atrium's mastery of a
+ * workflow (MasteryInsight model — principles Atrium has learned about
  * this company). To avoid confusion we call the user's side
- * "fluency" — how fluent the user is at operating Nova.
+ * "fluency" — how fluent the user is at operating Atrium.
  *
  * Four fluency capabilities, each scored 0–100 from aggregates over
  * existing models. No new schema:
@@ -13,7 +13,7 @@
  *      Inputs: workflows created, autonomous actions approved,
  *              ApprovalRequest approved rate
  *
- *   2. review              — how well the user reviews Nova output
+ *   2. review              — how well the user reviews Atrium output
  *      Inputs: ExecutionReview count, stage-review thoroughness,
  *              average overallScore calibration
  *
@@ -22,7 +22,7 @@
  *              system description length
  *
  *   4. trust-calibration   — gap between confidence and outcomes
- *      Inputs: override ratio vs Nova confidence, approval
+ *      Inputs: override ratio vs Atrium confidence, approval
  *              consistency across similar actions
  *
  * Scores are computed on the fly; no caching. The endpoint is cheap
@@ -147,7 +147,7 @@ export async function computeFluency(
     Math.round(Math.min(executionReviews * 5, 60) + reviewDensity * 40),
   );
 
-  // Context-giving — the raw material Nova operates on.
+  // Context-giving — the raw material Atrium operates on.
   const contextGiving = Math.min(
     100,
     Math.round(Math.min(memoriesContributed * 5, 50) + Math.min(contextDocs * 6, 50)),
@@ -166,25 +166,25 @@ export async function computeFluency(
       capability: 'delegation',
       score: delegation,
       label: bucket(delegation),
-      subtitle: 'Handing work off to Nova with confidence',
+      subtitle: 'Handing work off to Atrium with confidence',
       nextStep:
         workflowsCreated === 0
-          ? 'Create your first Workflow — a named flow Nova runs repeatedly.'
+          ? 'Create your first Workflow — a named flow Atrium runs repeatedly.'
           : approvalsApproved < 5
           ? 'Approve a few more autonomous drafts this week. Trust is built by doing.'
-          : 'Raise one Workflow to Autonomy Level 3 — let Nova act and tell you after.',
+          : 'Raise one Workflow to Autonomy Level 3 — let Atrium act and tell you after.',
       evidenceCount: workflowsCreated + approvalsApproved + novaQueries,
     },
     {
       capability: 'review',
       score: review,
       label: bucket(review),
-      subtitle: 'Reviewing Nova output with enough depth to teach it',
+      subtitle: 'Reviewing Atrium output with enough depth to teach it',
       nextStep:
         executionReviews === 0
           ? 'Review your next Execution. Score it 1–10 and leave one line of notes.'
           : reviewDensity < 0.4
-          ? 'Add a note to your next review — Nova reads them.'
+          ? 'Add a note to your next review — Atrium reads them.'
           : 'Try a stage-by-stage review on one Execution this week.',
       evidenceCount: executionReviews,
     },
@@ -192,7 +192,7 @@ export async function computeFluency(
       capability: 'context-giving',
       score: contextGiving,
       label: bucket(contextGiving),
-      subtitle: 'Giving Nova the raw material to do your work well',
+      subtitle: 'Giving Atrium the raw material to do your work well',
       nextStep:
         memoriesContributed < 3
           ? 'Open any System, write one memory — "When X happens, Y is the right call."'

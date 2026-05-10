@@ -17,7 +17,7 @@ import { logError } from '@/lib/observability/errors';
  * a stub that wrote one "sync triggered" signal and returned success.
  * Now it calls the provider's real fetcher via the dispatcher, dedupes
  * against existing signals (so re-runs don't flood), and persists
- * each new item as a Signal for Nova to triage.
+ * each new item as a Signal for Atrium to triage.
  *
  * Zero-cost posture: the sync runs use the tenant's own credentials
  * (their OAuth token or API key, which they paid for separately).

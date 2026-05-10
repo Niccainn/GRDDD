@@ -3,8 +3,8 @@
  *
  * Per PHASE_3_COCKPIT.md:
  *   Mode A — no Systems yet (re-entry to onboarding).
- *   Mode B — ≥1 System AND (workspace age <7 days OR <50 Nova actions).
- *   Mode C — ≥1 System AND workspace age ≥7 days AND ≥50 Nova actions.
+ *   Mode B — ≥1 System AND (workspace age <7 days OR <50 Atrium actions).
+ *   Mode C — ≥1 System AND workspace age ≥7 days AND ≥50 Atrium actions.
  *
  * Phase 3 ships A + B; Mode C is gated behind a feature flag until
  * there's enough user history to justify surfacing metrics.
@@ -16,7 +16,7 @@ export type WorkspaceSnapshot = {
   systemCount: number;
   /** ISO string, workspace creation timestamp */
   createdAt: string | null;
-  /** Total Nova actions logged in this workspace */
+  /** Total Atrium actions logged in this workspace */
   novaActionCount: number;
 };
 

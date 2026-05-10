@@ -5,13 +5,13 @@
  * GRID_BETA_TIER values:
  *
  *   'closed' (default)
- *     Invite-only private alpha. Nova runs on the platform's own
+ *     Invite-only private alpha. Atrium runs on the platform's own
  *     Anthropic key with an aggressive daily cap per environment.
  *     Public sign-up is disabled in the UI. Used for: Nicole's own
  *     dogfooding, first ~10 design partners.
  *
  *   'byok'
- *     Public beta. Anyone can sign up, but Nova will refuse to run
+ *     Public beta. Anyone can sign up, but Atrium will refuse to run
  *     until the environment owner connects their own Anthropic key
  *     at /settings/ai. Zero marginal cost per user — GRID pays only
  *     for the platform (DB, hosting, email), users pay Anthropic
@@ -19,7 +19,7 @@
  *
  *   'live'
  *     Public launch. Same as 'byok' plus planned additions:
- *       - New users get ~50 free Nova invocations using the platform
+ *       - New users get ~50 free Atrium invocations using the platform
  *         key as a trial, hard-capped to protect worst-case spend
  *       - Stripe integration for optional platform subscription
  *       - SSO, audit log exports, enterprise features unlock
@@ -28,7 +28,7 @@
  *
  * Changing tiers is a single env var change with no code deploy
  * required — the resolver in lib/nova/client-factory.ts reads the
- * tier at each Nova invocation. Flipping from 'closed' to 'byok' is
+ * tier at each Atrium invocation. Flipping from 'closed' to 'byok' is
  * the private-beta → public-beta promotion path.
  */
 
@@ -56,7 +56,7 @@ export function isPublicSignupAllowed(): boolean {
 
 /**
  * Whether the tier requires the tenant to have supplied their own
- * Anthropic key before Nova will run. True for byok + live, false
+ * Anthropic key before Atrium will run. True for byok + live, false
  * for closed (which falls back to the platform key).
  */
 export function requiresByokKey(): boolean {

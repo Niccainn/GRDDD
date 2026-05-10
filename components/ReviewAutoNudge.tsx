@@ -87,7 +87,7 @@ export default function ReviewAutoNudge({ executionId, workflowId, stages }: Pro
           {unreviewedCount} runs without feedback
         </p>
         <p className="text-xs font-light mb-5" style={{ color: 'var(--text-3)' }}>
-          Rating your output helps Nova learn your standards and builds your operating playbook
+          Rating your output helps Atrium learn your standards and builds your operating playbook
         </p>
         <div className="flex gap-2">
           <button

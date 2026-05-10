@@ -4,7 +4,7 @@
  * Pulls @mentions and DMs directed at the connected user since
  * `since`. We intentionally DON'T pull every channel message — that
  * would flood the inbox and Slack's search API rate-limits hard at
- * scale. Nova should see signal (things aimed at you), not noise.
+ * scale. Atrium should see signal (things aimed at you), not noise.
  *
  * Slack tokens can be long-lived (xoxb-) or rotate (refresh-token
  * flow, opted in per app). We only fetch with the access token;

@@ -77,7 +77,7 @@ export default function WelcomeBanner({ onPromptClick }: WelcomeBannerProps) {
         </svg>
       </button>
 
-      {/* Nova icon + greeting */}
+      {/* Atrium icon + greeting */}
       <div className="flex items-start gap-4">
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -95,7 +95,7 @@ export default function WelcomeBanner({ onPromptClick }: WelcomeBannerProps) {
             Your workspace is ready.
           </h2>
           <p className="text-xs leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            I&apos;m Nova — your AI operations layer. I understand your business structure, remember context across conversations, and can take actions on your behalf. I already know your brand voice. Here are a few things to try:
+            I&apos;m Atrium — your AI operations layer. I understand your business structure, remember context across conversations, and can take actions on your behalf. I already know your brand voice. Here are a few things to try:
           </p>
 
           {/* Starter prompts */}

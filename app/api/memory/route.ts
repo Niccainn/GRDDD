@@ -8,8 +8,8 @@
  *   - days    recency window
  *   - limit   default 30, max 100
  *
- * Returns items from NovaMemory (what Nova has learned) plus
- * MasteryInsight (principles Nova has detected in workflow runs)
+ * Returns items from NovaMemory (what Atrium has learned) plus
+ * MasteryInsight (principles Atrium has detected in workflow runs)
  * plus OperationalPlaybook summaries — a unified "what the
  * organization has learned" feed.
  */

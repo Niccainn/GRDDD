@@ -296,7 +296,7 @@ export default function SystemGoals({
 
               {goals.length === 0 && !creating && (
                 <p className="text-xs text-center mt-2" style={{ color: 'rgba(255,255,255,0.15)' }}>
-                  Goals give Nova direction when evaluating system health
+                  Goals give Atrium direction when evaluating system health
                 </p>
               )}
             </>

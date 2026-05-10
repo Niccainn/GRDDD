@@ -3,12 +3,12 @@
 /**
  * /memory — institutional memory.
  *
- * Organization-wide view of everything Nova has learned across all
- * Environments the caller can see: user-taught memories, Nova-
+ * Organization-wide view of everything Atrium has learned across all
+ * Environments the caller can see: user-taught memories, Atrium-
  * observed patterns, Mastery insights derived from workflow runs.
  *
  * The page title is deliberately "What your company has learned"
- * — not "Nova's memory" — because the point is that the knowledge
+ * — not "Atrium's memory" — because the point is that the knowledge
  * belongs to the organization, not the agent.
  */
 
@@ -79,7 +79,7 @@ export default function MemoryPage() {
           What your company has learned
         </h1>
         <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-          Memories you've taught Nova, patterns Nova has observed, and principles Nova has derived from how work actually runs.
+          Memories you've taught Atrium, patterns Atrium has observed, and principles Atrium has derived from how work actually runs.
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default function MemoryPage() {
             Nothing remembered yet.
           </p>
           <p className="text-xs font-light" style={{ color: 'var(--text-3)' }}>
-            Use Nova once, or answer today's lesson, and it'll start showing up here.
+            Use Atrium once, or answer today's lesson, and it'll start showing up here.
           </p>
         </div>
       ) : (

@@ -1,7 +1,7 @@
 /**
  * Kernel tools — Signals
  *
- * `create_signal` is special: every signal Nova creates is immediately
+ * `create_signal` is special: every signal Atrium creates is immediately
  * offered to the workflow reactive layer via `routeSignal`. Any
  * WorkflowSpec whose trigger matches `{source, minPriority}` fires in
  * the background. This is how GRID closes the autonomous loop:

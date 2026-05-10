@@ -1,5 +1,5 @@
 /**
- * runClaudeWithTools — the Nova execution engine's tool-use loop.
+ * runClaudeWithTools — the Atrium execution engine's tool-use loop.
  *
  * Drop-in replacement for `anthropic.messages.stream(...).finalMessage()`
  * that also handles Claude's `tool_use` / `tool_result` cycle. Streams

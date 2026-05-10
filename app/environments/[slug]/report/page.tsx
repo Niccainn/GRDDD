@@ -148,7 +148,7 @@ export default function ReportPage() {
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Stat label="Value returned" value={fmtUsd(roi.totalValue)} />
-            <Stat label="Nova cost" value={fmtUsd(roi.totalCost)} />
+            <Stat label="Atrium cost" value={fmtUsd(roi.totalCost)} />
             <Stat label="ROI ratio" value={roi.ratio != null ? `${roi.ratio}×` : '—'} />
             <Stat label="Executions" value={roi.totalExecutions.toLocaleString()} />
           </div>

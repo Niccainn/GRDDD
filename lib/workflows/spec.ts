@@ -2,7 +2,7 @@
  * WorkflowSpec — the portable workflow DSL
  *
  * A WorkflowSpec is a pure JSON description of a multi-stage pipeline
- * that Nova can execute end-to-end. It is the single source of truth
+ * that Atrium can execute end-to-end. It is the single source of truth
  * for a workflow — everything else (the DB row, the execution record,
  * the marketplace listing) is a wrapper around a spec.
  *
@@ -16,7 +16,7 @@
  *
  * Executing a spec is "just" calling the engine with a spec + input +
  * KernelContext. Every stage becomes one kernel run, one trace, one
- * cost line. Users see per-stage progress. Nova sees its own history.
+ * cost line. Users see per-stage progress. Atrium sees its own history.
  */
 
 import { z } from 'zod';

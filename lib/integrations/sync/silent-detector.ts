@@ -5,7 +5,7 @@
  * its 7-day rolling median. If the integration is usually chatty
  * (median >= 1 signal/day) but has produced zero signals for N
  * consecutive ticks, we treat it as "silently failed" and emit a
- * high-priority Nova signal so the user actually notices the
+ * high-priority Atrium signal so the user actually notices the
  * integration went dark before it affects them.
  *
  * The earlier silent-failure fix (calendar/integrations banners)

@@ -77,7 +77,7 @@ const navSections: CollapsibleNavSection[] = [
     label: '',
     items: [
       { href: '/dashboard', label: 'Home', icon: icons.home },
-      { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
+      { href: '/nova', label: 'Atrium', icon: icons.nova, accent: true },
     ],
   },
   // YOUR SYSTEMS — injected dynamically below
@@ -192,7 +192,7 @@ export default function Sidebar() {
         // users a one-click escape out of env context without having
         // to reach for "All Environments".
         { href: '/dashboard', label: 'Home', icon: icons.home },
-        { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
+        { href: '/nova', label: 'Atrium', icon: icons.nova, accent: true },
       ],
     },
     {
@@ -430,7 +430,7 @@ export default function Sidebar() {
                 )
               )}
 
-              {/* Dynamic systems section — injected after the first section (Home/Nova) */}
+              {/* Dynamic systems section — injected after the first section (Home/Atrium) */}
               {si === 0 && !envSlug && (
                 <div className="mt-4">
                   {/* Pinned nav — user-customizable, reads from localStorage */}

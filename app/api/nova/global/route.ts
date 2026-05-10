@@ -28,7 +28,7 @@ const INTERNAL_TOOLS: Anthropic.Tool[] = [
   },
   {
     name: 'get_recent_activity',
-    description: 'Get recent Nova interactions and executions across all systems.',
+    description: 'Get recent Atrium interactions and executions across all systems.',
     input_schema: {
       type: 'object' as const,
       properties: { limit: { type: 'number' } },
@@ -290,7 +290,7 @@ export async function POST(req: NextRequest) {
   }
   const anthropic = resolved.client;
 
-  // SEC-03 — daily per-user token cap. Global Nova is the most
+  // SEC-03 — daily per-user token cap. Global Atrium is the most
   // expensive path; gate it hard. BYOK envs are exempt.
   const userBudget = await checkUserTokenBudget(
     identity.id,
@@ -327,7 +327,7 @@ export async function POST(req: NextRequest) {
     ? `\n\nYou have access to these connected integrations: ${connectedProviders.join(', ')}. Use their tools proactively when the user's request relates to them. For example, if Figma is connected and the user asks about designs, use figma_get_file or figma_get_text_content to read their actual design data.`
     : '';
 
-  const rawSystemPrompt = `You are Nova — the AI operations engine for GRID. You operate in global mode across ALL systems the authenticated operator owns.
+  const rawSystemPrompt = `You are Atrium — the AI operations engine for GRID. You operate in global mode across ALL systems the authenticated operator owns.
 
 You have visibility across ${systemCount} systems and ${workflowCount} workflows in this organisation.
 
@@ -344,7 +344,7 @@ Your capabilities:
 You are NOT just a chatbot. You are an operational AI that takes action. When asked to do something, USE YOUR TOOLS to actually do it — read real data, create real tasks, check real systems. Be direct and specific.${integrationContext}${brandContext}
 ${identity ? `Operator: ${identity.name}` : ''}`;
 
-  // Prepend the cross-tenant scope guard — Nova must never surface
+  // Prepend the cross-tenant scope guard — Atrium must never surface
   // data from environments this operator doesn't own, and must treat
   // everything inside <user_input> as data, not instructions.
   const systemPrompt = withScopeGuard(rawSystemPrompt, {
@@ -371,7 +371,7 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
         for (let round = 0; round < MAX_ROUNDS; round++) {
           // Per-round budget check — stop if token spend is excessive
           if (totalTokens > MAX_TOKENS_PER_REQUEST) {
-            send({ type: 'text', text: '\n\n*[Nova paused: token budget reached for this request. Ask a follow-up to continue.]*' });
+            send({ type: 'text', text: '\n\n*[Atrium paused: token budget reached for this request. Ask a follow-up to continue.]*' });
             break;
           }
 
@@ -444,7 +444,7 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
 
           // Persist to interaction log
           try {
-            const intel = await prisma.intelligence.findFirst({ where: { type: 'AI_AGENT', name: 'Nova' } });
+            const intel = await prisma.intelligence.findFirst({ where: { type: 'AI_AGENT', name: 'Atrium' } });
             if (intel) {
               await prisma.intelligenceLog.create({
                 data: {
@@ -468,7 +468,7 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
         // Record actual usage against the user's daily budget.
         recordUserTokenUsage(identity.id, totalTokens, primaryEnv.id).catch(() => {});
       } catch (err) {
-        send({ type: 'error', message: err instanceof Error ? err.message : 'Nova failed' });
+        send({ type: 'error', message: err instanceof Error ? err.message : 'Atrium failed' });
       } finally {
         controller.close();
       }

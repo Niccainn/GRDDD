@@ -1,7 +1,7 @@
 'use client';
 /**
  * SystemWidget — a System at-a-glance. Shows name, accent, health,
- * last Nova action. 2×1 (compact) or 2×2 (with last-action line).
+ * last Atrium action. 2×1 (compact) or 2×2 (with last-action line).
  *
  * This is the rendering adapter that lets a System live on any
  * canvas — dashboard, environment page, a user's custom canvas.

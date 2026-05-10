@@ -5,7 +5,7 @@
  * once the first time a user lands on a Project run page. Shows:
  *
  *   1. "You typed this"        — highlights the project goal
- *   2. "Nova planned this"     — highlights the step list
+ *   2. "Atrium planned this"     — highlights the step list
  *   3. "You approve here"      — highlights the approval gate
  *
  * Dismissible at any point. Remembers completion in localStorage
@@ -32,21 +32,21 @@ const STEPS: Step[] = [
     target: '[data-tour="project-goal"]',
     eyebrow: 'Step 1 · You',
     title: 'You typed this',
-    body: 'Nova takes the goal above and plans the work. Every prompt becomes a traceable plan.',
+    body: 'Atrium takes the goal above and plans the work. Every prompt becomes a traceable plan.',
     side: 'bottom',
   },
   {
     target: '[data-tour="project-plan"]',
-    eyebrow: 'Step 2 · Nova',
-    title: 'Nova planned this',
-    body: 'Each step has a tool, a rationale, and a status. Steps run in order; Nova stops at any human gate.',
+    eyebrow: 'Step 2 · Atrium',
+    title: 'Atrium planned this',
+    body: 'Each step has a tool, a rationale, and a status. Steps run in order; Atrium stops at any human gate.',
     side: 'top',
   },
   {
     target: '[data-tour="project-approval"], [data-tour="project-plan"]',
     eyebrow: 'Step 3 · You, again',
     title: 'You approve here',
-    body: 'Nothing user-visible ships without you. Every autonomous action has a 24-hour undo. Every override teaches Nova.',
+    body: 'Nothing user-visible ships without you. Every autonomous action has a 24-hour undo. Every override teaches Atrium.',
     side: 'top',
   },
 ];

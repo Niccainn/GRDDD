@@ -3,7 +3,7 @@
  *
  *   GET    — read the agent config (or null if not set)
  *   PUT    — create or update
- *   DELETE — disable (system falls back to env-wide Nova defaults)
+ *   DELETE — disable (system falls back to env-wide Atrium defaults)
  *
  * Ownership is enforced via the system's parent environment. Only
  * write-capable members (owner / ADMIN / CONTRIBUTOR) can mutate;

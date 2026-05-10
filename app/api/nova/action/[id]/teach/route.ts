@@ -1,12 +1,12 @@
 /**
  * POST /api/nova/action/[id]/teach
  *
- * Override-reason capture — when the user says "Nova got this wrong,"
+ * Override-reason capture — when the user says "Atrium got this wrong,"
  * capture the category (wrong data / wrong judgment / wrong timing)
  * plus one line of free text, and store it as a NovaMemory entry
- * that future Nova prompts can RAG against.
+ * that future Atrium prompts can RAG against.
  *
- * The loop:   Nova acts → user overrides → user teaches → Nova acts
+ * The loop:   Atrium acts → user overrides → user teaches → Atrium acts
  * better next time.
  */
 
@@ -29,7 +29,7 @@ export async function POST(
   const { id: rawId } = await params;
   const [kind, id] = rawId.includes(':') ? rawId.split(':', 2) : ['intel', rawId];
   if (kind !== 'intel') {
-    return Response.json({ error: 'Only Nova actions can be taught' }, { status: 400 });
+    return Response.json({ error: 'Only Atrium actions can be taught' }, { status: 400 });
   }
 
   const body = await req.json().catch(() => ({}));
@@ -65,7 +65,7 @@ export async function POST(
     `Override on action: ${log.action}`,
     `Category: ${reason.replace('_', ' ')}`,
     note ? `User said: ${note}` : null,
-    'Future Nova calls should factor this in when proposing similar actions.',
+    'Future Atrium calls should factor this in when proposing similar actions.',
   ]
     .filter(Boolean)
     .join('\n');

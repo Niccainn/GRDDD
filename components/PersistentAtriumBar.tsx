@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 /**
- * Persistent Nova input — fixed at bottom-right of every authenticated page.
+ * Persistent Atrium input — fixed at bottom-right of every authenticated page.
  * Expands into a quick-ask input with inline streaming response.
  * Full conversations still happen on /nova — this is for quick queries from anywhere.
  */
-export default function PersistentNovaBar() {
+export default function PersistentAtriumBar() {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState('');
@@ -51,7 +51,7 @@ export default function PersistentNovaBar() {
       });
 
       if (!res.ok) {
-        setError('Nova is unavailable right now');
+        setError('Atrium is unavailable right now');
         setResponding(false);
         return;
       }
@@ -160,14 +160,14 @@ export default function PersistentNovaBar() {
           {responding && !response && !error && (
             <div className="px-3 py-3 flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--nova)' }} />
-              <span className="text-[10px] font-light" style={{ color: 'var(--text-3)' }}>Nova is thinking...</span>
+              <span className="text-[10px] font-light" style={{ color: 'var(--text-3)' }}>Atrium is thinking...</span>
             </div>
           )}
 
           {/* Footer */}
           <div className="px-3 py-2 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
             <Link href={`/nova?q=${encodeURIComponent(query)}`} className="text-[9px] font-light transition-colors hover:text-white/50" style={{ color: 'var(--text-3)' }}>
-              Open in Nova →
+              Open in Atrium →
             </Link>
             <button onClick={() => { reset(); }} className="text-[9px] font-light transition-colors hover:text-white/50" style={{ color: 'var(--text-3)' }}>
               Clear
@@ -202,7 +202,7 @@ export default function PersistentNovaBar() {
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={() => { if (!query && !hasResponse) setExpanded(false); }}
-            placeholder="Ask Nova anything..."
+            placeholder="Ask Atrium anything..."
             disabled={responding}
             className="flex-1 text-xs font-light bg-transparent border-none outline-none disabled:opacity-50"
             style={{ color: 'var(--text-1)' }}
@@ -234,14 +234,14 @@ export default function PersistentNovaBar() {
             padding: '8px 14px',
             boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
           }}
-          title="Ask Nova (quick)"
+          title="Ask Atrium (quick)"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
             style={{ color: 'var(--nova)', opacity: 0.6 }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
           <span className="text-xs font-light group-hover:text-white/60 transition-colors" style={{ color: 'var(--text-3)' }}>
-            Nova
+            Atrium
           </span>
         </button>
       )}

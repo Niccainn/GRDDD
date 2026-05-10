@@ -160,11 +160,11 @@ function itemProvider(sourceId: string): string {
 /**
  * For a single integration, compute the 7-day volume distribution
  * and recent-tick activity, then call the pure detector. When the
- * detector fires, persist a high-visibility Nova signal so the user
+ * detector fires, persist a high-visibility Atrium signal so the user
  * sees "Notion has gone quiet" in their inbox instead of discovering
  * it 48h later.
  *
- * Dedupe rule: if a `silent_sync` Nova signal was already created for
+ * Dedupe rule: if a `silent_sync` Atrium signal was already created for
  * this integration within the last 24h, skip — we don't want to
  * hammer the inbox with identical alerts on every 15-min tick while
  * the integration is still dark.

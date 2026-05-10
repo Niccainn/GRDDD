@@ -3,12 +3,12 @@
 /**
  * BYOK settings — connect an Anthropic API key per environment.
  *
- * Nova always runs on the environment owner's Anthropic account in
+ * Atrium always runs on the environment owner's Anthropic account in
  * byok/live tiers. This page is the one place a user pastes their key,
  * sees the masked preview, and disconnects/rotates. We validate against
  * the live Anthropic API on save so the user gets an immediate "key
  * rejected" error verbatim (invalid format vs credit balance low vs
- * revoked) instead of discovering the problem mid-Nova-run.
+ * revoked) instead of discovering the problem mid-Atrium-run.
  *
  * The plaintext key is never persisted to component state longer than
  * a single submit — we clear the field immediately after POST, and the
@@ -91,7 +91,7 @@ export default function AiSettingsPage() {
       if (!res.ok) {
         setError(data.error ?? 'Failed to save key');
       } else {
-        setSuccess('Connected — Nova is now running on your Anthropic account.');
+        setSuccess('Connected — Atrium is now running on your Anthropic account.');
         // Refetch full status so preview/addedAt render.
         const refreshed = await fetch(
           `/api/settings/anthropic-key?environmentId=${activeEnvId}`,
@@ -109,7 +109,7 @@ export default function AiSettingsPage() {
     if (!activeEnvId || !status?.connected) return;
     if (
       !confirm(
-        'Disconnect this Anthropic key? Nova will stop running for this environment until a new key is connected.',
+        'Disconnect this Anthropic key? Atrium will stop running for this environment until a new key is connected.',
       )
     )
       return;
@@ -149,13 +149,13 @@ export default function AiSettingsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-extralight tracking-tight mb-1">AI · Anthropic</h1>
         <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-          Connect your Anthropic account so Nova runs on your own key. Usage is billed directly by
+          Connect your Anthropic account so Atrium runs on your own key. Usage is billed directly by
           Anthropic — GRID never sees a cent of it.
         </p>
       </div>
 
-      {/* Prominent warning — without a key, Nova doesn't run. Users hit
-          this after clicking Scaffold / asking Nova a question and got
+      {/* Prominent warning — without a key, Atrium doesn't run. Users hit
+          this after clicking Scaffold / asking Atrium a question and got
           no output. Now they know *why* upfront. */}
       <div
         className="mb-6 px-4 py-3 rounded-xl flex items-start gap-3 text-xs font-light"
@@ -167,8 +167,8 @@ export default function AiSettingsPage() {
       >
         <span style={{ color: '#F7C700', marginTop: 1 }}>⚠</span>
         <span>
-          <strong style={{ color: '#F7C700', fontWeight: 400 }}>Nova requires an Anthropic API key.</strong>{' '}
-          Without a connected key, Nova queries, scaffolding, workflow
+          <strong style={{ color: '#F7C700', fontWeight: 400 }}>Atrium requires an Anthropic API key.</strong>{' '}
+          Without a connected key, Atrium queries, scaffolding, workflow
           critic passes, and agent runs will all fail silently.
         </span>
       </div>
@@ -236,7 +236,7 @@ export default function AiSettingsPage() {
                 </>
               ) : (
                 <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                  No Anthropic key connected. Nova will not run until you connect one.
+                  No Anthropic key connected. Atrium will not run until you connect one.
                 </p>
               )}
             </div>
@@ -341,7 +341,7 @@ export default function AiSettingsPage() {
         <p>
           Your Anthropic key stays in your account, billed by Anthropic, rate-limited by your
           tier. GRID stores it encrypted at rest (AES-256-GCM) and decrypts it only in-memory at
-          the moment Nova calls the API. It never appears in logs, error messages, or support
+          the moment Atrium calls the API. It never appears in logs, error messages, or support
           exports. You can rotate or disconnect at any time.
         </p>
       </div>

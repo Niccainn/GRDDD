@@ -80,7 +80,7 @@ export function rateLimitApi(userId: string): RateLimitResult {
   return rateLimit(`api:${userId}`, 120, 60_000);
 }
 
-/** Rate limit for Nova AI routes: 30 req/min */
+/** Rate limit for Atrium AI routes: 30 req/min */
 export function rateLimitNova(userId: string): RateLimitResult {
   return rateLimit(`nova:${userId}`, 30, 60_000);
 }
@@ -134,7 +134,7 @@ function cachePrefix(): string {
 
 /** Throws on first strict call in prod if Upstash is missing. Call
  *  sites that depend on distributed rate limiting for cost control
- *  (Nova, agent runs, email sends) should use this to fail loud. */
+ *  (Atrium, agent runs, email sends) should use this to fail loud. */
 export function assertRateLimitReady(): void {
   if (isProductionDeployment() && !isUpstashConfigured()) {
     throw new Error(
@@ -223,7 +223,7 @@ export async function rateLimitDistributed(
   return { allowed: true, remaining: limit - count, resetAt };
 }
 
-/** Strict, distributed Nova rate limiter. 30 req/min per user AND
+/** Strict, distributed Atrium rate limiter. 30 req/min per user AND
  *  a shared 2k req/hr ceiling per user across all instances. Fails
  *  closed in prod if Upstash is misconfigured. */
 export async function rateLimitNovaStrict(userId: string): Promise<RateLimitResult> {
@@ -245,7 +245,7 @@ export async function rateLimitNovaStrict(userId: string): Promise<RateLimitResu
 }
 
 /** Strict, distributed agent-run limiter. Runs spend tokens + sometimes
- *  Stripe fees, so treat like Nova. */
+ *  Stripe fees, so treat like Atrium. */
 export async function rateLimitAgentRunStrict(userId: string): Promise<RateLimitResult> {
   const perMin = await rateLimitDistributed(
     `agent:min:${userId}`,

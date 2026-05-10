@@ -2,10 +2,10 @@
 /**
  * TODAY feed — the workhorse of Modes B + C.
  * Per PHASE_3_COCKPIT.md: every item has a clear noun, a specific
- * Nova action, inline actions, and disappears once handled.
+ * Atrium action, inline actions, and disappears once handled.
  *
  * Items come from a mix of: pending Signals, waiting Workflow
- * approvals, and Nova-generated drafts. We fetch from a single
+ * approvals, and Atrium-generated drafts. We fetch from a single
  * /api/dashboard/feed endpoint; if that endpoint doesn't exist yet
  * the feed renders an empty "caught up" state — intentionally no
  * metric theatre, so the page never shows "0" or "—".
@@ -70,7 +70,7 @@ export default function ApprovalFeed() {
   if (items.length === 0) {
     return (
       <p className="text-sm font-light py-6" style={{ color: 'var(--text-3)' }}>
-        Nova has nothing waiting. You&apos;re caught up.
+        Atrium has nothing waiting. You&apos;re caught up.
       </p>
     );
   }

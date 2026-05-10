@@ -80,14 +80,14 @@ const SUGGESTIONS = [
   'Create a task to follow up with the team',
 ];
 
-type GlobalNovaBarProps = {
+type GlobalAtriumBarProps = {
   /** When set, auto-opens and pre-fills this query (caller should clear after use) */
   initialQuery?: string;
   /** Callback when bar opens/closes */
   onOpenChange?: (open: boolean) => void;
 };
 
-export default function GlobalNovaBar({ initialQuery, onOpenChange }: GlobalNovaBarProps = {}) {
+export default function GlobalAtriumBar({ initialQuery, onOpenChange }: GlobalAtriumBarProps = {}) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -149,7 +149,7 @@ export default function GlobalNovaBar({ initialQuery, onOpenChange }: GlobalNova
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? 'Nova failed');
+        setError(data.error ?? 'Atrium failed');
         setStreaming(false);
         return;
       }
@@ -290,7 +290,7 @@ export default function GlobalNovaBar({ initialQuery, onOpenChange }: GlobalNova
                 </svg>
               </div>
               <div>
-                <span className="text-sm font-light">Nova</span>
+                <span className="text-sm font-light">Atrium</span>
                 <span className="text-xs ml-2" style={{ color: 'var(--text-3)' }}>global mode</span>
               </div>
               {streaming && (

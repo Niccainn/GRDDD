@@ -49,7 +49,7 @@ export default function TraceExplorer({
     return (
       <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-10 text-center">
         <p className="text-sm text-white/50 font-light">
-          No traces yet. Ask Nova a question and come back — every run will appear here.
+          No traces yet. Ask Atrium a question and come back — every run will appear here.
         </p>
       </div>
     );

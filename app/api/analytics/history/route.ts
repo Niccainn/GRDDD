@@ -122,7 +122,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Nova insight events (group by day to avoid flooding)
+  // Atrium insight events (group by day to avoid flooding)
   const novaByDay: Record<string, { count: number; tokens: number; date: string; systems: Set<string> }> = {};
   for (const log of novaLogs) {
     const day = log.createdAt.toISOString().slice(0, 10);
@@ -135,7 +135,7 @@ export async function GET(req: NextRequest) {
     timeline.push({
       id: `nova-${day.date}`,
       type: 'nova_insight',
-      title: `${day.count} Nova interaction${day.count !== 1 ? 's' : ''}`,
+      title: `${day.count} Atrium interaction${day.count !== 1 ? 's' : ''}`,
       description: day.systems.size > 0 ? `Across ${[...day.systems].slice(0, 3).join(', ')}` : 'AI-powered analysis',
       timestamp: `${day.date}T12:00:00.000Z`,
       metric: `${day.tokens.toLocaleString()} tokens`,
@@ -203,7 +203,7 @@ export async function GET(req: NextRequest) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([week, count]) => ({ week, count }));
 
-  // AI usage — Nova interactions per week
+  // AI usage — Atrium interactions per week
   const aiWeekMap = new Map<string, number>();
   for (const log of novaLogs) {
     const wk = weekKey(log.createdAt);

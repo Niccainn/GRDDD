@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
           // No stages — just do a single analysis pass
           send({ type: 'stage_start', stage: 'Analysis', index: 0 });
 
-          const systemPrompt = `You are Nova, operating inside the ${system.name} system (${system.environment.name}).
+          const systemPrompt = `You are Atrium, operating inside the ${system.name} system (${system.environment.name}).
 Your job is to process and respond to work requests with actionable, specific output.
 Be direct. Produce real work — not descriptions of work.
 ${toolHint}`;
@@ -119,7 +119,7 @@ ${toolHint}`;
               ? `\n\nPrevious stages completed:\n${stageOutputs.map(s => `**${s.stage}:**\n${s.output}`).join('\n\n---\n\n')}`
               : '';
 
-            const systemPrompt = `You are Nova, an AI operations engine inside ${system.name} (${system.environment.name}).
+            const systemPrompt = `You are Atrium, an AI operations engine inside ${system.name} (${system.environment.name}).
 You produce real, concrete work output — not descriptions of work. Each stage must deliver a complete, usable artifact.
 Use markdown formatting. Be thorough but focused. Write as a senior professional would.`;
 
@@ -361,9 +361,9 @@ Score 1.0 = complete, coherent, actionable. Score 0.0 = missing, vague, or unusa
               identityId: identity.id,
               ...(workflowId ? { workflowId } : {}),
               intelligenceId: (
-                await prisma.intelligence.findFirst({ where: { systemId, name: 'Nova' } }) ??
+                await prisma.intelligence.findFirst({ where: { systemId, name: 'Atrium' } }) ??
                 await prisma.intelligence.create({
-                  data: { type: 'AI_AGENT', name: 'Nova', systemId, environmentId: system.environmentId, creatorId: identity.id },
+                  data: { type: 'AI_AGENT', name: 'Atrium', systemId, environmentId: system.environmentId, creatorId: identity.id },
                 })
               ).id,
             },

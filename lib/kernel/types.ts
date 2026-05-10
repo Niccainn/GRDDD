@@ -1,8 +1,8 @@
 /**
- * Nova Kernel — core types
+ * Atrium Kernel — core types
  *
  * The kernel is the model-agnostic runtime that every intelligent feature
- * in GRID sits on top of. Everything that "thinks" — Nova chat, workflow
+ * in GRID sits on top of. Everything that "thinks" — Atrium chat, workflow
  * execution, predictive signals, cross-environment reasoning — flows
  * through this kernel so we get:
  *
