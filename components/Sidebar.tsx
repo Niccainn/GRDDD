@@ -89,7 +89,10 @@ const navSections: CollapsibleNavSection[] = [
       // new users see the differentiator on day one.
       { href: '/projects', label: 'Projects', icon: icons.workflows },
       { href: '/tasks', label: 'Tasks', icon: icons.tasks },
-      { href: '/inbox', label: 'Inbox', icon: icons.inbox, badge: 'inbox' },
+      // Renamed from "Inbox" — the schema entity is Signal and the
+      // reviewer-shaped frame is "what needs your judgment", not
+      // "what you need to read." Frame shift; route unchanged.
+      { href: '/inbox', label: 'Signals', icon: icons.inbox, badge: 'inbox' },
       { href: '/calendar', label: 'Calendar', icon: icons.calendar },
       // Meetings — transcription + summary + action items that can
       // be promoted into Tasks/Signals/Goals. The wedge vs Sana: a
