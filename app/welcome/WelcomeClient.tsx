@@ -18,9 +18,10 @@ import { shippedWedges, type Wedge, wedgeById } from './wedges';
 import ImportWizard from '@/components/ImportWizard';
 import WidgetPicker from '@/components/onboarding/WidgetPicker';
 import InterviewStep from '@/components/onboarding/InterviewStep';
+import PostureIntro from '@/components/onboarding/PostureIntro';
 import { writeHiddenPresets, type DepartmentId } from '@/lib/widgets/department-catalog';
 
-type Step = 'interview' | 'wedge' | 'connect' | 'customize' | 'build' | 'import' | 'done';
+type Step = 'posture' | 'interview' | 'wedge' | 'connect' | 'customize' | 'build' | 'import' | 'done';
 
 type Proposal = {
   system: { name: string; description: string; color: string };
@@ -53,7 +54,7 @@ export default function WelcomeClient() {
   // Default to the interview — the blank-prompt problem is the
   // biggest activation failure in AI products. Users who can't
   // describe what they want can always answer five short questions.
-  const [step, setStep] = useState<Step>('interview');
+  const [step, setStep] = useState<Step>('posture');
   const [wedgeId, setWedgeId] = useState<string | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
@@ -188,6 +189,10 @@ export default function WelcomeClient() {
 
   return (
     <Shell>
+      {step === 'posture' && (
+        <PostureIntro onContinue={() => setStep('interview')} />
+      )}
+
       {step === 'interview' && (
         <InterviewStep
           onSkipToTemplates={() => setStep('wedge')}
