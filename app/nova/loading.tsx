@@ -1,7 +1,7 @@
 export default function NovaLoading() {
   return (
     <div style={{ padding: '2rem 2.5rem', maxWidth: 900, margin: '0 auto' }}>
-      {/* Nova header */}
+      {/* Atrium header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '2rem' }}>
         <div className="skeleton" style={{ width: 48, height: 48, borderRadius: '50%' }} />
         <div>

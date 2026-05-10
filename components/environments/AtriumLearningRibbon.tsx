@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * NovaLearningRibbon — slim banner on the Environment page surfacing
- * what Nova has learned in the past 7 days. The learning has to be
+ * AtriumLearningRibbon — slim banner on the Environment page surfacing
+ * what Atrium has learned in the past 7 days. The learning has to be
  * felt, not just logged.
  */
 
@@ -14,7 +14,7 @@ type Snapshot = {
   topSubject: string | null;
 };
 
-export default function NovaLearningRibbon({ environmentId }: { environmentId: string }) {
+export default function AtriumLearningRibbon({ environmentId }: { environmentId: string }) {
   const [snap, setSnap] = useState<Snapshot | null>(null);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function NovaLearningRibbon({ environmentId }: { environmentId: s
         style={{ background: '#BF9FF1' }}
       />
       <span className="text-[11px] font-light tracking-wider uppercase">
-        Nova learned {snap.learnedThisWeek} thing{snap.learnedThisWeek === 1 ? '' : 's'} this week
+        Atrium learned {snap.learnedThisWeek} thing{snap.learnedThisWeek === 1 ? '' : 's'} this week
         {snap.topSubject ? ` · latest: ${snap.topSubject}` : ''}
       </span>
       <span className="text-[11px] font-light">See →</span>

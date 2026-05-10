@@ -67,7 +67,7 @@ export async function updateIntegrationIntelligence(environmentId: string) {
       primarySystemName = sys?.name || null;
     }
 
-    // Routing accuracy: signals triaged correctly by Nova
+    // Routing accuracy: signals triaged correctly by Atrium
     const triagedCount = await prisma.signal.count({
       where: { environmentId, source: signalSource, novaTriaged: true },
     });

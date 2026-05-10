@@ -4,7 +4,7 @@
  * ready-to-use SDK client.
  *
  * This is the one and only place in the codebase that chooses which
- * API key to use for Nova. Every Anthropic call site in the kernel
+ * API key to use for Atrium. Every Anthropic call site in the kernel
  * goes through here. The previous design instantiated a module-level
  * singleton at boot time with process.env.ANTHROPIC_API_KEY — that's
  * the thing this file replaces. Singletons can't do per-tenant BYOK.
@@ -20,7 +20,7 @@
  *
  *   tier = 'byok' | 'live'
  *     - If the environment has its own key, use it.
- *     - Otherwise throw MissingKeyError immediately. Nova will not
+ *     - Otherwise throw MissingKeyError immediately. Atrium will not
  *       run without a tenant key in these tiers, so the user sees
  *       a clear "connect your account" prompt instead of a silent
  *       fall-through to the platform key.
@@ -53,7 +53,7 @@ export type ResolvedClient = {
  */
 export class MissingKeyError extends Error {
   readonly actionUrl = '/settings/ai';
-  constructor(message = 'Connect your Anthropic account to activate Nova.') {
+  constructor(message = 'Connect your Anthropic account to activate Atrium.') {
     super(message);
     this.name = 'MissingKeyError';
   }
@@ -63,7 +63,7 @@ export class MissingKeyError extends Error {
  * Resolve the Anthropic client for a given environment. This is an
  * async function because we do a Prisma fetch to read the tenant's
  * BYOK key. Callers should hold the resolved client for the entire
- * duration of a single Nova invocation — do NOT cache it across
+ * duration of a single Atrium invocation — do NOT cache it across
  * invocations because the user can rotate their key mid-session.
  */
 export async function getAnthropicClientForEnvironment(
@@ -123,7 +123,7 @@ export async function getAnthropicClientForEnvironment(
     const used = env.tokensUsed ?? 0;
     if (used >= TRIAL_BUDGET) {
       throw new MissingKeyError(
-        `You've used your ${Math.floor(TRIAL_BUDGET / 10_000)} free trial runs. Connect your Anthropic API key to continue using Nova.`,
+        `You've used your ${Math.floor(TRIAL_BUDGET / 10_000)} free trial runs. Connect your Anthropic API key to continue using Atrium.`,
       );
     }
 

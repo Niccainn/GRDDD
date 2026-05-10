@@ -5,7 +5,7 @@
  * selected in the visual Workflow builder. This is where the
  * "manual Zapier takeover" happens: each card gets a title, a
  * description, an integration picker, an interaction pattern, and
- * a Nova prompt. Edits write back to the parent's node state and
+ * a Atrium prompt. Edits write back to the parent's node state and
  * (optionally) record a NovaMemory entry so the planner learns the
  * pattern for next time.
  */
@@ -35,11 +35,11 @@ const ACTION_OPTIONS = [
 ];
 
 const INTERACTION_OPTIONS: { id: string; label: string; why: string }[] = [
-  { id: 'none', label: 'None', why: 'Nova runs with no human involvement.' },
-  { id: 'approve_before_executing', label: 'Approve before', why: 'User approves, then Nova acts.' },
-  { id: 'review_before_next', label: 'Review after', why: 'Nova acts, user reviews before next step.' },
-  { id: 'human_only', label: 'Human only', why: 'User performs this step; Nova just logs.' },
-  { id: 'notify_after', label: 'Notify after', why: 'Nova acts; user is notified.' },
+  { id: 'none', label: 'None', why: 'Atrium runs with no human involvement.' },
+  { id: 'approve_before_executing', label: 'Approve before', why: 'User approves, then Atrium acts.' },
+  { id: 'review_before_next', label: 'Review after', why: 'Atrium acts, user reviews before next step.' },
+  { id: 'human_only', label: 'Human only', why: 'User performs this step; Atrium just logs.' },
+  { id: 'notify_after', label: 'Notify after', why: 'Atrium acts; user is notified.' },
 ];
 
 const EXECUTION_OPTIONS: { id: string; label: string }[] = [
@@ -289,7 +289,7 @@ export default function NodeInspector({ workflowId, node, onChange, onClose, onD
             </select>
           </Field>
 
-          <Field label="Nova prompt · instructions for this step">
+          <Field label="Atrium prompt · instructions for this step">
             <textarea
               value={draft.prompt ?? ''}
               onChange={e => update('prompt', e.target.value)}
@@ -322,7 +322,7 @@ export default function NodeInspector({ workflowId, node, onChange, onClose, onD
 
         <div className="px-5 py-3 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <p className="text-[11px] font-light leading-snug" style={{ color: 'var(--text-3)' }}>
-            Edits save locally as you type. Every change is also written to Nova's memory so future planner calls inherit the pattern.
+            Edits save locally as you type. Every change is also written to Atrium's memory so future planner calls inherit the pattern.
           </p>
         </div>
       </aside>

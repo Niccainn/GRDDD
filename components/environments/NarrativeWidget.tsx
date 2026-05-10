@@ -65,7 +65,7 @@ export default function NarrativeWidget({ environmentId, environmentName }: Prop
             </p>
             <HelpBubble
               title="The weekly narrative"
-              body="Every Monday Nova writes a five-sentence memo about this Environment — drawn from seven days of audit log, signals, and goal deltas. It's the artifact the team forwards to the CEO."
+              body="Every Monday Atrium writes a five-sentence memo about this Environment — drawn from seven days of audit log, signals, and goal deltas. It's the artifact the team forwards to the CEO."
               learnMoreHref="/blog/week-1"
             />
           </div>

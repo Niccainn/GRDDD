@@ -6,9 +6,9 @@
  *
  * Communicates the three commitments the product makes to the user
  * in one glance:
- *   1. Every Nova action explains itself.
+ *   1. Every Atrium action explains itself.
  *   2. One click to undo within 24 hours.
- *   3. Every override teaches Nova.
+ *   3. Every override teaches Atrium.
  *
  * Collapses to a small chip once the Environment has meaningful
  * activity (≥ 5 actions on the ledger), so mature Environments
@@ -57,7 +57,7 @@ export default function TrustPrimer({ environmentId }: Props) {
       >
         <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
         <span className="text-[10px] tracking-wider uppercase font-light">
-          Every Nova action explains itself · 24h undo · teach on override
+          Every Atrium action explains itself · 24h undo · teach on override
         </span>
       </div>
     );
@@ -92,23 +92,23 @@ export default function TrustPrimer({ environmentId }: Props) {
         className="text-[10px] tracking-[0.18em] uppercase font-light mb-3"
         style={{ color: '#C8F26B' }}
       >
-        How Nova works here
+        How Atrium works here
       </p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Pillar
           num="1"
           title="Every action explains itself"
-          body="Click any row in the action ledger to see what Nova read, what it decided, and what it skipped. No black boxes."
+          body="Click any row in the action ledger to see what Atrium read, what it decided, and what it skipped. No black boxes."
         />
         <Pillar
           num="2"
           title="One click to undo"
-          body="Autonomous Nova actions have a 24-hour reversible window. Undoing an action also tells Nova not to repeat it."
+          body="Autonomous Atrium actions have a 24-hour reversible window. Undoing an action also tells Atrium not to repeat it."
         />
         <Pillar
           num="3"
-          title="Every override teaches Nova"
-          body="Mark a result as wrong with three pills plus one line of context. Nova remembers — future calls factor it in."
+          title="Every override teaches Atrium"
+          body="Mark a result as wrong with three pills plus one line of context. Atrium remembers — future calls factor it in."
         />
       </div>
     </div>

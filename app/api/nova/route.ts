@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
           send({ type: 'error', message: err.message });
           return;
         }
-        send({ type: 'error', message: err instanceof Error ? err.message : 'Nova failed' });
+        send({ type: 'error', message: err instanceof Error ? err.message : 'Atrium failed' });
       } finally {
         controller.close();
       }

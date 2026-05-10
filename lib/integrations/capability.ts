@@ -8,7 +8,7 @@
  *      written. Here the single source of truth is the dispatcher's
  *      IMPLEMENTED_SYNC_PROVIDERS set and the IMPORT_PROVIDERS list.
  *   2. "Connect only" is honest — the token is stored so the user
- *      can invoke it from Nova tools or custom workflows, but we do
+ *      can invoke it from Atrium tools or custom workflows, but we do
  *      NOT promise continuous data flow.
  *
  * The tier surfaces on the /integrations page as a coloured chip,
@@ -98,7 +98,7 @@ export const TIER_META: Record<CapabilityTier, TierMeta> = {
     bg: 'rgba(255,255,255,0.03)',
     border: 'rgba(255,255,255,0.08)',
     explainer:
-      'Credentials stored securely so Nova tools and custom workflows can use them. No automatic data pull yet.',
+      'Credentials stored securely so Atrium tools and custom workflows can use them. No automatic data pull yet.',
   },
 };
 

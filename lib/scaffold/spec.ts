@@ -1,5 +1,5 @@
 /**
- * Scaffold spec — the typed draft produced by Nova from a single prompt.
+ * Scaffold spec — the typed draft produced by Atrium from a single prompt.
  *
  * Cellular model:
  *   Environment = the cell
@@ -10,7 +10,7 @@
  *   Role hint   = proposed staffing, the cell's "cytoskeleton"
  *
  * The spec is draft-only until the user accepts it — nothing writes
- * to the DB while Nova is generating. That's the "review the biopsy
+ * to the DB while Atrium is generating. That's the "review the biopsy
  * before the transplant" rule from BETA_TESTING.md.
  */
 

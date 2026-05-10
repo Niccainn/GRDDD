@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         startedAt: now,
       };
     }
-    // Kick off the auto-run chain so Nova starts executing
+    // Kick off the auto-run chain so Atrium starts executing
     // immediately for any non-gated first step.
     const afterRun = await runAutoChain(created);
     await writeProject(afterRun.id, afterRun);

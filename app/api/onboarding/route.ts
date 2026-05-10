@@ -95,7 +95,7 @@ export async function POST(req: Request) {
     },
     {
       id: 'stage-2',
-      name: 'Process with Nova',
+      name: 'Process with Atrium',
       type: 'nova',
       config: { prompt: 'Analyze and summarize the input.' },
     },

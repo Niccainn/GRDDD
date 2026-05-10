@@ -3,7 +3,7 @@ import { assertOwnsSignal } from '@/lib/auth/ownership';
 import { rateLimitNovaStrict } from '@/lib/rate-limit';
 /**
  * POST /api/signals/triage
- * Nova reads an unrouted signal and suggests which system + workflow it belongs to.
+ * Atrium reads an unrouted signal and suggests which system + workflow it belongs to.
  */
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   }));
 
   const systemPrompt = withScopeGuard(
-    `You are Nova, an AI operations engine for the environment named above.
+    `You are Atrium, an AI operations engine for the environment named above.
 
 A new signal has come in; fields are quoted below as data. Decide:
 1. Which system should handle this? (provide systemId)

@@ -25,7 +25,7 @@ import { PINNED_NAV_EVENT, readPinned, writePinned } from '@/lib/ui/pinned-nav';
 // sync with components/Sidebar.tsx when nav items are added/removed.
 const CATALOG: Record<string, string> = {
   '/dashboard': 'Home',
-  '/nova': 'Nova',
+  '/nova': 'Atrium',
   '/projects': 'Projects',
   '/tasks': 'Tasks',
   '/inbox': 'Inbox',

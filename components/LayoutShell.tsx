@@ -16,7 +16,7 @@ import ErrorBoundary from './ErrorBoundary';
 import BottomNav from './BottomNav';
 import SkipLink from './SkipLink';
 import LegalFooter from './LegalFooter';
-import PersistentNovaBar from './PersistentNovaBar';
+import PersistentAtriumBar from './PersistentAtriumBar';
 import SimulationModeIndicator from './SimulationModeIndicator';
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up', '/access', '/welcome'];
@@ -48,7 +48,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   // when /api/auth/me transiently fails (DB hiccup, 5xx on a cold
   // start). Without this, a logged-in user hitting /dashboard with a
   // flaky backend sees the public-layout branch — no sidebar, no
-  // Nova bar, nothing. Middleware still redirects truly-unauth'd
+  // Atrium bar, nothing. Middleware still redirects truly-unauth'd
   // visitors on the next navigation, so the optimistic branch is
   // safe: worst case we render the sidebar for a half-second before
   // a redirect.
@@ -96,11 +96,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
             {children}
           </ErrorBoundary>
         </main>
-        <PersistentNovaBar />
+        <PersistentAtriumBar />
         <BottomNav />
         {/* Persistent simulation-mode pill — only renders when
             NOVA_TOOLS_LIVE is unset on the server. The trust contract
-            requires the user to know on every page whether Nova's
+            requires the user to know on every page whether Atrium's
             actions are real or sandboxed. */}
         <SimulationModeIndicator />
       </div>

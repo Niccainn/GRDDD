@@ -59,8 +59,8 @@ function formatAction(action: string): string {
   return action.replace('.', ' · ').replace(/_/g, ' ');
 }
 
-// Pillar 5 wire: which audit actions are eligible for "Teach Nova"
-// review. Limited to cases where Nova actually made a decision —
+// Pillar 5 wire: which audit actions are eligible for "Teach Atrium"
+// review. Limited to cases where Atrium actually made a decision —
 // not user-driven CRUD. The `nova.memory_updated` action is excluded
 // because that's the override itself; teaching about a teaching
 // becomes recursive without value.
@@ -78,7 +78,7 @@ export default function AuditPage() {
   const [filterAction, setFilterAction] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  // Teach-Nova drawer state. Null when no row is in teach mode.
+  // Teach-Atrium drawer state. Null when no row is in teach mode.
   const [teaching, setTeaching] = useState<string | null>(null);
   const [lesson, setLesson] = useState('');
   const [teachSaving, setTeachSaving] = useState(false);
@@ -241,7 +241,7 @@ export default function AuditPage() {
         <div className="rounded-xl p-8 text-center" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No activity yet</p>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-            Actions like creating workflows, running executions, and querying Nova will appear here
+            Actions like creating workflows, running executions, and querying Atrium will appear here
           </p>
         </div>
       ) : (
@@ -306,9 +306,9 @@ export default function AuditPage() {
                       {/* Expanded detail */}
                       {isOpen && renderDiff(entry)}
 
-                      {/* Teach Nova — pillar 5: every override on a
-                          Nova-driven row becomes a NovaMemory. The
-                          button only appears on Nova-decision rows
+                      {/* Teach Atrium — pillar 5: every override on a
+                          Atrium-driven row becomes a NovaMemory. The
+                          button only appears on Atrium-decision rows
                           and only when the row is expanded. */}
                       {isOpen && isNovaDecision(entry) && (
                         <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
@@ -316,13 +316,13 @@ export default function AuditPage() {
                             <div onClick={e => e.stopPropagation()} className="space-y-2">
                               <p className="text-xs tracking-[0.12em] uppercase font-light"
                                 style={{ color: 'rgba(200,242,107,0.6)' }}>
-                                Teach Nova
+                                Teach Atrium
                               </p>
                               <textarea
                                 autoFocus
                                 value={lesson}
                                 onChange={e => setLesson(e.target.value)}
-                                placeholder="What should Nova have done instead? Next time…"
+                                placeholder="What should Atrium have done instead? Next time…"
                                 rows={3}
                                 className="w-full text-sm font-light px-3 py-2 rounded-lg outline-none resize-none"
                                 style={{
@@ -369,12 +369,12 @@ export default function AuditPage() {
                                 border: '1px solid rgba(200,242,107,0.18)',
                                 color: '#C8F26B',
                               }}>
-                              Teach Nova about this
+                              Teach Atrium about this
                             </button>
                           )}
                           {teachSaved && teaching === null && (
                             <p className="mt-2 text-xs font-light" style={{ color: 'rgba(200,242,107,0.6)' }}>
-                              Saved. Nova will use this next time.
+                              Saved. Atrium will use this next time.
                             </p>
                           )}
                         </div>

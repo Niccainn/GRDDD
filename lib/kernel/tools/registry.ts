@@ -1,5 +1,5 @@
 /**
- * Nova Kernel — Tool Registry
+ * Atrium Kernel — Tool Registry
  *
  * A pluggable tool registry. Tools are registered once at module load,
  * and the kernel asks the registry for tools by name at request time.

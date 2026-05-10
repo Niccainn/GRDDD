@@ -47,7 +47,7 @@ const RESOURCES: Resource[] = [
   {
     href: '/help/faq',
     title: 'FAQ',
-    description: 'Common questions grouped by topic — getting started, privacy, Nova, billing.',
+    description: 'Common questions grouped by topic — getting started, privacy, Atrium, billing.',
     audience: 'user',
     readTime: '10 min read',
   },
@@ -88,7 +88,7 @@ export default function HelpIndexPage() {
         <p className="text-sm font-light leading-relaxed mb-10" style={{ color: 'var(--text-2)' }}>
           Everything you need to know about GRID. New? Start with the Quickstart. Stuck?
           Troubleshooting. Running the deployment? Admin Guide. For anything else, use the
-          Nova bar at the bottom-right — it has your workspace context.
+          Atrium bar at the bottom-right — it has your workspace context.
         </p>
 
         <ResourceList title="For users" items={forUsers} />
@@ -103,8 +103,8 @@ export default function HelpIndexPage() {
           </h2>
           <div className="space-y-2 text-sm font-light" style={{ color: 'var(--text-2)' }}>
             <p>
-              <strong style={{ color: 'var(--text-1)', fontWeight: 500 }}>Ask Nova.</strong>
-              {' '}Click the Nova bar at the bottom-right of any page. It has the context of
+              <strong style={{ color: 'var(--text-1)', fontWeight: 500 }}>Ask Atrium.</strong>
+              {' '}Click the Atrium bar at the bottom-right of any page. It has the context of
               your workspace and can answer most product questions directly.
             </p>
             <p>

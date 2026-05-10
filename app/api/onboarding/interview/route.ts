@@ -39,7 +39,7 @@ function heuristicProposal(answers: Record<string, string>): Proposal {
   // Very cheap keyword routing so dev/offline mode still gives
   // something meaningful rather than a generic stub.
   let systemName = 'Operations';
-  let systemDesc = 'The repeating work Nova runs alongside you.';
+  let systemDesc = 'The repeating work Atrium runs alongside you.';
   if (joined.includes('email') || joined.includes('inbox') || joined.includes('mail')) {
     systemName = 'Inbox Triage';
     systemDesc = 'Sorts mail, drafts replies, surfaces what needs a human.';
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
   }
 
   const systemPrompt = [
-    'You are Nova, an operations-minded business agent doing an onboarding interview.',
+    'You are Atrium, an operations-minded business agent doing an onboarding interview.',
     'You just got five short answers from a new user about their work.',
     'Propose a starter setup: one System, three Goals, one starter Workflow, and one escalation rule.',
     'Return ONLY valid JSON matching the schema provided. No markdown, no commentary.',
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
     const lastBrace = raw.lastIndexOf('}');
     const jsonSlice = firstBrace >= 0 ? raw.slice(firstBrace, lastBrace + 1) : raw;
     const parsed = JSON.parse(jsonSlice) as Proposal;
-    // Quick sanity: if Nova forgot a field, fall back to heuristic.
+    // Quick sanity: if Atrium forgot a field, fall back to heuristic.
     if (!parsed?.system?.name || !Array.isArray(parsed.goals) || parsed.goals.length < 1) {
       throw new Error('bad_shape');
     }

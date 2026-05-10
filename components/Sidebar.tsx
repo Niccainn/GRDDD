@@ -77,7 +77,7 @@ const navSections: CollapsibleNavSection[] = [
     label: '',
     items: [
       { href: '/dashboard', label: 'Home', icon: icons.home },
-      { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
+      { href: '/nova', label: 'Atrium', icon: icons.nova, accent: true },
     ],
   },
   // YOUR SYSTEMS — injected dynamically below
@@ -89,7 +89,10 @@ const navSections: CollapsibleNavSection[] = [
       // new users see the differentiator on day one.
       { href: '/projects', label: 'Projects', icon: icons.workflows },
       { href: '/tasks', label: 'Tasks', icon: icons.tasks },
-      { href: '/inbox', label: 'Inbox', icon: icons.inbox, badge: 'inbox' },
+      // Renamed from "Inbox" — the schema entity is Signal and the
+      // reviewer-shaped frame is "what needs your judgment", not
+      // "what you need to read." Frame shift; route unchanged.
+      { href: '/inbox', label: 'Signals', icon: icons.inbox, badge: 'inbox' },
       { href: '/calendar', label: 'Calendar', icon: icons.calendar },
       // Meetings — transcription + summary + action items that can
       // be promoted into Tasks/Signals/Goals. The wedge vs Sana: a
@@ -192,7 +195,7 @@ export default function Sidebar() {
         // users a one-click escape out of env context without having
         // to reach for "All Environments".
         { href: '/dashboard', label: 'Home', icon: icons.home },
-        { href: '/nova', label: 'Nova', icon: icons.nova, accent: true },
+        { href: '/nova', label: 'Atrium', icon: icons.nova, accent: true },
       ],
     },
     {
@@ -430,7 +433,7 @@ export default function Sidebar() {
                 )
               )}
 
-              {/* Dynamic systems section — injected after the first section (Home/Nova) */}
+              {/* Dynamic systems section — injected after the first section (Home/Atrium) */}
               {si === 0 && !envSlug && (
                 <div className="mt-4">
                   {/* Pinned nav — user-customizable, reads from localStorage */}

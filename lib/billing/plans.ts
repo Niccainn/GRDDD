@@ -102,7 +102,7 @@ export function getPlanByStripePriceId(priceId: string): PlanType | null {
 /** Human-readable label for a usage metric */
 export const METRIC_LABELS: Record<string, string> = {
   executions: 'Executions',
-  nova_queries: 'Nova queries',
+  nova_queries: 'Atrium queries',
   api_calls: 'API calls',
   storage_mb: 'Storage (MB)',
 };

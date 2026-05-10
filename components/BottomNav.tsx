@@ -93,7 +93,7 @@ export default function BottomNav() {
         { href: `/environments/${envSlug}/analytics`, label: 'Analytics', icon: tabIcons.analytics },
         { href: `/environments/${envSlug}/calendar`, label: 'Calendar', icon: tabIcons.calendar },
         { href: '/dashboard', label: 'Home', icon: tabIcons.home },
-        { href: '/nova', label: 'Nova', icon: tabIcons.nova },
+        { href: '/nova', label: 'Atrium', icon: tabIcons.nova },
         { href: '/environments', label: 'All Environments', icon: tabIcons.environments },
         { href: '/settings', label: 'Settings', icon: tabIcons.settings },
       ]
@@ -105,7 +105,7 @@ export default function BottomNav() {
   const globalTabs = [
     { href: '/dashboard', label: 'Home', icon: tabIcons.home },
     { href: '/projects', label: 'Projects', icon: tabIcons.workflows },
-    { href: '/nova', label: 'Nova', icon: tabIcons.nova, isNova: true },
+    { href: '/nova', label: 'Atrium', icon: tabIcons.nova, isNova: true },
     { href: '/tasks', label: 'Tasks', icon: tabIcons.tasks },
   ];
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import NovaContinuityPanel from '@/components/NovaContinuityPanel';
+import AtriumContinuityPanel from '@/components/AtriumContinuityPanel';
 
 // ─── Markdown renderer ────────────────────────────────────────────────────────
 function renderInline(text: string): React.ReactNode {
@@ -94,7 +94,7 @@ export default function NovaPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Continuity panel — Nova's persistent context across sessions.
+  // Continuity panel — Atrium's persistent context across sessions.
   const [brainOpen, setBrainOpen] = useState(false);
 
   // Logs state
@@ -194,7 +194,7 @@ export default function NovaPage() {
 
       if (!res.ok) {
         const d = await res.json();
-        setError(d.error ?? 'Nova failed');
+        setError(d.error ?? 'Atrium failed');
         setStreaming(false);
         return;
       }
@@ -247,7 +247,7 @@ export default function NovaPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-extralight tracking-tight">Nova</h1>
+              <h1 className="text-2xl font-extralight tracking-tight">Atrium</h1>
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>
                 AI operations engine · global mode
               </p>
@@ -261,7 +261,7 @@ export default function NovaPage() {
             )}
             <button
               onClick={() => setBrainOpen(true)}
-              title="Nova Continuity"
+              title="Atrium Continuity"
               className="flex items-center justify-center transition-all"
               style={{
                 width: '34px',
@@ -360,7 +360,7 @@ export default function NovaPage() {
           {messages.length === 0 && (
             <div className="px-6 pt-6 pb-2">
               <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>
-                Nova reads across every system, workflow, and signal in your org — then acts. Here's what it can do.
+                Atrium reads across every system, workflow, and signal in your org — then acts. Here's what it can do.
               </p>
 
               {/* Capability tiles with concrete example I/O */}
@@ -445,7 +445,7 @@ export default function NovaPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask Nova about any system, workflow, or pattern across the org···"
+              placeholder="Ask Atrium about any system, workflow, or pattern across the org···"
               rows={2}
               disabled={streaming}
               className="w-full text-sm font-light px-4 py-3 pr-14 rounded-xl focus:outline-none resize-none transition-all"
@@ -531,7 +531,7 @@ export default function NovaPage() {
           ) : filteredLogs.length === 0 ? (
             <div className="py-16 text-center rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
               <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                {logs.length === 0 ? 'No interactions yet — ask Nova something above' : 'No matches'}
+                {logs.length === 0 ? 'No interactions yet — ask Atrium something above' : 'No matches'}
               </p>
             </div>
           ) : (
@@ -603,7 +603,7 @@ export default function NovaPage() {
           )}
         </div>
       </div>
-      <NovaContinuityPanel open={brainOpen} onClose={() => setBrainOpen(false)} />
+      <AtriumContinuityPanel open={brainOpen} onClose={() => setBrainOpen(false)} />
     </div>
   );
 }

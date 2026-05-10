@@ -7,7 +7,7 @@ type MemoryData = {
   updatedAt: string | null;
 };
 
-export default function NovaMemoryPanel({ systemId }: { systemId: string }) {
+export default function AtriumMemoryPanel({ systemId }: { systemId: string }) {
   const [data, setData] = useState<MemoryData>({ memory: null, updatedAt: null });
   const [loaded, setLoaded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -88,7 +88,7 @@ export default function NovaMemoryPanel({ systemId }: { systemId: string }) {
           ) : !data.memory && !editing ? (
             <div className="py-4 text-center">
               <p className="text-xs mb-2" style={{ color: 'var(--text-3)' }}>
-                No memory yet — Nova will build it as you interact
+                No memory yet — Atrium will build it as you interact
               </p>
               <button
                 onClick={() => { setDraft(''); setEditing(true); }}
@@ -103,7 +103,7 @@ export default function NovaMemoryPanel({ systemId }: { systemId: string }) {
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 rows={6}
-                placeholder="Write context that Nova should know about this system — goals, priorities, constraints, patterns, decisions made..."
+                placeholder="Write context that Atrium should know about this system — goals, priorities, constraints, patterns, decisions made..."
                 className="w-full text-xs font-light px-3 py-2.5 rounded-lg focus:outline-none resize-none leading-relaxed"
                 style={{
                   background: 'rgba(255,255,255,0.04)',

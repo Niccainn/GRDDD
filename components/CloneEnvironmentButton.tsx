@@ -69,7 +69,7 @@ export default function CloneEnvironmentButton({
                 Clone environment
               </h2>
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-                Creates a full copy of <span style={{ color: 'rgba(255,255,255,0.5)' }}>{sourceName}</span> — all systems, workflows, and Nova configurations. Cloned workflows start as drafts.
+                Creates a full copy of <span style={{ color: 'rgba(255,255,255,0.5)' }}>{sourceName}</span> — all systems, workflows, and Atrium configurations. Cloned workflows start as drafts.
               </p>
             </div>
 

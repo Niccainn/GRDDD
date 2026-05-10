@@ -11,8 +11,8 @@ export default function Home() {
     applicationSubCategory: 'Operational Intelligence',
     operatingSystem: 'Web',
     url: 'https://www.grddd.com',
-    description: 'A workspace that acts. Type what you want done. Nova writes the plan, your tools do the work — Figma, Canva, Notion, Gmail, Slack, Meta Ads. Every step traces, every action explains itself, every override teaches Nova.',
-    featureList: 'Environment, Systems, Workflows, Signals, Nova (intelligence layer), Predictive Consequence Mapping, Operational Playbook, Execution Review, Autonomy Trust Gradient, 110+ OAuth Integrations, System Health Monitoring, BYOK Anthropic API',
+    description: 'A workspace that acts. Type what you want done. Atrium writes the plan, your tools do the work — Figma, Canva, Notion, Gmail, Slack, Meta Ads. Every step traces, every action explains itself, every override teaches Atrium.',
+    featureList: 'Environment, Systems, Workflows, Signals, Atrium (intelligence layer), Predictive Consequence Mapping, Operational Playbook, Execution Review, Autonomy Trust Gradient, 110+ OAuth Integrations, System Health Monitoring, BYOK Anthropic API',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -120,7 +120,7 @@ export default function Home() {
             {[
               { label: 'Every action explains itself', color: 'var(--brand)' },
               { label: '24-hour undo window', color: 'var(--nova)' },
-              { label: 'Every override teaches Nova', color: 'var(--info)' },
+              { label: 'Every override teaches Atrium', color: 'var(--info)' },
               { label: 'Built on Claude', color: 'var(--warning)' },
             ].map(pill => (
               <span key={pill.label} className="text-[10px] font-light px-3 py-1.5 rounded-full tracking-wide"
@@ -186,7 +186,7 @@ export default function Home() {
               },
               {
                 before: 'A change in one place breaks another, silently.',
-                after: 'Nova maps how every change ripples across the environment.',
+                after: 'Atrium maps how every change ripples across the environment.',
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg>
                 ),
@@ -252,10 +252,10 @@ export default function Home() {
             {/* AI side */}
             <div className="glass-deep p-8 rounded-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: 'var(--nova)', opacity: 0.4 }} />
-              <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--nova)', opacity: 0.85 }}>Nova learns</p>
+              <p className="text-[10px] tracking-[0.16em] uppercase mb-6" style={{ color: 'var(--nova)', opacity: 0.85 }}>Atrium learns</p>
               <div className="space-y-5">
                 {[
-                  { step: 'Observe', desc: 'Nova reads every System, Signal, and Workflow. It maps how the environment runs.' },
+                  { step: 'Observe', desc: 'Atrium reads every System, Signal, and Workflow. It maps how the environment runs.' },
                   { step: 'Adapt', desc: 'It remembers your patterns, your voice, your constraints. Its output sharpens.' },
                   { step: 'Act', desc: 'It runs Workflows, triages Signals, and surfaces what needs you.' },
                 ].map((item, i) => (
@@ -282,7 +282,7 @@ export default function Home() {
               <div className="w-3 h-3 rounded-full" style={{ background: 'var(--nova)' }} />
             </div>
             <p className="text-sm font-light leading-relaxed max-w-lg mx-auto" style={{ color: 'var(--text-2)' }}>
-              Compounding coherence. You get better at running the work. Nova gets better at running it for you. The environment gets clearer every week.
+              Compounding coherence. You get better at running the work. Atrium gets better at running it for you. The environment gets clearer every week.
             </p>
           </div>
         </div>
@@ -310,8 +310,8 @@ export default function Home() {
               { name: 'Forms', desc: 'Structured input from clients, leads, and your own team.', icon: '▦', color: 'var(--warning)' },
               { name: 'Finance', desc: 'Invoices, revenue, and financial health — inside the environment.', icon: '◇', color: '#FF6B6B' },
               { name: 'Dashboards', desc: 'Custom boards. Live analytics. Real health scores.', icon: '▣', color: '#4ECDC4' },
-              { name: 'Workflows', desc: 'Multi-step executions. Human agents. Nova. Together.', icon: '⟡', color: 'var(--info)' },
-              { name: 'Nova', desc: 'The intelligence layer. Reads your systems. Learns your patterns. Acts.', icon: '✦', color: 'var(--nova)' },
+              { name: 'Workflows', desc: 'Multi-step executions. Human agents. Atrium. Together.', icon: '⟡', color: 'var(--info)' },
+              { name: 'Atrium', desc: 'The intelligence layer. Reads your systems. Learns your patterns. Acts.', icon: '✦', color: 'var(--nova)' },
               { name: 'Environments', desc: 'Bounded systems. One per team, client, or unit.', icon: '⬡', color: 'var(--brand)' },
             ].map(item => (
               <div key={item.name} className="glass-deep p-4 md:p-5 rounded-xl">
@@ -368,7 +368,7 @@ export default function Home() {
                     A blog post from brief to publish-ready in 4 minutes
                   </h3>
                   <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
-                    A founder writes a one-line brief. Nova researches the topic, drafts in the brand voice, reviews for quality, prepares SEO metadata. One execution. Next time, the brief sharpens and the output gets closer still.
+                    A founder writes a one-line brief. Atrium researches the topic, drafts in the brand voice, reviews for quality, prepares SEO metadata. One execution. Next time, the brief sharpens and the output gets closer still.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(113,147,237,0.1)', color: 'var(--info)', border: '1px solid rgba(113,147,237,0.15)' }}>Research</span>
@@ -400,7 +400,7 @@ export default function Home() {
                     A full social campaign across three platforms, one execution
                   </h3>
                   <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
-                    Describe the goal. Nova builds the narrative, creates platform-specific posts for three channels, reviews each for brand alignment, prepares the schedule. The team reads what performed. The next campaign starts smarter.
+                    Describe the goal. Atrium builds the narrative, creates platform-specific posts for three channels, reviews each for brand alignment, prepares the schedule. The team reads what performed. The next campaign starts smarter.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,107,107,0.1)', color: '#FF6B6B', border: '1px solid rgba(255,107,107,0.15)' }}>Narrative</span>
@@ -483,13 +483,13 @@ export default function Home() {
               },
               {
                 outcome: 'AI fluency',
-                desc: 'Your team learns to work with Nova through real Workflows — not chat experiments. Better setups. Sharper judgment.',
+                desc: 'Your team learns to work with Atrium through real Workflows — not chat experiments. Better setups. Sharper judgment.',
                 metric: 'Output quality up 40% in 4 weeks',
                 color: 'var(--nova)',
               },
               {
                 outcome: 'Adaptive capacity',
-                desc: 'When something changes — a new client, a new market, a new priority — the environment adapts. Workflows evolve. Nova adjusts. No retraining.',
+                desc: 'When something changes — a new client, a new market, a new priority — the environment adapts. Workflows evolve. Atrium adjusts. No retraining.',
                 metric: 'Respond to change in hours, not quarters',
                 color: 'var(--warning)',
               },
@@ -568,7 +568,7 @@ export default function Home() {
                 needs: [
                   'Design Workflows you can track and improve',
                   'Replace status meetings with live health scores',
-                  'Learn which Nova setups produce the strongest output',
+                  'Learn which Atrium setups produce the strongest output',
                 ],
                 color: 'var(--info)',
               },
@@ -623,7 +623,7 @@ export default function Home() {
             {[
               { stat: '110+', label: 'Connectable', sub: 'One-click OAuth; live sync on a growing list' },
               { stat: '9', label: 'Core systems', sub: 'Tasks, docs, goals, forms & more' },
-              { stat: '∞', label: 'Workflows', sub: 'Human agents. Nova. Together.' },
+              { stat: '∞', label: 'Workflows', sub: 'Human agents. Atrium. Together.' },
               { stat: '1', label: 'Environment', sub: 'Replaces the fragment stack' },
             ].map(item => (
               <div key={item.label} className="glass-deep p-5 rounded-xl text-center">

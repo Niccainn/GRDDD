@@ -1,10 +1,10 @@
 'use client';
 
 /**
- * AddMention — the universal "add someone (human or Nova)" button.
+ * AddMention — the universal "add someone (human or Atrium)" button.
  *
  * Opens a picker listing:
- *   - Nova (always first, purple accent)
+ *   - Atrium (always first, purple accent)
  *   - Every member of the current Environment
  *
  * Used anywhere the product needs to attach an actor to an action,
@@ -38,7 +38,7 @@ type Props = {
   environmentId: string;
   /** Render as a button with this label. Defaults to "+ Add". */
   label?: string;
-  /** If true, include Nova as a pickable entity. Default true. */
+  /** If true, include Atrium as a pickable entity. Default true. */
   allowNova?: boolean;
   /** If true, allow picking any number (usage: comment mentions). */
   multi?: boolean;
@@ -142,7 +142,7 @@ export default function AddMention({
           >
             {p.kind === 'nova' ? 'N' : initials(p.name)}
           </span>
-          {p.kind === 'nova' ? 'Nova' : p.name}
+          {p.kind === 'nova' ? 'Atrium' : p.name}
           {onRemove && (
             <button
               type="button"
@@ -199,7 +199,7 @@ export default function AddMention({
             type="text"
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Search Nova or team…"
+            placeholder="Search Atrium or team…"
             className="w-full text-sm font-light px-4 py-3 focus:outline-none"
             style={{
               background: 'rgba(255,255,255,0.02)',
@@ -212,7 +212,7 @@ export default function AddMention({
               <button
                 type="button"
                 onClick={() =>
-                  handlePick({ kind: 'nova', name: 'Nova', role: 'agent' })
+                  handlePick({ kind: 'nova', name: 'Atrium', role: 'agent' })
                 }
                 className="w-full flex items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-white/[0.03]"
               >
@@ -228,7 +228,7 @@ export default function AddMention({
                 </span>
                 <span className="flex-1 min-w-0">
                   <span className="block text-sm font-light" style={{ color: 'var(--text-1)' }}>
-                    Nova
+                    Atrium
                   </span>
                   <span className="block text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
                     Agent · runs with your permission

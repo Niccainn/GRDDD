@@ -10,7 +10,7 @@ import {
   type KeySource,
 } from './nova/client-factory';
 
-// The module-level Anthropic singleton has been removed — every Nova
+// The module-level Anthropic singleton has been removed — every Atrium
 // invocation now resolves a client per environment via the factory
 // in lib/nova/client-factory.ts. This is the foundation of BYOK:
 // each tenant can plug in their own key at /settings/ai and the
@@ -42,7 +42,7 @@ const NOVA_TOOLS: Anthropic.Tool[] = [
   },
   {
     name: 'get_activity',
-    description: 'Retrieve recent Nova interaction history and execution records for this system.',
+    description: 'Retrieve recent Atrium interaction history and execution records for this system.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -366,7 +366,7 @@ async function executeTool(
 
     case 'update_memory': {
       const memory = input.memory as string;
-      const intelligence = await prisma.intelligence.findFirst({ where: { systemId: ctx.systemId, name: 'Nova', type: 'AI_AGENT' } });
+      const intelligence = await prisma.intelligence.findFirst({ where: { systemId: ctx.systemId, name: 'Atrium', type: 'AI_AGENT' } });
       if (intelligence) {
         await prisma.intelligenceLog.create({
           data: {
@@ -563,7 +563,7 @@ async function executeTool(
         include: { identity: true },
       });
       // identity pulled via relation include → PII extension skipped.
-      // Decrypt defensively (no-op on plaintext) so Nova's team-member
+      // Decrypt defensively (no-op on plaintext) so Atrium's team-member
       // tool returns real names instead of 'pii:/…' ciphertext.
       const result = members.map(m => ({
         id: m.identity.id,
@@ -667,7 +667,7 @@ function buildPrompt(ctx: {
     ? `\n**Brand identity (always stay on-brand when creating content, campaigns, or communications):**\n${brandLines.join('\n')}\n`
     : '';
 
-  return `You are Nova — the intelligence layer inside GRID, an adaptive organizational operating system that bridges human teams and AI into a unified workspace.
+  return `You are Atrium — the intelligence layer inside GRID, an adaptive organizational operating system that bridges human teams and AI into a unified workspace.
 
 You are NOT a chatbot. You are an embedded AGI agent with persistent memory, tools, and organizational awareness. You understand the structure of work — environments, systems, workflows, goals — and you act within it.
 
@@ -703,16 +703,16 @@ You don't just answer questions. You understand organizational structure and can
 Operator: ${ctx.identityName}`;
 }
 
-// ─── Helper: get or create Nova intelligence record ───────────────────────────
+// ─── Helper: get or create Atrium intelligence record ───────────────────────────
 export async function getOrCreateNovaIntelligence(
   systemId: string,
   environmentId: string,
   identityId: string
 ) {
   return (
-    (await prisma.intelligence.findFirst({ where: { systemId, name: 'Nova', type: 'AI_AGENT' } })) ??
+    (await prisma.intelligence.findFirst({ where: { systemId, name: 'Atrium', type: 'AI_AGENT' } })) ??
     (await prisma.intelligence.create({
-      data: { type: 'AI_AGENT', name: 'Nova', systemId, environmentId, creatorId: identityId },
+      data: { type: 'AI_AGENT', name: 'Atrium', systemId, environmentId, creatorId: identityId },
     }))
   );
 }
@@ -767,7 +767,7 @@ export async function runNovaAgent({
   // Resolve the Anthropic client for THIS environment. In closed beta
   // this falls back to the platform key; in byok/live tiers it requires
   // a tenant-supplied key and surfaces a MissingKeyError otherwise. The
-  // error is caught here and emitted as a user-facing Nova error event
+  // error is caught here and emitted as a user-facing Atrium error event
   // so the UI can render a "connect your Anthropic account" CTA.
   let anthropic: Anthropic;
   let keySource: KeySource;

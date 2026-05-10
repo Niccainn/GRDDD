@@ -10,7 +10,7 @@
  *   - badge    department tag (for coloring)
  *
  * Using a template feels identical to typing the goal — it just
- * skips the typing. Nova still plans the steps from the skill
+ * skips the typing. Atrium still plans the steps from the skill
  * registry and still respects HITL gates.
  */
 

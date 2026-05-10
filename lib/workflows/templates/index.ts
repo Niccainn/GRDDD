@@ -10,7 +10,7 @@
  *   - content-loop    → "Ideas die between draft and publish"
  *   - problem-radar   → "We only find issues after they hurt"  ← synergy loop
  *
- * The `problem-radar` template is the synergy primitive: it asks Nova
+ * The `problem-radar` template is the synergy primitive: it asks Atrium
  * to scan recent activity for friction, surface it as a prioritized
  * list, capture the human's response via record_memory, and learn from
  * every resolution — closing the human↔AGI loop so the system gets

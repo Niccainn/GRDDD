@@ -2,7 +2,7 @@
 
 /**
  * WidgetPicker — the onboarding step where users pick which widgets
- * will appear on their Environment page before Nova finishes building.
+ * will appear on their Environment page before Atrium finishes building.
  *
  * Reads the department catalog. Every preset is a toggleable card.
  * Recommended presets are on by default; the user can deselect any.
@@ -23,7 +23,7 @@ import {
 type Props = {
   /** The department derived from the selected wedge. */
   departmentId: DepartmentId;
-  /** The systemId Nova is about to create. Passed post-build. */
+  /** The systemId Atrium is about to create. Passed post-build. */
   systemId?: string | null;
   onContinue: (hiddenPresetIds: string[]) => void;
   onBack?: () => void;

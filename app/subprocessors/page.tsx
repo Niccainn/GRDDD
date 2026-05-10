@@ -35,7 +35,7 @@ type Subprocessor = {
 const SUBPROCESSORS: Subprocessor[] = [
   {
     name: 'Anthropic',
-    purpose: 'LLM inference for Nova and workflow stages (user BYOK for most flows)',
+    purpose: 'LLM inference for Atrium and workflow stages (user BYOK for most flows)',
     dataCategories: 'Prompts, responses, workflow inputs',
     region: 'United States',
     dpa: 'https://www.anthropic.com/legal/dpa',

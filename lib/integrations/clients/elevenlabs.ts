@@ -4,7 +4,7 @@
  * Read methods cover voice listing and account info. Write method
  * synthesizes audio from text using a chosen voice. The audio is
  * returned base64-encoded so it survives the JSON boundary back
- * through Nova; clients that want to play it can decode + use as
+ * through Atrium; clients that want to play it can decode + use as
  * an audio src.
  */
 

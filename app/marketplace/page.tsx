@@ -45,11 +45,11 @@ export default async function MarketplacePage() {
             Agentic Work OS · Workflow Marketplace
           </p>
           <h1 className="text-3xl font-light mb-2" style={{ color: 'var(--text-1)' }}>
-            What Nova will run for you
+            What Atrium will run for you
           </h1>
           <p className="text-sm max-w-xl font-light" style={{ color: 'var(--text-3)' }}>
             Every workflow is a multi-stage program the kernel executes end-to-end.
-            Pick one, click Run, watch it work. Each run feeds back into Nova's
+            Pick one, click Run, watch it work. Each run feeds back into Atrium's
             per-tenant memory — so next week's scan is sharper than this week's.
           </p>
         </header>

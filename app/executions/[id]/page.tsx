@@ -294,7 +294,7 @@ export default function ExecutionDetailPage() {
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                   </svg>
-                  Process with Nova
+                  Process with Atrium
                 </button>
               )}
             </div>
@@ -339,7 +339,7 @@ export default function ExecutionDetailPage() {
             </div>
           )}
 
-          {/* Nova output */}
+          {/* Atrium output */}
           {(hasNovaOutput || streamingStage) && (
             <div className="space-y-4">
               <p className="text-xs tracking-[0.1em]" style={{ color: 'var(--text-3)' }}>
@@ -379,10 +379,10 @@ export default function ExecutionDetailPage() {
             </div>
           )}
 
-          {/* Tool invocations — the actual work Nova did on external
+          {/* Tool invocations — the actual work Atrium did on external
               systems this run. Each card shows whether it fired live
               or was simulated (dry-run or missing integration), the
-              inputs Nova decided to use, and the adapter's response.
+              inputs Atrium decided to use, and the adapter's response.
               This is the trust theater: read/decided/skipped on a page. */}
           {invocations.length > 0 && (
             <div className="space-y-2 mt-6">
@@ -478,7 +478,7 @@ export default function ExecutionDetailPage() {
             </div>
           )}
 
-          {/* Plain output (non-Nova, non-structured) */}
+          {/* Plain output (non-Atrium, non-structured) */}
           {!hasNovaOutput && !streamingStage && execution.output && (
             <div className="p-5 rounded-xl" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
               <p className="text-xs tracking-[0.1em] mb-3" style={{ color: 'var(--text-3)' }}>OUTPUT</p>
@@ -498,7 +498,7 @@ export default function ExecutionDetailPage() {
               </div>
               <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>No output yet</p>
               <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>
-                Let Nova process this {stages.length > 0 ? `${stages.length}-stage workflow` : 'request'}
+                Let Atrium process this {stages.length > 0 ? `${stages.length}-stage workflow` : 'request'}
               </p>
               <button onClick={runWithNova}
                 className="flex items-center gap-2 text-xs font-light px-5 py-2.5 rounded-lg transition-all"
@@ -506,7 +506,7 @@ export default function ExecutionDetailPage() {
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
-                Process with Nova
+                Process with Atrium
               </button>
             </div>
           )}

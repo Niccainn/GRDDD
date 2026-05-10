@@ -110,7 +110,7 @@ export const problemRadarTemplate = {
         '  2. Why it matters (one sentence, business impact)\n' +
         '  3. Recommended action (one sentence, specific and actionable)\n' +
         '  4. Confidence (Low / Medium / High) — how sure are you this is a real problem\n\n' +
-        'End with a single "ASK" line: the one question a human needs to answer to unblock Nova this week.',
+        'End with a single "ASK" line: the one question a human needs to answer to unblock Atrium this week.',
       dependsOn: ['rank'],
       tools: [],
       tier: 'deep' as const,

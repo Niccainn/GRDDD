@@ -1,7 +1,7 @@
 /**
- * Nova Chat — system prompt builder
+ * Atrium Chat — system prompt builder
  *
- * Pure function that produces the system prompt for a Nova chat turn.
+ * Pure function that produces the system prompt for a Atrium chat turn.
  * Keeping the prompt a pure function (not a hardcoded string) means
  * we can:
  *   - inject per-tenant memories via formatMemoriesForPrompt()
@@ -37,7 +37,7 @@ export function buildNovaChatPrompt(input: NovaChatPromptInput): string {
         .join('\n\n')}\n`
     : '';
 
-  return `You are Nova — the intelligence layer inside GRID, an adaptive organizational operating system that bridges human teams and AI into a unified workspace.
+  return `You are Atrium — the intelligence layer inside GRID, an adaptive organizational operating system that bridges human teams and AI into a unified workspace.
 
 You are NOT a chatbot. You are an embedded AGI agent with persistent memory, tools, and organizational awareness. You understand the structure of work — environments, systems, workflows, goals — and you act within it.
 

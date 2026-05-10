@@ -18,11 +18,11 @@ type Config = {
 };
 
 const LEVELS = [
-  { name: 'Observe', color: 'rgba(255,255,255,0.35)', desc: 'Nova watches, you decide' },
-  { name: 'Suggest', color: '#6395ff', desc: 'Nova suggests, you approve' },
-  { name: 'Act & Notify', color: '#C8F26B', desc: 'Nova acts, you\'re notified' },
-  { name: 'Autonomous', color: '#a878ff', desc: 'Nova handles it' },
-  { name: 'Self-Direct', color: '#F7C700', desc: 'Nova acts and adapts strategy' },
+  { name: 'Observe', color: 'rgba(255,255,255,0.35)', desc: 'Atrium watches, you decide' },
+  { name: 'Suggest', color: '#6395ff', desc: 'Atrium suggests, you approve' },
+  { name: 'Act & Notify', color: '#C8F26B', desc: 'Atrium acts, you\'re notified' },
+  { name: 'Autonomous', color: '#a878ff', desc: 'Atrium handles it' },
+  { name: 'Self-Direct', color: '#F7C700', desc: 'Atrium acts and adapts strategy' },
 ];
 
 function trustColor(rate: number) {
@@ -126,11 +126,11 @@ export default function AutonomyConfig({
               margin: 0,
             }}
           >
-            Nova Autonomy
+            Atrium Autonomy
           </h2>
         </div>
         <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 13, margin: 0 }}>
-          Control how much Nova can do without asking
+          Control how much Atrium can do without asking
         </p>
       </div>
 
@@ -186,7 +186,7 @@ export default function AutonomyConfig({
           </div>
           <div>
             <p style={{ fontSize: 14, fontWeight: 300, color: 'var(--text-1)', margin: 0, marginBottom: 4 }}>
-              Nova Trust Score
+              Atrium Trust Score
             </p>
             <p style={{ fontSize: 12, fontWeight: 300, color: 'var(--text-3)', margin: 0 }}>
               {totalApproved} approved of {totalActions} total actions across {configs.length} scopes
@@ -250,7 +250,7 @@ export default function AutonomyConfig({
           }}
         >
           <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 13 }}>
-            No autonomy configs yet. Create workflows or systems to configure Nova&apos;s autonomy.
+            No autonomy configs yet. Create workflows or systems to configure Atrium&apos;s autonomy.
           </p>
         </div>
       ) : (
@@ -466,7 +466,7 @@ export default function AutonomyConfig({
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ fontSize: 11, color: '#F7C700', fontWeight: 400 }}>
-                        Nova recommends Level {config.recommendedLevel} ({LEVELS[config.recommendedLevel]?.name}):
+                        Atrium recommends Level {config.recommendedLevel} ({LEVELS[config.recommendedLevel]?.name}):
                       </span>{' '}
                       <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 300 }}>
                         {config.recommendReason}

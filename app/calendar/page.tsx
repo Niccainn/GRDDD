@@ -98,7 +98,7 @@ export default function CalendarPage() {
     { id: 'tasks', label: 'Tasks', color: '#7193ED', visible: true, type: 'internal', icon: '#' },
     { id: 'meetings', label: 'Meetings', color: '#E879F9', visible: true, type: 'internal', icon: '◎' },
     { id: 'goals', label: 'Goals & Milestones', color: '#C8F26B', visible: true, type: 'internal', icon: '*' },
-    { id: 'nova', label: 'Nova Checkpoints', color: '#BF9FF1', visible: true, type: 'internal', icon: '~' },
+    { id: 'nova', label: 'Atrium Checkpoints', color: '#BF9FF1', visible: true, type: 'internal', icon: '~' },
   ]);
 
   const toggleLayer = useCallback((layerId: string) => {

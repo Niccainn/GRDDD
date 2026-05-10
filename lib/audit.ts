@@ -11,7 +11,7 @@ export type AuditAction =
   | 'environment.created' | 'environment.updated'
   // Team
   | 'member.added' | 'member.removed' | 'member.role_changed'
-  // Nova
+  // Atrium
   | 'nova.query' | 'nova.memory_updated'
   // Automations
   | 'automation.created' | 'automation.toggled' | 'automation.run'

@@ -1,5 +1,5 @@
 /**
- * Figma read client — provides tools for Nova and Agents to read
+ * Figma read client — provides tools for Atrium and Agents to read
  * design files, components, styles, and variables from Figma.
  *
  * API docs: https://www.figma.com/developers/api

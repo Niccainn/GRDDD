@@ -4,7 +4,7 @@
  * This is a TEMPLATE privacy policy drafted to cover the features that
  * exist in GRID today:
  *   - Email/password + OAuth (Google, GitHub) sign-in
- *   - AI chat (Nova) with Anthropic as sub-processor
+ *   - AI chat (Atrium) with Anthropic as sub-processor
  *   - Workflow runs + kernel traces (prompts and outputs stored)
  *   - Per-tenant memory (learned preferences)
  *   - Session cookies (grid_session) + short-lived OAuth state cookies
@@ -70,12 +70,12 @@ export default function PrivacyPage() {
                 workflows, and audit events — all scoped to your tenant.
               </li>
               <li>
-                <b>AI interaction data:</b> the prompts you send to Nova and the responses Nova
+                <b>AI interaction data:</b> the prompts you send to Atrium and the responses Atrium
                 returns. These are stored as &ldquo;kernel traces&rdquo; so you can audit what the
                 AI did on your behalf.
               </li>
               <li>
-                <b>Learned memory:</b> Nova may derive short text notes (&ldquo;memories&rdquo;) from
+                <b>Learned memory:</b> Atrium may derive short text notes (&ldquo;memories&rdquo;) from
                 your interactions so future runs are more useful. Memories are scoped to your tenant
                 only.
               </li>
@@ -108,7 +108,7 @@ export default function PrivacyPage() {
             deliver the service.
             <ul className="list-disc pl-5 space-y-2 mt-3">
               <li>
-                <b>Anthropic</b> — processes the prompts and responses in your Nova chat and
+                <b>Anthropic</b> — processes the prompts and responses in your Atrium chat and
                 workflow runs. Data is sent to Anthropic&rsquo;s API (&ldquo;Claude&rdquo;) and
                 governed by Anthropic&rsquo;s commercial terms and DPA. Anthropic does not train
                 its public models on our API traffic.
@@ -129,11 +129,11 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="5. AI disclosure">
-            GRID uses AI models from Anthropic (Claude family) to power Nova chat, workflow
-            execution, and memory. When you interact with Nova you are interacting with an AI
-            system. Nova&rsquo;s outputs can contain errors and should not be relied on for
+            GRID uses AI models from Anthropic (Claude family) to power Atrium chat, workflow
+            execution, and memory. When you interact with Atrium you are interacting with an AI
+            system. Atrium&rsquo;s outputs can contain errors and should not be relied on for
             medical, legal, or financial decisions. You retain ownership of the inputs you send
-            and the outputs Nova produces for you.
+            and the outputs Atrium produces for you.
           </Section>
 
           <Section title="6. Your rights">

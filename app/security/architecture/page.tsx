@@ -99,7 +99,7 @@ const SECTIONS: Section[] = [
         <p>
           <strong>Reversible-by-default:</strong> autonomous actions write a 24-hour
           undo window. Undoing creates a compensating AuditLog entry <em>and</em> a
-          NovaMemory row of type <code>user_correction</code> so future Nova calls
+          NovaMemory row of type <code>user_correction</code> so future Atrium calls
           factor in the correction.
         </p>
       </>
@@ -120,12 +120,12 @@ const SECTIONS: Section[] = [
             identity.
           </li>
           <li>
-            <strong>IntelligenceLog</strong> — every Nova action with input, output,
+            <strong>IntelligenceLog</strong> — every Atrium action with input, output,
             reasoning excerpt, tokens, cost, success flag, and the System id.
           </li>
           <li>
             <strong>KernelTrace</strong> — lower-level tool-call traces used to
-            render the &ldquo;why did Nova do this?&rdquo; drawer.
+            render the &ldquo;why did Atrium do this?&rdquo; drawer.
           </li>
         </ul>
         <p>
@@ -145,7 +145,7 @@ const SECTIONS: Section[] = [
         <p>
           <strong>BYOK per Environment.</strong> Every Environment can hold its own
           Anthropic API key. The key is validated against Anthropic at connect time
-          (a 1-token Haiku ping), stored envelope-encrypted, and used for all Nova
+          (a 1-token Haiku ping), stored envelope-encrypted, and used for all Atrium
           calls made on behalf of that Environment. No cross-tenant key leakage.
         </p>
         <p>
@@ -193,7 +193,7 @@ const SECTIONS: Section[] = [
         <p>
           Per-identity rate limits on every authenticated API route
           (<code>lib/rate-limit.ts</code>). Per-Environment budget caps prevent one
-          team&rsquo;s runaway Nova call from starving another.
+          team&rsquo;s runaway Atrium call from starving another.
         </p>
         <p>
           Destructive operations (Environment delete, System delete, Workflow

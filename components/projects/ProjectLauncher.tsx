@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * ProjectLauncher — "What do you want Nova to do?" dialog.
+ * ProjectLauncher — "What do you want Atrium to do?" dialog.
  *
  * Lives as a compact CTA row that expands into a full prompt box.
  * Accepts a free-text goal, posts to /api/projects, and routes the
@@ -96,7 +96,7 @@ export default function ProjectLauncher({ environmentId }: { environmentId: stri
               Start a new project
             </span>
             <span className="block text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-              Tell Nova what you want done. It plans the steps, opens the tools, routes the reviews.
+              Tell Atrium what you want done. It plans the steps, opens the tools, routes the reviews.
             </span>
           </span>
         </span>
@@ -113,7 +113,7 @@ export default function ProjectLauncher({ environmentId }: { environmentId: stri
         className="text-[10px] tracking-[0.18em] uppercase font-light mb-3"
         style={{ color: 'var(--text-3)' }}
       >
-        New project · Nova will plan and run the steps
+        New project · Atrium will plan and run the steps
       </p>
       <textarea
         autoFocus
@@ -195,7 +195,7 @@ export default function ProjectLauncher({ environmentId }: { environmentId: stri
             color: 'var(--brand)',
           }}
         >
-          {submitting ? 'Nova is planning…' : 'Plan + start →'}
+          {submitting ? 'Atrium is planning…' : 'Plan + start →'}
         </button>
       </div>
     </div>

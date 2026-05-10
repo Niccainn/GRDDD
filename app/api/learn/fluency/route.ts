@@ -1,8 +1,8 @@
 /**
  * GET /api/learn/fluency — returns the caller's fluency scores
- * across the four Nova-operating capabilities.
+ * across the four Atrium-operating capabilities.
  *
- * Used by /learn (the Nova Academy page) and the Monday ribbon on
+ * Used by /learn (the Atrium Academy page) and the Monday ribbon on
  * the Environment page.
  */
 

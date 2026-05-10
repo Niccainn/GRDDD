@@ -1,19 +1,19 @@
 'use client';
 
 /**
- * /learn — Nova Academy.
+ * /learn — Atrium Academy.
  *
  * The user-facing LMS layer. Three surfaces on one page:
  *
- *   1. Today's lesson — one question from Nova. Answering it records
- *      a NovaMemory entry so Nova can use the answer in future
+ *   1. Today's lesson — one question from Atrium. Answering it records
+ *      a NovaMemory entry so Atrium can use the answer in future
  *      prompts. This is the teaching loop made literal.
  *
  *   2. Fluency grid — four capability scores (delegation, review,
  *      context-giving, trust-calibration). Each has a one-sentence
  *      next step.
  *
- *   3. What Nova has learned about you this week — recent memories
+ *   3. What Atrium has learned about you this week — recent memories
  *      with source = user_input or nova_observation.
  *
  * The page is deliberately quiet: no badges, no streaks, no
@@ -115,16 +115,16 @@ export default function LearnPage() {
     <div className="px-4 md:px-10 py-8 md:py-12 max-w-4xl mx-auto">
       <div className="mb-8">
         <p className="text-[10px] tracking-[0.18em] uppercase font-light mb-2" style={{ color: 'var(--text-3)' }}>
-          Nova Academy
+          Atrium Academy
         </p>
         <h1
           className="text-3xl md:text-4xl font-extralight tracking-tight mb-2"
           style={{ color: 'var(--text-1)', letterSpacing: '-0.02em' }}
         >
-          How you and Nova get fluent together
+          How you and Atrium get fluent together
         </h1>
         <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-          Every answer you give Nova trains it. Every action Nova takes trains you. Come back here when either of you needs a nudge.
+          Every answer you give Atrium trains it. Every action Atrium takes trains you. Come back here when either of you needs a nudge.
         </p>
       </div>
 
@@ -170,7 +170,7 @@ export default function LearnPage() {
               }}
             >
               <p className="text-xs font-light" style={{ color: '#C8F26B' }}>
-                Recorded. Nova will use this the next time it acts on your behalf.
+                Recorded. Atrium will use this the next time it acts on your behalf.
               </p>
             </div>
           ) : (
@@ -196,7 +196,7 @@ export default function LearnPage() {
               />
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-                  One line is enough. Nova reads this — you're teaching, not testing.
+                  One line is enough. Atrium reads this — you're teaching, not testing.
                 </p>
                 <button
                   onClick={submit}
@@ -208,7 +208,7 @@ export default function LearnPage() {
                     color: 'var(--brand)',
                   }}
                 >
-                  {submitting ? 'Recording…' : 'Teach Nova →'}
+                  {submitting ? 'Recording…' : 'Teach Atrium →'}
                 </button>
               </div>
             </>
@@ -285,7 +285,7 @@ export default function LearnPage() {
         </section>
       )}
 
-      {/* What Nova learned */}
+      {/* What Atrium learned */}
       {recent.length > 0 && (
         <section className="mb-10">
           <div className="flex items-end justify-between mb-4">
@@ -293,7 +293,7 @@ export default function LearnPage() {
               className="text-[10px] tracking-[0.18em] uppercase font-light"
               style={{ color: 'var(--text-3)' }}
             >
-              What Nova has learned
+              What Atrium has learned
             </p>
             <Link
               href="/memory"

@@ -194,7 +194,7 @@ export default function SystemContextDocs({ systemId }: { systemId: string }) {
                   <textarea
                     value={form.body}
                     onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
-                    placeholder="Write the context content Nova should know about this system..."
+                    placeholder="Write the context content Atrium should know about this system..."
                     rows={5}
                     className="w-full text-xs font-light px-3 py-2 rounded-lg focus:outline-none resize-none leading-relaxed"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(113,147,237,0.2)', color: 'rgba(255,255,255,0.65)' }}
@@ -225,7 +225,7 @@ export default function SystemContextDocs({ systemId }: { systemId: string }) {
 
               {docs.length === 0 && !creating && (
                 <p className="text-xs text-center mt-2 mb-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                  Context docs are automatically included in every Nova conversation for this system
+                  Context docs are automatically included in every Atrium conversation for this system
                 </p>
               )}
             </>

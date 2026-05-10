@@ -601,12 +601,12 @@ function ListView({ tasks, onUpdate, selectedIds, onToggleSelect, onToggleSelect
       {tasks.length === 0 ? (
         <div className="flex flex-col items-center py-20 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No tasks yet</p>
-          <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>Create your first task — or let Nova generate them from signals</p>
+          <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>Create your first task — or let Atrium generate them from signals</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full max-w-lg text-left">
             {[
-              { label: 'Auto-triage', copy: 'Nova reads signals from connected tools and drafts tasks with priority and system.', color: '#BF9FF1' },
-              { label: 'Link to systems', copy: 'Every task ties to a system, so Nova can see bottlenecks across the whole org.', color: '#7193ED' },
-              { label: 'Ask Nova', copy: '"What should I do next?" — Nova ranks open tasks by signal weight and deadline.', color: '#C8F26B' },
+              { label: 'Auto-triage', copy: 'Atrium reads signals from connected tools and drafts tasks with priority and system.', color: '#BF9FF1' },
+              { label: 'Link to systems', copy: 'Every task ties to a system, so Atrium can see bottlenecks across the whole org.', color: '#7193ED' },
+              { label: 'Ask Atrium', copy: '"What should I do next?" — Atrium ranks open tasks by signal weight and deadline.', color: '#C8F26B' },
             ].map(f => (
               <div key={f.label} className="rounded-xl p-3" style={{ background: `${f.color}06`, border: `1px solid ${f.color}18` }}>
                 <p className="text-[10px] tracking-[0.16em] uppercase font-light mb-1" style={{ color: f.color }}>{f.label}</p>

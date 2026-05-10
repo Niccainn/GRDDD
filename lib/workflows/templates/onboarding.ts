@@ -1,7 +1,7 @@
 /**
  * Customer Onboarding — "New customers fall through the cracks"
  *
- * Fired by a webhook when a new customer signs up. Nova researches
+ * Fired by a webhook when a new customer signs up. Atrium researches
  * them, drafts a personalized welcome, plans their first-week journey,
  * and creates the tracking goals & signals so nothing is dropped.
  */

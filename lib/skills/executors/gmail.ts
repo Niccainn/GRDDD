@@ -83,7 +83,7 @@ export const gmailDraftEmail: Executor = async ({ step, project }) => {
           stepId: step.id,
           source: 'system',
           message:
-            'Simulated Gmail: integration is connected, but this step has no recipient (step.inputs.to). Edit the step and try again, or teach Nova where "draft email" should default.',
+            'Simulated Gmail: integration is connected, but this step has no recipient (step.inputs.to). Edit the step and try again, or teach Atrium where "draft email" should default.',
         },
       ],
       mode: 'simulated',

@@ -46,7 +46,7 @@ export async function seedNovaMemories(environmentId: string) {
       category: 'trend',
       title: 'Industry shift toward agentic workflows',
       content:
-        'The market is moving from "AI as copilot" to "AI as autonomous operator." Companies that let AI take action (not just suggest) will capture the next wave. Our automations and Nova execution model are positioned for this.',
+        'The market is moving from "AI as copilot" to "AI as autonomous operator." Companies that let AI take action (not just suggest) will capture the next wave. Our automations and Atrium execution model are positioned for this.',
       source: 'nova_observation',
       confidence: 0.82,
     },

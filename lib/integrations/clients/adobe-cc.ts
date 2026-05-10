@@ -8,9 +8,9 @@
  *                         across Photoshop / Illustrator / XD)
  *   listLibraryElements — colors, character styles, graphics
  *                         inside a specific library — the brand
- *                         tokens Nova can reference when generating
+ *                         tokens Atrium can reference when generating
  *                         on-brand assets
- *   searchStock         — Adobe Stock search; lets Nova find on-
+ *   searchStock         — Adobe Stock search; lets Atrium find on-
  *                         brand photography / illustration to
  *                         attach to drafts
  *

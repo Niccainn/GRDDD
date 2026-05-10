@@ -1,7 +1,7 @@
 /**
  * Daily Standup — "Nobody knows what anyone is doing"
  *
- * Every weekday morning, Nova scans yesterday's activity across all
+ * Every weekday morning, Atrium scans yesterday's activity across all
  * systems, clusters it into themes, drafts a one-screen digest, and
  * proposes what matters today. Humans react; the system learns what
  * they actually cared about via record_memory.
@@ -10,7 +10,7 @@ export const standupTemplate = {
   schemaVersion: 1 as const,
   slug: 'daily-standup',
   name: 'Daily standup',
-  tagline: 'Nobody reads yours. Nova makes one that people actually do.',
+  tagline: 'Nobody reads yours. Atrium makes one that people actually do.',
   description:
     'Scans yesterday across every system, surfaces the signals that matter, and proposes the top three moves for today. Posts to the team and learns from what they react to.',
   version: '1.0.0',
@@ -74,7 +74,7 @@ export const standupTemplate = {
     {
       id: 'learn',
       name: 'Reinforce learning',
-      description: 'Record what Nova noticed so future runs improve.',
+      description: 'Record what Atrium noticed so future runs improve.',
       instruction:
         'Below is the digest you produced:\n\n${stages.digest.output}\n\n' +
         'Call record_memory ONCE with kind="pattern" to capture what the team seems to care about ' +

@@ -1,5 +1,5 @@
 /**
- * Nova Kernel — Memory
+ * Atrium Kernel — Memory
  *
  * Per-tenant learned behaviors. Backed by the KernelMemory table.
  *

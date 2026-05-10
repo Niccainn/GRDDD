@@ -7,7 +7,7 @@ import { rateLimitApi } from '@/lib/rate-limit';
  * POST /api/meetings/[id]/action-items/[aid]/promote
  *
  * The GRID wedge vs Sana. A meeting action item isn't just text — it
- * becomes a live Task, Signal, Goal, or Project that Nova can execute.
+ * becomes a live Task, Signal, Goal, or Project that Atrium can execute.
  * After promotion we stamp `promotedToType` / `promotedToId` on the
  * action item so the meeting detail view can deep-link into the
  * created entity and flip status to PROMOTED.

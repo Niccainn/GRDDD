@@ -163,7 +163,7 @@ export default function EnvironmentGlance({
         </span>
         {lastNova && (
           <span>
-            Last Nova action <span style={{ color: 'var(--text-1)' }}>{timeAgo(lastNova)}</span>
+            Last Atrium action <span style={{ color: 'var(--text-1)' }}>{timeAgo(lastNova)}</span>
           </span>
         )}
       </div>

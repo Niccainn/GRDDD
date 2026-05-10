@@ -99,7 +99,7 @@ export const googleCalendarDraftEvent: Executor = async ({ step, project }) => {
   const description = inputs.description ?? [
     step.rationale,
     '',
-    `Created by Nova as part of "${project.goal}".`,
+    `Created by Atrium as part of "${project.goal}".`,
     'Status: tentative. Nothing was sent to attendees. Confirm the event in Google Calendar to invite them.',
   ].join('\n');
   const attendees = parseAttendees(inputs.attendees);

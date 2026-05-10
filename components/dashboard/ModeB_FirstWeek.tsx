@@ -3,7 +3,7 @@
  * Mode B — first week view.
  *
  * Per PHASE_3_COCKPIT.md: optimized for *trust building*, not metrics.
- * Greeting + Nova summary, then a **canvas of widgets** (not a fixed
+ * Greeting + Atrium summary, then a **canvas of widgets** (not a fixed
  * grid of System cards). The widgets the user sees by default are
  * System widgets for each of their Systems, plus an "+ Add widget"
  * tile that opens the WidgetDesigner.
@@ -76,7 +76,7 @@ export default function ModeB_FirstWeek({
           className="text-2xl font-light leading-snug"
           style={{ color: 'var(--text-1)' }}
         >
-          {novaSummary ?? 'Nova is watching your Systems. Nothing needs you yet.'}
+          {novaSummary ?? 'Atrium is watching your Systems. Nothing needs you yet.'}
         </h1>
       </header>
 

@@ -4,7 +4,7 @@
  * Called when a user manually edits a step in the visual builder.
  * Records the change as a NovaMemory entry so the planner learns
  * from the pattern — next time someone generates a similar
- * workflow from a prompt, Nova's plan will reflect these edits.
+ * workflow from a prompt, Atrium's plan will reflect these edits.
  *
  * This is what makes the manual-Zapier-takeover turn into
  * "automated through a prompt after learning."

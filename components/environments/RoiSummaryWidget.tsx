@@ -3,7 +3,7 @@
 /**
  * RoiSummaryWidget — the CFO primitive on the Environment page.
  *
- * Headline: attributed value vs. Nova spend in the window.
+ * Headline: attributed value vs. Atrium spend in the window.
  * Secondary: per-system ratio list (sweet spot, review candidates).
  * Footer: count of unattributed goals so the user knows when their
  * number is understated.
@@ -77,7 +77,7 @@ export default function RoiSummaryWidget({ environmentId, environmentSlug }: { e
           </p>
           <HelpBubble
             title="ROI attribution"
-            body="Goal values parsed from metric labels (hours → $85/hr loaded, $ → direct) against Nova cost from IntelligenceLog. Ratio > 1× means the work paid for itself. Add 'hours' or '$' to Goal metric labels for attribution."
+            body="Goal values parsed from metric labels (hours → $85/hr loaded, $ → direct) against Atrium cost from IntelligenceLog. Ratio > 1× means the work paid for itself. Add 'hours' or '$' to Goal metric labels for attribution."
           />
         </div>
         <div className="flex items-center gap-2">
@@ -131,7 +131,7 @@ export default function RoiSummaryWidget({ environmentId, environmentSlug }: { e
               {ratio != null ? `${ratio}×` : '—'}
             </span>
             <span className="text-sm font-light" style={{ color: 'var(--text-2)' }}>
-              {fmtUsd(data.totalValue)} returned on {fmtUsd(data.totalCost)} in Nova cost
+              {fmtUsd(data.totalValue)} returned on {fmtUsd(data.totalCost)} in Atrium cost
             </span>
           </div>
           {(data.perSystem ?? []).length > 0 && (

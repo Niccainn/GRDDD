@@ -177,7 +177,7 @@ export const notionFetchDocument: Executor = async ({ step, project }) => {
  *
  * Inputs resolution:
  *   - step.inputs.url           explicit URL to attach
- *   - step.inputs.pageId        target Notion page (else Nova searches)
+ *   - step.inputs.pageId        target Notion page (else Atrium searches)
  *   - step.inputs.caption       optional caption for the block
  *   - otherwise: grab the most recent artifact URL from prior steps
  */
@@ -281,8 +281,8 @@ export const notionUploadAsset: Executor = async ({ step, project }) => {
     const caption =
       inputs.caption ??
       (sourceArtifactName
-        ? `${sourceArtifactName} — attached by Nova for "${project.goal.slice(0, 60)}"`
-        : `Attached by Nova for "${project.goal.slice(0, 60)}"`);
+        ? `${sourceArtifactName} — attached by Atrium for "${project.goal.slice(0, 60)}"`
+        : `Attached by Atrium for "${project.goal.slice(0, 60)}"`);
 
     await client.appendBlocks({
       pageId,
@@ -376,7 +376,7 @@ export const notionCreatePage: Executor = async ({ step, project }) => {
     }
 
     // Compose a minimal body. If the user has taught us a Monday-
-    // morning voice in NovaMemory, Nova would preload that here; for
+    // morning voice in NovaMemory, Atrium would preload that here; for
     // now we ship the rationale + goal as the opening paragraph.
     const body = [
       step.rationale,

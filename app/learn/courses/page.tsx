@@ -42,7 +42,7 @@ export default function CoursesPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <Link href="/learn" className="text-[10px] tracking-wider uppercase font-light hover:text-white/70" style={{ color: 'var(--text-3)' }}>
-            ← Nova Academy
+            ← Atrium Academy
           </Link>
           <h1 className="text-2xl font-extralight tracking-tight mt-1" style={{ letterSpacing: '-0.02em' }}>
             Courses

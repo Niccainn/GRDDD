@@ -1,10 +1,10 @@
 /**
  * Anthropic client — direct API access for advanced users who want
  * to call Claude models with their own key, separate from the BYOK
- * key the environment uses for Nova itself.
+ * key the environment uses for Atrium itself.
  *
- * Why have this when Nova already calls Claude? Two reasons:
- *   - Some users want to run prompts that aren't part of a Nova
+ * Why have this when Atrium already calls Claude? Two reasons:
+ *   - Some users want to run prompts that aren't part of a Atrium
  *     workflow — ad-hoc completions, batch evaluations, etc.
  *   - Different teams in the same org may have separate Anthropic
  *     accounts for billing/usage tracking; this lets them connect

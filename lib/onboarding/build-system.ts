@@ -76,7 +76,7 @@ export async function buildSystemForWedge(
   });
 
   // Minimal starter workflow — stages are a JSON array per schema.
-  // This is the "honest theatre": the user sees Nova stream the build,
+  // This is the "honest theatre": the user sees Atrium stream the build,
   // the row is written in one atomic step, but the structure is real.
   if (wedge.id !== 'custom') {
     await prisma.workflow.create({

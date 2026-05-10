@@ -84,9 +84,9 @@ const UNIVERSAL_PRESETS: WidgetPreset[] = [
   },
   {
     id: 'core:nova-memory',
-    title: 'Nova memory',
-    subtitle: 'What Nova remembers about this system',
-    rationale: 'Shows the context Nova uses. Turning this off hides the memory panel.',
+    title: 'Atrium memory',
+    subtitle: 'What Atrium remembers about this system',
+    rationale: 'Shows the context Atrium uses. Turning this off hides the memory panel.',
     recommended: true,
     glyph: 'brain',
     color: '#BF9FF1',
@@ -94,8 +94,8 @@ const UNIVERSAL_PRESETS: WidgetPreset[] = [
   {
     id: 'core:context-docs',
     title: 'Context docs',
-    subtitle: 'Reference material Nova reads',
-    rationale: 'Upload SOPs, style guides, anything Nova should ground answers in.',
+    subtitle: 'Reference material Atrium reads',
+    rationale: 'Upload SOPs, style guides, anything Atrium should ground answers in.',
     recommended: true,
     glyph: 'feed',
     color: '#7193ED',
@@ -121,7 +121,7 @@ const UNIVERSAL_PRESETS: WidgetPreset[] = [
   {
     id: 'widget:weekly-narrative',
     title: 'Weekly narrative',
-    subtitle: 'Nova-written Monday recap',
+    subtitle: 'Atrium-written Monday recap',
     rationale: 'Five sentences that read like a CEO briefing — the thing that gets forwarded.',
     recommended: true,
     glyph: 'sun',
@@ -130,7 +130,7 @@ const UNIVERSAL_PRESETS: WidgetPreset[] = [
   {
     id: 'widget:action-ledger',
     title: 'Action ledger',
-    subtitle: 'Last 20 things Nova did here',
+    subtitle: 'Last 20 things Atrium did here',
     rationale: 'The trust layer made visible: what was decided, skipped, or waiting.',
     recommended: false,
     glyph: 'scale',
@@ -217,7 +217,7 @@ export const DEPARTMENTS: Department[] = [
         id: 'widget:spike-explainer',
         title: 'Spike explainer',
         subtitle: 'Why did this metric move?',
-        rationale: 'When a number jumps, Nova writes the one-paragraph story.',
+        rationale: 'When a number jumps, Atrium writes the one-paragraph story.',
         recommended: false,
         glyph: 'spark',
         color: '#F5D76E',
@@ -286,7 +286,7 @@ export const DEPARTMENTS: Department[] = [
       {
         id: 'widget:variance-commentary',
         title: 'Variance commentary',
-        subtitle: 'Nova explains every budget miss',
+        subtitle: 'Atrium explains every budget miss',
         rationale: 'Turns the monthly close from reporting into thinking.',
         recommended: false,
         glyph: 'spark',
@@ -365,7 +365,7 @@ export const DEPARTMENTS: Department[] = [
       {
         id: 'widget:ai-acceptance',
         title: 'AI codegen acceptance',
-        subtitle: 'Nova + Claude Code PR acceptance rate',
+        subtitle: 'Atrium + Claude Code PR acceptance rate',
         rationale: 'The north-star metric of the AI-native engineering org.',
         recommended: true,
         glyph: 'brain',
