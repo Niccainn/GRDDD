@@ -97,10 +97,10 @@ export default function FromPromptModal({ open, onClose, onAccept }: Props) {
           className="text-xl font-extralight mb-2"
           style={{ color: 'var(--text-1)', letterSpacing: '-0.01em' }}
         >
-          Tell Nova what this workflow should do
+          Tell Atrium what this workflow should do
         </h2>
         <p className="text-xs font-light leading-relaxed mb-4" style={{ color: 'var(--text-3)' }}>
-          Nova will propose an ordered plan. You'll be able to edit any step in the inspector before you save.
+          Atrium will propose an ordered plan. You'll be able to edit any step in the inspector before you save.
         </p>
 
         {!preview ? (
@@ -158,7 +158,7 @@ export default function FromPromptModal({ open, onClose, onAccept }: Props) {
                   color: 'var(--brand)',
                 }}
               >
-                {submitting ? 'Nova is planning…' : 'Plan →'}
+                {submitting ? 'Atrium is planning…' : 'Plan →'}
               </button>
             </div>
           </>
@@ -166,7 +166,7 @@ export default function FromPromptModal({ open, onClose, onAccept }: Props) {
           <>
             <p className="text-[11px] font-light mb-2" style={{ color: 'var(--text-3)' }}>
               {preview.source === 'nova'
-                ? `Nova planned ${preview.stepCount} steps.`
+                ? `Atrium planned ${preview.stepCount} steps.`
                 : preview.source === 'heuristic'
                 ? `Template plan: ${preview.stepCount} steps (no Claude key configured).`
                 : `Fallback plan: ${preview.stepCount} steps.`}

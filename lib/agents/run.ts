@@ -53,7 +53,7 @@ export class AgentRunError extends Error {
  * Substitute {{name}} tokens in the prompt template from the inputs
  * map. Unknown tokens are left as-is (visible to the model) rather
  * than throwing — this lets users write templates with optional
- * variables and Nova will handle them gracefully in context.
+ * variables and Atrium will handle them gracefully in context.
  */
 export function substitutePrompt(template: string, inputs: AgentRunInputs): string {
   return template.replace(/\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g, (match, name) => {
@@ -256,7 +256,7 @@ export async function executeAgentRun(params: {
     throw new AgentRunError('Agent not found', 'not_found');
   }
 
-  // Budget gate — same check Nova uses so agents and Nova share one
+  // Budget gate — same check Atrium uses so agents and Atrium share one
   // envelope. If budget is exceeded we never hit Anthropic at all.
   const budget = await checkBudget(agent.environmentId);
   if (!budget.allowed) {

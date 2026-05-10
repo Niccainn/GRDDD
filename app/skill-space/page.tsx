@@ -3,14 +3,14 @@
 /**
  * /skill-space — the combinatorial skill surface.
  *
- * Every Nova step is a tuple (Location, Action, Interaction,
+ * Every Atrium step is a tuple (Location, Action, Interaction,
  * Execution). This page makes that surface legible:
- *   - shows every skill Nova has
+ *   - shows every skill Atrium has
  *   - labels the four dimensions on each
  *   - flags which skills are connected / planned / unavailable
  *   - surfaces "connect X to unlock N more combinations"
  *
- * It's the map of Nova's capability right now. New integrations
+ * It's the map of Atrium's capability right now. New integrations
  * expand it; deeper skills deepen it.
  */
 
@@ -71,7 +71,7 @@ export default function SkillSpacePage() {
         className="text-2xl md:text-3xl font-extralight tracking-tight mb-2"
         style={{ color: 'var(--text-1)', letterSpacing: '-0.02em' }}
       >
-        What Nova can do, right now
+        What Atrium can do, right now
       </h1>
       <p className="text-sm font-light mb-8 max-w-2xl" style={{ color: 'var(--text-3)' }}>
         Every step in a project is a combination of four dimensions: <span style={{ color: 'var(--text-2)' }}>Location</span> (where), <span style={{ color: 'var(--text-2)' }}>Action</span> (what), <span style={{ color: 'var(--text-2)' }}>Interaction</span> (the human pattern), and <span style={{ color: 'var(--text-2)' }}>Execution</span> (how it runs). Connecting a tool unlocks every combination it supports. This is the map.
@@ -194,7 +194,7 @@ export default function SkillSpacePage() {
       )}
 
       <p className="text-[11px] font-light mt-10" style={{ color: 'var(--text-3)' }}>
-        The skill space grows when an integration lands or when a new Action is added to the taxonomy. Nova's planner picks a point in this space for every step of every project.
+        The skill space grows when an integration lands or when a new Action is added to the taxonomy. Atrium's planner picks a point in this space for every step of every project.
       </p>
     </div>
   );

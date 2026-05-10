@@ -28,7 +28,7 @@ const TYPE_META: Record<string, { icon: React.ReactNode; color: string; label: s
   },
   nova: {
     color: '#BF9FF1',
-    label: 'Nova',
+    label: 'Atrium',
     icon: (
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#BF9FF1" strokeWidth="1.6">
         <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -72,12 +72,12 @@ export default function EnvironmentActivity() {
           });
         }
 
-        // Nova logs
+        // Atrium logs
         for (const nl of d.novaLogs ?? []) {
           combined.push({
             id: nl.id,
             type: 'nova',
-            title: nl.input?.substring(0, 80) || 'Nova query',
+            title: nl.input?.substring(0, 80) || 'Atrium query',
             description: nl.output?.substring(0, 120) || null,
             timestamp: nl.createdAt,
             systemName: nl.systemName,
@@ -149,7 +149,7 @@ export default function EnvironmentActivity() {
           {[
             { key: '', label: 'All' },
             { key: 'execution', label: 'Executions' },
-            { key: 'nova', label: 'Nova' },
+            { key: 'nova', label: 'Atrium' },
             { key: 'signal', label: 'Signals' },
           ].map(f => (
             <button
@@ -171,7 +171,7 @@ export default function EnvironmentActivity() {
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No activity yet</p>
-          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Activity from executions, Nova queries, and signals will appear here.</p>
+          <p className="text-xs" style={{ color: 'var(--text-3)' }}>Activity from executions, Atrium queries, and signals will appear here.</p>
         </div>
       ) : (
         <div className="space-y-1.5">

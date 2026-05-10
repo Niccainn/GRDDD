@@ -16,7 +16,7 @@ export const weeklyReportTemplate = {
   name: 'Weekly exec brief',
   tagline: 'Friday-morning snapshot built on delta, not recency.',
   description:
-    'Every Friday, Nova compares this week to last week across every system, ranks changes by magnitude, and produces a one-page brief that is identical for every timezone. Async-first.',
+    'Every Friday, Atrium compares this week to last week across every system, ranks changes by magnitude, and produces a one-page brief that is identical for every timezone. Async-first.',
   version: '1.0.0',
   category: 'operations' as const,
   tags: ['exec', 'weekly', 'remote', 'async', 'attention-ranked'],
@@ -89,7 +89,7 @@ export const weeklyReportTemplate = {
         '2. "Top 3 wins" — what moved forward, with numbers\n' +
         '3. "Top 3 risks" — what is degrading, with recommended action\n' +
         '4. "Decision needed" — one question the team must answer by Monday\n' +
-        '5. "What Nova learned" — one sentence on a pattern to reinforce\n\n' +
+        '5. "What Atrium learned" — one sentence on a pattern to reinforce\n\n' +
         'No corporate speak. Written for a human reading on mobile at 7am Saturday.',
       dependsOn: ['rank'],
       tools: [],

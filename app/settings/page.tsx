@@ -116,7 +116,7 @@ export default function ProfilePage() {
           Settings
         </h1>
         <p style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 14 }}>
-          Manage your account and Nova configuration.
+          Manage your account and Atrium configuration.
         </p>
       </div>
 
@@ -239,7 +239,7 @@ export default function ProfilePage() {
               lineHeight: 1.5,
             }}
           >
-            This is how Nova and the dashboard will address you. Use
+            This is how Atrium and the dashboard will address you. Use
             your first name or full name — not your team or company name.
           </p>
           <input

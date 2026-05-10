@@ -7,7 +7,7 @@
  *   - Validate the OAuth token against /v1/me so we know the
  *     connection is live.
  *   - Generate a "new file" deep link with a pre-filled title.
- *   - For logo explorations, attach a Nova-drafted brief to the
+ *   - For logo explorations, attach a Atrium-drafted brief to the
  *     trace so the user opens Figma with the frame explicitly named.
  *   - For export, use the real /v1/images endpoint against a file the
  *     user already has (step.inputs.fileKey + nodeIds required).
@@ -64,7 +64,7 @@ export const figmaCreateFile: Executor = async ({ step, project }) => {
           stepId: step.id,
           source: 'system',
           message:
-            'Simulated Figma: no active Figma integration for this Environment. Connect Figma so Nova can validate access when it stages a file.',
+            'Simulated Figma: no active Figma integration for this Environment. Connect Figma so Atrium can validate access when it stages a file.',
         },
       ],
       mode: 'simulated',
@@ -133,7 +133,7 @@ export const figmaCreateLogoExplorations: Executor = async ({ step, project }) =
           stepId: step.id,
           source: 'system',
           message:
-            'Simulated Figma: no active Figma integration. Connect Figma so Nova can verify access and attach a brief.',
+            'Simulated Figma: no active Figma integration. Connect Figma so Atrium can verify access and attach a brief.',
         },
       ],
       mode: 'simulated',
@@ -188,7 +188,7 @@ export const figmaCreateLogoExplorations: Executor = async ({ step, project }) =
       {
         stepId: step.id,
         source: 'nova',
-        message: `Figma connection verified. Open the link, name the file "${name}", and paste the three-frame brief Nova drafted (in step outputs).`,
+        message: `Figma connection verified. Open the link, name the file "${name}", and paste the three-frame brief Atrium drafted (in step outputs).`,
       },
     ],
     mode: 'real',

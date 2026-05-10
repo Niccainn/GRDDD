@@ -1,11 +1,11 @@
 /**
  * GET /api/projects/[id]/narrative
  *
- * A short Nova-written memo that reads the project's trace and
+ * A short Atrium-written memo that reads the project's trace and
  * summarizes what happened in plain English. Useful for:
  *   - pasting into a status update
  *   - the end-of-project report
- *   - the "Nova worked on this for you" email
+ *   - the "Atrium worked on this for you" email
  *
  * Cached 15m in-memory per project; force=1 bypasses the cache.
  */
@@ -27,7 +27,7 @@ function fallbackNarrative(project: {
   const tools = Array.from(new Set(project.plan.map(s => s.tool))).slice(0, 4).join(', ');
   const lastDone = [...project.plan].reverse().find(s => s.status === 'done');
   return [
-    `Nova has completed ${done} of ${total} steps on "${project.goal}" across ${tools}.`,
+    `Atrium has completed ${done} of ${total} steps on "${project.goal}" across ${tools}.`,
     lastDone ? `The most recent landed step was: ${lastDone.title}.` : `No steps have landed yet.`,
     done < total
       ? `The next move is the step after that — check the run trace for the human-review gate status.`
@@ -61,7 +61,7 @@ export async function GET(
   }
 
   const systemPrompt = [
-    'You are Nova, writing a short status update about a project Nova just ran.',
+    'You are Atrium, writing a short status update about a project Atrium just ran.',
     'Voice: memo. Short sentences. Concrete nouns. No adverbs like "seamlessly".',
     'Exactly three sentences. No headings, no bullets.',
     '1. What was done so far.',

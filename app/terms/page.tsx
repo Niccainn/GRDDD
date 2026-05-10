@@ -81,7 +81,7 @@ export default function TermsPage() {
                 derivative models.
               </li>
               <li>
-                Submit prompts designed to cause Nova to produce content that violates
+                Submit prompts designed to cause Atrium to produce content that violates
                 Anthropic&rsquo;s{' '}
                 <a
                   href="https://www.anthropic.com/legal/aup"
@@ -100,14 +100,14 @@ export default function TermsPage() {
           </Section>
 
           <Section title="5. AI outputs">
-            Nova is an AI system powered by Anthropic&rsquo;s Claude models. Outputs can be
+            Atrium is an AI system powered by Anthropic&rsquo;s Claude models. Outputs can be
             inaccurate, incomplete, or biased. You retain all ownership rights to your inputs and
             to the outputs generated for you, subject to the rights of any underlying models.
             <br />
             <br />
-            <b>You must not rely on Nova outputs for medical, legal, tax, or financial advice.</b>{' '}
+            <b>You must not rely on Atrium outputs for medical, legal, tax, or financial advice.</b>{' '}
             You are responsible for reviewing outputs before acting on them, and you agree that
-            GRID is not liable for decisions made on the basis of Nova outputs.
+            GRID is not liable for decisions made on the basis of Atrium outputs.
           </Section>
 
           <Section title="6. Your content">

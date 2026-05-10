@@ -1,5 +1,5 @@
 /**
- * GET /api/learn/lesson — today's lesson from Nova.
+ * GET /api/learn/lesson — today's lesson from Atrium.
  *
  * Picks a deterministic lesson based on (a) the user's weakest
  * fluency capability and (b) the day of the year. Same user on the
@@ -7,9 +7,9 @@
  *
  * A "lesson" is a short prompt paired with a question the user can
  * answer in one line. Answering it writes a NovaMemory entry so
- * Nova can fold the answer into future prompts. The loop is:
+ * Atrium can fold the answer into future prompts. The loop is:
  *
- *    Nova asks → user teaches → Nova remembers → Nova acts better.
+ *    Atrium asks → user teaches → Atrium remembers → Atrium acts better.
  *
  * POST /api/learn/lesson { answer, lessonId } — records the answer
  * as a NovaMemory entry with source = 'user_input' so future
@@ -35,16 +35,16 @@ const LESSONS: Lesson[] = [
   {
     id: 'delegation-1',
     capability: 'delegation',
-    title: 'What should Nova never do without asking?',
-    body: "The fastest path to trusting Nova is naming the lines it must not cross. Tell it once and it'll remember.",
-    prompt: 'What is one decision Nova should always escalate to you, no matter how confident it is?',
+    title: 'What should Atrium never do without asking?',
+    body: "The fastest path to trusting Atrium is naming the lines it must not cross. Tell it once and it'll remember.",
+    prompt: 'What is one decision Atrium should always escalate to you, no matter how confident it is?',
     placeholder: 'e.g. Never send an email to a client I have not personally approved.',
   },
   {
     id: 'delegation-2',
     capability: 'delegation',
     title: 'What do you hate doing on Monday morning?',
-    body: 'Nova turns the thing you hate into a Workflow. The more specific the hate, the cleaner the automation.',
+    body: 'Atrium turns the thing you hate into a Workflow. The more specific the hate, the cleaner the automation.',
     prompt: 'Name one recurring Monday-morning chore that costs you more than ten minutes.',
     placeholder: 'e.g. Pulling weekend ticket numbers from three dashboards into one update.',
   },
@@ -52,7 +52,7 @@ const LESSONS: Lesson[] = [
     id: 'review-1',
     capability: 'review',
     title: 'The single most important number on your work',
-    body: 'A team optimizes what it measures. Nova can only help you move a number if you tell it which number matters.',
+    body: 'A team optimizes what it measures. Atrium can only help you move a number if you tell it which number matters.',
     prompt: 'What is the one number you most want to move this quarter?',
     placeholder: 'e.g. Cycle time from lead received to first response, p90.',
   },
@@ -60,7 +60,7 @@ const LESSONS: Lesson[] = [
     id: 'review-2',
     capability: 'review',
     title: 'When is "good enough" actually good enough?',
-    body: 'Perfectionism is expensive. Teach Nova the bar so it stops polishing past it.',
+    body: 'Perfectionism is expensive. Teach Atrium the bar so it stops polishing past it.',
     prompt: 'For your most common work, how do you know when to stop iterating?',
     placeholder: 'e.g. A client email is done when it answers the question and costs them nothing to act on.',
   },
@@ -75,9 +75,9 @@ const LESSONS: Lesson[] = [
   {
     id: 'context-2',
     capability: 'context-giving',
-    title: 'The last time Nova got it wrong',
+    title: 'The last time Atrium got it wrong',
     body: 'Corrections are the fastest tuning signal there is. Describe the miss in one line.',
-    prompt: 'Think of the last time Nova proposed something you overrode — what was missing from its context?',
+    prompt: 'Think of the last time Atrium proposed something you overrode — what was missing from its context?',
     placeholder: 'e.g. It suggested replying to a customer — but that customer is churning and needs a call from me, not an email.',
   },
   {
@@ -85,14 +85,14 @@ const LESSONS: Lesson[] = [
     capability: 'trust-calibration',
     title: 'Where you tend to overcorrect',
     body: 'Most operators intervene more than they need to. Spotting the pattern is the first move.',
-    prompt: 'Which one type of Nova action do you always second-guess, even when it ends up being right?',
-    placeholder: 'e.g. Summary notes after meetings — I rewrite them every time. Nova is usually fine.',
+    prompt: 'Which one type of Atrium action do you always second-guess, even when it ends up being right?',
+    placeholder: 'e.g. Summary notes after meetings — I rewrite them every time. Atrium is usually fine.',
   },
   {
     id: 'general-1',
     capability: 'general',
     title: 'The one thing you want to own in 12 months',
-    body: 'Nova runs toward a goal best. Tell it where "there" is.',
+    body: 'Atrium runs toward a goal best. Tell it where "there" is.',
     prompt: 'What outcome would make the next 12 months a clear success for you?',
     placeholder: 'e.g. Get inbound triage to zero touch by end of Q3. I stop reading email first thing.',
   },
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
   if (!lesson) return Response.json({ error: 'Unknown lesson' }, { status: 404 });
 
   // Record the answer as a NovaMemory. Future fluency computations
-  // count this toward context-giving; future Nova prompts can RAG it.
+  // count this toward context-giving; future Atrium prompts can RAG it.
   const memory = await prisma.novaMemory.create({
     data: {
       type: 'learned_preference',

@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest) {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const sevenDaysAgo  = new Date(now.getTime() -  7 * 24 * 60 * 60 * 1000);
 
-  // ── Nova logs for the last 30 days ─────────────────────────────────────────
+  // ── Atrium logs for the last 30 days ─────────────────────────────────────────
   const novaLogs = await prisma.intelligenceLog.findMany({
     where: {
       intelligence: { environment: { ownerId: identity.id, deletedAt: null } },
@@ -78,7 +78,7 @@ export async function GET(_req: NextRequest) {
     count: s._count,
   }));
 
-  // ── Daily Nova activity (last 30 days) ────────────────────────────────────
+  // ── Daily Atrium activity (last 30 days) ────────────────────────────────────
   const dailyMap: Record<string, { date: string; queries: number; tokens: number }> = {};
   for (let d = 0; d < 30; d++) {
     const date = new Date(now.getTime() - (29 - d) * 24 * 60 * 60 * 1000);

@@ -126,7 +126,7 @@ export default function ProjectsIndexPage() {
             Try one of these
           </p>
           <p className="text-sm font-light mb-5" style={{ color: 'var(--text-2)' }}>
-            A prompt becomes a plan. Nova executes across real tools with a human
+            A prompt becomes a plan. Atrium executes across real tools with a human
             gate before anything user-visible. One click to launch.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -164,7 +164,7 @@ export default function ProjectsIndexPage() {
                     {t.subtitle}
                   </p>
                   <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-                    {isLaunching ? 'Nova is planning…' : 'One click to launch →'}
+                    {isLaunching ? 'Atrium is planning…' : 'One click to launch →'}
                   </p>
                 </button>
               );

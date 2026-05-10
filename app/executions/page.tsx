@@ -159,7 +159,7 @@ export default function ExecutionsPage() {
         <div className="flex flex-col items-center justify-center py-24 rounded-xl" style={{ border: '1px dashed var(--glass-border)' }}>
           <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>No executions yet</p>
           <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-            Runs will appear here when workflows are executed via Nova
+            Runs will appear here when workflows are executed via Atrium
           </p>
         </div>
       ) : (

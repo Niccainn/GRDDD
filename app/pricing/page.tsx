@@ -17,7 +17,7 @@ const PLANS = [
     features: [
       '10 Projects / month',
       'All real executors (Figma, Canva, Notion, Gmail, Slack, Meta Ads, Drive, Calendar)',
-      'Local Nova Memory',
+      'Local Atrium Memory',
       'Every action explainable',
       '24-hour undo on autonomous actions',
       'Bring your own Anthropic key',
@@ -36,7 +36,7 @@ const PLANS = [
       'Team adoption telemetry (Trust Score per member)',
       'Shared institutional Memory',
       'Monthly ROI reports, signed for board review',
-      'Nova Academy · fluency scoring per user',
+      'Atrium Academy · fluency scoring per user',
       'Priority support',
     ],
   },
@@ -64,10 +64,10 @@ const COMPARISON = [
   { label: 'Real tool executors', free: '\u2713', pro: '\u2713', team: '\u2713' },
   { label: 'Every action explainable', free: '\u2713', pro: '\u2713', team: '\u2713' },
   { label: '24-hour undo window', free: '\u2713', pro: '\u2713', team: '\u2713' },
-  { label: 'Override-as-teaching (Nova Memory)', free: 'Local', pro: 'Shared', team: 'Shared' },
+  { label: 'Override-as-teaching (Atrium Memory)', free: 'Local', pro: 'Shared', team: 'Shared' },
   { label: 'Team adoption telemetry', free: '\u2014', pro: '\u2713', team: '\u2713' },
   { label: 'Monthly ROI report (signed PDF)', free: '\u2014', pro: '\u2713', team: '\u2713' },
-  { label: 'Nova Academy fluency tracking', free: '\u2014', pro: '\u2713', team: '\u2713' },
+  { label: 'Atrium Academy fluency tracking', free: '\u2014', pro: '\u2713', team: '\u2713' },
   { label: 'SSO (OIDC, SAML)', free: '\u2014', pro: '\u2014', team: '\u2713' },
   { label: 'SCIM provisioning', free: '\u2014', pro: '\u2014', team: '\u2713' },
   { label: 'Audit log export (CSV/JSONL)', free: '\u2014', pro: '\u2713', team: '\u2713' },
@@ -82,7 +82,7 @@ const FAQ = [
   },
   {
     q: 'Can I bring my own API key?',
-    a: 'Yes. During beta, GRID supports BYOK (Bring Your Own Key) for Anthropic. You connect your key in Settings and Nova runs on your account directly.',
+    a: 'Yes. During beta, GRID supports BYOK (Bring Your Own Key) for Anthropic. You connect your key in Settings and Atrium runs on your account directly.',
   },
   {
     q: 'Do you offer annual billing?',
@@ -90,7 +90,7 @@ const FAQ = [
   },
   {
     q: 'What\u2019s included in the free tier?',
-    a: 'Everything except team features. You get full access to environments, systems, workflows, Nova, goals, analytics, and the API. Just with usage caps.',
+    a: 'Everything except team features. You get full access to environments, systems, workflows, Atrium, goals, analytics, and the API. Just with usage caps.',
   },
   {
     q: 'Can I white-label GRID for my clients?',

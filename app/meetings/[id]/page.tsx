@@ -203,7 +203,7 @@ export default function MeetingDetailPage() {
               Action items
             </h3>
             <span className="text-[10px] font-light" style={{ color: 'var(--text-3)' }}>
-              Promote to make Nova execute
+              Promote to make Atrium execute
             </span>
           </div>
           <ul className="space-y-2">

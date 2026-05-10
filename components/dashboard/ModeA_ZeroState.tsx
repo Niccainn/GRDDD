@@ -21,7 +21,7 @@ export default function ModeA_ZeroState() {
         What do you want Grid to run for you?
       </h1>
       <p className="text-sm mb-10 text-center" style={{ color: 'var(--text-3)' }}>
-        Pick a recurring job. Nova will build the System in minutes.
+        Pick a recurring job. Atrium will build the System in minutes.
       </p>
 
       <div className="space-y-2 mb-8">

@@ -1,11 +1,11 @@
 /**
- * Nova Kernel — Trace
+ * Atrium Kernel — Trace
  *
  * A Trace is a structured record of a single kernel run: the context,
  * the routing decision, every reasoning step, every tool call, the
  * final output, tokens, cost, and timing.
  *
- * Traces power the observability UI ("why did Nova do that?"), the
+ * Traces power the observability UI ("why did Atrium do that?"), the
  * learning loop (which decisions worked?), and the audit log (who ran
  * what, when, in which tenant).
  *

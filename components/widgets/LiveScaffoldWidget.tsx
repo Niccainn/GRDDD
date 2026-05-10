@@ -61,7 +61,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
   const [spec, setSpec] = useState<ScaffoldSpec | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [critic, setCritic] = useState<CriticState | null>(null);
-  // BYOK precondition. Scaffold calls Nova, which calls Anthropic —
+  // BYOK precondition. Scaffold calls Atrium, which calls Anthropic —
   // without a key the API just returns an error we can't recover
   // from. Pre-flight the check so new users see a helpful CTA
   // instead of hitting an unhelpful 400 after they've typed a prompt.
@@ -194,7 +194,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
             Scaffold
           </p>
           <h3 className="text-sm font-light mt-1" style={{ color: 'var(--text-1)' }}>
-            Describe your team. Nova builds the cell.
+            Describe your team. Atrium builds the cell.
           </h3>
         </div>
         {status !== 'idle' && status !== 'drafting' && (
@@ -221,7 +221,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
           }}
         >
           <p className="mb-3">
-            Scaffolding uses Nova, which needs your Anthropic API key.
+            Scaffolding uses Atrium, which needs your Anthropic API key.
             Connect yours to keep requests on your own billing — GRID
             never sees it in plaintext.
           </p>
@@ -285,7 +285,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
               style={{ background: 'var(--brand)' }}
             />
             <p className="text-xs font-light" style={{ color: 'var(--text-2)' }}>
-              Nova is assembling…
+              Atrium is assembling…
             </p>
           </div>
           <div className="space-y-1 max-h-[260px] overflow-y-auto">
@@ -354,7 +354,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
               <span>
                 {critic.note ??
                   (critic.status === 'started'
-                    ? 'Nova is reviewing its own draft…'
+                    ? 'Atrium is reviewing its own draft…'
                     : critic.status === 'applied'
                     ? 'Critic applied a revision.'
                     : critic.status === 'skipped'
@@ -385,7 +385,7 @@ export default function LiveScaffoldWidget({ environmentId, onCommitted, classNa
                 className="text-[10px] tracking-[0.16em] uppercase font-light"
                 style={{ color: 'var(--text-3)' }}
               >
-                Agents Nova proposes
+                Agents Atrium proposes
               </p>
               {spec.systems
                 .filter(s => s.agent)

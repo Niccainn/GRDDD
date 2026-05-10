@@ -1,7 +1,7 @@
 /**
  * Scaffold environment from a prompt.
  *
- *   POST ?environmentId=…  — streams SSE events as Nova drafts the cell.
+ *   POST ?environmentId=…  — streams SSE events as Atrium drafts the cell.
  *                            Returns (in the final `validated` event) a
  *                            typed ScaffoldSpec the client can display
  *                            for review. Nothing is persisted here.
@@ -11,7 +11,7 @@
  *                            Signals, and the dashboard layout.
  *
  * The two-step flow is the cellular-biopsy rule: draft first, review
- * with a human, THEN transplant. Avoids runaway Nova from polluting
+ * with a human, THEN transplant. Avoids runaway Atrium from polluting
  * a workspace with 8 wrong systems in one click.
  */
 
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
   };
 
   // Pull the top 5 scaffold corrections for this environment by
-  // strength*recency. These get injected into Nova's system prompt so
+  // strength*recency. These get injected into Atrium's system prompt so
   // prior edits shape the next draft. Per-tenant only — no leakage.
   const priorInsights = await prisma.masteryInsight.findMany({
     where: {
@@ -235,7 +235,7 @@ export async function PUT(req: NextRequest) {
     // Feedback loop: persist a MasteryInsight row capturing what the
     // user accepted (and, when provided, how they edited the draft).
     // Next scaffold for this environment injects the most recent N
-    // corrections so Nova gets better at this tenant's shape over time.
+    // corrections so Atrium gets better at this tenant's shape over time.
     const learned = summarizeScaffoldFeedback(originalSpec, spec, originalPrompt);
     if (learned) {
       await tx.masteryInsight.create({

@@ -3,7 +3,7 @@
  *
  * Pre-built system + workflow bundles that solve specific business problems.
  * Each template installs: a System, its Workflows (with stages), and an
- * initial Nova memory prompt so the AI immediately understands the context.
+ * initial Atrium memory prompt so the AI immediately understands the context.
  *
  * Templates are code-driven (not DB rows) so they ship with the app and
  * are always up to date. Installation creates real DB records via the
@@ -28,7 +28,7 @@ export type SystemTemplate = {
   difficulty: 'starter' | 'intermediate' | 'advanced';
   estimatedSetup: string; // "2 min", "5 min", etc.
   workflows: WorkflowTemplate[];
-  novaMemory: string;  // Initial persistent memory for Nova
+  novaMemory: string;  // Initial persistent memory for Atrium
   /** Short pitch shown in the marketplace card */
   pitch: string;
 };

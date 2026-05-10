@@ -1,5 +1,5 @@
 /**
- * Nova Kernel — Model Router
+ * Atrium Kernel — Model Router
  *
  * Maps abstract tier names to concrete Anthropic models. Centralizing
  * this lets us swap models without touching tool code or UI code. It

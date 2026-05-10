@@ -116,7 +116,7 @@ export default function DashboardsPage() {
             No surfaces yet
           </p>
           <p className="text-xs font-light max-w-sm text-center" style={{ color: 'var(--text-3)' }}>
-            Surfaces are composed tile layouts — pick what Nova shows you on one page.
+            Surfaces are composed tile layouts — pick what Atrium shows you on one page.
           </p>
         </div>
       ) : (

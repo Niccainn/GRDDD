@@ -510,7 +510,7 @@ export default function WorkflowDetailClient({
                       )}
                       {exec.status === 'COMPLETED' && (
                         <div className="flex items-center gap-2 mt-1">
-                          <p className="text-xs" style={{ color: 'rgba(191,159,241,0.5)' }}>View Nova output →</p>
+                          <p className="text-xs" style={{ color: 'rgba(191,159,241,0.5)' }}>View Atrium output →</p>
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCheckpointExecId(exec.id); }}
                             className="text-[10px] px-1.5 py-0.5 transition-all hover:opacity-80"

@@ -1,5 +1,5 @@
 /**
- * ConfidenceChip — surfaces Nova's calibrated confidence / strength
+ * ConfidenceChip — surfaces Atrium's calibrated confidence / strength
  * scores next to any generated output.
  *
  * Research basis (why this exists):

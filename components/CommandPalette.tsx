@@ -77,7 +77,7 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
 
 const NAV_SHORTCUTS = [
   { label: 'Dashboard', href: '/dashboard', hint: 'Home', icon: 'home' },
-  { label: 'Nova', href: '/nova', hint: 'Intelligence engine', icon: 'nova' },
+  { label: 'Atrium', href: '/nova', hint: 'Intelligence engine', icon: 'nova' },
   { label: 'Tasks', href: '/tasks', hint: 'Your work items', icon: 'task' },
   { label: 'Inbox', href: '/inbox', hint: 'Signals & incoming', icon: 'inbox' },
   { label: 'Environments', href: '/environments', hint: 'All environments', icon: 'environment' },
@@ -108,7 +108,7 @@ const NAV_SHORTCUTS = [
 const QUICK_ACTIONS = [
   { label: 'New Environment', href: '/environments', hint: 'Create container', icon: 'create' },
   { label: 'New Workflow', href: '/workflows', hint: 'Build a process', icon: 'create' },
-  { label: 'Ask Nova', href: '/nova', hint: 'Query intelligence', icon: 'nova' },
+  { label: 'Ask Atrium', href: '/nova', hint: 'Query intelligence', icon: 'nova' },
   { label: 'View Audit Log', href: '/audit', hint: 'Activity history', icon: 'audit' },
 ];
 

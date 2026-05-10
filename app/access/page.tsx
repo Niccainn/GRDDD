@@ -277,10 +277,10 @@ export default function AccessPage() {
               </div>
 
               <h2 className="text-2xl md:text-3xl font-extralight tracking-tight mb-4" style={{ color: 'var(--text-1)' }}>
-                Nova — your AI operations engine
+                Atrium — your AI operations engine
               </h2>
               <p className="text-sm font-light leading-relaxed mb-6" style={{ color: 'var(--text-3)' }}>
-                Nova processes multi-stage workflows, generates brand-consistent content, analyzes data, and produces real deliverables — not descriptions of work. It learns your brand voice and stays on-message across every output.
+                Atrium processes multi-stage workflows, generates brand-consistent content, analyzes data, and produces real deliverables — not descriptions of work. It learns your brand voice and stays on-message across every output.
               </p>
 
               <div className="space-y-3">

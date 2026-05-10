@@ -1,5 +1,5 @@
 /**
- * Nova tool registry — the contract between Claude's tool_use loop
+ * Atrium tool registry — the contract between Claude's tool_use loop
  * and GRID's integration adapters.
  *
  * Each entry declares:
@@ -243,7 +243,7 @@ export const TOOLS: Record<string, ToolEntry> = {
     write: false,
     schema: {
       name: 'integration_list',
-      description: 'List every supported integration and the methods available on each. Use this first to see what tools Nova can call in this environment. Returns provider IDs, labels, methods, and which methods are writes.',
+      description: 'List every supported integration and the methods available on each. Use this first to see what tools Atrium can call in this environment. Returns provider IDs, labels, methods, and which methods are writes.',
       input_schema: {
         type: 'object',
         properties: {
@@ -285,7 +285,7 @@ export const TOOLS: Record<string, ToolEntry> = {
       const method = String(input.method ?? '');
       const args = (input.args ?? {}) as Record<string, unknown>;
       // Resolves registry-ID (snake_case) to catalog-key (kebab-case)
-      // so Nova can use either form. See REGISTRY_TO_CATALOG_ALIASES
+      // so Atrium can use either form. See REGISTRY_TO_CATALOG_ALIASES
       // in lib/integrations/catalog.ts.
       const entry = getCatalogEntry(provider);
       if (!entry) throw new Error(`catalog:unknown_provider:${provider}`);

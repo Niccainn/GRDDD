@@ -6,7 +6,7 @@
  *
  *    (Location, Action, Interaction, Execution)
  *
- * The product of the four enums is the full skill space. Nova's
+ * The product of the four enums is the full skill space. Atrium's
  * planner chooses a point in this space for each step; the
  * dispatcher routes on (Location, Action); the UI shows all four
  * badges so the user can understand AND edit any dimension.
@@ -92,12 +92,12 @@ export type Action = (typeof ACTIONS)[number];
 // ─── INTERACTION — human involvement pattern ─────────────────────
 
 export const INTERACTIONS = [
-  'none',                    // Nova runs with no human involvement
-  'review_before_next',      // Nova acts; human reviews before next step
-  'approve_before_executing', // human must approve before Nova acts
-  'human_only',              // human performs; Nova just logs
-  'notify_after',            // Nova acts; human is notified
-  'pair',                    // Nova + human collaborate in real time
+  'none',                    // Atrium runs with no human involvement
+  'review_before_next',      // Atrium acts; human reviews before next step
+  'approve_before_executing', // human must approve before Atrium acts
+  'human_only',              // human performs; Atrium just logs
+  'notify_after',            // Atrium acts; human is notified
+  'pair',                    // Atrium + human collaborate in real time
   'schedule_for_later',      // queued with a cancel window for the human
 ] as const;
 

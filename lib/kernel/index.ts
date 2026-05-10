@@ -1,5 +1,5 @@
 /**
- * Nova Kernel — Public API
+ * Atrium Kernel — Public API
  *
  * This is the ONLY import path for callers. Everything else in
  * lib/kernel/ is internal. Keeping a single public surface means we

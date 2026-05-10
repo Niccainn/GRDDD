@@ -204,7 +204,7 @@ export default function CrossDomainInsights({ className }: { className?: string 
                   CROSS-DOMAIN INTELLIGENCE
                 </h2>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>
-                  Nova found {totalInsights} connection{totalInsights !== 1 ? 's' : ''} across your environments
+                  Atrium found {totalInsights} connection{totalInsights !== 1 ? 's' : ''} across your environments
                 </p>
               </div>
             </div>

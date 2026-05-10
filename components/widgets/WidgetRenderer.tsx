@@ -13,7 +13,7 @@ import StatWidget from './StatWidget';
 import FeedWidget, { type FeedWidgetItem } from './FeedWidget';
 import SystemWidget from './SystemWidget';
 import IntegrationWidget from './IntegrationWidget';
-import NovaOutputWidget from './NovaOutputWidget';
+import AtriumOutputWidget from './AtriumOutputWidget';
 
 export type WidgetRenderData = {
   stat?: {
@@ -138,7 +138,7 @@ export default function WidgetRenderer({
       ) : null;
     case 'nova-output':
       return data?.novaOutput ? (
-        <NovaOutputWidget
+        <AtriumOutputWidget
           spec={spec}
           output={data.novaOutput}
           editMode={editMode}

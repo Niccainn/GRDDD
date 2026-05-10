@@ -5,7 +5,7 @@
  * sandboxed mode.
  *
  * The trust contract requires the user to know, at every moment,
- * whether Nova's actions are real or simulated. /integrations
+ * whether Atrium's actions are real or simulated. /integrations
  * surfaces this only when the user happens to land there. This is
  * the persistent surface — visible on every authenticated page.
  *
@@ -90,7 +90,7 @@ export default function SimulationModeIndicator() {
   return (
     <>
       {/* Compact pill — fixed bottom-left so it doesn't compete with
-          the persistent Nova bar in the bottom-right. md:fixed only;
+          the persistent Atrium bar in the bottom-right. md:fixed only;
           on mobile we let BottomNav own the bottom edge. */}
       <button
         type="button"
@@ -154,7 +154,7 @@ export default function SimulationModeIndicator() {
                   className="text-xs font-light mt-1 leading-relaxed"
                   style={{ color: 'var(--text-3)' }}
                 >
-                  Nova&apos;s write tools return simulated success without calling provider APIs.
+                  Atrium&apos;s write tools return simulated success without calling provider APIs.
                   Reads are real — drafts, lists, traces all work. Writes (post to Slack, send
                   email, create Notion page) do not fire.
                 </p>

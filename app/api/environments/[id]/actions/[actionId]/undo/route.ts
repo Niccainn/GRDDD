@@ -1,10 +1,10 @@
 /**
  * POST /api/environments/[id]/actions/[actionId]/undo
  *
- * Records an undo intent for a Nova or audit action within the 24h
+ * Records an undo intent for a Atrium or audit action within the 24h
  * window. For reversible action types (task.created, draft.created)
  * it also soft-deletes the downstream entity. For everything else it
- * records the undo on the AuditLog so downstream Nova calls avoid
+ * records the undo on the AuditLog so downstream Atrium calls avoid
  * the behaviour that was overridden.
  *
  * Returns { ok, undone: true } so the client can grey the row.
@@ -76,7 +76,7 @@ export async function POST(
         metadata: JSON.stringify({ reason: 'user_undo', windowMs: UNDO_WINDOW_MS }),
       },
     });
-    // Nova-side learning signal: remember that this action was
+    // Atrium-side learning signal: remember that this action was
     // overridden so future prompts avoid repeating it.
     await prisma.novaMemory.create({
       data: {

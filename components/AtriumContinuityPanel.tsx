@@ -47,7 +47,7 @@ function confidenceColor(c: number) {
   return '#E54B4B';
 }
 
-export default function NovaContinuityPanel({
+export default function AtriumContinuityPanel({
   open,
   onClose,
 }: {
@@ -195,7 +195,7 @@ export default function NovaContinuityPanel({
                     margin: 0,
                   }}
                 >
-                  Nova Continuity
+                  Atrium Continuity
                 </h2>
                 <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
                   {total} {total === 1 ? 'memory' : 'memories'} stored
@@ -344,7 +344,7 @@ export default function NovaContinuityPanel({
               <textarea
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
-                placeholder="What should Nova remember?"
+                placeholder="What should Atrium remember?"
                 rows={3}
                 style={{
                   width: '100%',
@@ -464,10 +464,10 @@ export default function NovaContinuityPanel({
                 </svg>
               </div>
               <p style={{ fontSize: '13px', fontWeight: 300, color: 'rgba(255,255,255,0.4)', margin: '0 0 4px', lineHeight: 1.5 }}>
-                Nova hasn&apos;t stored any memories yet.
+                Atrium hasn&apos;t stored any memories yet.
               </p>
               <p style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(255,255,255,0.2)', margin: 0, lineHeight: 1.5 }}>
-                As you work, Nova will learn your brand voice, preferences, and patterns.
+                As you work, Atrium will learn your brand voice, preferences, and patterns.
               </p>
             </div>
           ) : (

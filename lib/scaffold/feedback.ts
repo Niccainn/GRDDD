@@ -2,7 +2,7 @@
  * Scaffold feedback loop.
  *
  * Turns accept/edit/reject deltas into MasteryInsight rows, and reads
- * them back into the next scaffold prompt so Nova's second attempt is
+ * them back into the next scaffold prompt so Atrium's second attempt is
  * shaped by the first one's corrections. Per-tenant — no cross-tenant
  * leakage by construction.
  */
@@ -10,7 +10,7 @@
 import type { ScaffoldSpec } from './spec';
 
 export type ScaffoldFeedback = {
-  principle: string;   // short, one-line takeaway Nova can consume next time
+  principle: string;   // short, one-line takeaway Atrium can consume next time
   evidence: string;    // specific diff that produced the takeaway
   strength: number;    // 0 = weak signal, 1 = strong (accepted as-is)
 };
@@ -31,7 +31,7 @@ export function summarizeScaffoldFeedback(
   // because "no edits" can mean "perfect" or "too lazy to review."
   if (!original) {
     return {
-      principle: `For ${promptFragment}, Nova's first draft was accepted unchanged: ${accepted.systems.length} systems, ${accepted.workflows.length} workflows.`,
+      principle: `For ${promptFragment}, Atrium's first draft was accepted unchanged: ${accepted.systems.length} systems, ${accepted.workflows.length} workflows.`,
       evidence: summarizeSpec(accepted),
       strength: 0.55,
     };
@@ -65,7 +65,7 @@ export function summarizeScaffoldFeedback(
   // No drift = accepted verbatim but we had the original object — same case as above.
   if (diffs.length === 0) {
     return {
-      principle: `For ${promptFragment}, Nova's draft was accepted unchanged.`,
+      principle: `For ${promptFragment}, Atrium's draft was accepted unchanged.`,
       evidence: summarizeSpec(accepted),
       strength: 0.6,
     };
@@ -74,7 +74,7 @@ export function summarizeScaffoldFeedback(
   // Strong correction signal when the user reshaped the cell.
   const strength = Math.min(0.95, 0.4 + diffs.length * 0.1);
   return {
-    principle: `For prompts like ${promptFragment}, correct Nova's instinct: ${diffs.join('; ')}.`,
+    principle: `For prompts like ${promptFragment}, correct Atrium's instinct: ${diffs.join('; ')}.`,
     evidence: `Original: ${summarizeSpec(original)}\nAccepted: ${summarizeSpec(accepted)}`,
     strength,
   };
@@ -91,7 +91,7 @@ function summarizeSpec(s: ScaffoldSpec): string {
 
 /**
  * Render prior corrections into a single string the generator injects
- * into Nova's system prompt. Caps length so repeated corrections don't
+ * into Atrium's system prompt. Caps length so repeated corrections don't
  * blow the context window.
  */
 export function renderPriorCorrections(

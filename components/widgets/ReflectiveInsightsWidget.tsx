@@ -102,7 +102,7 @@ export default function ReflectiveInsightsWidget({ environmentId }: ReflectiveIn
       ) : reflections.length === 0 ? (
         <div className="flex items-center justify-center py-12">
           <p className="text-sm font-light" style={{ color: 'var(--text-3)' }}>
-            Nova is analyzing your environment. Insights will appear as patterns emerge.
+            Atrium is analyzing your environment. Insights will appear as patterns emerge.
           </p>
         </div>
       ) : (
@@ -210,7 +210,7 @@ export default function ReflectiveInsightsWidget({ environmentId }: ReflectiveIn
                           className="text-[10px] font-light transition-colors"
                           style={{ color: 'rgba(91,154,255,0.7)' }}
                         >
-                          {showSuggestion ? 'Hide suggestion' : 'Nova suggests...'}
+                          {showSuggestion ? 'Hide suggestion' : 'Atrium suggests...'}
                         </button>
                         {showSuggestion && (
                           <p

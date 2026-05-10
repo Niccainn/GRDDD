@@ -1,10 +1,10 @@
 /**
- * Skill registry — Nova's menu of verbs across integrated tools.
+ * Skill registry — Atrium's menu of verbs across integrated tools.
  *
  * A skill is (tool, action, description) — the granular unit Claude
  * picks when it plans a Project. Keeping this catalog honest and
  * narrow is half the battle: if it lists a capability that doesn't
- * exist yet, Nova will plan the step, fail silently, and erode
+ * exist yet, Atrium will plan the step, fail silently, and erode
  * trust. Status flags mark what's wired today vs. planned.
  */
 

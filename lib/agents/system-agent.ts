@@ -1,13 +1,13 @@
 /**
  * Per-system agent pool — runtime resolution + scoping.
  *
- * Every System can have at most one SystemAgent row. When Nova is
+ * Every System can have at most one SystemAgent row. When Atrium is
  * invoked with a `systemId` in its context, the runtime looks up the
- * system's agent (if any), merges its persona onto the base Nova
+ * system's agent (if any), merges its persona onto the base Atrium
  * system prompt, and narrows the tool registry to the agent's
  * allow-list.
  *
- * Absence of a SystemAgent = the system uses the env-wide Nova
+ * Absence of a SystemAgent = the system uses the env-wide Atrium
  * defaults (same behaviour as before this module shipped). So this is
  * additive — nothing existing breaks.
  */
@@ -82,7 +82,7 @@ export function scopeToolsToAgent(
 /**
  * Compose a system prompt with the agent persona prepended. The
  * agent persona is short (role + priorities + tone) and sits before
- * the task-specific instruction so Nova reads "you are X, now do Y."
+ * the task-specific instruction so Atrium reads "you are X, now do Y."
  */
 export function composeSystemPrompt(
   baseInstruction: string,

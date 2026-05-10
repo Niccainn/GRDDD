@@ -15,13 +15,13 @@ export const metadata: Metadata = {
     default: 'GRID — A workspace that acts',
     template: '%s | GRID',
   },
-  description: 'Type what you want done. Nova writes the plan. Your tools do the work. A living business OS where every AI action explains itself, reverses in one click, and teaches Nova what "good" looks like in your company.',
-  keywords: ['AI workspace', 'AI interaction layer', 'multi-tool AI', 'AI operations layer', 'AI workflow automation', 'business operating system', 'operational intelligence platform', 'AI that learns', 'workflow quality scoring', 'operational playbook', 'Nova AI agent', 'BYOK AI platform', 'Claude business OS', 'notion alternative', 'solo founder tools', 'small team operations'],
+  description: 'Type what you want done. Atrium writes the plan. Your tools do the work. A living business OS where every AI action explains itself, reverses in one click, and teaches Atrium what "good" looks like in your company.',
+  keywords: ['AI workspace', 'AI interaction layer', 'multi-tool AI', 'AI operations layer', 'AI workflow automation', 'business operating system', 'operational intelligence platform', 'AI that learns', 'workflow quality scoring', 'operational playbook', 'Atrium AI agent', 'BYOK AI platform', 'Claude business OS', 'notion alternative', 'solo founder tools', 'small team operations'],
   authors: [{ name: 'GRID Systems Inc.' }],
   creator: 'GRID Systems Inc.',
   openGraph: {
     title: 'GRID — A workspace that acts',
-    description: 'Type what you want done. Nova writes the plan, your tools do the work — Figma, Canva, Notion, Gmail, Slack, Meta Ads. Every step is traceable, reversible, and teaches Nova what "good" looks like in your company. Built on Claude.',
+    description: 'Type what you want done. Atrium writes the plan, your tools do the work — Figma, Canva, Notion, Gmail, Slack, Meta Ads. Every step is traceable, reversible, and teaches Atrium what "good" looks like in your company. Built on Claude.',
     url: 'https://www.grddd.com',
     siteName: 'GRID',
     locale: 'en_US',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'GRID — A workspace that acts',
-    description: 'Type what you want done. Nova writes the plan. Your tools do the work. Built on Claude.',
+    description: 'Type what you want done. Atrium writes the plan. Your tools do the work. Built on Claude.',
   },
   robots: {
     index: true,

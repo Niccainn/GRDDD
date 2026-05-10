@@ -5,7 +5,7 @@
  * Inspired by iOS's widget picker: slides up from below, presents
  * the user with exactly three decisions:
  *   1. Where does the data come from? (System, Integration, Query,
- *      a Nova answer, or static payload)
+ *      a Atrium answer, or static payload)
  *   2. What shape should it be? (the widget kind — stat, feed, etc.)
  *   3. What should it be called?
  *
@@ -52,7 +52,7 @@ const KIND_META: Record<
   },
   system: {
     label: 'System',
-    description: 'Snapshot of one System — health + last Nova action.',
+    description: 'Snapshot of one System — health + last Atrium action.',
     accent: '#C8F26B',
   },
   integration: {
@@ -61,8 +61,8 @@ const KIND_META: Record<
     accent: '#F7C700',
   },
   'nova-output': {
-    label: 'Nova answer',
-    description: 'Pin a Nova response as a live widget.',
+    label: 'Atrium answer',
+    description: 'Pin a Atrium response as a live widget.',
     accent: '#BF9FF1',
   },
 };
@@ -75,7 +75,7 @@ const SOURCE_KINDS: Array<{
   { id: 'system', label: 'A System', sub: 'Marketing, Operations, …' },
   { id: 'integration', label: 'An integration', sub: 'Gmail, Stripe, Notion' },
   { id: 'query', label: 'A custom query', sub: 'Any /api endpoint' },
-  { id: 'nova', label: 'Nova', sub: "Pin Nova's last answer" },
+  { id: 'nova', label: 'Atrium', sub: "Pin Atrium's last answer" },
   { id: 'static', label: 'Just text', sub: 'Notes & reminders' },
 ];
 

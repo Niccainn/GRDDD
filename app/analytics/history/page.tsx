@@ -49,7 +49,7 @@ const eventConfig: Record<string, { icon: React.ReactNode; color: string; label:
   nova_insight: {
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74L12 2z" strokeLinecap="round" strokeLinejoin="round"/></svg>,
     color: '#BF9FF1',
-    label: 'Nova',
+    label: 'Atrium',
   },
   task_milestone: {
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="3" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/></svg>,

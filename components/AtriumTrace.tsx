@@ -1,33 +1,33 @@
 'use client';
 
 /**
- * NovaTrace — the "show the trace" primitive.
+ * AtriumTrace — the "show the trace" primitive.
  *
- * Pillar 2 of the cognition-platform framing: every artifact Nova
- * touched should show, inline, what Nova read, decided, and skipped.
+ * Pillar 2 of the cognition-platform framing: every artifact Atrium
+ * touched should show, inline, what Atrium read, decided, and skipped.
  * Not in a separate side-panel. Not behind an "Open in audit log"
  * link. Right at the artifact, where the human is making the
  * review-or-override decision.
  *
- * The compact form is one line: a brand dot, "Nova" label, and the
+ * The compact form is one line: a brand dot, "Atrium" label, and the
  * decision in plain prose. Click anywhere on the strip to expand the
  * full trace — read sources, confidence, optional skipped list. ESC
  * or a second click collapses.
  *
  * Designed to render inside Signal rows, Task rows, Activity rows,
- * Execution rows — anywhere a Nova-driven decision lives. Pure
+ * Execution rows — anywhere a Atrium-driven decision lives. Pure
  * presentation; the caller fetches and shapes the data.
  */
 import { useState } from 'react';
 
-export type NovaTraceData = {
-  /** What Nova read to make this decision. Free-form short labels
+export type AtriumTraceData = {
+  /** What Atrium read to make this decision. Free-form short labels
    *  ("inbox: gmail", "memory: brand voice", "doc: SOP-42"). */
   read?: string[];
   /** One-sentence prose for the decision. Required — this is the
    *  whole point. Example: "routed to Client Delivery system". */
   decided: string;
-  /** Optional list of options Nova considered but didn't pick.
+  /** Optional list of options Atrium considered but didn't pick.
    *  Useful for review surfaces. */
   skipped?: string[];
   /** 0–1 confidence. Rendered as a percent if present. */
@@ -35,13 +35,13 @@ export type NovaTraceData = {
 };
 
 type Props = {
-  data: NovaTraceData;
+  data: AtriumTraceData;
   /** Compact when collapsed; if false, always renders the full panel.
    *  Default true. */
   collapsible?: boolean;
 };
 
-export default function NovaTrace({ data, collapsible = true }: Props) {
+export default function AtriumTrace({ data, collapsible = true }: Props) {
   const [open, setOpen] = useState(!collapsible);
   const hasDetail = (data.read && data.read.length > 0) || (data.skipped && data.skipped.length > 0);
 
@@ -63,7 +63,7 @@ export default function NovaTrace({ data, collapsible = true }: Props) {
           className="w-1.5 h-1.5 rounded-full flex-shrink-0"
           style={{ background: '#C8F26B' }}
         />
-        <span style={{ color: '#C8F26B' }}>Nova</span>
+        <span style={{ color: '#C8F26B' }}>Atrium</span>
         <span className="flex-1 truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>
           {data.decided}
         </span>

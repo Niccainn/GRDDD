@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import GlobalNovaBar from '@/components/GlobalNovaBar';
+import GlobalAtriumBar from '@/components/GlobalAtriumBar';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import SampleDataBanner from '@/components/SampleDataBanner';
 import OnlineIndicator from '@/components/OnlineIndicator';
@@ -247,7 +247,7 @@ export default function OperatePage() {
   return (
     <div className="px-4 md:px-10 py-6 md:py-10 min-h-screen">
       {/* /dashboard is the cross-environment home — greeting,
-          Nova prompt, get-started wedge, recent activity, and
+          Atrium prompt, get-started wedge, recent activity, and
           summary widgets. Used to auto-redirect to the user's
           first environment via DashboardEnvironmentRedirect, which
           buried this page entirely. Removed: env detail is one
@@ -288,7 +288,7 @@ export default function OperatePage() {
             ) : greetingName ? (
               <button
                 onClick={startEditName}
-                title="Click to edit the name Nova uses for you"
+                title="Click to edit the name Atrium uses for you"
                 className="transition-opacity hover:opacity-80 cursor-pointer"
                 style={{ font: 'inherit', letterSpacing: 'inherit', color: 'inherit', background: 'transparent', border: 'none', padding: 0 }}
               >
@@ -344,9 +344,9 @@ export default function OperatePage() {
           Hides itself automatically when all steps are done. */}
       <OnboardingChecklist />
 
-      {/* Global Nova bar */}
+      {/* Global Atrium bar */}
       <div data-tour="nova-bar">
-        <GlobalNovaBar initialQuery={novaInitialQuery} />
+        <GlobalAtriumBar initialQuery={novaInitialQuery} />
       </div>
 
       {/* Review nudge — shown when unreviewed executions exist */}
@@ -443,7 +443,7 @@ export default function OperatePage() {
               <div className="flex-1">
                 <p className="text-sm font-light" style={{ color: 'var(--text-1)' }}>Run your first workflow</p>
                 <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-                  Build a multi-stage AI pipeline and see Nova in action
+                  Build a multi-stage AI pipeline and see Atrium in action
                 </p>
               </div>
               <span className="text-xs font-light opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--nova)' }}>
@@ -663,7 +663,7 @@ export default function OperatePage() {
             )
           )}
 
-          {/* Nova Activity feed */}
+          {/* Atrium Activity feed */}
           {feedTab === 'activity' && (
             !loaded ? (
               <div className="space-y-3">
@@ -678,7 +678,7 @@ export default function OperatePage() {
                   Activity shows up here once you run something
                 </p>
                 <p className="text-xs mb-4 text-center max-w-sm" style={{ color: 'var(--text-3)' }}>
-                  Every Nova action, every workflow run, every override writes to this feed so the team can see what the system actually does.
+                  Every Atrium action, every workflow run, every override writes to this feed so the team can see what the system actually does.
                 </p>
                 <Link
                   href="/systems"

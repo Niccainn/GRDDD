@@ -11,7 +11,7 @@ export const shortcutDefs: ShortcutDef[] = [
   // Navigation (g + key)
   { key: 'g h', label: 'Go to Home', section: 'Navigation' },
   { key: 'g t', label: 'Go to Tasks', section: 'Navigation' },
-  { key: 'g n', label: 'Go to Nova', section: 'Navigation' },
+  { key: 'g n', label: 'Go to Atrium', section: 'Navigation' },
   { key: 'g w', label: 'Go to Workflows', section: 'Navigation' },
   { key: 'g e', label: 'Go to Environments', section: 'Navigation' },
   { key: 'g i', label: 'Go to Inbox', section: 'Navigation' },

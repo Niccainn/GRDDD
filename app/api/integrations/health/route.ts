@@ -3,9 +3,9 @@
  *
  * Quick visibility into integration-layer state:
  *   - liveWritesEnabled — is NOVA_TOOLS_LIVE=1 set on this server?
- *     When false, every Nova write tool returns a simulated success
+ *     When false, every Atrium write tool returns a simulated success
  *     instead of actually calling the provider API. This is the
- *     single most important fact for a user evaluating "did Nova
+ *     single most important fact for a user evaluating "did Atrium
  *     actually post to Slack?". Surface it on /integrations.
  *   - implementedCount — providers with shipped adapters
  *   - totalProviders — registry size
@@ -45,7 +45,7 @@ export async function GET() {
     },
     notes: {
       simulationMode: !isLiveToolsEnabled()
-        ? 'Nova write tools return simulated success without calling provider APIs. Set NOVA_TOOLS_LIVE=1 to enable real writes.'
+        ? 'Atrium write tools return simulated success without calling provider APIs. Set NOVA_TOOLS_LIVE=1 to enable real writes.'
         : null,
     },
   });

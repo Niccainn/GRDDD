@@ -66,7 +66,7 @@ export default function OperateCommand({
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? 'Nova failed');
+        setError(data.error ?? 'Atrium failed');
         setPhase('idle');
         stepTimers.forEach(clearTimeout);
         return;
@@ -236,7 +236,7 @@ export default function OperateCommand({
             ) : (
               <div className="flex items-center gap-3">
                 <div className="w-1 h-1 rounded-full animate-pulse" style={{ background: '#C7F700' }} />
-                <span className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.25)' }}>Nova is thinking...</span>
+                <span className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.25)' }}>Atrium is thinking...</span>
               </div>
             )}
             {error && <p className="text-sm mt-3" style={{ color: '#FF4D4D' }}>{error}</p>}

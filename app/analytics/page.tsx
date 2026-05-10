@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
           [
             { label: 'Total queries', value: fmt(data.summary.totalQueries), sub: `${fmt(data.summary.weekQueries)} this week`, color: '#BF9FF1' },
             { label: 'Tokens used', value: fmt(data.summary.totalTokens), sub: `${fmt(data.summary.weekTokens)} this week`, color: '#7193ED' },
-            { label: 'Nova success', value: `${data.summary.successRate}%`, sub: 'query success rate', color: '#C8F26B' },
+            { label: 'Atrium success', value: `${data.summary.successRate}%`, sub: 'query success rate', color: '#C8F26B' },
             { label: 'Executions', value: fmt(data.summary.execTotal), sub: `${data.summary.execSuccessRate}% completed`, color: '#F7C700' },
           ].map(stat => (
             <div key={stat.label} className="rounded-xl p-4" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
@@ -168,11 +168,11 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="space-y-6">
-        {/* Nova queries chart */}
+        {/* Atrium queries chart */}
         <div className="rounded-xl p-5" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm font-light mb-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>Nova queries</p>
+              <p className="text-sm font-light mb-0.5" style={{ color: 'rgba(255,255,255,0.7)' }}>Atrium queries</p>
               <p className="text-xs" style={{ color: 'var(--text-3)' }}>Daily activity over 30 days</p>
             </div>
             {data && (
@@ -247,7 +247,7 @@ export default function AnalyticsPage() {
           <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
             <div className="px-5 py-4" style={{ background: 'var(--glass)', borderBottom: '1px solid var(--glass-border)' }}>
               <p className="text-sm font-light" style={{ color: 'rgba(255,255,255,0.7)' }}>Token usage by system</p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>All-time Nova interactions</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>All-time Atrium interactions</p>
             </div>
             {data.bySystem.map((s, i) => {
               const pct = Math.round((s.tokens / maxTokenSystem) * 100);
@@ -279,8 +279,8 @@ export default function AnalyticsPage() {
         {/* Empty state */}
         {data && data.summary.totalQueries === 0 && (
           <div className="rounded-xl p-8 text-center" style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
-            <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No Nova activity yet</p>
-            <p className="text-xs" style={{ color: 'var(--text-3)' }}>Start a conversation with Nova on any system to see analytics here</p>
+            <p className="text-sm font-light mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No Atrium activity yet</p>
+            <p className="text-xs" style={{ color: 'var(--text-3)' }}>Start a conversation with Atrium on any system to see analytics here</p>
           </div>
         )}
       </div>

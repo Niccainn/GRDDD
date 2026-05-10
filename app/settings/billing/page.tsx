@@ -45,7 +45,7 @@ const PLAN_BADGE_COLORS: Record<PlanType, { bg: string; text: string }> = {
 
 const METRIC_LABELS: Record<string, string> = {
   executions: 'Executions',
-  nova_queries: 'Nova queries',
+  nova_queries: 'Atrium queries',
   api_calls: 'API calls',
   storage_mb: 'Storage (MB)',
 };
@@ -54,7 +54,7 @@ const ALL_FEATURES = [
   { key: 'environments', label: 'Environments', free: '3', pro: '10', team: 'Unlimited' },
   { key: 'systems', label: 'Systems', free: '5', pro: 'Unlimited', team: 'Unlimited' },
   { key: 'executions', label: 'Executions / mo', free: '100', pro: '2,000', team: '10,000' },
-  { key: 'nova_queries', label: 'Nova queries / mo', free: '50', pro: '500', team: '2,000' },
+  { key: 'nova_queries', label: 'Atrium queries / mo', free: '50', pro: '500', team: '2,000' },
   { key: 'api_keys', label: 'API keys', free: '1', pro: '10', team: '50' },
   { key: 'team_members', label: 'Team members', free: '--', pro: '--', team: 'Yes' },
   { key: 'audit_log', label: 'Audit log', free: '--', pro: '--', team: 'Yes' },

@@ -1,7 +1,7 @@
 /**
  * GET /api/nova/action/[id]
  *
- * Read-only "why did Nova do this?" drawer data for a single action.
+ * Read-only "why did Atrium do this?" drawer data for a single action.
  * Accepts either an intelligence-log id (prefixed "intel:") or an
  * audit-log id (prefixed "audit:"). Returns a shape suitable for
  * rendering the trace: action, inputs, reasoning, outputs, and any
@@ -66,7 +66,7 @@ export async function GET(
       input: log.input,
       output: log.output,
       reasoning: log.reasoning ??
-        'No explicit trace was recorded for this action. Nova acted on the latest instructions from this system\'s memory and context.',
+        'No explicit trace was recorded for this action. Atrium acted on the latest instructions from this system\'s memory and context.',
       tokens: log.tokens,
       cost: log.cost,
       success: log.success,

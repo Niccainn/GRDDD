@@ -5,7 +5,7 @@
  * sentences that read like a department head briefing the CEO.
  *
  * Shape (deliberately simple): compose context from the last 7 days
- * of AuditLog + Goal deltas + top Signals, hand it to Nova with a
+ * of AuditLog + Goal deltas + top Signals, hand it to Atrium with a
  * tight system prompt, cache the result for 24h in-memory. Callers
  * can force a regeneration with ?fresh=1.
  *
@@ -38,7 +38,7 @@ function stripAdverbs(s: string): string {
 function fallbackNarrative(basis: CacheEntry['basis']): string {
   const parts: string[] = [];
   parts.push(`This week the Environment saw ${basis.audits} audited actions across ${basis.signals} inbound signals.`);
-  parts.push(`${basis.goals} goals are tracked; the ratio between progress and drift will sharpen in the narrative once Nova has a full week of telemetry.`);
+  parts.push(`${basis.goals} goals are tracked; the ratio between progress and drift will sharpen in the narrative once Atrium has a full week of telemetry.`);
   parts.push(`No autonomous actions were overridden in the window — either the system is calibrated or the sample is small.`);
   parts.push(`Trust in the rollout stays roughly flat week-over-week.`);
   parts.push(`The main thing to watch next week is whether inbound signal volume translates into resolved exceptions instead of queue growth.`);
@@ -99,7 +99,7 @@ export async function GET(
 
   const basis = { audits: audits.length, signals: signals.length, goals: goals.length };
 
-  // Build a compact context block. Nova reads the full block; token cost
+  // Build a compact context block. Atrium reads the full block; token cost
   // caps by the take: limits above.
   const context = [
     `Environment: ${env.name}`,
@@ -126,7 +126,7 @@ export async function GET(
     'Sentence 1: the single most important thing that happened.',
     'Sentence 2: one trend or metric that moved and why it moved.',
     'Sentence 3: one exception or risk worth attention this week.',
-    'Sentence 4: what Nova handled autonomously and what was overridden.',
+    'Sentence 4: what Atrium handled autonomously and what was overridden.',
     'Sentence 5: one specific thing to decide or ship next week.',
   ].join('\n');
 

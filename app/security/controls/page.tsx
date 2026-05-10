@@ -65,7 +65,7 @@ const CONTROLS: Control[] = [
     area: 'Audit',
     title: 'Audit log',
     summary:
-      'Every workflow, execution, member change, integration change, and Nova query is recorded in the AuditLog with before/after JSON diffs.',
+      'Every workflow, execution, member change, integration change, and Atrium query is recorded in the AuditLog with before/after JSON diffs.',
     status: 'shipped',
     evidence: 'AuditLog model · /audit page · CSV export endpoint',
   },
@@ -74,7 +74,7 @@ const CONTROLS: Control[] = [
     area: 'Audit',
     title: 'Autonomous action trace',
     summary:
-      'Every Nova action persists a KernelTrace including tools called, data read, and the rationale. Surface-facing “why did Nova do this?” panel exposes the trace inline.',
+      'Every Atrium action persists a KernelTrace including tools called, data read, and the rationale. Surface-facing “why did Atrium do this?” panel exposes the trace inline.',
     status: 'shipped',
     evidence: 'KernelTrace · IntelligenceLog models',
   },
@@ -151,7 +151,7 @@ const CONTROLS: Control[] = [
     summary:
       'Observe → Suggest → Act & Notify → Autonomous → Self-Direct. Configurable per Workflow and per System. Recommendation engine surfaces upgrades based on approval rate.',
     status: 'shipped',
-    evidence: 'AutonomyConfig · Nova Trust Score',
+    evidence: 'AutonomyConfig · Atrium Trust Score',
   },
   {
     id: 'AP-01',

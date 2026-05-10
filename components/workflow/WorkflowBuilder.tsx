@@ -54,7 +54,7 @@ const NODE_META: Record<NodeType, { bg: string; border: string; text: string; ac
 
 const PALETTE: { type: NodeType; label: string; icon: string; hint: string }[] = [
   { type: 'task',     label: 'Task',     icon: '◻', hint: 'Manual or automated step' },
-  { type: 'ai',       label: 'Nova AI',  icon: '⚡', hint: 'AI-powered processing'    },
+  { type: 'ai',       label: 'Atrium AI',  icon: '⚡', hint: 'AI-powered processing'    },
   { type: 'decision', label: 'Decision', icon: '◇', hint: 'Branch on condition'       },
   { type: 'trigger',  label: 'Trigger',  icon: '⏱', hint: 'Scheduled or event-based' },
   { type: 'end',      label: 'End',      icon: '◉', hint: 'Terminal node'             },
@@ -309,7 +309,7 @@ export default function WorkflowBuilder({
   }
 
   function addNode(type: NodeType) {
-    const label = { start: 'Start', end: 'End', task: 'New Task', ai: 'Nova Step', decision: 'Decision?', trigger: 'Trigger' }[type];
+    const label = { start: 'Start', end: 'End', task: 'New Task', ai: 'Atrium Step', decision: 'Decision?', trigger: 'Trigger' }[type];
     const cx = canvasRef.current ? canvasRef.current.offsetWidth / 2 : 400;
     const cy = canvasRef.current ? canvasRef.current.offsetHeight / 2 : 300;
     const x = (cx - pan.x) / zoom - NODE_W / 2;
@@ -423,7 +423,7 @@ export default function WorkflowBuilder({
               border: '1px solid var(--brand-border)',
               color: 'var(--brand)',
             }}
-            title="Ask Nova to plan this workflow from a natural-language prompt"
+            title="Ask Atrium to plan this workflow from a natural-language prompt"
           >
             <span style={{ fontSize: 13, lineHeight: 1 }}>✨</span>
             From prompt
@@ -669,7 +669,7 @@ export default function WorkflowBuilder({
                     <div className="flex items-center gap-2 mb-4">
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: meta.accent, flexShrink: 0 }} />
                       <span className="text-xs font-light capitalize" style={{ color: meta.text }}>
-                        {selectedNode.type === 'ai' ? 'Nova AI' : selectedNode.type}
+                        {selectedNode.type === 'ai' ? 'Atrium AI' : selectedNode.type}
                       </span>
                     </div>
 
@@ -691,7 +691,7 @@ export default function WorkflowBuilder({
                       )}
                       {selectedNode.type === 'ai' && (
                         <div className="rounded-lg p-2.5" style={{ background: 'rgba(191,159,241,0.06)', border: '1px solid rgba(191,159,241,0.15)' }}>
-                          <p className="text-xs" style={{ color: 'rgba(191,159,241,0.7)' }}>Nova will process this step using your system context.</p>
+                          <p className="text-xs" style={{ color: 'rgba(191,159,241,0.7)' }}>Atrium will process this step using your system context.</p>
                         </div>
                       )}
                       <div className="pt-1">

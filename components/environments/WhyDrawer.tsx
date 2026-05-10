@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * WhyDrawer — the "why did Nova do this?" surface. Opens from the
+ * WhyDrawer — the "why did Atrium do this?" surface. Opens from the
  * action ledger (or anywhere an action id is referenced). Read-only.
  *
  * The trust layer is built on this: every autonomous action is
@@ -136,7 +136,7 @@ export default function WhyDrawer({
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="Why Nova did this"
+        aria-label="Why Atrium did this"
         // Full-screen on narrow viewports (below md), right-rail on
         // desktop. Mobile users need to read the full trace without
         // squinting or scrolling horizontally.
@@ -176,7 +176,7 @@ export default function WhyDrawer({
             </p>
           ) : data.source === 'nova' ? (
             <>
-              <NovaTrace data={data} />
+              <AtriumTrace data={data} />
               {environmentId && (
                 <div className="mt-8 space-y-5">
                   <TeachSection
@@ -232,7 +232,7 @@ function TeachSection({
         style={{ background: 'rgba(200,242,107,0.06)', border: '1px solid rgba(200,242,107,0.2)' }}
       >
         <p className="text-xs font-light" style={{ color: '#C8F26B' }}>
-          Nova recorded the correction. Future calls will factor this in.
+          Atrium recorded the correction. Future calls will factor this in.
         </p>
       </div>
     );
@@ -240,7 +240,7 @@ function TeachSection({
   return (
     <div>
       <p className="text-[10px] tracking-[0.16em] uppercase font-light mb-2" style={{ color: 'var(--text-3)' }}>
-        Teach Nova why this was off
+        Teach Atrium why this was off
       </p>
       <div className="flex flex-wrap gap-2 mb-3">
         {reasons.map(r => {
@@ -284,7 +284,7 @@ function TeachSection({
           color: 'var(--brand)',
         }}
       >
-        {state === 'saving' ? 'Recording…' : 'Teach Nova →'}
+        {state === 'saving' ? 'Recording…' : 'Teach Atrium →'}
       </button>
     </div>
   );
@@ -311,7 +311,7 @@ function UndoSection({
         style={{ background: 'rgba(200,242,107,0.06)', border: '1px solid rgba(200,242,107,0.2)' }}
       >
         <p className="text-xs font-light" style={{ color: '#C8F26B' }}>
-          Undone. The action is marked reversed and Nova has been told not to repeat it.
+          Undone. The action is marked reversed and Atrium has been told not to repeat it.
         </p>
       </div>
     );
@@ -384,7 +384,7 @@ function Mono({ children }: { children: React.ReactNode }) {
   );
 }
 
-function NovaTrace({ data }: { data: NovaAction }) {
+function AtriumTrace({ data }: { data: NovaAction }) {
   return (
     <>
       <div className="flex items-center gap-2 mb-4">
@@ -392,7 +392,7 @@ function NovaTrace({ data }: { data: NovaAction }) {
           className="text-[10px] font-light tracking-[0.16em] uppercase px-2 py-0.5 rounded-full"
           style={{ color: '#BF9FF1', background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.25)' }}
         >
-          Nova
+          Atrium
         </span>
         {data.system && (
           <span className="flex items-center gap-1.5 text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
@@ -418,12 +418,12 @@ function NovaTrace({ data }: { data: NovaAction }) {
         </p>
       </Field>
       {data.input && (
-        <Field label="What Nova read">
+        <Field label="What Atrium read">
           <Mono>{data.input}</Mono>
         </Field>
       )}
       {data.output && (
-        <Field label="What Nova produced">
+        <Field label="What Atrium produced">
           <Mono>{data.output}</Mono>
         </Field>
       )}

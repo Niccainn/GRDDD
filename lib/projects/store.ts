@@ -31,7 +31,7 @@ export async function createProject(args: {
   const workflow = await prisma.workflow.create({
     data: {
       name: args.goal.slice(0, 80),
-      description: 'Auto-generated for Nova project run.',
+      description: 'Auto-generated for Atrium project run.',
       status: 'ACTIVE',
       stages: JSON.stringify(args.plan.map(s => ({ id: s.id, title: s.title, tool: s.tool }))),
       systemId: targetSystemId,

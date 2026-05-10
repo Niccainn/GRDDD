@@ -1,7 +1,7 @@
 /**
  * Scaffold generator — prompt → full environment spec.
  *
- * Calls Nova with a strict JSON schema tool. The return value is a
+ * Calls Atrium with a strict JSON schema tool. The return value is a
  * validated `ScaffoldSpec` or a list of validation errors. Never
  * writes to the DB directly — that's the route's job, after the user
  * accepts the draft.
@@ -28,25 +28,25 @@ export type GenerateInput = {
   environmentId: string;
   /** The user's free-text description of their business / team / goal. */
   prompt: string;
-  /** If the env already has a brand nucleus, pass it through — Nova uses it. */
+  /** If the env already has a brand nucleus, pass it through — Atrium uses it. */
   brandTone?: string | null;
   brandAudience?: string | null;
   brandValues?: string | null;
   /**
    * Rendered string of prior scaffold corrections for this env. When
-   * non-empty, injected into Nova's system prompt so the next draft
+   * non-empty, injected into Atrium's system prompt so the next draft
    * reflects what got edited out of previous ones. Per-tenant only.
    */
   priorCorrections?: string;
   /**
-   * If true, run a second critic pass where Nova reviews its own
+   * If true, run a second critic pass where Atrium reviews its own
    * output and emits improvements. Costs one extra Anthropic round
    * trip but materially reduces user correction volume (~40%).
    */
   selfIterate?: boolean;
 };
 
-const SYSTEM_PROMPT = `You are Nova, Grid's scaffolding layer. Your job is to translate one
+const SYSTEM_PROMPT = `You are Atrium, Grid's scaffolding layer. Your job is to translate one
 prompt describing a business, team, or project into a complete draft
 environment spec: systems (organelles), workflows (gene expression
 pathways), signal rules, widget layout, role assignments, and
@@ -104,7 +104,7 @@ const TOOL: Anthropic.Tool = {
             agent: {
               type: 'object',
               description:
-                'Per-system agent. Include this when the system has a distinct role (Marketing, Ops, Content) — Nova adopts this persona when acting inside this system.',
+                'Per-system agent. Include this when the system has a distinct role (Marketing, Ops, Content) — Atrium adopts this persona when acting inside this system.',
               required: ['name', 'persona'],
               properties: {
                 name: { type: 'string' },
@@ -248,7 +248,7 @@ export async function* generateScaffold(
     (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === 'return_scaffold',
   );
   if (!toolBlock) {
-    yield { type: 'error', message: 'Nova did not produce a scaffold tool call.', recoverable: true };
+    yield { type: 'error', message: 'Atrium did not produce a scaffold tool call.', recoverable: true };
     throw new Error('no_tool_use');
   }
 
@@ -266,7 +266,7 @@ export async function* generateScaffold(
 
   let spec = parsed.data;
 
-  // Optional critic pass: Nova reviews its own draft and emits a
+  // Optional critic pass: Atrium reviews its own draft and emits a
   // revised version. One extra round trip; materially reduces user
   // correction volume in practice. Tenant pays ~$0.08 extra on Sonnet.
   //
@@ -316,7 +316,7 @@ export async function* generateScaffold(
 }
 
 /**
- * Critic pass — Nova reviews its own draft and emits a revision. The
+ * Critic pass — Atrium reviews its own draft and emits a revision. The
  * system prompt makes it adversarial to its own output: look for
  * over-fitting, wrong abstraction level, missing staple workflows,
  * etc. Returns the revised spec, or null if the critic chose not to
@@ -327,7 +327,7 @@ async function runCriticPass(
   prompt: string,
   draft: ScaffoldSpec,
 ): Promise<ScaffoldSpec | null> {
-  const criticPrompt = `You are Nova's critic. You just produced the draft below for the
+  const criticPrompt = `You are Atrium's critic. You just produced the draft below for the
 following prompt. Review it HARSHLY as if a senior architect asked:
 "What's wrong with this? Over-fit? Under-specified? Missing a staple?
 Wrong abstraction level for the described team size?" Then emit a
@@ -351,7 +351,7 @@ If the draft is already correct, return it unchanged.`;
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4000,
-      system: 'You are Nova, in critic mode. Emit only via return_scaffold.',
+      system: 'You are Atrium, in critic mode. Emit only via return_scaffold.',
       tools: [TOOL],
       tool_choice: { type: 'tool', name: 'return_scaffold' },
       messages: [{ role: 'user', content: criticPrompt }],

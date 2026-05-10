@@ -122,11 +122,11 @@ export async function fetchWidgetData(
     case 'query':
       return fetchQuery(source.path);
     case 'nova': {
-      // Stub — the Nova endpoint for pinned messages lands with Phase 4.
+      // Stub — the Atrium endpoint for pinned messages lands with Phase 4.
       // Return a calm placeholder so the widget renders something.
       return {
         novaOutput: {
-          headline: 'Nova output pinned — live sync arrives with the Nova bar.',
+          headline: 'Atrium output pinned — live sync arrives with the Atrium bar.',
           confidence: undefined,
         },
       };

@@ -148,7 +148,7 @@ function EventIcon({ action }: { action: string }) {
       </svg>
     );
   }
-  // Nova / agent / query
+  // Atrium / agent / query
   if (prefix === 'nova' || prefix === 'agent') {
     return (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

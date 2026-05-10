@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 
 /**
- * Seeds sample Nova reflections for an environment.
+ * Seeds sample Atrium reflections for an environment.
  * Called during onboarding to populate the Reflective Insights widget.
  */
 export async function seedReflections(environmentId: string, systemId: string) {
@@ -37,14 +37,14 @@ export async function seedReflections(environmentId: string, systemId: string) {
       suggestion: 'Split Training into async self-serve modules and a live Q&A session to reduce wait time.',
     },
     {
-      insight: 'You override Nova\'s priority suggestions on client tasks 73% of the time. Should client work be weighted higher?',
+      insight: 'You override Atrium\'s priority suggestions on client tasks 73% of the time. Should client work be weighted higher?',
       category: 'pattern',
       severity: 'info',
       metric: 'Override Rate',
       metricValue: 73.0,
       metricDelta: 12.0,
       confidence: 0.79,
-      suggestion: 'Increase client task base priority by 1.5x so Nova\'s suggestions align with your behavior.',
+      suggestion: 'Increase client task base priority by 1.5x so Atrium\'s suggestions align with your behavior.',
     },
     {
       insight: '3 of 5 workflow stages have <10 min processing time. Consider merging Research and Draft stages.',

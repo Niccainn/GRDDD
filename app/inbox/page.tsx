@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import SampleDataBanner from '@/components/SampleDataBanner';
-import NovaTrace from '@/components/NovaTrace';
+import AtriumTrace from '@/components/AtriumTrace';
 
 type Signal = {
   id: string;
@@ -62,7 +62,7 @@ function timeAgo(iso: string) {
 // Multi-signal channels for the tab strip. Each channel answers a
 // different question:
 //   • All      — the full merged stream
-//   • Nova     — your system talking to you (AI triage, automations)
+//   • Atrium     — your system talking to you (AI triage, automations)
 //   • Business — signals from the outside world (email, webhooks)
 //   • Mentions — you were @-tagged somewhere
 //   • Gmail    — raw inbox from the connected Google account
@@ -76,7 +76,7 @@ const CHANNEL_ORDER: Channel[] = ['all', 'nova', 'business', 'mentions', 'gmail'
 
 const CHANNEL_META: Record<Channel, { label: string; color: string; hint: string }> = {
   all:      { label: 'All',      color: 'rgba(255,255,255,0.7)', hint: 'Everything merged' },
-  nova:     { label: 'Nova',     color: '#BF9FF1',               hint: 'Your system talking to you' },
+  nova:     { label: 'Atrium',     color: '#BF9FF1',               hint: 'Your system talking to you' },
   business: { label: 'Business', color: '#7193ED',               hint: 'From the outside world' },
   mentions: { label: 'Mentions', color: '#F7C700',               hint: 'You were tagged' },
   gmail:    { label: 'Gmail',    color: '#4285f4',               hint: 'Primary inbox' },
@@ -261,7 +261,7 @@ export default function InboxPage() {
 
   // Internal source categories. Each one is a toggleable layer in
   // the sidebar — hiding "manual" hides all user-created signals,
-  // hiding "nova" hides everything Nova produced, etc. The key is
+  // hiding "nova" hides everything Atrium produced, etc. The key is
   // matched loosely against signal.source to survive naming drift.
   //
   // MUST be declared BEFORE internalLayerOf and `filtered` — those
@@ -271,7 +271,7 @@ export default function InboxPage() {
   // bundle the moment a user opened /inbox. Classic hoisting trap.
   const INTERNAL_SOURCES: { id: string; label: string; match: (src: string) => boolean; color: string }[] = [
     { id: 'internal:manual', label: 'Manual', match: s => s === 'manual', color: '#7193ED' },
-    { id: 'internal:nova', label: 'Nova', match: s => s === 'nova', color: '#BF9FF1' },
+    { id: 'internal:nova', label: 'Atrium', match: s => s === 'nova', color: '#BF9FF1' },
     { id: 'internal:workflow', label: 'Workflows', match: s => s === 'workflow' || s === 'scheduler', color: '#C8F26B' },
     { id: 'internal:system', label: 'System', match: s => !['manual', 'nova', 'workflow', 'scheduler'].includes(s) && !s.startsWith('integration:'), color: 'rgba(255,255,255,0.4)' },
   ];
@@ -531,7 +531,7 @@ export default function InboxPage() {
           </div>
           <p className="text-sm font-light mb-1" style={{ color: 'var(--text-2)' }}>Your inbox is clear</p>
           <p className="text-xs mb-4 max-w-xs text-center leading-relaxed" style={{ color: 'var(--text-3)' }}>
-            Incoming signals appear here — from connected integrations, scheduled automations, or manual entries. Nova can auto-triage them for you.
+            Incoming signals appear here — from connected integrations, scheduled automations, or manual entries. Atrium can auto-triage them for you.
           </p>
           <button onClick={() => setShowCreate(true)}
             className="text-xs font-light px-4 py-2 rounded-lg"
@@ -582,13 +582,13 @@ export default function InboxPage() {
                       {signal.workflow && ` · ${signal.workflow.name}`}
                     </p>
                   )}
-                  {/* Inline Nova trace — pillar 2: every artifact Nova
+                  {/* Inline Atrium trace — pillar 2: every artifact Atrium
                       touched shows the read·decided·skipped strip without
                       requiring an expand. Wrapper stops the click from
                       toggling the row. */}
                   {signal.novaRouting && (
                     <div className="mt-2" onClick={e => e.stopPropagation()}>
-                      <NovaTrace data={{
+                      <AtriumTrace data={{
                         decided: signal.novaRouting.reasoning,
                         confidence: signal.novaRouting.confidence,
                         read: signal.system ? [`system: ${signal.system.name}`] : [],
@@ -636,12 +636,12 @@ export default function InboxPage() {
                       ))}
                     </select>
 
-                    {/* Nova triage */}
+                    {/* Atrium triage */}
                     {!signal.novaTriaged && process.env.NODE_ENV !== 'test' && (
                       <button onClick={() => triageWithNova(signal.id)} disabled={triaging === signal.id}
                         className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
                         style={{ background: 'rgba(191,159,241,0.08)', border: '1px solid rgba(191,159,241,0.2)', color: '#BF9FF1' }}>
-                        {triaging === signal.id ? '···' : '⚡ Ask Nova to triage'}
+                        {triaging === signal.id ? '···' : '⚡ Ask Atrium to triage'}
                       </button>
                     )}
 
@@ -716,7 +716,7 @@ export default function InboxPage() {
 
       {/* ── Layer sidebar ──────────────────────────────────────────
           Same pattern as /calendar. "Sources" toggles the four
-          internal categories (Manual / Nova / Workflows / System).
+          internal categories (Manual / Atrium / Workflows / System).
           "Synced" lists every connected integration that has
           produced a signal so the user can hide/show them as a
           unit. Counts update live as signals arrive.

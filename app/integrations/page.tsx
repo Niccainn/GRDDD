@@ -366,7 +366,7 @@ export default function IntegrationsPage() {
       <div className="max-w-6xl">
         {/* Simulation-mode banner — surfaces when NOVA_TOOLS_LIVE
             isn't set on the server. Critical context for users
-            evaluating "did Nova actually post that to Slack?". The
+            evaluating "did Atrium actually post that to Slack?". The
             actions still appear successful in the UI (the simulator
             returns success), so without this banner the user would
             see a green check and think it worked. */}
@@ -386,7 +386,7 @@ export default function IntegrationsPage() {
               Simulation mode
             </span>
             <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-2)' }}>
-              Nova's write tools are returning simulated success. Real adapter calls
+              Atrium's write tools are returning simulated success. Real adapter calls
               (post a Slack message, create a Notion page, etc.) are not firing on
               this server. Set <code style={{ color: 'var(--text-1)', fontFamily: 'inherit' }}>NOVA_TOOLS_LIVE=1</code> in
               your environment to enable live writes.

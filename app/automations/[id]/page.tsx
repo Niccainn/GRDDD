@@ -74,7 +74,7 @@ const NODE_SUBTYPES: Record<NodeType, { value: string; label: string }[]> = {
     { value: 'send_notification', label: 'Send notification' },
     { value: 'update_record',     label: 'Update record' },
     { value: 'call_api',          label: 'Call API' },
-    { value: 'run_nova',          label: 'Run Nova query' },
+    { value: 'run_nova',          label: 'Run Atrium query' },
   ],
   condition: [
     { value: 'if_else',      label: 'If / else' },
@@ -156,7 +156,7 @@ function getConfigFields(type: NodeType, subtype: string): { key: string; label:
       { key: 'body', label: 'Body', kind: 'textarea' },
     ];
     if (subtype === 'run_nova') return [
-      { key: 'query', label: 'Nova query', kind: 'textarea' },
+      { key: 'query', label: 'Atrium query', kind: 'textarea' },
     ];
     return [];
   }

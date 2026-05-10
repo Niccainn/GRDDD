@@ -308,7 +308,7 @@ export async function createSampleData(
     },
     {
       title: 'New client form submitted',
-      body: 'Acme Corp submitted the intake form. Nova drafted a reply — review before sending.',
+      body: 'Acme Corp submitted the intake form. Atrium drafted a reply — review before sending.',
       priority: 'LOW',
       status: 'READ',
     },
@@ -357,7 +357,7 @@ export async function createSampleData(
   const sampleCourse = await prisma.course.create({
     data: {
       title: 'Sample · Running a weekly growth review',
-      summary: '[Sample] A 3-lesson primer on how Nova thinks about growth ops. Clone and edit to customise for your team.',
+      summary: '[Sample] A 3-lesson primer on how Atrium thinks about growth ops. Clone and edit to customise for your team.',
       published: true,
       skillTag: 'growth-review',
       environmentId,
@@ -421,7 +421,7 @@ export async function createSampleData(
   // demo rows. The previous implementation created rows with
   // environmentId=null, which leaked the same mockup insights into
   // every signed-in account's dashboard panel. Real insights flow
-  // from POST /api/insights/cross-domain once Nova has analyzed the
+  // from POST /api/insights/cross-domain once Atrium has analyzed the
   // user's environments. Empty state is correct for new accounts.
 
   // ------------------------------------------------------------------

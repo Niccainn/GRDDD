@@ -14,17 +14,17 @@ type ReasoningStep = {
 };
 
 /**
- * NovaReasoningLayer — Visual AGI component
+ * AtriumReasoningLayer — Visual AGI component
  *
- * Shows Nova's internal reasoning process as a real-time visual flow:
+ * Shows Atrium's internal reasoning process as a real-time visual flow:
  * - Thinking states with pulsing indicator
  * - Tool chain visualization with connection lines
- * - Reasoning transparency (why Nova made decisions)
+ * - Reasoning transparency (why Atrium made decisions)
  * - Token/cost tracking per step
  *
  * This is what makes GRID different from chatbots — you SEE the intelligence working.
  */
-export default function NovaReasoningLayer({
+export default function AtriumReasoningLayer({
   steps,
   isActive,
   compact = false,
@@ -64,7 +64,7 @@ export default function NovaReasoningLayer({
           style={{ background: isActive ? 'var(--nova)' : 'var(--text-3)' }}
         />
         <span className="text-xs font-light tracking-wide" style={{ color: 'var(--nova)' }}>
-          {isActive ? 'Nova is reasoning...' : `Completed · ${completedTools.length} tools · ${totalTokens.toLocaleString()} tokens`}
+          {isActive ? 'Atrium is reasoning...' : `Completed · ${completedTools.length} tools · ${totalTokens.toLocaleString()} tokens`}
         </span>
       </div>
 

@@ -12,7 +12,7 @@ export async function seedCrossDomainInsights() {
     {
       title: 'Marketing campaign launches correlate with 34% spike in support tickets within 48 hours',
       description:
-        'Nova analyzed 6 months of campaign launch dates against support ticket volume. Every major campaign launch is followed by a measurable surge in customer inquiries, primarily around new feature confusion and pricing questions. Consider pre-launch FAQ updates and proactive support staffing.',
+        'Atrium analyzed 6 months of campaign launch dates against support ticket volume. Every major campaign launch is followed by a measurable surge in customer inquiries, primarily around new feature confusion and pricing questions. Consider pre-launch FAQ updates and proactive support staffing.',
       category: 'causation',
       severity: 'warning',
       confidence: 0.87,
