@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { MARKETING_CTA } from '@/lib/marketing-cta';
 
 type CompareData = {
   name: string;
@@ -179,11 +180,11 @@ export default async function CompareSlugPage({ params }: { params: Promise<{ sl
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link
-              href="/sign-up"
+              href={MARKETING_CTA.href}
               className="px-8 py-3.5 text-sm font-light rounded-full transition-all"
               style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}
             >
-              Get started free
+              {MARKETING_CTA.label}
             </Link>
             <Link
               href="/compare"

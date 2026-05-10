@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { MARKETING_CTA } from '@/lib/marketing-cta';
 
 const CAPABILITIES = [
   {
@@ -138,9 +139,9 @@ export default function AccessPage() {
             style={{ color: 'var(--text-2)' }}>
             Sign in
           </Link>
-          <Link href="/sign-up" className="text-xs font-light px-5 py-2.5 rounded-full transition-all"
+          <Link href={MARKETING_CTA.href} className="text-xs font-light px-5 py-2.5 rounded-full transition-all"
             style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}>
-            Get started free
+            {MARKETING_CTA.label}
           </Link>
         </div>
       </nav>
@@ -153,7 +154,7 @@ export default function AccessPage() {
             style={{ background: 'rgba(200,242,107,0.06)', border: '1px solid rgba(200,242,107,0.12)' }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#C8F26B' }} />
             <span className="text-[11px] font-light tracking-wide" style={{ color: 'var(--brand)' }}>
-              Now live — start building for free
+              Closed beta — onboarding new teams weekly
             </span>
           </div>
 
@@ -168,9 +169,9 @@ export default function AccessPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/sign-up" className="w-full sm:w-auto px-8 py-3.5 text-sm font-normal rounded-full text-center transition-all"
+            <Link href={MARKETING_CTA.href} className="w-full sm:w-auto px-8 py-3.5 text-sm font-normal rounded-full text-center transition-all"
               style={{ background: 'var(--brand)', color: '#000' }}>
-              Start building — it&apos;s free
+              {MARKETING_CTA.label}
             </Link>
             <Link href="/sign-in" className="w-full sm:w-auto px-8 py-3.5 text-sm font-light rounded-full text-center transition-all"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: 'var(--text-2)' }}>
@@ -309,12 +310,12 @@ export default function AccessPage() {
             Ready to build?
           </h2>
           <p className="text-sm font-light mb-8" style={{ color: 'var(--text-3)' }}>
-            Free to start. No credit card required. Your workspace is ready in 30 seconds.
+            Closed beta. Tell us about your team — we&apos;re onboarding new operators each week.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/sign-up" className="w-full sm:w-auto px-8 py-3.5 text-sm font-normal rounded-full text-center transition-all"
+            <Link href={MARKETING_CTA.href} className="w-full sm:w-auto px-8 py-3.5 text-sm font-normal rounded-full text-center transition-all"
               style={{ background: 'var(--brand)', color: '#000' }}>
-              Create your workspace
+              {MARKETING_CTA.label}
             </Link>
           </div>
 

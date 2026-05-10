@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { MARKETING_CTA } from '@/lib/marketing-cta';
 
 export const metadata: Metadata = {
   title: 'Use Cases — How Teams Use GRID',
@@ -100,11 +101,11 @@ export default function UseCasesPage() {
             GRID adapts to any workflow. Tell us what you&apos;re building.
           </p>
           <Link
-            href="/sign-up"
+            href={MARKETING_CTA.href}
             className="inline-block px-8 py-3.5 text-sm font-light rounded-full transition-all"
             style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}
           >
-            Request early access
+            {MARKETING_CTA.label}
           </Link>
         </div>
       </div>
