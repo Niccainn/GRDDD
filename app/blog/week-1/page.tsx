@@ -221,7 +221,7 @@ export default function Week1Page() {
         </div>
 
         <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-          <Link href="/#waitlist" style={{ color: 'var(--brand)' }}>Request access</Link>
+          <Link href="/sign-up" style={{ color: 'var(--brand)' }}>Request access</Link>
           {' · '}
           <Link href="/capabilities" style={{ color: 'var(--brand)' }}>See what's wired</Link>
           {' · '}
