@@ -19,7 +19,40 @@ import LegalFooter from './LegalFooter';
 import PersistentAtriumBar from './PersistentAtriumBar';
 import SimulationModeIndicator from './SimulationModeIndicator';
 
-const AUTH_ROUTES = ['/sign-in', '/sign-up', '/access', '/welcome'];
+// Routes that render the PUBLIC layout (no app sidebar, no
+// PersistentAtriumBar, no AlertCenter, no notification panel — just
+// each page's own marketing/auth chrome).
+//
+// Auth routes (/sign-in, /sign-up, /access, /welcome) need it because
+// the app shell would interfere with the credential capture flow.
+//
+// Marketing routes (/pricing, /research, /compare, /use-cases, etc.)
+// need it because a logged-in user visiting /pricing should see the
+// PUBLIC marketing version of the page — not the page-with-app-shell
+// hybrid that doubles the nav and bleeds the authenticated context
+// into a public surface (where it can be screenshotted, indexed, or
+// shared by mistake).
+//
+// `pathname.startsWith(r)` covers nested routes like /compare/asana,
+// /use-cases/marketers, /security/architecture, etc.
+const AUTH_ROUTES = [
+  // Auth — suppress shell so the credential flow stands alone.
+  '/sign-in',
+  '/sign-up',
+  '/access',
+  '/welcome',
+  // Marketing — the full app stays behind login.
+  '/pricing',
+  '/research',
+  '/compare',
+  '/use-cases',
+  '/capabilities',
+  '/security',
+  '/privacy',
+  '/terms',
+  '/subprocessors',
+  '/blog',
+];
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
