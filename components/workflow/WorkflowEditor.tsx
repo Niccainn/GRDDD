@@ -71,7 +71,12 @@ export default function WorkflowEditor({ workflow, updateWorkflow }: any) {
       {/* Canvas */}
       <div className="flex-1 bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center max-w-2xl px-6">
-          <div className="text-6xl mb-6">⚡</div>
+          <div className="mb-6 flex justify-center">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden>
+              <circle cx="28" cy="28" r="26" stroke="#BF9FF1" strokeWidth="1.4" />
+              <path d="M28 14L20 30H28L26 42L36 26H28L30 14Z" stroke="#BF9FF1" strokeWidth="1.4" strokeLinejoin="round" />
+            </svg>
+          </div>
           <h2 className="text-3xl font-extralight mb-4">Visual Workflow Builder</h2>
           <p className="text-white/50 font-light mb-8">
             The drag-and-drop workflow editor will be added here. For now, your workflow is created and ready!
@@ -107,13 +112,13 @@ export default function WorkflowEditor({ workflow, updateWorkflow }: any) {
 
           <div className="flex gap-3 justify-center">
             <button className="px-6 py-3 bg-[#7193ED]/20 hover:bg-[#7193ED]/30 border border-[#7193ED]/40 rounded-lg text-sm font-light transition-all">
-              ⚙️ Add Task Node
+              <span aria-hidden style={{ marginRight: 8 }}>◻</span>Add Task Node
             </button>
             <button className="px-6 py-3 bg-[#FFC700]/20 hover:bg-[#FFC700]/30 border border-[#FFC700]/40 rounded-lg text-sm font-light transition-all">
-              🔀 Add Decision
+              <span aria-hidden style={{ marginRight: 8 }}>◇</span>Add Decision
             </button>
             <button className="px-6 py-3 bg-[#BF9FF1]/20 hover:bg-[#BF9FF1]/30 border border-[#BF9FF1]/40 rounded-lg text-sm font-light transition-all">
-              🤖 Add Automation
+              <span aria-hidden style={{ marginRight: 8 }}>⚡</span>Add Automation
             </button>
           </div>
         </div>

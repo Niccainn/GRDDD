@@ -148,7 +148,7 @@ export async function GET(_req: NextRequest) {
     schemaVersion: '1.0',
     exportedAt: new Date().toISOString(),
     notice:
-      'This file contains your Grid data as of the export timestamp. Encrypted credentials (API keys, OAuth tokens) are excluded — reconnect integrations at the destination.',
+      'This file contains your GRID data as of the export timestamp. Encrypted credentials (API keys, OAuth tokens) are excluded — reconnect integrations at the destination.',
     identity: identityRow,
     environments,
     memberships,

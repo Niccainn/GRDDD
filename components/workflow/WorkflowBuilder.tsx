@@ -425,7 +425,7 @@ export default function WorkflowBuilder({
             }}
             title="Ask Atrium to plan this workflow from a natural-language prompt"
           >
-            <span style={{ fontSize: 13, lineHeight: 1 }}>✨</span>
+            <span aria-hidden style={{ fontSize: 13, lineHeight: 1 }}>◈</span>
             From prompt
           </button>
           <p className="text-xs px-2 py-1 mb-1 tracking-[0.1em]" style={{ color: 'rgba(255,255,255,0.2)' }}>NODES</p>

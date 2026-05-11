@@ -10,6 +10,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LegalFooter from '@/components/LegalFooter';
+import { MARKETING_CTA } from '@/lib/marketing-cta';
 
 export const metadata: Metadata = {
   title: 'Week 1 — what GRID shipped · Blog',
@@ -221,7 +222,7 @@ export default function Week1Page() {
         </div>
 
         <p className="text-[11px] font-light" style={{ color: 'var(--text-3)' }}>
-          <Link href="/sign-up" style={{ color: 'var(--brand)' }}>Request access</Link>
+          <Link href={MARKETING_CTA.href} style={{ color: 'var(--brand)' }}>{MARKETING_CTA.label}</Link>
           {' · '}
           <Link href="/capabilities" style={{ color: 'var(--brand)' }}>See what's wired</Link>
           {' · '}

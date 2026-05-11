@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { MARKETING_CTA } from '@/lib/marketing-cta';
 
 export const metadata: Metadata = {
   title: 'Pricing — GRID',
@@ -12,7 +13,7 @@ const PLANS = [
     price: '$0',
     suffix: '/mo · BYOK',
     description: 'Solo operator, first 30 days',
-    cta: 'Get started',
+    cta: 'Request access',
     ctaStyle: 'secondary' as const,
     features: [
       '10 Projects / month',
@@ -28,7 +29,7 @@ const PLANS = [
     price: '$29',
     suffix: '/seat/mo',
     description: '3–20 person teams running real projects',
-    cta: 'Start free trial',
+    cta: 'Request access',
     ctaStyle: 'primary' as const,
     highlight: true,
     features: [
@@ -123,9 +124,9 @@ export default function PricingPage() {
           <Link href="/#product" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Product</Link>
           <Link href="/pricing" className="hidden md:inline text-xs font-light" style={{ color: 'var(--text-1)' }}>Pricing</Link>
           <Link href="/sign-in" className="text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Sign in</Link>
-          <Link href="/sign-up" className="text-xs font-light px-4 py-2 rounded-full transition-all"
+          <Link href={MARKETING_CTA.href} className="text-xs font-light px-4 py-2 rounded-full transition-all"
             style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-border)', color: 'var(--brand)' }}>
-            Get started
+            {MARKETING_CTA.label}
           </Link>
         </div>
       </nav>
@@ -188,7 +189,7 @@ export default function PricingPage() {
               </div>
 
               <Link
-                href="/sign-up"
+                href={MARKETING_CTA.href}
                 style={{
                   display: 'block',
                   textAlign: 'center',
@@ -315,10 +316,10 @@ export default function PricingPage() {
             Ready to build structure?
           </h2>
           <p style={{ color: 'var(--text-2)', fontWeight: 300, fontSize: 15, marginBottom: 24, lineHeight: 1.6 }}>
-            Start free. No credit card required.
+            Closed beta. Tell us about your team — we&apos;re onboarding new operators each week.
           </p>
           <Link
-            href="/sign-up"
+            href={MARKETING_CTA.href}
             style={{
               display: 'inline-block',
               background: 'var(--brand)',
@@ -330,7 +331,7 @@ export default function PricingPage() {
               textDecoration: 'none',
             }}
           >
-            Get started for free
+            {MARKETING_CTA.label}
           </Link>
         </div>
       </section>

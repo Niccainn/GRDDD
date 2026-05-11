@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { MARKETING_CTA } from '@/lib/marketing-cta';
 
 export const metadata: Metadata = {
   title: 'GRID vs The Competition — Compare Work Management Platforms',
@@ -80,11 +81,11 @@ export default function ComparePage() {
             Join the teams already running on GRID.
           </p>
           <Link
-            href="/sign-up"
+            href={MARKETING_CTA.href}
             className="inline-block px-8 py-3.5 text-sm font-light rounded-full transition-all"
             style={{ background: 'var(--brand)', color: '#000', fontWeight: 400 }}
           >
-            Get started free
+            {MARKETING_CTA.label}
           </Link>
         </div>
       </div>

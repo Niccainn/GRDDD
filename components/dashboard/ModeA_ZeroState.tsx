@@ -18,7 +18,7 @@ export default function ModeA_ZeroState() {
         className="text-2xl font-light mb-2 text-center"
         style={{ color: 'var(--text-1)' }}
       >
-        What do you want Grid to run for you?
+        What do you want GRID to run for you?
       </h1>
       <p className="text-sm mb-10 text-center" style={{ color: 'var(--text-3)' }}>
         Pick a recurring job. Atrium will build the System in minutes.

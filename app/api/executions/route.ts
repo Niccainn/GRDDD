@@ -5,6 +5,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { trackUsage } from '@/lib/billing/usage';
+import { enforceLimitOrResponse } from '@/lib/billing/guard';
 import { createNotification } from '@/lib/notifications';
 
 export async function GET(req: NextRequest) {
@@ -68,6 +69,10 @@ export async function POST(req: NextRequest) {
   }
 
   await assertOwnsSystem(systemId, identity.id);
+
+  // Plan-cap gate. No-op in beta mode.
+  const blocked = await enforceLimitOrResponse(identity.id, 'executions');
+  if (blocked) return blocked;
 
   const execution = await prisma.execution.create({
     data: {

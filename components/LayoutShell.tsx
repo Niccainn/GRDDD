@@ -18,6 +18,7 @@ import SkipLink from './SkipLink';
 import LegalFooter from './LegalFooter';
 import PersistentAtriumBar from './PersistentAtriumBar';
 import SimulationModeIndicator from './SimulationModeIndicator';
+import VerifyEmailBanner from './VerifyEmailBanner';
 
 // Routes that render the PUBLIC layout (no app sidebar, no
 // PersistentAtriumBar, no AlertCenter, no notification panel — just
@@ -125,6 +126,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
         <FeatureTour />
         <main id="main-content" className="md:pl-[220px] min-h-screen pt-14 md:pt-0 pb-16 md:pb-0">
+          <VerifyEmailBanner />
           <ErrorBoundary>
             {children}
           </ErrorBoundary>

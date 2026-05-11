@@ -3,6 +3,7 @@ import { rateLimitApi } from '@/lib/rate-limit';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { trackUsage } from '@/lib/billing/usage';
+import { enforceLimitOrResponse } from '@/lib/billing/guard';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -34,6 +35,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     },
   });
   if (!hasAccess) return Response.json({ error: 'Not authorized' }, { status: 403 });
+
+  // Plan-cap gate. Returns null in beta mode (no STRIPE_SECRET_KEY)
+  // so dev + beta keep running unrestricted; in live deploys this
+  // returns a 429 once the user crosses their tier's executions cap.
+  const blocked = await enforceLimitOrResponse(identity.id, 'executions');
+  if (blocked) return blocked;
 
   const stages = JSON.parse(workflow.stages ?? '[]');
   const withStages = stages.length > 0;

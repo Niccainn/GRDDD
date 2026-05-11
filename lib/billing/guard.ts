@@ -40,6 +40,10 @@ export async function requirePlan(
 /**
  * Throw a 429 Response if the user has exceeded their plan limit for a metric.
  * In beta mode (no STRIPE_SECRET_KEY), all limits are bypassed.
+ *
+ * Throws-on-block — for callers that bubble Responses up via a wrapper.
+ * For Next.js route handlers, prefer `enforceLimitOrResponse` below
+ * which returns a Response instead, since route handlers must return.
  */
 export async function enforceLimit(
   identityId: string,
@@ -61,4 +65,38 @@ export async function enforceLimit(
       { status: 429, headers: { 'Content-Type': 'application/json' } },
     );
   }
+}
+
+/**
+ * Return-style version for Next.js route handlers. Returns the 429
+ * Response if the limit is exceeded, or null if the call may proceed.
+ *
+ *   const blocked = await enforceLimitOrResponse(identity.id, 'executions');
+ *   if (blocked) return blocked;
+ *
+ * Beta mode (no STRIPE_SECRET_KEY) always returns null — caps are
+ * advisory until billing is wired in production.
+ */
+export async function enforceLimitOrResponse(
+  identityId: string,
+  metric: string,
+): Promise<Response | null> {
+  if (isBetaMode()) return null;
+
+  const result = await checkLimit(identityId, metric);
+  if (result.allowed) return null;
+
+  return Response.json(
+    {
+      error: 'Usage limit exceeded',
+      metric,
+      current: result.current,
+      limit: result.limit,
+      plan: result.plan,
+      // The marketing page advertises tier upgrades as the path forward;
+      // the UI surfaces this hint as an upgrade CTA.
+      upgrade: result.plan === 'FREE' ? 'PRO' : result.plan === 'PRO' ? 'TEAM' : null,
+    },
+    { status: 429 },
+  );
 }

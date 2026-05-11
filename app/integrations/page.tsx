@@ -446,7 +446,7 @@ export default function IntegrationsPage() {
                 {providers.filter(p => p.implemented && !p.envReady).length} integrations need operator setup
               </p>
               <p className="text-xs font-light leading-relaxed" style={{ color: 'var(--text-3)' }}>
-                OAuth providers like Figma, GitHub, and Linear need an OAuth app registered once per Grid deployment. See <a href="/docs/INTEGRATIONS_SETUP.md" className="underline" style={{ color: '#F7C700' }}>docs/INTEGRATIONS_SETUP.md</a> for where to register each provider and which env vars to paste into Vercel.
+                OAuth providers like Figma, GitHub, and Linear need an OAuth app registered once per GRID deployment. See <a href="/docs/INTEGRATIONS_SETUP.md" className="underline" style={{ color: '#F7C700' }}>docs/INTEGRATIONS_SETUP.md</a> for where to register each provider and which env vars to paste into Vercel.
               </p>
             </div>
           </div>

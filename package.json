@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "check:integrations": "node scripts/check-integrations.mjs",
+    "check:stripe": "node scripts/verify-stripe-config.mjs",
     "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",

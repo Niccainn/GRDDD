@@ -3,7 +3,7 @@
  * /welcome — onboarding (Phase 2).
  *
  * Three steps:
- *   1. Wedge picker — "What do you want Grid to run for you?"
+ *   1. Wedge picker — "What do you want GRID to run for you?"
  *   2. Connect required integration(s)
  *   3. Atrium builds the System live (streamed narration)
  *
@@ -20,6 +20,8 @@ import WidgetPicker from '@/components/onboarding/WidgetPicker';
 import InterviewStep from '@/components/onboarding/InterviewStep';
 import PostureIntro from '@/components/onboarding/PostureIntro';
 import { writeHiddenPresets, type DepartmentId } from '@/lib/widgets/department-catalog';
+import { findProvider } from '@/lib/integrations/registry';
+import { activeProviderIds } from '@/lib/onboarding/integration-status';
 
 type Step = 'posture' | 'interview' | 'wedge' | 'connect' | 'customize' | 'build' | 'import' | 'done';
 
@@ -94,17 +96,17 @@ export default function WelcomeClient() {
   }, []);
 
   // Poll integration status while on the connect step.
+  // /api/integrations returns { integrations: [{ provider, status, ... }] }
+  // and requires environmentId. "Connected" === status 'ACTIVE'.
   useEffect(() => {
-    if (step !== 'connect' || !wedge) return;
+    if (step !== 'connect' || !wedge || !environmentId) return;
     let cancelled = false;
     const check = async () => {
       try {
-        const res = await fetch('/api/integrations');
+        const res = await fetch(`/api/integrations?environmentId=${environmentId}`);
+        if (!res.ok) return;
         const data = await res.json();
-        const ids: string[] = Array.isArray(data)
-          ? data.filter((i: { connected?: boolean }) => i.connected).map((i: { id: string }) => i.id)
-          : [];
-        if (!cancelled) setConnectedIntegrations(ids);
+        if (!cancelled) setConnectedIntegrations(activeProviderIds(data));
       } catch {
         /* non-fatal; user can still retry */
       }
@@ -115,7 +117,7 @@ export default function WelcomeClient() {
       cancelled = true;
       clearInterval(t);
     };
-  }, [step, wedge]);
+  }, [step, wedge, environmentId]);
 
   const allIntegrationsReady =
     wedge && wedge.integrations.every(i => connectedIntegrations.includes(i));
@@ -292,7 +294,7 @@ function WedgeStep({
   return (
     <div>
       <h1 className="text-2xl font-light mb-2" style={{ color: 'var(--text-1)' }}>
-        What do you want Grid to run for you?
+        What do you want GRID to run for you?
       </h1>
       <p className="text-sm mb-8" style={{ color: 'var(--text-3)' }}>
         Describe your work below — or pick a recurring job.
@@ -362,7 +364,7 @@ function WedgeStep({
           </span>
         </div>
         <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-          Bring your existing tasks and projects into Grid — Atrium will map them
+          Bring your existing tasks and projects into GRID — Atrium will map them
           to Systems and workflows.
         </p>
       </button>
@@ -464,7 +466,7 @@ function PromptComposer() {
           if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit();
         }}
         placeholder={
-          "e.g. I run a 5-person design agency with 12 active clients. We use Notion, Gmail, Stripe, and Figma. I want Grid to handle client onboarding, weekly status updates, and financials."
+          "e.g. I run a 5-person design agency with 12 active clients. We use Notion, Gmail, Stripe, and Figma. I want GRID to handle client onboarding, weekly status updates, and financials."
         }
         rows={4}
         disabled={loading}
@@ -473,7 +475,9 @@ function PromptComposer() {
       />
       <div className="flex items-center justify-between mt-3">
         <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>
-          {loading ? 'Atrium is designing your workspace…' : '⌘⏎ to build'}
+          {loading
+            ? 'Atrium is designing your workspace…'
+            : `${typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'}⏎ to build`}
         </span>
         <button
           onClick={submit}
@@ -574,7 +578,7 @@ function ConnectStep({
               }}
             >
               <span className="text-sm" style={{ color: 'var(--text-1)' }}>
-                {id}
+                {findProvider(id)?.name ?? id}
               </span>
               {connected ? (
                 <span className="text-xs" style={{ color: 'var(--brand)' }}>
@@ -624,7 +628,7 @@ function BuildStep({ lines, error, wedge }: { lines: string[]; error: string; we
   return (
     <div>
       <p className="text-xs tracking-[0.15em] mb-2" style={{ color: 'var(--text-3)' }}>
-        NOVA IS BUILDING
+        ATRIUM IS BUILDING
       </p>
       <h1 className="text-2xl font-light mb-8" style={{ color: 'var(--text-1)' }}>
         {wedge.systemName}

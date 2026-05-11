@@ -26,6 +26,37 @@ function SignInInner() {
 
   const oauthError = searchParams.get('error');
   const next = searchParams.get('next') || '/dashboard';
+  // Banner from /api/auth/verify-email outcomes — see that route for
+  // the param values.  Surfacing them here so users coming back from a
+  // stale verification link don't end up at a blank sign-in form
+  // wondering why the link "didn't work".
+  const verifyOutcome = searchParams.get('verify');
+  const [resendEmail, setResendEmail] = useState('');
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [resendError, setResendError] = useState('');
+
+  async function handleResend() {
+    if (resendState === 'sending' || !resendEmail) return;
+    setResendState('sending');
+    setResendError('');
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resendEmail }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setResendError(data.error || 'Could not resend right now.');
+        setResendState('error');
+        return;
+      }
+      setResendState('sent');
+    } catch {
+      setResendError('Connection error.');
+      setResendState('error');
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +107,41 @@ function SignInInner() {
         </>
       }
     >
+      {verifyOutcome ? (
+        <div
+          className="mb-6 px-4 py-3 rounded-xl text-xs font-light"
+          style={{
+            background: 'rgba(200,242,107,0.06)',
+            border: '1px solid rgba(200,242,107,0.18)',
+            color: 'var(--text-1)',
+          }}
+        >
+          {verifyOutcome === 'expired' && (
+            <>
+              <p className="mb-3">That verification link has expired. Send yourself a fresh one — it&apos;s good for 24 hours.</p>
+              <ResendBox
+                email={resendEmail}
+                onEmail={setResendEmail}
+                state={resendState}
+                error={resendError}
+                onResend={handleResend}
+              />
+            </>
+          )}
+          {verifyOutcome === 'missing' && (
+            <p>That verification link was malformed. Sign in below — we can resend a fresh email if you need one.</p>
+          )}
+          {verifyOutcome === 'rate-limited' && (
+            <p>Too many verification attempts from this address. Try again in a few minutes.</p>
+          )}
+          {verifyOutcome === 'ok' && (
+            <p>
+              <span style={{ color: 'var(--brand)' }}>Email verified.</span> Sign in below to land in your workspace.
+            </p>
+          )}
+        </div>
+      ) : null}
+
       <OAuthProviders next={next} />
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -138,5 +204,60 @@ function SignInInner() {
         </button>
       </form>
     </AuthLayout>
+  );
+}
+
+function ResendBox({
+  email,
+  onEmail,
+  state,
+  error,
+  onResend,
+}: {
+  email: string;
+  onEmail: (v: string) => void;
+  state: 'idle' | 'sending' | 'sent' | 'error';
+  error: string;
+  onResend: () => void;
+}) {
+  if (state === 'sent') {
+    return (
+      <p className="text-[11px] font-light" style={{ color: 'var(--text-2)' }}>
+        Check your inbox. The new link is good for 24 hours.
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={e => onEmail(e.target.value)}
+          placeholder="you@company.com"
+          autoComplete="email"
+          className="glass-input flex-1 px-3 py-2 text-xs"
+          disabled={state === 'sending'}
+        />
+        <button
+          type="button"
+          onClick={onResend}
+          disabled={state === 'sending' || !email}
+          className="px-4 py-2 text-xs font-light rounded-full transition-all whitespace-nowrap"
+          style={{
+            background: 'var(--brand)',
+            color: '#000',
+            opacity: state === 'sending' || !email ? 0.5 : 1,
+          }}
+        >
+          {state === 'sending' ? 'Sending…' : 'Resend'}
+        </button>
+      </div>
+      {state === 'error' && error ? (
+        <p className="text-[11px] font-light" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      ) : null}
+    </div>
   );
 }

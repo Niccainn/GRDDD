@@ -154,7 +154,7 @@ export default function ImportWizard({ environmentId, onComplete, onBack }: Prop
             Connect {sourceDef?.name} to import your data
           </p>
           <p className="text-xs font-light mb-4" style={{ color: 'var(--text-3)' }}>
-            We&apos;ll create Grid systems from your {source === 'notion' ? 'databases' : source === 'asana' ? 'projects' : 'boards'}
+            We&apos;ll create GRID systems from your {source === 'notion' ? 'databases' : source === 'asana' ? 'projects' : 'boards'}
           </p>
           <a
             href={`/api/integrations/oauth/${source}/start?environmentId=${environmentId}&redirect=/welcome`}

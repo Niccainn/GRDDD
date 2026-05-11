@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useToast } from '@/components/Toast';
+import { readCapResponse } from '@/lib/billing/cap-response';
 
 type StageOutput = { stage: string; output: string };
 
@@ -80,6 +82,7 @@ function renderInline(text: string): React.ReactNode {
 export default function ExecutionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { toast } = useToast();
   const [execution, setExecution] = useState<ExecutionData | null>(null);
   const [stageOutputs, setStageOutputs] = useState<StageOutput[]>([]);
   const [invocations, setInvocations] = useState<ToolInvocation[]>([]);
@@ -168,6 +171,13 @@ export default function ExecutionDetailPage() {
       }),
     });
 
+    // Plan-cap 429 — surface a friendly upgrade-aware toast.
+    const capped = await readCapResponse(res.clone());
+    if (capped) {
+      toast(capped.message, 'error');
+      setRunning(false);
+      return;
+    }
     if (!res.ok) { setRunning(false); return; }
 
     const reader = res.body!.getReader();

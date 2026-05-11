@@ -7,6 +7,7 @@ import { fireWebhooks } from '@/lib/webhooks';
 import { audit } from '@/lib/audit';
 import { computeHealthScore } from '@/lib/health';
 import { trackUsage } from '@/lib/billing/usage';
+import { enforceLimitOrResponse } from '@/lib/billing/guard';
 import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
 import { runClaudeWithTools } from '@/lib/nova/tools/run-with-tools';
 import { loadToolContext, isLiveToolsEnabled, type ToolInvocation } from '@/lib/nova/tools/dispatch';
@@ -38,6 +39,10 @@ export async function POST(req: NextRequest) {
     if (err instanceof Response) return err;
     throw err;
   }
+
+  // Plan-cap gate for Atrium-driven executions. No-op in beta mode.
+  const blocked = await enforceLimitOrResponse(identity.id, 'nova_queries');
+  if (blocked) return blocked;
 
   const [system, workflow] = await Promise.all([
     prisma.system.findUnique({
@@ -205,7 +210,7 @@ Specific before→after changes for any posts scoring below 8.
 
 For EACH post, deliver:
 - **Post ID**: AUTO-[6 random alphanumeric chars]
-- **Status**: ✅ Scheduled
+- **Status**: Scheduled
 - **Platform**: Instagram Feed / Instagram Story / Facebook / LinkedIn
 - **Publish Date**: [specific date and time with timezone]
 - **Caption**: [final approved caption — exact text]
@@ -226,7 +231,7 @@ For EACH post, deliver:
 - Check-in dates: Day 3, Day 7, Day 14
 - Success criteria: [specific KPIs from the Narrative stage]
 
-✅ All content approved and scheduled. Campaign is live.`,
+All content approved and scheduled. Campaign is live.`,
               'Data Collection': 'Gather and organize relevant data. Deliver: data sources identified, collection methodology, quality assessment, and initial findings.',
               'Analysis': 'Analyze the collected data. Deliver: key insights, trends, anomalies, statistical summaries, and actionable conclusions.',
               'Report': 'Write the formal report. Deliver: executive summary, detailed findings, visualizations described, and strategic recommendations.',

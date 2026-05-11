@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import LegalFooter from '@/components/LegalFooter';
 import WaitlistForm from '@/components/WaitlistForm';
+import MarketingMobileMenu from '@/components/MarketingMobileMenu';
 
 export default function Home() {
   const jsonLd = {
@@ -59,10 +60,21 @@ export default function Home() {
           <a href="#platform" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Environment</a>
           <a href="#use-cases" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>In practice</a>
           <a href="#who" className="hidden md:inline text-xs font-light transition-colors hover:text-white/60" style={{ color: 'var(--text-3)' }}>Who</a>
-          <a href="#waitlist" className="text-xs font-light px-4 py-2 rounded-full transition-all whitespace-nowrap"
+          <a href="#waitlist" className="hidden md:inline-flex text-xs font-light px-4 py-2 rounded-full transition-all whitespace-nowrap"
             style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-border)', color: 'var(--brand)' }}>
             Request access
           </a>
+          <MarketingMobileMenu
+            items={[
+              { href: '#problem', label: 'Shift' },
+              { href: '#how', label: 'System' },
+              { href: '#platform', label: 'Environment' },
+              { href: '#use-cases', label: 'In practice' },
+              { href: '#who', label: 'Who' },
+            ]}
+            ctaHref="#waitlist"
+            ctaLabel="Request access"
+          />
         </div>
       </nav>
 

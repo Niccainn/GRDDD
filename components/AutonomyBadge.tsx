@@ -49,7 +49,7 @@ const TIER_META: Record<Tier, Meta> = {
     color: '#7193ED',
     bg: 'rgba(113,147,237,0.1)',
     border: 'rgba(113,147,237,0.25)',
-    explainer: 'Drafts and proposes — you approve before anything leaves Grid.',
+    explainer: 'Drafts and proposes — you approve before anything leaves GRID.',
   },
   Act: {
     label: 'Act',
