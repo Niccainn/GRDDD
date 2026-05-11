@@ -228,6 +228,7 @@ export default function AuditPage() {
             <option key={g} value={g} style={{ background: '#111' }}>{g}</option>
           ))}
         </select>
+        <ExportMenu />
       </div>
 
       {/* Log entries */}
@@ -408,6 +409,85 @@ export default function AuditPage() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Audit-log export menu — CSV or JSONL, last 90 days.
+ *
+ * The endpoint (`/api/audit/export`) was already wired but had no UI.
+ * Procurement asks "can we walk out with our audit trail?" — this
+ * is the one-click answer that closes that question without a
+ * support email.
+ */
+function ExportMenu() {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      const el = e.target as Element | null;
+      if (!el?.closest('[data-audit-export]')) setOpen(false);
+    };
+    window.addEventListener('click', onClick);
+    return () => window.removeEventListener('click', onClick);
+  }, [open]);
+
+  function download(format: 'csv' | 'jsonl') {
+    setOpen(false);
+    // Trigger an attachment download via a hidden anchor — keeps the
+    // browser's native filename / save dialog and avoids fetching the
+    // whole file into JS memory.
+    const a = document.createElement('a');
+    a.href = `/api/audit/export?format=${format}&days=90`;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  return (
+    <div data-audit-export className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="text-sm font-light px-3 py-2 rounded-lg transition-all inline-flex items-center gap-2"
+        style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'rgba(255,255,255,0.6)' }}
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+          <path d="M6 2v6M6 8L3 5M6 8l3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M2 10h8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        </svg>
+        Export
+      </button>
+      {open ? (
+        <div
+          role="menu"
+          className="absolute right-0 mt-2 w-44 rounded-lg z-10 overflow-hidden"
+          style={{ background: 'rgba(17,17,17,0.96)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(20px)' }}
+        >
+          <button
+            role="menuitem"
+            onClick={() => download('csv')}
+            className="w-full text-left text-xs font-light px-3 py-2.5 transition-colors hover:bg-white/5"
+            style={{ color: 'var(--text-1)' }}
+          >
+            <div>CSV (last 90 days)</div>
+            <div className="text-[10px]" style={{ color: 'var(--text-3)' }}>Up to 10k rows</div>
+          </button>
+          <button
+            role="menuitem"
+            onClick={() => download('jsonl')}
+            className="w-full text-left text-xs font-light px-3 py-2.5 transition-colors hover:bg-white/5"
+            style={{ color: 'var(--text-1)', borderTop: '1px solid var(--glass-border)' }}
+          >
+            <div>JSONL (last 90 days)</div>
+            <div className="text-[10px]" style={{ color: 'var(--text-3)' }}>Streaming-friendly</div>
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
