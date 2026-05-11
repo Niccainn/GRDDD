@@ -129,7 +129,7 @@ export function AuthPathways({ urlError }: { urlError?: string | null }) {
           }}
           title="Dev only — disabled in production"
         >
-          {demoLoading ? 'Opening demo…' : '✨ Dev sandbox'}
+          {demoLoading ? 'Opening demo…' : 'Dev sandbox'}
         </button>
       )}
 

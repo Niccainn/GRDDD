@@ -210,7 +210,7 @@ Specific before→after changes for any posts scoring below 8.
 
 For EACH post, deliver:
 - **Post ID**: AUTO-[6 random alphanumeric chars]
-- **Status**: ✅ Scheduled
+- **Status**: Scheduled
 - **Platform**: Instagram Feed / Instagram Story / Facebook / LinkedIn
 - **Publish Date**: [specific date and time with timezone]
 - **Caption**: [final approved caption — exact text]
@@ -231,7 +231,7 @@ For EACH post, deliver:
 - Check-in dates: Day 3, Day 7, Day 14
 - Success criteria: [specific KPIs from the Narrative stage]
 
-✅ All content approved and scheduled. Campaign is live.`,
+All content approved and scheduled. Campaign is live.`,
               'Data Collection': 'Gather and organize relevant data. Deliver: data sources identified, collection methodology, quality assessment, and initial findings.',
               'Analysis': 'Analyze the collected data. Deliver: key insights, trends, anomalies, statistical summaries, and actionable conclusions.',
               'Report': 'Write the formal report. Deliver: executive summary, detailed findings, visualizations described, and strategic recommendations.',
