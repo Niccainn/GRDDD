@@ -7,6 +7,7 @@ import { fireWebhooks } from '@/lib/webhooks';
 import { audit } from '@/lib/audit';
 import { computeHealthScore } from '@/lib/health';
 import { trackUsage } from '@/lib/billing/usage';
+import { enforceLimitOrResponse } from '@/lib/billing/guard';
 import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
 import { runClaudeWithTools } from '@/lib/nova/tools/run-with-tools';
 import { loadToolContext, isLiveToolsEnabled, type ToolInvocation } from '@/lib/nova/tools/dispatch';
@@ -38,6 +39,10 @@ export async function POST(req: NextRequest) {
     if (err instanceof Response) return err;
     throw err;
   }
+
+  // Plan-cap gate for Atrium-driven executions. No-op in beta mode.
+  const blocked = await enforceLimitOrResponse(identity.id, 'nova_queries');
+  if (blocked) return blocked;
 
   const [system, workflow] = await Promise.all([
     prisma.system.findUnique({
