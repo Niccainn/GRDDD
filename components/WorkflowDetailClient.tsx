@@ -10,6 +10,8 @@ import ConsequenceMap from './ConsequenceMap';
 import ExecutionCheckpoint from './ExecutionCheckpoint';
 import AttributionPanel from './AttributionPanel';
 import ReviewAutoNudge from './ReviewAutoNudge';
+import { useToast } from './Toast';
+import { readCapResponse } from '@/lib/billing/cap-response';
 
 const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED'];
 const STATUS_COLOR: Record<string, string> = {
@@ -53,6 +55,7 @@ export default function WorkflowDetailClient({
   executions: Execution[];
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [workflow, setWorkflow] = useState(initial);
   const [executions, setExecutions] = useState(initialExecutions);
   const [activeRun, setActiveRun] = useState<Execution | null>(
@@ -126,6 +129,20 @@ export default function WorkflowDetailClient({
         input: inputText?.trim() || `Run: ${workflow.name}`,
       }),
     });
+    // Plan-cap 429 — surface a friendly upgrade-aware toast instead
+    // of dropping a broken execution row in the list.
+    const capped = await readCapResponse(res.clone());
+    if (capped) {
+      toast(capped.message, 'error');
+      setRunning(false);
+      return;
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      toast(err.error || `Run failed (${res.status})`, 'error');
+      setRunning(false);
+      return;
+    }
     const exec = await res.json();
     const newExec: Execution = {
       id: exec.id, status: exec.status, input: exec.input,
