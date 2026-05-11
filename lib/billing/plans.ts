@@ -1,4 +1,16 @@
 // Plan definitions — no external dependencies, safe for client import.
+//
+// Internal IDs are FREE / PRO / TEAM and are persisted on
+// Subscription.plan; flipping the ID would require a DB migration AND
+// new Stripe Price IDs, so we keep the IDs stable and only rename the
+// USER-VISIBLE labels to match the marketing page:
+//
+//   FREE → "Operator"     (solo, BYOK)
+//   PRO  → "Team"         (3–20 person teams, $29/seat/mo)
+//   TEAM → "Enterprise"   (50+ person orgs, custom contract)
+//
+// Any UI surface that shows a plan name should read PLANS[id].name —
+// hardcoding "Pro" / "Team" anywhere will drift out of sync.
 
 export type PlanType = 'FREE' | 'PRO' | 'TEAM';
 
@@ -21,8 +33,13 @@ export type PlanDefinition = {
   id: PlanType;
   name: string;
   description: string;
-  price: number; // monthly USD (per seat for TEAM)
+  price: number; // monthly USD (per seat for ENTERPRISE)
   priceSuffix: string;
+  /** Display override for the headline price chip — used when the
+   *  numeric price isn't the right answer (e.g. Enterprise renders
+   *  "Contract" instead of "$N"). When null, UI falls back to
+   *  formatting `price` + `priceSuffix`. */
+  priceDisplay?: { amount: string; suffix: string };
   limits: PlanLimits;
   features: PlanFeature[];
   highlight?: boolean;
@@ -31,10 +48,11 @@ export type PlanDefinition = {
 export const PLANS: Record<PlanType, PlanDefinition> = {
   FREE: {
     id: 'FREE',
-    name: 'Free',
-    description: 'For individuals getting started',
+    name: 'Operator',
+    description: 'Solo operator running their own ops — BYOK Anthropic',
     price: 0,
     priceSuffix: '/mo',
+    priceDisplay: { amount: '$0', suffix: '/mo · BYOK' },
     limits: {
       environments: 3,
       systems: 5,
@@ -46,10 +64,11 @@ export const PLANS: Record<PlanType, PlanDefinition> = {
   },
   PRO: {
     id: 'PRO',
-    name: 'Pro',
-    description: 'For professionals scaling their workflows',
+    name: 'Team',
+    description: '3–20 person teams running real projects',
     price: 29,
-    priceSuffix: '/mo',
+    priceSuffix: '/seat/mo',
+    priceDisplay: { amount: '$29', suffix: '/seat/mo' },
     limits: {
       environments: 10,
       systems: Infinity,
@@ -62,10 +81,15 @@ export const PLANS: Record<PlanType, PlanDefinition> = {
   },
   TEAM: {
     id: 'TEAM',
-    name: 'Team',
-    description: 'For teams that need full control',
+    name: 'Enterprise',
+    description: '50+ person orgs, regulated industries — custom contract',
     price: 79,
     priceSuffix: '/seat/mo',
+    // Marketing page advertises Enterprise as "Contract" pricing.
+    // The numeric `price: 79` stays as the Stripe-side default for any
+    // self-serve checkout that bypasses sales, but the comparison
+    // grid renders "Contract" so the visible funnel matches /pricing.
+    priceDisplay: { amount: 'Contract', suffix: '' },
     limits: {
       environments: Infinity,
       systems: Infinity,

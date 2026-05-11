@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SettingsNav from '@/components/SettingsNav';
-
-type PlanType = 'FREE' | 'PRO' | 'TEAM';
+import { PLANS, type PlanType } from '@/lib/billing/plans';
+import { MARKETING_CTA } from '@/lib/marketing-cta';
 
 type BillingData = {
   subscription: {
@@ -276,21 +276,21 @@ export default function BillingPage() {
                         marginBottom: 4,
                       }}
                     >
-                      {p === 'FREE' ? 'Free' : p === 'PRO' ? 'Pro' : 'Team'}
+                      {PLANS[p].name}
                     </h3>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                       <span
                         style={{
-                          fontSize: 36,
+                          fontSize: PLANS[p].priceDisplay?.amount === 'Contract' ? 22 : 36,
                           fontWeight: 200,
                           color: 'var(--text-1)',
                           letterSpacing: '-0.03em',
                         }}
                       >
-                        ${p === 'FREE' ? '0' : p === 'PRO' ? '29' : '79'}
+                        {PLANS[p].priceDisplay?.amount ?? `$${PLANS[p].price}`}
                       </span>
                       <span style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 13 }}>
-                        {p === 'TEAM' ? '/seat/mo' : '/mo'}
+                        {PLANS[p].priceDisplay?.suffix ?? PLANS[p].priceSuffix}
                       </span>
                     </div>
                   </div>
@@ -421,7 +421,7 @@ export default function BillingPage() {
                   textTransform: 'uppercase',
                 }}
               >
-                {plan}
+                {PLANS[plan].name}
               </span>
               {subscription.cancelAtPeriodEnd && (
                 <span
@@ -616,21 +616,21 @@ export default function BillingPage() {
                       marginBottom: 4,
                     }}
                   >
-                    {p === 'FREE' ? 'Free' : p === 'PRO' ? 'Pro' : 'Team'}
+                    {PLANS[p].name}
                   </h3>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                     <span
                       style={{
-                        fontSize: 36,
+                        fontSize: PLANS[p].priceDisplay?.amount === 'Contract' ? 22 : 36,
                         fontWeight: 200,
                         color: 'var(--text-1)',
                         letterSpacing: '-0.03em',
                       }}
                     >
-                      ${p === 'FREE' ? '0' : p === 'PRO' ? '29' : '79'}
+                      {PLANS[p].priceDisplay?.amount ?? `$${PLANS[p].price}`}
                     </span>
                     <span style={{ color: 'var(--text-3)', fontWeight: 300, fontSize: 13 }}>
-                      {p === 'TEAM' ? '/seat/mo' : '/mo'}
+                      {PLANS[p].priceDisplay?.suffix ?? PLANS[p].priceSuffix}
                     </span>
                   </div>
                 </div>
@@ -676,7 +676,33 @@ export default function BillingPage() {
                   })}
                 </div>
 
-                {p !== 'FREE' && !isCurrent && (
+                {p !== 'FREE' && !isCurrent && p === 'TEAM' && (
+                  // Enterprise is contract-priced — route to sales,
+                  // not self-serve Stripe checkout. Stays consistent
+                  // with the /pricing "Contact us" CTA which routes
+                  // via MARKETING_CTA (currently /#waitlist).
+                  <a
+                    href={MARKETING_CTA.href}
+                    style={{
+                      display: 'block',
+                      textAlign: 'center',
+                      width: '100%',
+                      padding: '10px 0',
+                      borderRadius: 12,
+                      border: 'none',
+                      background: 'linear-gradient(135deg, rgba(168,120,255,0.25), rgba(168,120,255,0.1))',
+                      color: '#a878ff',
+                      fontWeight: 400,
+                      fontSize: 14,
+                      textDecoration: 'none',
+                      transition: 'all 0.2s',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    Contact sales
+                  </a>
+                )}
+                {p !== 'FREE' && !isCurrent && p !== 'TEAM' && (
                   <button
                     onClick={() => handleUpgrade(p)}
                     disabled={upgrading !== null}
@@ -686,10 +712,8 @@ export default function BillingPage() {
                       borderRadius: 12,
                       border: 'none',
                       background:
-                        p === 'PRO'
-                          ? 'linear-gradient(135deg, rgba(99,149,255,0.25), rgba(99,149,255,0.1))'
-                          : 'linear-gradient(135deg, rgba(168,120,255,0.25), rgba(168,120,255,0.1))',
-                      color: p === 'PRO' ? '#6395ff' : '#a878ff',
+                        'linear-gradient(135deg, rgba(99,149,255,0.25), rgba(99,149,255,0.1))',
+                      color: '#6395ff',
                       fontWeight: 400,
                       fontSize: 14,
                       cursor: upgrading ? 'wait' : 'pointer',
@@ -697,7 +721,7 @@ export default function BillingPage() {
                       letterSpacing: '0.01em',
                     }}
                   >
-                    {upgrading === p ? 'Redirecting...' : `Upgrade to ${p === 'PRO' ? 'Pro' : 'Team'}`}
+                    {upgrading === p ? 'Redirecting…' : `Upgrade to ${PLANS[p].name}`}
                   </button>
                 )}
 
