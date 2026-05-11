@@ -2,9 +2,14 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import * as Sentry from '@sentry/nextjs';
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
+    // Capture to Sentry first, then console.error so the message still
+    // appears in dev. Sentry no-ops when NEXT_PUBLIC_SENTRY_DSN is
+    // unset (see sentry.client.config.ts).
+    Sentry.captureException(error);
     console.error('GRID error boundary:', error);
   }, [error]);
 
