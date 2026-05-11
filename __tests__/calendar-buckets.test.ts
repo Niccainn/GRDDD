@@ -8,10 +8,14 @@ import {
 
 describe('bucketEventsByDay', () => {
   it('buckets events by day within the target month', () => {
+    // Times pinned at 12:00 UTC so the calendar day is stable in any
+    // host timezone — earlier values like 15:00 UTC slipped to the
+    // next day in Asia/Tokyo and broke this test on machines east of
+    // UTC+9.
     const events = [
-      { id: 'a', date: '2026-04-03T10:00:00Z' },
-      { id: 'b', date: '2026-04-03T15:00:00Z' },
-      { id: 'c', date: '2026-04-10T09:00:00Z' },
+      { id: 'a', date: '2026-04-03T12:00:00Z' },
+      { id: 'b', date: '2026-04-03T13:00:00Z' },
+      { id: 'c', date: '2026-04-10T12:00:00Z' },
     ];
     const result = bucketEventsByDay(events, 2026, 3); // April (0-indexed)
     expect(result.get(3)).toHaveLength(2);
