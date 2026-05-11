@@ -7,6 +7,10 @@ type User = {
   email: string | null;
   type: string;
   avatar: string | null;
+  /** ISO string when the user's email was verified, or null if the
+   *  user is still in the unverified window. Drives the in-app
+   *  "please verify" banner (see components/VerifyEmailBanner). */
+  emailVerifiedAt: string | null;
 } | null;
 
 type AuthContextType = {

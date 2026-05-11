@@ -15,6 +15,12 @@ export type AuthIdentity = {
   email: string | null;
   type: string;
   avatar: string | null;
+  /** Null until the user clicks the link in the verification email
+   *  (or RESEND_API_KEY is unset, in which case sign-up auto-stamps
+   *  this and the in-app banner stays hidden — see lib/email-
+   *  verification.ts). Exposed on /api/auth/me so the in-app
+   *  "please verify" nudge can render on every authenticated page. */
+  emailVerifiedAt: Date | null;
 };
 
 /**
@@ -63,6 +69,7 @@ export async function getAuthIdentityOrNull(): Promise<AuthIdentity | null> {
     email: session.identity.email ? decryptPII(session.identity.email) : null,
     type: session.identity.type,
     avatar: session.identity.avatar,
+    emailVerifiedAt: session.identity.emailVerifiedAt,
   };
 }
 
