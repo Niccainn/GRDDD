@@ -195,8 +195,14 @@ export default function BillingPage() {
             marginBottom: '2rem',
           }}
         >
-          <div style={{ fontSize: 40, marginBottom: 16 }}>
-            {'\uD83C\uDF89'}
+          {/* Monoline glyph in brand discipline. The \uD83C\uDF89 emoji that
+              lived here violated the "no emoji in shipped UI" rule
+              from CLAUDE.md. */}
+          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
+              <circle cx="16" cy="16" r="14" stroke="#6395ff" strokeWidth="1.2" />
+              <path d="M10 16L14 20L22 12" stroke="#a878ff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
           <h2
             style={{
