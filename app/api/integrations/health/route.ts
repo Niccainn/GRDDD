@@ -17,7 +17,7 @@
  * already need to see this for context.
  */
 
-import { isLiveToolsEnabled } from '@/lib/nova/tools/dispatch';
+import { isLiveToolsEnabled } from '@/lib/atrium/tools/dispatch';
 import { PROVIDERS } from '@/lib/integrations/registry';
 import { INTEGRATION_CATALOG } from '@/lib/integrations/catalog';
 

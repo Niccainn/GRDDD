@@ -31,7 +31,7 @@ import { Trace } from './trace';
 import { route, computeCostUsd } from './router';
 import { invokeTool, toAnthropicTools } from './tools/registry';
 import { checkBudget, recordSpend, BudgetError } from './budget';
-import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/atrium/client-factory';
 import { getSystemAgent, scopeToolsToAgent, composeSystemPrompt } from '@/lib/agents/system-agent';
 
 const DEFAULT_MAX_ITERATIONS = 8;

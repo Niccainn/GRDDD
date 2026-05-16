@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 /**
  * Seeds sample NovaMemory records to demonstrate the Continuity surface.
  */
-export async function seedNovaMemories(environmentId: string) {
+export async function seedAtriumMemories(environmentId: string) {
   const memories = [
     {
       type: 'brand_context',

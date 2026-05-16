@@ -226,7 +226,7 @@ export default function InboxPage() {
     setSignals(prev => prev.map(s => s.id === id ? { ...s, systemId, system: sys } : s));
   }
 
-  async function triageWithNova(id: string) {
+  async function triageWithAtrium(id: string) {
     setTriaging(id);
     const res = await fetch('/api/signals/triage', {
       method: 'POST',
@@ -638,7 +638,7 @@ export default function InboxPage() {
 
                     {/* Atrium triage */}
                     {!signal.novaTriaged && process.env.NODE_ENV !== 'test' && (
-                      <button onClick={() => triageWithNova(signal.id)} disabled={triaging === signal.id}
+                      <button onClick={() => triageWithAtrium(signal.id)} disabled={triaging === signal.id}
                         className="flex items-center gap-1.5 text-xs font-light px-3 py-1.5 rounded-lg transition-all"
                         style={{ background: 'rgba(191,159,241,0.08)', border: '1px solid rgba(191,159,241,0.2)', color: '#BF9FF1' }}>
                         {triaging === signal.id ? '···' : '⚡ Ask Atrium to triage'}

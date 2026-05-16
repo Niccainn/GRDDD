@@ -11,7 +11,7 @@ import Link from 'next/link';
 type System = { id: string; activeWorkflows: number; executions: number; healthScore: number | null };
 type Goal = { id: string; status: string };
 type Signal = { id: string; status: string };
-type NovaLog = { id: string; createdAt: string };
+type AtriumLog = { id: string; createdAt: string };
 type Execution = { id: string; status: string };
 
 type Props = {
@@ -24,7 +24,7 @@ type Props = {
   goals: Goal[];
   signals: Signal[];
   executions: Execution[];
-  novaLogs: NovaLog[];
+  novaLogs: AtriumLog[];
   successRate: number;
 };
 

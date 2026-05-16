@@ -7,7 +7,7 @@ import { rateLimitApi } from '@/lib/rate-limit';
  */
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/atrium/client-factory';
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();

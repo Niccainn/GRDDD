@@ -25,7 +25,7 @@ import { rateLimitAgentRunStrict } from '@/lib/rate-limit';
 import {
   getAnthropicClientForEnvironment,
   MissingKeyError,
-} from '@/lib/nova/client-factory';
+} from '@/lib/atrium/client-factory';
 import { checkBudget } from '@/lib/cost';
 import { selectAvailableTools } from '@/lib/integrations/tools';
 import { substitutePrompt, parseOutputBlocks, AgentRunError } from '@/lib/agents/run';

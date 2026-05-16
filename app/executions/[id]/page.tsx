@@ -153,7 +153,7 @@ export default function ExecutionDetailPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [stageOutputs, streamingStage]);
 
-  async function runWithNova() {
+  async function runWithAtrium() {
     if (!execution || running) return;
     setRunning(true);
     setStageOutputs([]);
@@ -298,7 +298,7 @@ export default function ExecutionDetailPage() {
                 </>
               )}
               {!hasNovaOutput && !running && (
-                <button onClick={runWithNova}
+                <button onClick={runWithAtrium}
                   className="flex items-center gap-2 text-xs font-light px-4 py-2 rounded-lg transition-all"
                   style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.25)', color: '#BF9FF1' }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -510,7 +510,7 @@ export default function ExecutionDetailPage() {
               <p className="text-xs mb-5" style={{ color: 'var(--text-3)' }}>
                 Let Atrium process this {stages.length > 0 ? `${stages.length}-stage workflow` : 'request'}
               </p>
-              <button onClick={runWithNova}
+              <button onClick={runWithAtrium}
                 className="flex items-center gap-2 text-xs font-light px-5 py-2.5 rounded-lg transition-all"
                 style={{ background: 'rgba(191,159,241,0.1)', border: '1px solid rgba(191,159,241,0.25)', color: '#BF9FF1' }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
