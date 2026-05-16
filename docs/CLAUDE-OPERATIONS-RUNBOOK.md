@@ -69,6 +69,25 @@ Skills are the muscle memory. Each is a `SKILL.md` with: when-to-invoke, procedu
 
 To invoke: just describe the situation. "Is the latest deploy live?" pulls `verify-deploy`. "Set the Resend key" pulls `vercel-env-bulk`.
 
+### Marketing skill cluster (owned by `growth`)
+
+A second cluster turns `growth` into a full marketing function — one agent playing every frontend-marketing position:
+
+| Skill | Position |
+|---|---|
+| `positioning-canvas` | Product marketing — the source of truth |
+| `landing-page-build` | Web marketing — spec → `engineer` builds |
+| `conversion-audit` | CRO — ranked friction + experiments |
+| `competitor-teardown` | Competitive — steelmanned, factual |
+| `narrative-draft` | Editorial — weekly narrative / blog |
+| `seo-pass` | SEO — discoverability check |
+| `campaign-brief` | Acquisition — one-metric, killable |
+| `lifecycle-email` | Lifecycle — onboarding/retention (send gated on RESEND_API_KEY) |
+| `messaging-qa` | Brand — cross-surface story-drift |
+| `marketing-feedback-loop` | **The loop** — marketing signal → routed durable finding |
+
+**The loop is the point.** `marketing-feedback-loop` writes to `docs/MARKETING_LOOP.md` — an append-only ledger. Default mode A (advisory: observe → route → log, nothing ships). Mode B (active: finding → `engineer` PR) only on an explicit "ship LOOP-NNN". The ledger persists so the founder is never the bottleneck — findings accumulate and stay one-sentence-promotable whether or not anyone's in a session. An innovation-intersection lane surfaces where the product *could* go (routes to `product` stub → founder), so marketing extends product potential, not just patches copy.
+
 ## The hooks (settings.json)
 
 Two hooks, deliberately narrow. They guard the operations that have actually burned us — not every action.
