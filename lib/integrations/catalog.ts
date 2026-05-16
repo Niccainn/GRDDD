@@ -120,7 +120,7 @@ export type CatalogEntry = { label: string; getter: AdapterGetter; methods: Cata
  *
  * Without an alias map, a user connecting "Google Drive" would land
  * an Integration row with provider='google_drive', then Atrium's
- * dispatch (lib/nova/tools/dispatch.ts) would look up the catalog
+ * dispatch (lib/atrium/tools/dispatch.ts) would look up the catalog
  * by 'google_drive' and find nothing — every write tool call would
  * silently route to simulation.
  *

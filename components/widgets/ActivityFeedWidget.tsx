@@ -2,7 +2,7 @@
 
 import Widget from './Widget';
 
-type NovaLog = {
+type AtriumLog = {
   id: string;
   input: string;
   output: string;
@@ -23,7 +23,7 @@ type Signal = {
 };
 
 type ActivityFeedWidgetProps = {
-  novaLogs: NovaLog[];
+  novaLogs: AtriumLog[];
   signals: Signal[];
 };
 
@@ -50,7 +50,7 @@ function priorityColor(priority: string): string {
 
 export default function ActivityFeedWidget({ novaLogs, signals }: ActivityFeedWidgetProps) {
   type FeedItem =
-    | { type: 'nova'; data: NovaLog }
+    | { type: 'nova'; data: AtriumLog }
     | { type: 'signal'; data: Signal };
 
   const items: FeedItem[] = [

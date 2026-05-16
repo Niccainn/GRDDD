@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from 'react';
 
-type NovaAction = {
+type AtriumAction = {
   id: string;
   source: 'nova';
   action: string;
@@ -37,7 +37,7 @@ type AuditAction = {
   metadata: string | null;
 };
 
-type ActionData = NovaAction | AuditAction;
+type ActionData = AtriumAction | AuditAction;
 
 export default function WhyDrawer({
   actionId,
@@ -384,7 +384,7 @@ function Mono({ children }: { children: React.ReactNode }) {
   );
 }
 
-function AtriumTrace({ data }: { data: NovaAction }) {
+function AtriumTrace({ data }: { data: AtriumAction }) {
   return (
     <>
       <div className="flex items-center gap-2 mb-4">

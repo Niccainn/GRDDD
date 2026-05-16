@@ -13,7 +13,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { getAnthropicClientForEnvironment } from '@/lib/nova/client-factory';
+import { getAnthropicClientForEnvironment } from '@/lib/atrium/client-factory';
 import { ScaffoldSpec, validateScaffoldIntegrity } from './spec';
 
 export type ScaffoldEvent =

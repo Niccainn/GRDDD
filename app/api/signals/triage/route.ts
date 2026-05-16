@@ -1,18 +1,18 @@
 import { getAuthIdentity } from '@/lib/auth';
 import { assertOwnsSignal } from '@/lib/auth/ownership';
-import { rateLimitNovaStrict } from '@/lib/rate-limit';
+import { rateLimitAtriumStrict } from '@/lib/rate-limit';
 /**
  * POST /api/signals/triage
  * Atrium reads an unrouted signal and suggests which system + workflow it belongs to.
  */
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/atrium/client-factory';
 import { fenceUserInputRecord, withScopeGuard } from '@/lib/llm/safe-prompt';
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
-  const rl = await rateLimitNovaStrict(identity.id);
+  const rl = await rateLimitAtriumStrict(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
 
   const { signalId } = await req.json();

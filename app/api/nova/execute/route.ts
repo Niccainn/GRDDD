@@ -1,6 +1,6 @@
 import { getAuthIdentity } from '@/lib/auth';
 import { assertOwnsSystem } from '@/lib/auth/ownership';
-import { rateLimitNovaStrict } from '@/lib/rate-limit';
+import { rateLimitAtriumStrict } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { fireWebhooks } from '@/lib/webhooks';
@@ -8,9 +8,9 @@ import { audit } from '@/lib/audit';
 import { computeHealthScore } from '@/lib/health';
 import { trackUsage } from '@/lib/billing/usage';
 import { enforceLimitOrResponse } from '@/lib/billing/guard';
-import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
-import { runClaudeWithTools } from '@/lib/nova/tools/run-with-tools';
-import { loadToolContext, isLiveToolsEnabled, type ToolInvocation } from '@/lib/nova/tools/dispatch';
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/atrium/client-factory';
+import { runClaudeWithTools } from '@/lib/atrium/tools/run-with-tools';
+import { loadToolContext, isLiveToolsEnabled, type ToolInvocation } from '@/lib/atrium/tools/dispatch';
 
 export type ExecuteEvent =
   | { type: 'stage_start'; stage: string; index: number }
@@ -22,7 +22,7 @@ export type ExecuteEvent =
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
-  const rl = await rateLimitNovaStrict(identity.id);
+  const rl = await rateLimitAtriumStrict(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { executionId, workflowId, systemId, input, stages } = await req.json();
 

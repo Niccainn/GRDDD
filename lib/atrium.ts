@@ -8,17 +8,17 @@ import {
   getAnthropicClientForEnvironment,
   MissingKeyError,
   type KeySource,
-} from './nova/client-factory';
+} from './atrium/client-factory';
 
 // The module-level Anthropic singleton has been removed — every Atrium
 // invocation now resolves a client per environment via the factory
-// in lib/nova/client-factory.ts. This is the foundation of BYOK:
+// in lib/atrium/client-factory.ts. This is the foundation of BYOK:
 // each tenant can plug in their own key at /settings/ai and the
 // factory picks it up without any code change here. See the factory
 // module header for the resolution rules.
 
 // ─── Event types streamed back to the client ────────────────────────────────
-export type NovaEvent =
+export type AtriumEvent =
   | { type: 'thinking' }
   | { type: 'reasoning'; text: string }
   | { type: 'tool_start'; name: string; label: string }
@@ -704,7 +704,7 @@ Operator: ${ctx.identityName}`;
 }
 
 // ─── Helper: get or create Atrium intelligence record ───────────────────────────
-export async function getOrCreateNovaIntelligence(
+export async function getOrCreateAtriumIntelligence(
   systemId: string,
   environmentId: string,
   identityId: string
@@ -718,7 +718,7 @@ export async function getOrCreateNovaIntelligence(
 }
 
 // ─── Main agent runner ────────────────────────────────────────────────────────
-export async function runNovaAgent({
+export async function runAtriumAgent({
   systemId,
   identityId,
   input,
@@ -727,7 +727,7 @@ export async function runNovaAgent({
   systemId: string;
   identityId: string;
   input: string;
-  onEvent: (event: NovaEvent) => void;
+  onEvent: (event: AtriumEvent) => void;
 }): Promise<void> {
   // Load context
   const system = await prisma.system.findUnique({
@@ -784,7 +784,7 @@ export async function runNovaAgent({
   }
   void keySource; // reserved for future per-source metering / UI badges
 
-  const intelligence = await getOrCreateNovaIntelligence(system.id, system.environmentId, identity.id);
+  const intelligence = await getOrCreateAtriumIntelligence(system.id, system.environmentId, identity.id);
 
   // Resolve model
   const intelConfig = intelligence.config ? (() => { try { return JSON.parse(intelligence.config!); } catch { return {}; } })() : {};

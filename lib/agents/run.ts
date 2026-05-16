@@ -13,7 +13,7 @@
  *   8. Stamps success/failure + tokens/cost
  *   9. Updates agent.lastRunAt
  *
- * This path is intentionally simpler than runNovaAgent: no tool use,
+ * This path is intentionally simpler than runAtriumAgent: no tool use,
  * no streaming, no multi-turn. An Agent is a prompt with structured
  * output — that's the whole primitive. Tool use comes in v2 when users
  * can attach MCP servers or GRID-native integrations to an Agent.
@@ -24,7 +24,7 @@ import { prisma } from '@/lib/db';
 import {
   getAnthropicClientForEnvironment,
   MissingKeyError,
-} from '@/lib/nova/client-factory';
+} from '@/lib/atrium/client-factory';
 import { calculateCost, checkBudget, recordTokenUsage } from '@/lib/cost';
 import { audit } from '@/lib/audit';
 import { selectAvailableTools, TOOLS } from '@/lib/integrations/tools';
