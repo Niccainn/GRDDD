@@ -26,6 +26,7 @@ Set + populated:
 - `STRIPE_PRO_PRICE_ID` (`price_…`; currently points to non-existent test-mode price — needs recreation)
 - `STRIPE_TEAM_PRICE_ID` (`price_…`; same issue)
 - `GRID_BETA_TIER` = `byok`
+- `NOVA_TOOLS_LIVE` = `1` (set 2026-05-15, live via `--force` redeploy `grid-ql5zcgrmz`). **Atrium write tools now hit real vendors — no more SIMULATION banner.** ⚠️ This is the env the Nova→Atrium purge renames to `ATRIUM_TOOLS_LIVE`; if the code-side string ever moves before the Vercel var, simulation mode silently returns. They must move in the same PR/deploy (see decision log + `docs/NOVA-PURGE-SCOPE.md` PR #102).
 - `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 - `DATABASE_URL`, `GRID_ENCRYPTION_KEY`, `NEXT_PUBLIC_APP_URL`
@@ -51,6 +52,9 @@ Missing (will block features when activated):
 | 2026-05 | Skills, agents in `.claude/`; voice in `CLAUDE.md` | Anthropic-standard layout | this file |
 | 2026-05 | Marketing = deepened `growth` + 10-skill cluster, not 8 title-agents | Lean topology; one function-agent playing every marketing position | `.claude/agents/growth.md` |
 | 2026-05 | Marketing feedback loop: A (advisory) default, B (active→PR) explicit-ask only | Founder is merge gate, never bottleneck; findings persist in durable ledger | `docs/MARKETING_LOOP.md`, `.claude/skills/marketing-feedback-loop` |
+| 2026-05-15 | `NOVA_TOOLS_LIVE=1` set + force-redeployed to production | Take Atrium out of simulation mode so write tools hit real vendors ahead of beta | Vercel prod env; deploy `grid-ql5zcgrmz` |
+| 2026-05-15 | Nova→Atrium purge split into 3 sequenced PRs, NOT one mega-PR | Isolate the provably-non-breaking rename from the runtime-coupled parts so neither rides the live-flip + beta window | `docs/NOVA-PURGE-SCOPE.md` |
+| 2026-05-15 | PR #85 = safe slice only (module moves + pure code identifiers); env/API → #102; DB+data-backfill → #103 | #102 env rename must be Vercel-lockstep or sim mode silently returns; #103 needs a maintenance window + backfill of historical `nova.*`/`nova_*` rows | PR #85, `docs/NOVA-PURGE-SCOPE.md` |
 
 ## Landmine catalog (avoid re-discovery)
 
@@ -69,13 +73,14 @@ Each appended after a real failure; always include the fix.
 11. **Repeated "fix" PRs in same area** (PRs #57-#59 all tenant-scoping) → audit pattern not applied at write time. Hence the `idor-audit` skill.
 12. **SQLite-vs-Postgres CI drift.** Schema changes need a branch + CI run before merge.
 13. **Soft-deleted envs still visible** (PR #57). Centralise the "include trash?" filter.
+14. **Sim-mode silently returns if `NOVA_TOOLS_LIVE` code-string is renamed before the Vercel var.** The gate is a string match on `process.env.NOVA_TOOLS_LIVE === '1'`. The Nova→Atrium purge renames it to `ATRIUM_TOOLS_LIVE`; if the code ships with the new name but Vercel still has the old key (or vice-versa), `isLiveToolsEnabled()` reads `undefined`, every Atrium write goes back to fake-success, and there is NO error — just silent simulation. The env-string rename and the Vercel env update MUST be in the same PR + deploy (PR #102). Verify post-deploy by confirming the SIMULATION pill is absent on an authed page.
 
 ## Open product / ops decisions awaiting founder
 
 - Email verification flow: still set `RESEND_API_KEY` and route through real verification, or stay on dev-fallback for closed alpha?
 - Stripe live-mode flip: when (and which products to recreate in live)?
 - Pricing-page Enterprise claims (SSO/SCIM/CMK/data residency) — soften to "roadmap" or build before flipping `MARKETING_CTA`?
-- Nova → Atrium full purge (5 PRs, 776 refs): when (see `docs/NOVA-PURGE-SCOPE.md`)?
+- Nova → Atrium purge: PR #85 shipped the safe slice (module moves + code identifiers, non-breaking). **Remaining: #102** (env `NOVA_TOOLS_LIVE`→`ATRIUM_TOOLS_LIVE` + `/api/nova` route moves — breaking, must be Vercel-lockstep) and **#103** (Prisma model/column renames + backfill of historical `nova.*`/`nova_*` log rows + `--nova` CSS token + `share_with_nova` consent key — needs a maintenance window). **Founder call: schedule #102/#103 — explicitly NOT during the live-flip + beta window.** See `docs/NOVA-PURGE-SCOPE.md`.
 - Trust Score per-member metric — implement, or remove from pricing copy?
 
 ## Update protocol
