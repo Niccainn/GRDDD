@@ -61,10 +61,13 @@ prisma/dev.db-journal
 .env.preview
 .env.development
 
-# Pitch / fundraising / sales material lives in a separate private
-# project (~/projects/grid-private/). The repo is public — anything
-# under pitch/ is treated as private by default.
+# Pitch / fundraising / sales material lives off-tree in
+# ~/projects/grid-private/. These paths are permanently excluded —
+# never commit them, never reference them in shipped docs (docs/ is
+# in the repo). See `.githooks/pre-commit` for the secondary guard.
 pitch/
+funding/
+.claude/plans/
 public/UX_AUDIT.txt
 public/*_AUDIT*
 

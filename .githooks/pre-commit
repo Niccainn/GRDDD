@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# pre-commit guard — blocks staged changes that would leak fundraising
+# / pitch / valuation references into the public repo.
+#
+# Why this hook exists:
+#   docs/ is shipped — anything written there is visible to anyone with
+#   read access to the GitHub repo. We had a one-time scrub (see
+#   docs/SCRUB-LIST.md) to remove pitch deck and fundraising references
+#   from BRAND_GUIDELINES.md, PRODUCT_SYNC.md, CLAUDE-OPERATIONS-AUDIT.md.
+#   This hook prevents drift back: if you stage a docs/ file (or any
+#   non-private file) containing the watchwords below, the commit fails.
+#
+#   Off-tree fundraising material lives in ~/projects/grid-private/.
+#   To bypass intentionally (e.g. a deliberate update to a brand-folio
+#   template that's never shipped publicly), use `git commit --no-verify`
+#   — but understand you're widening the public surface.
+#
+#   This is additive to the existing .gitignore. Defence in depth.
+
+set -e
+
+# Watchwords that must not appear in shipped files. Each is a regex
+# fragment. Keep this list synced with docs/SCRUB-LIST.md categories.
+WATCH=(
+  'pitch deck'
+  'pitch-deck'
+  'pitchdeck'
+  'valuation'
+  'fundraising'
+  'fundraise'
+  'investor'
+  'pre-seed'
+  'cap table'
+  'SAFE at \$'
+)
+
+# Paths that are allowed to mention these words (e.g. this hook itself,
+# the scrub-list audit which catalogues what we scrubbed).
+ALLOW=(
+  '\.githooks/pre-commit'
+  'docs/SCRUB-LIST\.md'
+)
+
+allow_pattern=$(IFS='|'; echo "${ALLOW[*]}")
+hits=0
+matched_files=()
+
+for word in "${WATCH[@]}"; do
+  # Search staged content (--cached) only; ignore deletions (-G match).
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    file=$(echo "$line" | cut -d: -f1)
+    # Skip if file is in the allow list
+    if echo "$file" | grep -qE "$allow_pattern"; then
+      continue
+    fi
+    hits=$((hits + 1))
+    matched_files+=("  $file: matches '$word'")
+  done < <(git diff --cached --name-only -G"$word" -i 2>/dev/null | head -10 | while read f; do
+    [ -n "$f" ] && echo "$f:$word"
+  done)
+done
+
+if [ "$hits" -gt 0 ]; then
+  echo ""
+  echo "✗ pre-commit: blocked — staged changes contain fundraising/pitch references"
+  echo ""
+  printf '%s\n' "${matched_files[@]}"
+  echo ""
+  echo "  Why: docs/ is shipped publicly. Pitch / fundraising material"
+  echo "       lives off-tree at ~/projects/grid-private/."
+  echo ""
+  echo "  Options:"
+  echo "    1. Move the change to ~/projects/grid-private/ instead"
+  echo "    2. Reword to remove the watchwords"
+  echo "    3. Bypass intentionally: git commit --no-verify  (widens public surface — be sure)"
+  echo ""
+  exit 1
+fi
+
+exit 0

@@ -2,7 +2,7 @@
 
 **Version 1.0 · April 2026**
 
-This document is the source of truth for everything a customer, partner, or designer sees with the GRID name on it. It governs the product, the marketing site, social posts, pitch decks, emails, swag, events — everything.
+This document is the source of truth for everything a customer or partner sees with the GRID name on it. It governs the product, the marketing site, social posts, emails, swag, events — everything.
 
 If you're making something for GRID and this doc doesn't answer your question, ask before you ship. One wrong colour, one wrong font, one "Nova" written as "nova" and the whole thing stops feeling like itself.
 
@@ -13,7 +13,7 @@ If you're making something for GRID and this doc doesn't answer your question, a
 ### One-line positioning
 > **GRID is the AI operations layer — it watches your business and runs better versions for you.**
 
-That's the sentence that goes on business cards, one-pagers, pitch decks, and the top of every landing page. Nothing else. No variations.
+That's the sentence that goes on business cards, one-pagers, and the top of every landing page. Nothing else. No variations.
 
 ### The 30-second story
 Most AI tools wait for you to ask a question, then answer it. GRID is different. You connect your systems — Google Calendar, Slack, Notion, Stripe, whatever you actually use — and GRID maps how your business actually runs. Then it runs it for you, gets better every time you accept or reject its output, and surfaces the moments that matter before they become problems.
@@ -156,8 +156,6 @@ Two voices. Each with a job.
 | Dashboard greeting | Sans |
 | Big stat numbers | Sans (tabular) |
 | Error messages | Sans |
-| Pitch deck title slides | Serif |
-| Pitch deck content slides | Sans |
 
 ### Scale
 
@@ -307,14 +305,6 @@ How the brand leaves the product and shows up elsewhere. The aesthetic must hold
 - All 1:1 or 4:5 black-bg, lime accent somewhere in every frame
 - Stories use `.flow-line` motion baked into short MP4 loops
 
-### Pitch deck
-
-- Cover slide: `GRID` wordmark (serif if title slide, sans elsewhere) on black, single aurora-lime accent line
-- Section dividers: eyebrow label in lime, full-bleed black
-- Data slides: tabular-nums, one stat per slide where possible, `.stat-number-lg` styling
-- Charts: lime for positive, yellow for caution, red for decline. Never pie charts. Bar + line only.
-- Typography: body 16pt Geist, headlines 32–48pt — one serif slide permitted per deck, usually the "why now" slide
-
 ### Email
 
 **Transactional:**
@@ -352,7 +342,7 @@ How the brand leaves the product and shows up elsewhere. The aesthetic must hold
 ### Event / trade show booth
 
 - Black backdrop, one 5ft wordmark in lime, one screen showing the product
-- No collateral pile — one 6-page pitch folio in the editorial voice, handed to qualified leads only
+- No collateral pile — one 6-page brand folio in the editorial voice, handed to qualified leads only
 - Booth staff: black shirts, no branded lanyards
 
 ---
@@ -394,7 +384,7 @@ How the brand leaves the product and shows up elsewhere. The aesthetic must hold
 - Your business, better versions.
 - AI. Your keys. Your ops.
 
-**Long variants (for pitch decks, about pages):**
+**Long variants (for about pages, long-form copy):**
 - Most AI tools wait for you to ask. GRID watches, learns, and runs better versions for you.
 - Connect your tools. GRID maps your operations, runs workflows, and gets better every time you accept or reject an output.
 
@@ -408,7 +398,7 @@ How the brand leaves the product and shows up elsewhere. The aesthetic must hold
 ## Part 12 — Governance
 
 ### Who approves a new brand surface
-For now: **Nicole.** This is a one-person design org until it isn't. Any external deliverable (ad, pitch deck, press image) goes through her before it ships.
+For now: **Nicole.** This is a one-person design org until it isn't. Any external deliverable (ad, press image, brand collateral) goes through her before it ships.
 
 ### Where the assets live
 - **Tokens:** `app/globals.css` (single source of truth for colours, spacing, motion)
@@ -420,7 +410,7 @@ For now: **Nicole.** This is a one-person design org until it isn't. Any externa
 Version-bump the top of the file. Add a line at the bottom of this section noting what changed and why. Don't silently edit tokens — they're referenced across 100+ files.
 
 ### Changelog
-- **v1.0** (April 2026) — Initial brand guidelines. Establishes aurora-lime as the single accent, crisp black as the surface, Geist + system serif as the typographic pair, environmental/Apple-restraint as the motion-and-imagery principle. Locks voice rules (no exclamation points, no marketing fluff, "GRID" always uppercase). Adds marketing extensions for social, pitch deck, email, blog, ads, swag, events.
+- **v1.0** (April 2026) — Initial brand guidelines. Establishes aurora-lime as the single accent, crisp black as the surface, Geist + system serif as the typographic pair, environmental/Apple-restraint as the motion-and-imagery principle. Locks voice rules (no exclamation points, no marketing fluff, "GRID" always uppercase). Adds marketing extensions for social, email, blog, ads, swag, events.
 
 ---
 

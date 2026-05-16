@@ -1,16 +1,14 @@
-# Product Sync — Landing, Pitch, Platform
+# Product Sync — Landing + Platform
 
-One product, three surfaces. When a core narrative or pricing shape
-changes in one place, it has to change in all three or the story
+One product, two surfaces. When a core narrative or pricing shape
+changes in one place, it has to change in the other or the story
 contradicts itself. This file is the propagation log.
 
 Surfaces:
 
 1. **Landing page** — `app/page.tsx` + marketing copy on `/pricing`,
    `/how-it-works`, `/for-teams`. Public-facing. Sets expectations.
-2. **Pitch deck** — the investor/accelerator pptx (lives outside the
-   repo in `~/Desktop/GRID — Pitch Deck.pptx`). Sets valuation framing.
-3. **Platform** — in-app copy: `/sign-up`, `/welcome`, `/settings/ai`,
+2. **Platform** — in-app copy: `/sign-up`, `/welcome`, `/settings/ai`,
    error messages, empty states. Delivers what was promised.
 
 Every time the core story shifts, add an entry below with:
@@ -73,19 +71,6 @@ hosting CPU" which is sub-cent.
 - Sign-up CTA should note "bring your own Anthropic key" so users don't
   arrive expecting a free trial and hit the wall at first Nova run.
 
-**Pitch deck — TODO.**
-
-- "Business model" slide: shift from "$X/user/mo SaaS" framing to
-  "$0 platform fee during public beta, Stripe sub activates at live
-  tier, near-zero marginal cost per user." This is the capital
-  efficiency story.
-- "Go to market" slide: emphasize the zero-COGS beta as the thing that
-  lets Nicole run this solo without burning runway on LLM spend.
-- "Defensibility" slide: the visual ecosystem layer (particle flow
-  between systems, Nova as superagent meta-orchestrator) is the moat.
-  BYOK removes the COGS friction that would otherwise block reaching
-  the scale where that moat becomes visible.
-
 **Copy rules to keep everything consistent.**
 
 - Always say "Anthropic key" (not "API key" generically).
@@ -109,7 +94,6 @@ hosting CPU" which is sub-cent.
 
 **Platform — DONE / TODO.** <list of files>
 **Landing page — DONE / TODO.** <pages/sections>
-**Pitch deck — DONE / TODO.** <slides>
 
-**Copy rules.** <anything to keep consistent across all three>
+**Copy rules.** <anything to keep consistent across both surfaces>
 ```
