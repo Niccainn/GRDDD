@@ -49,6 +49,8 @@ Missing (will block features when activated):
 | 2026-05 | Pre-push tsc, not pre-commit | Saves 10-15s per commit; still catches at push | `.githooks/pre-push` |
 | 2026-05 | 9-agent / 5-tier Claude topology, brand-ops at top | Structured for vision, scales without re-design | `.claude/agents/` |
 | 2026-05 | Skills, agents in `.claude/`; voice in `CLAUDE.md` | Anthropic-standard layout | this file |
+| 2026-05 | Marketing = deepened `growth` + 10-skill cluster, not 8 title-agents | Lean topology; one function-agent playing every marketing position | `.claude/agents/growth.md` |
+| 2026-05 | Marketing feedback loop: A (advisory) default, B (active→PR) explicit-ask only | Founder is merge gate, never bottleneck; findings persist in durable ledger | `docs/MARKETING_LOOP.md`, `.claude/skills/marketing-feedback-loop` |
 
 ## Landmine catalog (avoid re-discovery)
 

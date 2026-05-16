@@ -32,6 +32,13 @@ Activation criteria (any):
 - Code implementation (engineer — though design specs the visual, engineer implements)
 - Strategic feature decisions (product when active, founder until then)
 
+## Marketing-loop dependency
+
+`docs/MARKETING_LOOP.md` routes UX/visual-friction findings here. While
+this agent is a stub, those findings still log in the ledger (routed
+`engineer` for implementation, flagged `design`-relevant). On
+activation, take ownership of the visual/UX-friction lane of the loop.
+
 ## When inactive (now): route to brand-ops or founder
 
 ```
