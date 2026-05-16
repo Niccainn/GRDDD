@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": "GRID project Claude settings. Hooks are deliberately narrow — only the high-blast operations we've actually been burned by (see .claude/MEMORY.md landmine catalog). Routine edits pass through. Permission allowlist uses pattern allows instead of the 168 one-off entries that accumulated in settings.local.json (consolidated per CLAUDE-OPERATIONS-AUDIT open question #7).",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/stop-check.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git worktree:*)",
+      "Bash(git stash:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh run:*)",
+      "Bash(gh api:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx prisma:*)",
+      "Bash(vercel ls:*)",
+      "Bash(vercel inspect:*)",
+      "Bash(vercel env ls:*)",
+      "Bash(vercel env pull:*)",
+      "Bash(vercel deploy:*)",
+      "Bash(vercel domains:*)",
+      "Bash(vercel project:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(chmod:*)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Grep(*)",
+      "Glob(*)"
+    ],
+    "ask": [
+      "Bash(vercel env rm:*)",
+      "Bash(vercel env add:*)",
+      "Bash(vercel alias:*)",
+      "Bash(stripe:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(rm -rf:*)"
+    ],
+    "deny": []
+  }
+}
