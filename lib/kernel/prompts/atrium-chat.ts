@@ -12,7 +12,7 @@
 import type { MemoryEntry } from '../types';
 import { formatMemoriesForPrompt } from '../memory';
 
-export interface NovaChatPromptInput {
+export interface AtriumChatPromptInput {
   systemName: string;
   systemDescription: string | null;
   environmentName: string;
@@ -22,7 +22,7 @@ export interface NovaChatPromptInput {
   memories?: MemoryEntry[];
 }
 
-export function buildNovaChatPrompt(input: NovaChatPromptInput): string {
+export function buildAtriumChatPrompt(input: AtriumChatPromptInput): string {
   const wfList = input.workflows.length
     ? input.workflows.map((w) => `  • ${w.name} [${w.status.toLowerCase()}]`).join('\n')
     : '  None configured';

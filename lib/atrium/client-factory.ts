@@ -26,7 +26,7 @@
  *       fall-through to the platform key.
  *
  * Callers should catch MissingKeyError and surface it via the UI
- * event stream as a NovaEvent { type: 'error', message } with a
+ * event stream as a AtriumEvent { type: 'error', message } with a
  * deep link to /settings/ai.
  */
 

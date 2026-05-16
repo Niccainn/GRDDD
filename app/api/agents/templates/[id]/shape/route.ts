@@ -29,7 +29,7 @@ import { findBlueprint, hydrateBlueprint } from '@/lib/agents/templates';
 import {
   getAnthropicClientForEnvironment,
   MissingKeyError,
-} from '@/lib/nova/client-factory';
+} from '@/lib/atrium/client-factory';
 import { checkBudget, recordTokenUsage, calculateCost } from '@/lib/cost';
 
 export const runtime = 'nodejs';

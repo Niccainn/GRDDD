@@ -16,7 +16,7 @@ import { NextRequest } from 'next/server';
 import { getAuthIdentityOrNull } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { encryptString, buildKeyPreview } from '@/lib/crypto/key-encryption';
-import { validateAnthropicKey } from '@/lib/nova/client-factory';
+import { validateAnthropicKey } from '@/lib/atrium/client-factory';
 import Anthropic from '@anthropic-ai/sdk';
 
 /**

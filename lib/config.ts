@@ -27,7 +27,7 @@
  *     activation checklist.
  *
  * Changing tiers is a single env var change with no code deploy
- * required — the resolver in lib/nova/client-factory.ts reads the
+ * required — the resolver in lib/atrium/client-factory.ts reads the
  * tier at each Atrium invocation. Flipping from 'closed' to 'byok' is
  * the private-beta → public-beta promotion path.
  */

@@ -1,12 +1,12 @@
 import { getAuthIdentity } from '@/lib/auth';
-import { rateLimitNovaStrict } from '@/lib/rate-limit';
+import { rateLimitAtriumStrict } from '@/lib/rate-limit';
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/db';
 import { decryptPII } from '@/lib/crypto/pii-encryption';
-import type { NovaEvent } from '@/lib/nova';
+import type { AtriumEvent } from '@/lib/atrium';
 import { selectAvailableTools } from '@/lib/integrations/tools';
-import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/nova/client-factory';
+import { getAnthropicClientForEnvironment, MissingKeyError } from '@/lib/atrium/client-factory';
 import { fenceUserInput, withScopeGuard } from '@/lib/llm/safe-prompt';
 import { checkUserTokenBudget, recordUserTokenUsage } from '@/lib/cost/user-budget';
 
@@ -226,7 +226,7 @@ async function executeInternalTool(name: string, input: Record<string, unknown>,
 
 export async function POST(req: NextRequest) {
   const identity = await getAuthIdentity();
-  const rl = await rateLimitNovaStrict(identity.id);
+  const rl = await rateLimitAtriumStrict(identity.id);
   if (!rl.allowed) return Response.json({ error: 'Rate limited' }, { status: 429 });
   const { input } = await req.json();
   if (!input) return new Response(JSON.stringify({ error: 'Missing input' }), { status: 400 });
@@ -356,7 +356,7 @@ ${identity ? `Operator: ${identity.name}` : ''}`;
 
   const readable = new ReadableStream({
     async start(controller) {
-      function send(event: NovaEvent) {
+      function send(event: AtriumEvent) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       }
 

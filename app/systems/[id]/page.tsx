@@ -69,7 +69,7 @@ async function getSystemIntegrations(environmentId: string) {
   });
 }
 
-async function getNovaLogs(systemId: string) {
+async function getAtriumLogs(systemId: string) {
   const logs = await prisma.intelligenceLog.findMany({
     where: { systemId, action: 'nova_query' },
     orderBy: { createdAt: 'desc' },
@@ -91,7 +91,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default async function SystemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [system, novaLogs] = await Promise.all([getSystem(id), getNovaLogs(id)]);
+  const [system, novaLogs] = await Promise.all([getSystem(id), getAtriumLogs(id)]);
   if (!system) notFound();
 
   const [signals, integrations] = await Promise.all([

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import { seedAutonomyConfigs } from '@/lib/seed-autonomy';
-import { seedNovaMemories } from '@/lib/seed-nova-memories';
+import { seedAtriumMemories } from '@/lib/seed-atrium-memories';
 import { seedConsequences } from '@/lib/seed-consequences';
 import { seedReflections } from '@/lib/seed-reflections';
 
@@ -432,5 +432,5 @@ export async function createSampleData(
   // ------------------------------------------------------------------
   // NOVA SECOND BRAIN (memories)
   // ------------------------------------------------------------------
-  await seedNovaMemories(environmentId);
+  await seedAtriumMemories(environmentId);
 }

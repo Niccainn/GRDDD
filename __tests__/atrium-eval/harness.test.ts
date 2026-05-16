@@ -14,7 +14,7 @@ import { GOLDEN, ADVERSARIAL } from './prompts';
  * Wire-up for live mode:
  *   NOVA_EVAL_URL=https://staging.grddd.com/api/nova/global \
  *   NOVA_EVAL_COOKIE='grid_session=…' \
- *   npm test -- __tests__/nova-eval
+ *   npm test -- __tests__/atrium-eval
  */
 
 describe('Nova eval — prompt set shape', () => {

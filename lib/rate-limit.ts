@@ -81,7 +81,7 @@ export function rateLimitApi(userId: string): RateLimitResult {
 }
 
 /** Rate limit for Atrium AI routes: 30 req/min */
-export function rateLimitNova(userId: string): RateLimitResult {
+export function rateLimitAtrium(userId: string): RateLimitResult {
   return rateLimit(`nova:${userId}`, 30, 60_000);
 }
 
@@ -226,7 +226,7 @@ export async function rateLimitDistributed(
 /** Strict, distributed Atrium rate limiter. 30 req/min per user AND
  *  a shared 2k req/hr ceiling per user across all instances. Fails
  *  closed in prod if Upstash is misconfigured. */
-export async function rateLimitNovaStrict(userId: string): Promise<RateLimitResult> {
+export async function rateLimitAtriumStrict(userId: string): Promise<RateLimitResult> {
   // Per-minute bucket (spike control)
   const perMin = await rateLimitDistributed(
     `nova:min:${userId}`,
